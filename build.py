@@ -207,7 +207,9 @@ def render(ep, ep_path):
     spd = float(cfg_get('SPEED', '1.0'))   # 1.0 = 그대로(배속은 타입캐스트 TTS_TEMPO 로), 0.9 = 10% 느리게
     # 1) 음성 확인 + 트리밍 (자르기는 atrim 필터로, 속도 조절은 그 다음에 → -to 가 느려진 소리 끝을 잘라먹지 않는다)
     clips, warns, seg_start, seg_rate = [], [], [], []
-    for i in range(N):
+    retried = set()
+    i = 0
+    while i < N:
         src = W('voice', f'{i:02d}.mp3')
         if not os.path.exists(src): raise SystemExit(f'음성 없음: {src}')
         d, lead, tail = probe(src)
@@ -229,8 +231,17 @@ def render(ep, ep_path):
         clips.append(dur_of(dst)); seg_start.append(ss); seg_rate.append(rate)
         # 검수: 글자 수 대비 너무 짧으면(말이 잘린 음성) 중단
         syl = len(re.findall(r'[가-힣]', lines[i]['narr'])) or 1
-        if syl / (clips[-1] * rate) > 9.0:
-            raise SystemExit(f'음성 {i:02d} 이 글자 수에 비해 너무 짧아요 ({clips[-1]:.2f}s/{syl}음절). tts.py --only={i} 로 다시 만들어 주세요.')
+        if syl / (clips[-1] * rate) > 9.3:
+            if i not in retried:
+                # 잘린 음성으로 보임 → 그 줄만 자동으로 다시 만들고 한 번 더 시도
+                print(f'음성 {i:02d} 이 글자 수에 비해 너무 짧아요 ({clips[-1]:.2f}s/{syl}음절) → 다시 합성')
+                retried.add(i)
+                r = subprocess.run([sys.executable, '-X', 'utf8', 'tts.py', f'--only={i}'], capture_output=True, text=True, encoding='utf-8', errors='replace')
+                if r.returncode == 0:
+                    clips.pop(); seg_start.pop(); seg_rate.pop(); continue
+                print('  다시 합성 실패:', (r.stdout + r.stderr)[-300:])
+            raise SystemExit(f'음성 {i:02d} 이 글자 수에 비해 너무 짧아요 ({clips[-1]:.2f}s/{syl}음절). 타입캐스트 크레딧을 확인하고 tts.py --only={i} 로 다시 만들어 주세요.')
+        i += 1
     if warns: print('트리밍 조정:', ', '.join(warns))
     # 2) 타임라인 (장면 최소 길이 보장: 장면의 마지막 줄 뒤 여유를 늘린다)
     starts = [s.get('startLine', 0) for s in ep['scenes']]

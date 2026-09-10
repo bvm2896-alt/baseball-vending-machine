@@ -61,7 +61,7 @@ def check_audio(path, text):
         syl = len(re.findall(r'[가-힣]', text)) or 1
         rate = syl / max(d, 0.1)
         if mx > -0.05: return False, f'클리핑 {mx}dB'   # 음량 정리는 build.py 가 하므로 진짜 클리핑만 재시도
-        if rate > 9.5 or rate < 2.5: return False, f'길이 이상 {d:.1f}s/{syl}음절'
+        if rate > 8.5 or rate < 2.5: return False, f'길이 이상 {d:.1f}s/{syl}음절'
         return True, ''
     except Exception as e:
         return True, ''
