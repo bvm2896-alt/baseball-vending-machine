@@ -13,7 +13,7 @@ import json, re, subprocess, os, shutil, sys, base64, io, datetime
 HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(HERE)
 
-LEAD, TAIL, SUBLEAD = 0.25, 1.30, 0.22
+LEAD, TAIL, SUBLEAD = 0.25, 1.30, 0.05   # SUBLEAD: 자막을 말보다 살짝(0.05초) 먼저 — 거의 동시
 FPS = 15
 WORK = 'work'                                        # 중간 파일(음성, 프레임, 임시 html) 폴더
 OUT_ROOT = os.path.join(HERE, '..', '영상')           # 결과물: 영상/2026-09-06/1_두산.mp4
@@ -280,29 +280,30 @@ def render(ep, ep_path):
             gaps[b - 1] = min(MAX_GAP, gaps[b - 1] + (need - span))   # 모션은 template 이 장면 길이에 맞춰 빨라지므로 쉼은 0.5초까지만
     st = line_starts()
     total = st[N - 1] + clips[N - 1] + TAIL
-    sst = [max(0, s - SUBLEAD) for s in st]
+    # 자막은 "실제로 말이 나오는 동안"만: 잘라낸 클립 안에서 말이 시작·끝나는 시각을 다시 재서 그 사이에만 띄운다
     subs = []
     for i in range(N):
-        end = sst[i + 1] if i + 1 < N else st[i] + clips[i] + 0.4
+        dst = VW(f't{i:02d}.wav')
+        d2, lead2, tail2 = probe(dst)
+        sp_start, sp_end = st[i] + max(0, lead2 - SUBLEAD), st[i] + min(d2, tail2 + 0.05)
         pieces = sub_pieces(lines[i])
         segf = VW(f'{i:02d}.segs.json')
         if len(pieces) > 1 and os.path.exists(segf):
-            # 호흡 구간(' / ')과 자막 조각('|') 수가 같으면 구간 시작마다 자막을 바꾼다
+            # 호흡 구간(' / ')과 자막 조각('|') 수가 같으면 구간 시작마다 자막을 바꾼다 (조각 사이는 빈틈 없이 이어서)
             sg = json.load(open(segf)); durs, pause = sg['durs'], sg['pause']
             if len(durs) == len(pieces):
                 ss_i = seg_start[i]; rate = seg_rate[i]
-                starts_k = []
-                acc = 0.0
+                starts_k, acc = [], 0.0
                 for k, d_ in enumerate(durs):
                     starts_k.append(st[i] + max(0, (acc - ss_i)) / rate); acc += d_ + pause
                 for k, pc in enumerate(pieces):
-                    a = max(sst[i], starts_k[k] - SUBLEAD) if k else sst[i]
-                    b = (starts_k[k + 1] - SUBLEAD) if k + 1 < len(pieces) else end
+                    a = sp_start if k == 0 else max(sp_start, starts_k[k] - SUBLEAD)
+                    b = min(sp_end, starts_k[k + 1] - SUBLEAD) if k + 1 < len(pieces) else sp_end
+                    if b - a < 0.15: b = min(sp_end, a + 0.15)
                     subs.append([round(a, 2), round(b, 2), pc])
                 continue
             print(f'경고: {i:02d} 자막 조각({len(pieces)})과 호흡 구간({len(durs)}) 수가 달라 한 덩어리로 표시')
-        subs.append([round(sst[i], 2), round(end, 2), ' '.join(pieces) if len(pieces) > 1 else pieces[0]])
-        if pieces and len(pieces) > 1: subs[-1][2] = wrap2(' '.join(pieces))
+        subs.append([round(sp_start, 2), round(sp_end, 2), wrap2(' '.join(pieces)) if len(pieces) > 1 else pieces[0]])
     bounds = [round(st[k] - 0.10, 2) for k in starts[1:]]
     # 3) 나레이션 합치기
     silence(VW('lead.wav'), LEAD); silence(VW('tail.wav'), TAIL)
