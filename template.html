@@ -1,0 +1,243 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
+/* ===== 디자인 시스템 =====
+   캔버스 1080x1920. 좌우 여백 90 → 콘텐츠 폭 900.
+   세로: 상단 헤더 236~330 / 본문 400~1180 (세로 중앙 정렬) / 자막 1244~ / 하단 360px 은 유튜브 UI 영역이라 비움
+   타이포 스케일: mega 168 / big 120 / num 104 / title 48 / label 34
+   로고 칩: L 220 / M 150 / S 72 (흰 바탕, 둥근 사각형)
+   색: 배경 #111620, 카드 #1A2030, 선 #2B3448, 글 #F2F5F8, 보조 #8A94A6, 강조 #FFC24B, 승 #3ECF8E, 패 #FF6B6B */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#111620}
+body{font-family:'Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-weight:700;-webkit-font-smoothing:antialiased;color:#F2F5F8}
+#stage{position:relative;width:1080px;height:1920px;
+  background:radial-gradient(88% 52% at 50% 30%, rgba(60,96,132,.22) 0%, rgba(17,22,32,0) 70%),#111620}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-2px}
+/* 헤더 */
+#hdr{position:absolute;left:90px;right:90px;top:236px;height:94px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #2B3448}
+#brand{display:flex;align-items:center;gap:16px;font-size:46px;font-weight:900;letter-spacing:-1px}
+#brand .m{width:12px;height:44px;border-radius:6px;background:#FFC24B}
+#brand b{color:#FFC24B;font-weight:900}
+#meta{text-align:right;line-height:1.15}
+#meta .t{font-size:44px;font-weight:800;letter-spacing:2px}
+#meta .d{font-size:38px;font-weight:600;color:#B4BCC8;letter-spacing:1px}
+/* 본문 */
+#body{position:absolute;left:90px;width:900px;top:400px;height:780px;will-change:opacity,transform;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+/* 자막 */
+#sub{position:absolute;left:90px;right:90px;top:1244px;text-align:center}
+#sub span{display:inline;background:rgba(17,22,32,.94);color:#F2F5F8;font-size:56px;font-weight:700;
+  letter-spacing:-0.5px;line-height:1.7;padding:10px 20px;border-radius:16px;word-break:keep-all;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone}
+/* 타이포 */
+.mega{font-size:168px;font-weight:900;letter-spacing:-7px;line-height:1.02}
+.big{font-size:120px;font-weight:900;letter-spacing:-5px;line-height:1.05}
+.title{font-size:48px;font-weight:700;letter-spacing:-1.5px}
+.label{font-size:34px;font-weight:600;color:#8A94A6;letter-spacing:-1px}
+.gold{color:#FFC24B}.green{color:#3ECF8E}.red{color:#FF6B6B}.gray{color:#8A94A6}
+/* 레이아웃 */
+.row{display:flex;align-items:center;justify-content:center}
+.col{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.chip{background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.chip img{width:84%;height:84%;object-fit:contain;display:block}
+/* 스탯 카드: 두 장이 항상 같은 폭 */
+.card{width:430px;height:470px;background:#1A2030;border-radius:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.card .v{font-size:104px;font-weight:900;letter-spacing:-4px;line-height:1.05;white-space:nowrap}
+.card .v.two{font-size:88px}
+.card .l{font-size:34px;font-weight:600;color:#8A94A6;letter-spacing:-1px}
+/* 연승/연패 카드: 항상 전체 폭 */
+.sk{width:900px;height:150px;background:#1A2030;border-radius:32px;display:flex;align-items:center;padding:0 40px;gap:26px}
+.sk .nm{font-size:46px;font-weight:800;letter-spacing:-1.5px;width:150px;text-align:left}
+.sk .dots{display:flex;gap:11px;flex:1;justify-content:center}
+.sk .dot{width:30px;height:30px;border-radius:15px;background:#2B3448}
+.sk .st{font-size:46px;font-weight:900;letter-spacing:-1.5px;width:170px;text-align:right}
+/* 순위표 */
+#table{width:900px}
+#table .hd{display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:2px solid #F2F5F8;font-size:24px;font-weight:700;color:#8A94A6;letter-spacing:1px}
+.tr{display:flex;align-items:center;gap:16px;height:74px;border-bottom:1px solid #2B3448}
+.tr .rk{width:52px;font-size:34px;font-weight:800;text-align:center}
+.tr .tm{width:190px;display:flex;align-items:center;gap:14px}
+.tr .nm{font-size:36px;font-weight:800;letter-spacing:-1.5px;white-space:nowrap}
+.tr .bw{flex:1;height:30px;position:relative}
+.tr .bar{position:absolute;left:0;top:0;height:30px;border-radius:0 15px 15px 0}
+.tr .gp{width:100px;font-size:32px;font-weight:600;text-align:right;color:#8A94A6}
+.tr .wr{width:120px;font-size:38px;font-weight:800;text-align:right;letter-spacing:-1.5px}
+</style></head><body>
+<div id="stage">
+  <div id="hdr">
+    <div id="brand"><div class="m"></div><div>야구<b>자판기</b></div></div>
+    <div id="meta"><div class="t" id="railTitle">KBO 순위</div><div class="d num" id="railDate"></div></div>
+  </div>
+  <div id="body"></div>
+  <div id="sub"><span></span></div>
+</div>
+
+<script>
+/* ==== 데이터: build.py 가 window.EP 를 주입한다 ==== */
+const EP = window.EP || {};
+const D = (EP.standings || []).map(t => ({
+  rk: t.rank, nm: t.team, code: t.code, wr: t.winRate, gb: Number(t.gameBehind).toFixed(1),
+  g: t.games, st: t.streak, win: t.win, lose: t.lose, draw: t.draw }));
+const LOGO = EP.logos || {};
+const ACC = '#FFC24B', GREEN = '#3ECF8E', RED = '#FF6B6B', GRAY = '#8A94A6';
+document.getElementById('railDate').textContent = EP.dateLabel || '';
+if (EP.railTitle) document.getElementById('railTitle').textContent = EP.railTitle;
+const WRS = D.map(t => t.wr);
+const LO = Math.min(...WRS, .4) - .03, HI = Math.max(...WRS, .6) + .02, BM = 330;
+
+const c01 = x => x < 0 ? 0 : x > 1 ? 1 : x;
+const eo = t => 1 - Math.pow(1 - c01(t), 3);
+const eb = t => { t = c01(t); const c = 1.70158; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+const seg = (lt, a, d) => c01((lt - a) / d);
+const fmt = w => w.toFixed(3).replace(/^0/, '');
+const ALIAS = { '기아': 'HT', 'KIA': 'HT', '엘지': 'LG', '케이티': 'KT', '엔씨': 'NC', '에스에스지': 'SK', 'SSG': 'SK', '두산': 'OB', '삼성': 'SS', '롯데': 'LT', '한화': 'HH', '키움': 'WO' };
+const T = n => D.find(t => t.nm === n || t.code === n || t.code === ALIAS[n]) || { nm: n, code: ALIAS[n] || n };
+const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const br = s => esc(s).split('\n').join('<br>');
+const SZ = { L: [220, 48], M: [150, 34], S: [72, 16] };
+function chip(t, size = 'M', extra = '') {
+  const [s, r] = SZ[size];
+  return `<div class="chip" style="width:${s}px;height:${s}px;border-radius:${r}px;${extra}"><img src="${LOGO[t.code] || ''}"></div>`;
+}
+function B(h) { document.getElementById('body').innerHTML = h; }
+const pop = p => `opacity:${c01(p * 1.4)};transform:scale(${0.6 + 0.4 * eb(p)})`;
+const rise = (p, px = 60) => `opacity:${c01(p * 1.4)};transform:translateY(${(1 - eo(p)) * px}px)`;
+const slideX = (p, px) => `opacity:${c01(p * 1.4)};transform:translateX(${(1 - eo(p)) * px}px)`;
+const cnt = (p, v, dec = 0) => (v * eo(p)).toFixed(dec);
+const stColor = st => /승/.test(st) ? GREEN : /패/.test(st) ? RED : GRAY;
+const stN = st => parseInt(st) || 0;
+const stLabel = st => /^\d+(승|패)$/.test(st) && parseInt(st) >= 2 ? st.replace(/(승|패)$/, '연$1') : st;
+const winLose = (w, l) => `${w}승<br>${l}패`;
+
+const SCENE = {};
+
+/* hook: 로고(1~2개) + 큰 문구. 서브텍스트 없음 */
+SCENE.hook = (lt, s) => {
+  const pulse = 1 + 0.02 * Math.sin(lt * 4), p = seg(lt, .35, .7);
+  const teams = s.teams || (s.team ? [s.team] : []);
+  const logos = teams.length ? `<div class="row" style="gap:40px;${pop(seg(lt, 0, .55))}">${teams.map(n => chip(T(n), teams.length > 1 ? 'M' : 'L')).join('')}</div>` : '';
+  B(`${logos}<div class="mega gold" style="margin-top:${teams.length ? 44 : 0}px;font-size:${s.size || 168}px;opacity:${c01(p * 1.4)};transform:scale(${(0.6 + 0.4 * eb(p)) * (lt > 1.1 ? pulse : 1)})">${br(s.text)}</div>`);
+};
+
+/* big: 큰 문구 하나 (로고 선택). 서브텍스트 없음 */
+SCENE.big = (lt, s) => {
+  B(`${s.team ? `<div style="${pop(seg(lt, 0, .5))}">${chip(T(s.team), 'L')}</div>` : ''}
+  <div class="mega ${s.gold === false ? '' : 'gold'}" style="margin-top:${s.team ? 44 : 0}px;font-size:${s.size || 168}px;${pop(seg(lt, .25, .6))}">${br(s.text)}</div>`);
+};
+
+/* table: 순위표 */
+SCENE.table = (lt, s) => {
+  const p = seg(lt, .15, 1.6), hiSet = new Set(s.highlight || []);
+  const rows = D.slice(0, s.rows || 10);
+  let h = `<div id="table"><div class="hd" style="opacity:${seg(lt, 0, .3)}"><div style="width:52px;text-align:center">순위</div>
+    <div style="width:190px">팀</div><div style="flex:1"></div><div style="width:100px;text-align:right">게임차</div><div style="width:120px;text-align:right">승률</div></div>`;
+  rows.forEach((t, i) => {
+    const loc = c01((p - i * 0.045) / 0.55);
+    const px = BM * ((t.wr - LO) / (HI - LO)) * eo(loc);
+    const hi = hiSet.has(t.nm);
+    const glow = hi ? `box-shadow:0 0 ${26 * seg(lt, 1.6, .6)}px rgba(255,194,75,${.45 * seg(lt, 1.6, .6)})` : '';
+    h += `<div class="tr" style="opacity:${hi ? 1 : .34 * c01(loc * 2)};transform:translateX(${(1 - eo(c01(loc * 1.5))) * -30}px);${hi ? 'background:rgba(255,194,75,.07);border-radius:14px;margin:0 -14px;padding:0 14px;border-bottom-color:transparent' : ''}">
+      <div class="rk num" style="color:${hi ? ACC : '#5E6874'}">${t.rk}</div>
+      <div class="tm">${chip(t, 'S')}<div class="nm" style="color:${hi ? ACC : '#F2F5F8'}">${esc(t.nm)}</div></div>
+      <div class="bw"><div class="bar" style="width:${px.toFixed(1)}px;background:${hi ? ACC : 'rgba(242,245,248,.36)'};${glow}"></div></div>
+      <div class="gp num" style="opacity:${c01((loc - .4) * 3)};color:${hi ? '#F2F5F8' : GRAY}">${t.gb}</div>
+      <div class="wr num" style="opacity:${c01((loc - .5) * 3)};color:${hi ? ACC : '#F2F5F8'}">${fmt(t.wr)}</div></div>`;
+  });
+  B(h + '</div>');
+};
+
+/* streaks: 같은 폭의 카드 두 장, 점 10칸 고정 */
+function dots(n, color, lt, start) {
+  let h = '<div class="dots">';
+  for (let i = 0; i < 10; i++) {
+    const on = i < n, p = seg(lt, start + i * .12, .22);
+    h += `<div class="dot" style="${on ? `background:${color};opacity:${.25 + .75 * c01(p)};transform:scale(${.6 + .4 * eb(p)})` : 'opacity:.35'}"></div>`;
+  }
+  return h + '</div>';
+}
+SCENE.streaks = (lt, s) => {
+  const items = (s.teams || []).map(x => ({ t: T(x.team), st: x.streak || T(x.team).st || '' }));
+  let h = '<div class="col" style="gap:34px">';
+  items.forEach((it, i) => {
+    const n = Math.min(stN(it.st), 10), col = stColor(it.st), t0 = i * 1.0;
+    h += `<div class="sk" style="${slideX(seg(lt, i * .25, .5), i % 2 ? 120 : -120)}">${chip(it.t, 'S')}<div class="nm">${esc(it.t.nm)}</div>
+      ${dots(n, col, lt, .5 + t0)}<div class="st" style="color:${col};opacity:${seg(lt, .5 + t0 + n * .12 + .1, .3)}">${esc(stLabel(it.st))}</div></div>`;
+  });
+  B(h + '</div>');
+};
+
+/* 공통: 스탯 카드 두 장 (left/right: {team, value|win/lose, label}) */
+function cards(lt, L, R, opts = {}) {
+  const side = (x, i, p) => {
+    const v = x.value != null ? br(x.value) : winLose(cnt(p, x.win), cnt(p, x.lose));
+    const two = x.value == null || String(x.value).includes('\n');
+    return `<div class="card" style="${rise(seg(lt, i * .35, .5), 50)}">${chip(T(x.team), 'M')}
+      <div class="v num ${two ? 'two' : ''} ${i === 0 ? 'gold' : ''}" style="${i ? 'color:' + GRAY : ''}">${v}</div>
+      ${x.label ? `<div class="l">${br(x.label)}</div>` : ''}</div>`;
+  };
+  return `<div class="row" style="gap:40px">${side(L, 0, seg(lt, .3, .9))}${side(R, 1, seg(lt, .65, .9))}</div>`;
+}
+SCENE.versus = (lt, s) => B(cards(lt, s.left, s.right));
+SCENE.need = (lt, s) => B(cards(lt, s.left, s.right));
+
+/* shift: 한 팀 수치 변화 (from → to) */
+SCENE.shift = (lt, s) => {
+  const d = seg(lt, .9, 1.0), dec = s.dec == null ? 3 : s.dec, f = Number(s.from), to = Number(s.to);
+  const z = x => dec >= 3 ? x.replace(/^0\./, '.') : x; const v = z((f - (f - to) * eo(d)).toFixed(dec)), fs = z(Number(s.from).toFixed(dec));
+  B(`<div style="${pop(seg(lt, 0, .5))}">${chip(T(s.team), 'L')}</div>
+  <div class="row" style="margin-top:44px;gap:40px">
+    <div class="col" style="${rise(seg(lt, .3, .5))}"><div class="big num">${esc(fs)}</div>${s.fromLabel ? `<div class="label" style="margin-top:12px">${br(s.fromLabel)}</div>` : ''}</div>
+    <div style="width:${110 * eo(seg(lt, .8, .5))}px;height:8px;background:${GRAY};border-radius:4px;position:relative">
+      <div style="position:absolute;right:-6px;top:-10px;border:13px solid transparent;border-left:18px solid ${GRAY};opacity:${seg(lt, 1.1, .2)}"></div></div>
+    <div class="col" style="opacity:${seg(lt, .9, .3)}"><div class="big num" style="color:${d > .98 ? ACC : '#F2F5F8'}">${esc(v)}</div>${s.toLabel ? `<div class="label" style="margin-top:12px">${br(s.toLabel)}</div>` : ''}</div>
+  </div>`);
+};
+
+/* rival: 로고 + 문구 + 화살표 */
+SCENE.rival = (lt, s) => {
+  const up = ((lt * 1.2) % 1), down = s.dir === 'down';
+  B(`<div style="${rise(seg(lt, 0, .7), 90)}">${chip(T(s.team), 'L')}</div>
+  <div class="mega" style="font-size:130px;margin-top:40px;${pop(seg(lt, .5, .6))}">${br(s.text || '')}</div>
+  <div style="margin-top:20px;font-size:70px;color:${down ? RED : ACC};opacity:${(1 - up) * seg(lt, 1, .4)};transform:translateY(${(down ? 1 : -1) * up * 50}px)">${down ? '▼' : '▲'}</div>`);
+};
+
+/* verdict: 결론 문구 + 두 팀 로고 */
+SCENE.verdict = (lt, s) => {
+  const drop = seg(lt, .3, .7);
+  B(`${s.label ? `<div class="title gray" style="opacity:${seg(lt, 0, .4)}">${br(s.label)}</div>` : ''}
+  <div class="mega gold" style="margin-top:20px;font-size:${s.size || 150}px;opacity:${c01(drop * 1.5)};transform:translateY(${(1 - eb(drop)) * -120}px)">${br(s.big || '')}</div>
+  ${s.left && s.right ? `<div class="row" style="margin-top:60px;gap:36px">
+    <div style="${slideX(seg(lt, 1.2, .5), -140)}">${chip(T(s.left), 'M')}</div>
+    <div class="title gray" style="opacity:${seg(lt, 1.6, .4)}">vs</div>
+    <div style="${slideX(seg(lt, 1.2, .5), 140)}">${chip(T(s.right), 'M')}</div></div>` : ''}`);
+};
+
+/* question: 시청자 질문 */
+SCENE.question = (lt, s) => {
+  B(`<div class="mega" style="font-size:${s.size || 120}px;${pop(seg(lt, 0, .6))}">${br(s.text || '여러분 생각은?')}</div>`);
+};
+
+const SUBS = EP.subs || [], BD = EP.bounds || [], SC = (EP.scenes || []);
+function drawSub(t) {
+  const h = SUBS.find(s => t >= s[0] && t < s[1]);
+  const sp = document.querySelector('#sub span');
+  sp.innerHTML = h ? br(h[2]) : ''; sp.style.visibility = h ? 'visible' : 'hidden';
+}
+/* 장면별 모션이 끝나는 시점(초). 장면 길이의 75% 안에 못 끝나면 그만큼 빠르게 재생해서 항상 끝까지 보여준다 */
+const MOTION = {
+  hook: () => 1.1, big: () => 0.9, table: () => 2.3, versus: () => 1.6, need: () => 1.6,
+  shift: () => 1.4, rival: () => 1.5, verdict: s => (s.left && s.right ? 2.1 : 1.0), question: () => 0.7,
+  streaks: s => { const ts = s.teams || []; const last = ts.length ? Math.min(stN(ts[ts.length - 1].streak || (T(ts[ts.length - 1].team) || {}).st || ''), 10) : 0; return .5 + (ts.length - 1) * 1.0 + last * .12 + .45; },
+};
+function render(t) {
+  let k = 0; while (k < BD.length && t >= BD[k]) k++;
+  const start = k === 0 ? 0 : BD[k - 1], end = k < BD.length ? BD[k] : (EP.total || start + 3);
+  const s = SC[Math.min(k, SC.length - 1)] || { type: 'big', text: '' };
+  const need = (MOTION[s.type] || MOTION.big)(s), fit = Math.max(0.6, (end - start) * 0.75);
+  const lt = (t - start) * (need > fit ? need / fit : 1);
+  (SCENE[s.type] || SCENE.big)(lt, s);
+  document.getElementById('body').style.opacity = String(c01((t - start) / 0.28));
+  const gx = 50 + 3 * Math.sin(t * .5), gy = 30 + 2 * Math.cos(t * .37);
+  document.getElementById('stage').style.background = `radial-gradient(88% 52% at ${gx}% ${gy}%, rgba(60,96,132,.22) 0%, rgba(17,22,32,0) 70%),#111620`;
+  drawSub(t);
+}
+window.render = render; render(0);
+</script></body></html>

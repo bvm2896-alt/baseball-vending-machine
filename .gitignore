@@ -1,0 +1,22 @@
+# PC에만 두는 것 (절대 저장소에 올리지 않음)
+설정.txt
+client_secret*.json
+token*.json
+# 작업 중간 파일·결과물
+node_modules
+work/
+data/
+out/
+옛날/
+frames/
+voice/
+__pycache__/
+*.mp4
+*.wav
+*.mp3
+render.html
+render_thumb.html
+narration.txt
+timeline.json
+kbo-shorts.zip
+정리.py

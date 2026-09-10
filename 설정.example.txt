@@ -1,0 +1,31 @@
+# 이 파일을 복사해서 이름을 설정.txt 로 바꾸고 값을 채우세요 (설정.txt 는 저장소에 올라가지 않습니다)
+# 야구자판기 자동화 설정
+# '=' 오른쪽에 값을 붙여넣고 저장하세요. 이 파일은 PC에만 두고 채팅에 올리지 마세요.
+
+# --- 타입캐스트 ---
+# https://studio.typecast.ai/developers/api 에서 만든 API 키
+TYPECAST_API_KEY=여기에_키
+
+# https://studio.typecast.ai/developers/api/voices 에서 고른 목소리의 voice ID
+TYPECAST_VOICE_ID=여기에_보이스ID
+
+# --- 음성 옵션 ---
+# 감정: smart(앞뒤 문맥 자동) | normal | happy | toneup(높은 톤) | tonedown | whisper
+TTS_EMOTION=toneup
+TTS_INTENSITY=1.0
+# 배속 (타입캐스트에서 직접 적용, 1.0 = 보통, 1.1 = 10% 빠르게)
+TTS_TEMPO=1.1
+# 영상 만들 때 추가 속도 조절 (1.0 = 그대로)
+SPEED=1.0
+
+# 결과물 저장 위치 (구글 드라이브 동기화 폴더 등). 비우면 상위 폴더 영상\
+# OUTPUT_DIR=G:\내 드라이브\야구자판기
+# 만들자마자 자동 업로드 (1) / 업로드.txt 신호 기다림 (0)
+AUTO_UPLOAD=0
+
+# --- 유튜브 (5단계에서 채움, 지금은 비워두세요) ---
+YOUTUBE_CLIENT_SECRET_FILE=client_secret.json
+
+# --- 스케줄 ---
+START_TIME=07:30
+SAFETY_SHUTDOWN=12:00
