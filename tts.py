@@ -112,44 +112,60 @@ if '--test' in sys.argv:
 lines = [l.strip() for l in io.open('work/narration.txt', encoding='utf-8-sig') if l.strip()]
 PAUSE = float(CFG.get('TTS_PAUSE', '0.12'))   # 대사 안의 " / " 표시 자리에서 쉬는 시간(초). 구간 자체의 앞뒤 무음은 잘라내므로 아주 짧게
 
-HOOK_PAUSE = float(CFG.get('TTS_HOOK_PAUSE', '0.04'))   # 첫 줄(후킹 대사)은 구간 사이를 거의 안 쉬고 한 호흡으로
+def tts_text(segs, is_last_q=False):
+    """TTS 에 넣을 문장: 호흡 구간(' / ')은 쉼표로, 끝은 마침표/물음표로 → 한 사람이 쭉 읽는 자연스러운 억양.
+    (쉼표·마침표 금지 규칙은 화면 자막 얘기고, TTS 입력엔 넣어야 억양이 자연스럽다)"""
+    t = ', '.join(segs)
+    if not t.endswith(('?', '!', '.')): t += '.'
+    return t
+
+def probe_silences(path, thr='-35dB', mind=0.06):
+    r = subprocess.run(['ffmpeg', '-i', path, '-af', f'silencedetect=n={thr}:d={mind}', '-f', 'null', '-'], capture_output=True, text=True)
+    st = [float(x) for x in re.findall(r'silence_start: ([\d.]+)', r.stderr)]
+    en = [float(x) for x in re.findall(r'silence_end: ([\d.]+)', r.stderr)]
+    d = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path], capture_output=True, text=True).stdout.strip() or 0)
+    if len(en) < len(st): en.append(d)
+    return d, list(zip(st, en))
+
+def seg_bounds(path, segs):
+    """한 번에 합성한 음성 안에서 각 호흡 구간이 시작하는 시각(초). 자막을 구간별로 바꾸기 위한 추정:
+    글자 수 비율로 예상 위치를 잡고, 그 근처의 실제 짧은 쉼(무음)이 있으면 거기에 맞춘다"""
+    d, sil = probe_silences(path)
+    lead = sil[0][1] if sil and sil[0][0] < 0.02 else 0.0
+    tail = sil[-1][0] if sil and sil[-1][1] >= d - 0.03 else d
+    inner = [(a, b) for a, b in sil if a > lead + 0.05 and b < tail - 0.05]
+    syl = [max(1, len(re.findall(r'[가-힣A-Za-z0-9]', x))) for x in segs]
+    tot = sum(syl); speech = max(0.2, tail - lead)
+    bounds, acc, prev = [0.0], 0, lead
+    for k in range(1, len(segs)):
+        acc += syl[k - 1]
+        exp = lead + speech * acc / tot
+        tol = max(0.25, 0.3 * speech * syl[k - 1] / tot)
+        cand = [(abs((a + b) / 2 - exp), b) for a, b in inner if abs((a + b) / 2 - exp) <= tol and b > prev + 0.15]
+        pos = min(cand)[1] if cand else max(prev + 0.15, exp)
+        bounds.append(round(pos, 3)); prev = pos
+    return bounds
 
 def synth_line(line, prev, nxt, out, pause=None):
-    pause = PAUSE if pause is None else pause
-    """한 줄 합성. 줄 안에 ' / ' 가 있으면 호흡 단위로 나눠 따로 합성한 뒤 사이에 짧은 쉼을 넣어 붙인다."""
+    """한 줄 합성. ' / ' 로 나뉜 호흡 구간을 따로 만들지 않고 한 문장으로 합성한다(억양이 끊기지 않게).
+    구간 경계는 음성 안의 쉼을 찾아 추정해 NN.segs.json 에 기록 → build.py 가 자막을 구간별로 바꾼다"""
     segs = [x.strip() for x in line.split('/') if x.strip()]
+    text = tts_text(segs) if segs else line
+    p_ = [x.strip() for x in prev.split('/') if x.strip()]; n_ = [x.strip() for x in nxt.split('/') if x.strip()]
+    ok = synth(text, tts_text(p_) if p_ else '', tts_text(n_) if n_ else '', out)
+    sj = out.replace('.mp3', '.segs.json')
+    if not ok: return False
     if len(segs) <= 1:
-        try: os.remove(out.replace('.mp3', '.segs.json'))
+        try: os.remove(sj)
         except Exception: pass
-        return synth(segs[0] if segs else line, prev, nxt, out)
-    parts = []
-    for j, seg in enumerate(segs):
-        p = segs[j - 1] if j > 0 else prev
-        n = segs[j + 1] if j + 1 < len(segs) else nxt
-        tmp = out.replace('.mp3', f'_s{j}.mp3')
-        if not synth(seg, p, n, tmp): return False
-        wav = tmp.replace('.mp3', '.wav')   # 이어 붙이기는 wav 로 (형식을 맞춰야 함)
-        # 구간 앞뒤의 무음을 잘라낸다(각 끝에 0.05초만 남김) → 구간 사이가 늘어지지 않게
-        trim = ('silenceremove=start_periods=1:start_threshold=-42dB:start_silence=0.05,areverse,'
-                'silenceremove=start_periods=1:start_threshold=-42dB:start_silence=0.06,areverse')
-        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', tmp, '-af', trim, '-ar', '44100', '-ac', '1', wav], check=True)
-        os.remove(tmp); parts.append(wav)
-    sil = out.replace('.mp3', '_sil.wav')
-    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{max(0.01, pause):.2f}', sil], check=True)
-    lst = out.replace('.mp3', '_list.txt')
-    with open(lst, 'w', encoding='utf-8') as f:
-        for j, ptn in enumerate(parts):
-            if j: f.write(f"file '{os.path.basename(sil)}'\n")
-            f.write(f"file '{os.path.basename(ptn)}'\n")
-    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-ar', '44100', '-ac', '1', '-b:a', '192k', out], check=True)
-    # 자막을 호흡 단위로 맞추기 위해 각 구간 길이를 기록
-    durs = []
-    for ptn in parts:
-        d = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', ptn], capture_output=True, text=True).stdout.strip()
-        durs.append(float(d or 0))
-    json.dump({'durs': durs, 'pause': pause}, open(out.replace('.mp3', '.segs.json'), 'w'))
-    for f_ in parts + [sil, lst]:
-        try: os.remove(f_)
+        return True
+    try:
+        b = seg_bounds(out, segs)
+        durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
+        json.dump({'durs': durs, 'pause': 0.0, 'bounds': b}, open(sj, 'w'))
+    except Exception as e:
+        print('  구간 추정 실패(자막은 한 덩어리로):', e)
+        try: os.remove(sj)
         except Exception: pass
     return True
 
@@ -163,7 +179,7 @@ for i, line in enumerate(lines):
     prev = lines[i-1] if i > 0 else ''
     nxt = lines[i+1] if i+1 < len(lines) else ''
     out = f'work/voice/{i:02d}.mp3'
-    ok = synth_line(line, prev, nxt, out, pause=HOOK_PAUSE if i == 0 else None)
+    ok = synth_line(line, prev, nxt, out)
     print(f'{i:02d} {"OK " if ok else "XX "} {line}')
     fail += (not ok)
     time.sleep(0.3)
