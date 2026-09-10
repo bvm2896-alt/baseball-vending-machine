@@ -225,17 +225,51 @@ def bounds_from_words(words, parts):
             bounds.append(round(words[-1][1], 3))
     return bounds
 
+def inner_silences(path, thr='-36dB', mind=0.08):
+    """음성 안쪽의 무음 구간 [(시작, 끝)] (앞뒤 무음 제외)"""
+    r = subprocess.run(['ffmpeg', '-i', path, '-af', f'silencedetect=n={thr}:d={mind}', '-f', 'null', '-'], capture_output=True, text=True)
+    st = [float(v) for v in re.findall(r'silence_start: ([\d.]+)', r.stderr)]
+    en = [float(v) for v in re.findall(r'silence_end: ([\d.]+)', r.stderr)]
+    d = float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path], capture_output=True, text=True).stdout.strip() or 0)
+    if len(en) < len(st): en.append(d)
+    return [(a, b) for a, b in zip(st, en) if a > 0.05 and b < d - 0.05], d
+
 def refine_subs(i, line):
+    """호흡 구간 경계 확정. 원칙: 경계는 반드시 '실제 쉼(무음)의 끝'에 둔다 — 자막이 말 도중에 넘어가지 않도록.
+    1) tts.py 가 쉼을 전부 찾아 맞췄으면(breaths == 경계 수) 그 경계를 그대로 쓴다.
+    2) 아니면 whisper 단어 시각으로 대략 잡은 뒤, 가장 가까운 쉼 끝(±0.6초)으로 끌어당긴다."""
     parts = [p.strip() for p in line.split('/') if p.strip()]
     if len(parts) <= 1: return 'single'
     path = os.path.join(VOICE, f'{i:02d}.mp3'); sj = path.replace('.mp3', '.segs.json')
+    need = len(parts) - 1
+    old = None
+    try: old = json.load(open(sj))
+    except Exception: pass
+    if old and old.get('breaths') == need and len(old.get('bounds', [])) == need + 1:
+        return 'silence ' + ' '.join(f'{x:.2f}' for x in old['bounds'][1:])
+    sil, d = inner_silences(path)
     words = align_words(path, line)
-    if words is None: return 'estimate'
-    b = bounds_from_words(words, parts)
-    if not b: return 'estimate(인식 불일치)'
+    b = bounds_from_words(words, parts) if words else None
+    if not b:
+        # whisper 없음/불일치: 쉼이 경계 수와 같으면 쉼 끝을 그대로
+        if len(sil) == need:
+            b = [0.0] + [round(e, 3) for _, e in sil]
+            durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
+            json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'src': 'silence'}, open(sj, 'w'))
+            return 'silence ' + ' '.join(f'{x:.2f}' for x in b[1:])
+        return 'estimate' if old else 'estimate(경계 못 찾음)'
+    # whisper 경계를 가장 가까운 쉼 끝으로 끌어당김 (쉼 하나를 두 경계가 같이 쓰지 않게)
+    used, snapped, prev = set(), [0.0], 0.0
+    for t in b[1:]:
+        dist = lambda a, e: 0.0 if a <= t <= e else min(abs(t - a), abs(t - e))   # 쉼 구간까지의 거리(안이면 0)
+        cand = [(dist(a, e), k, e) for k, (a, e) in enumerate(sil) if k not in used and dist(a, e) <= 0.6 and e > prev + 0.15]
+        if cand:
+            _, k, e = min(cand); used.add(k); t = e
+        t = max(t, prev + 0.15); snapped.append(round(t, 3)); prev = t
+    b = snapped
     durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
-    json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'src': 'whisper'}, open(sj, 'w'))
-    return 'whisper ' + ' '.join(f'{x:.2f}' for x in b[1:])
+    json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'src': 'whisper+silence'}, open(sj, 'w'))
+    return 'whisper+silence ' + ' '.join(f'{x:.2f}' for x in b[1:])
 
 # ---------- 메인 ----------
 def main():

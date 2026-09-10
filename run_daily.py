@@ -167,7 +167,10 @@ def step_build(ep_path, only_lines=None):
     log(f'[{k}] 음성 생성 시작' + (f' (줄 {only_lines} 만 다시)' if only_lines else ''), '음성')
     rc, out = py('build.py', 'prep', ep_path)
     if rc: log(f'[{k}] prep 실패: ' + out[-300:], '실패'); return None
-    if '--no-tts' in ARGS: log(f'[{k}] 음성 생성 생략(--no-tts)')
+    if '--no-tts' in ARGS:
+        log(f'[{k}] 음성 생성 생략(--no-tts) — 자막 타이밍만 다시 맞춤')
+        rc, out = py('qa_voice.py', '--check', timeout=900)
+        if rc: log(f'[{k}] 자막 맞춤 오류(무시): ' + out[-200:])
     else:
         args = ['tts.py'] + ([f'--only={only_lines}'] if only_lines else [])
         rc, out = py(*args, timeout=1200)
