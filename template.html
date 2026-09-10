@@ -100,7 +100,16 @@ function chip(t, size = 'M', extra = '') {
   const [s, r] = SZ[size];
   return `<div class="chip" style="width:${s}px;height:${s}px;border-radius:${r}px;${extra}"><img src="${LOGO[t.code] || ''}"></div>`;
 }
-function B(h) { document.getElementById('body').innerHTML = h; }
+function B(h) {
+  const body = document.getElementById('body'); body.innerHTML = h;
+  // 큰 글씨가 폭(900)을 넘으면 단어 중간에서 줄바꿈되지 않도록 폰트를 줄인다. 세로(820)도 넘치면 줄인다
+  const els = [...body.querySelectorAll('.mega,.big')];
+  els.forEach(el => { el.style.whiteSpace = 'nowrap'; let fs = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > 900 && fs > 56) { fs -= 4; el.style.fontSize = fs + 'px'; } });
+  const used = () => [...body.children].reduce((a, c) => a + c.offsetHeight + (parseFloat(getComputedStyle(c).marginTop) || 0) + (parseFloat(getComputedStyle(c).marginBottom) || 0), 0);
+  for (let k = 0; k < 30 && els.length && used() > 820; k++)
+    els.forEach(el => { const fs = parseFloat(getComputedStyle(el).fontSize); if (fs > 56) el.style.fontSize = (fs - 4) + 'px'; });
+}
 const pop = p => `opacity:${c01(p * 1.4)};transform:scale(${0.6 + 0.4 * eb(p)})`;
 const rise = (p, px = 60) => `opacity:${c01(p * 1.4)};transform:translateY(${(1 - eo(p)) * px}px)`;
 const slideX = (p, px) => `opacity:${c01(p * 1.4)};transform:translateX(${(1 - eo(p)) * px}px)`;
@@ -126,8 +135,8 @@ SCENE.big = (lt, s) => {
   let text = s.text || '', num = s.num || '';
   const m = text.match(/^\s*(?:([①②③④⑤])|([1-5])[.)]|(첫째|둘째|셋째|넷째|다섯째))\s*/);
   if (!num && m) { num = m[1] ? '①②③④⑤'.indexOf(m[1]) + 1 : m[2] ? m[2] : ['첫째', '둘째', '셋째', '넷째', '다섯째'].indexOf(m[3]) + 1; text = text.slice(m[0].length); }
-  const badge = num ? `<div class="row" style="margin-bottom:30px;${pop(seg(lt, .1, .5))}"><div class="num" style="width:104px;height:104px;border-radius:50%;background:${ACC};color:#0B0F14;font-size:66px;font-weight:900;letter-spacing:0;display:flex;align-items:center;justify-content:center">${num}</div></div>` : '';
-  B(`${s.team ? `<div style="${pop(seg(lt, 0, .5))}">${chip(T(s.team), 'L')}</div>` : ''}${badge}
+  const badge = num ? `<div class="row" style="margin:30px 0;${pop(seg(lt, .1, .5))}"><div class="num" style="width:104px;height:104px;border-radius:50%;background:${ACC};color:#0B0F14;font-size:66px;font-weight:900;letter-spacing:0;display:flex;align-items:center;justify-content:center">${num}</div></div>` : '';
+  B(`${s.team ? `<div style="${pop(seg(lt, 0, .5))}">${chip(T(s.team), num ? 'M' : 'L')}</div>` : ''}${badge}
   <div class="mega ${s.gold === false ? '' : 'gold'}" style="margin-top:${s.team && !num ? 44 : 0}px;font-size:${s.size || 168}px;${pop(seg(lt, .25, .6))}">${br(text)}</div>`);
 };
 

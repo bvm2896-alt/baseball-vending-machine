@@ -127,28 +127,24 @@ def end_level(f, ms=30):
 CONNECT_END = re.compile(r'(는데|고요|지만|면|니까|서|고|도|은|는|이|가)$')   # 말이 이어지는 어미
 TURN_START = ('그래서', '근데', '그런데', '그러니까', '변수는', '결론', '제 예측', '문제는', '이유는', '단 ', '그럼', '만약')
 
-def gap_after(i, line, n, nxt=None):
-    """줄과 줄 사이 쉼(초). 문장이 끝나면 길게, 말이 이어지면 짧게, 다음 줄이 '그래서/근데' 처럼 방향을 바꾸면 더 길게"""
+MAX_GAP = 0.5   # 어떤 쉼도 이보다 길지 않게(답답함 방지)
+
+def gap_after(i, line, n, nxt=None, scene_change=False):
+    """줄과 줄 사이 쉼(초). 말이 이어지면 거의 안 쉬고, 문장이 끝나면 짧게, 장면(이미지)이 바뀌거나 방향을 바꾸는 말 앞에서만 조금 더 (최대 0.5초)"""
     g = line.get('gapAfter')
-    if g is not None: return float(g)
+    if g is not None: return min(MAX_GAP, float(g))
     t = line['narr'].strip()
-    if t.endswith('?'): gap = 0.45
-    elif t.endswith(('.', '!')) or re.search(r'(요|죠|다|네|까)$', t): gap = 0.32
-    elif CONNECT_END.search(t): gap = 0.14
-    else: gap = 0.22
-    if nxt and nxt['narr'].strip().startswith(TURN_START): gap = max(gap, 0.5)
-    if len(re.findall(r'[가-힣]', t)) <= 8 and gap >= 0.3: gap += 0.15      # 짧게 딱 끊는 말("그건 솔직히 어려워요")은 여운
-    return round(gap, 2)
+    if CONNECT_END.search(t) and not t.endswith(('요', '죠')): gap = 0.10
+    elif t.endswith('?'): gap = 0.30
+    else: gap = 0.24
+    if nxt and nxt['narr'].strip().startswith(TURN_START): gap = max(gap, 0.38)
+    if scene_change: gap = max(gap, 0.42)
+    return round(min(gap, MAX_GAP), 2)
 
 def pace_of(i, line, n):
-    """줄별 말 속도 배율. 훅·결론·질문은 천천히, 이어지는 설명은 조금 빠르게. 콘티에 pace: slow|normal|fast 로 지정 가능"""
+    """줄별 말 속도 배율. 기본은 그대로(1.0) — 느리게 하면 답답하다는 피드백. 콘티에 pace: slow|normal|fast 로만 조절"""
     p = line.get('pace')
-    if p in ('slow', 'normal', 'fast'): return {'slow': 0.9, 'normal': 1.0, 'fast': 1.08}[p]
-    t = line['narr'].strip()
-    if i == 0 or i == n - 1: return 0.94
-    if '제 예측' in t or t.startswith(('결론', '그래서 제', '정리하면')): return 0.9
-    if t.endswith('?'): return 0.95
-    if CONNECT_END.search(t) and not t.endswith(('요', '죠')): return 1.05
+    if p in ('slow', 'normal', 'fast'): return {'slow': 0.94, 'normal': 1.0, 'fast': 1.08}[p]
     return 1.0
 
 # 장면 종류별 최소 길이(초): 모션이 다 끝나기 전에 장면이 넘어가지 않도록, 나레이션이 짧으면 장면 끝에 여유를 둔다
@@ -209,8 +205,9 @@ def render(ep, ep_path):
             raise SystemExit(f'음성 {i:02d} 이 글자 수에 비해 너무 짧아요 ({clips[-1]:.2f}s/{syl}음절). tts.py --only={i} 로 다시 만들어 주세요.')
     if warns: print('트리밍 조정:', ', '.join(warns))
     # 2) 타임라인 (장면 최소 길이 보장: 장면의 마지막 줄 뒤 여유를 늘린다)
-    gaps = [gap_after(i, lines[i], N, lines[i + 1] if i + 1 < N else None) for i in range(N)]
     starts = [s.get('startLine', 0) for s in ep['scenes']]
+    scene_first = set(starts)
+    gaps = [gap_after(i, lines[i], N, lines[i + 1] if i + 1 < N else None, scene_change=(i + 1) in scene_first) for i in range(N)]
     def line_starts():
         st, t = [], LEAD
         for i in range(N):
@@ -223,7 +220,7 @@ def render(ep, ep_path):
         span = (st[b] if b < N else st[N - 1] + clips[N - 1] + TAIL) - st[a]
         need = float(s.get('minDur', MIN_SCENE.get(s.get('type'), 1.2)))
         if span < need:
-            gaps[b - 1] += need - span
+            gaps[b - 1] = min(MAX_GAP, gaps[b - 1] + (need - span))   # 모션은 template 이 장면 길이에 맞춰 빨라지므로 쉼은 0.5초까지만
     st = line_starts()
     total = st[N - 1] + clips[N - 1] + TAIL
     sst = [max(0, s - SUBLEAD) for s in st]

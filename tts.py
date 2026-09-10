@@ -110,7 +110,7 @@ if '--test' in sys.argv:
     sys.exit(0 if ok else 1)
 
 lines = [l.strip() for l in io.open('work/narration.txt', encoding='utf-8-sig') if l.strip()]
-PAUSE = float(CFG.get('TTS_PAUSE', '0.3'))   # 대사 안의 " / " 표시 자리에서 쉬는 시간(초)
+PAUSE = float(CFG.get('TTS_PAUSE', '0.12'))   # 대사 안의 " / " 표시 자리에서 쉬는 시간(초). 구간 자체의 앞뒤 무음은 잘라내므로 아주 짧게
 
 def synth_line(line, prev, nxt, out):
     """한 줄 합성. 줄 안에 ' / ' 가 있으면 호흡 단위로 나눠 따로 합성한 뒤 사이에 짧은 쉼을 넣어 붙인다."""
@@ -126,7 +126,10 @@ def synth_line(line, prev, nxt, out):
         tmp = out.replace('.mp3', f'_s{j}.mp3')
         if not synth(seg, p, n, tmp): return False
         wav = tmp.replace('.mp3', '.wav')   # 이어 붙이기는 wav 로 (형식을 맞춰야 함)
-        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', tmp, '-ar', '44100', '-ac', '1', wav], check=True)
+        # 구간 앞뒤의 무음을 잘라낸다(각 끝에 0.05초만 남김) → 구간 사이가 늘어지지 않게
+        trim = ('silenceremove=start_periods=1:start_threshold=-42dB:start_silence=0.05,areverse,'
+                'silenceremove=start_periods=1:start_threshold=-42dB:start_silence=0.06,areverse')
+        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', tmp, '-af', trim, '-ar', '44100', '-ac', '1', wav], check=True)
         os.remove(tmp); parts.append(wav)
     sil = out.replace('.mp3', '_sil.wav')
     subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{PAUSE:.2f}', sil], check=True)
