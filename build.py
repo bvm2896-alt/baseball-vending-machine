@@ -165,7 +165,7 @@ def pace_of(i, line, n):
     return 1.0
 
 # 장면 종류별 최소 길이(초): 모션이 다 끝나기 전에 장면이 넘어가지 않도록, 나레이션이 짧으면 장면 끝에 여유를 둔다
-MIN_SCENE = {'streaks': 3.4, 'table': 3.2, 'verdict': 3.0, 'shift': 2.6, 'versus': 2.4, 'need': 2.4, 'rival': 2.2, 'hook': 1.0, 'big': 1.4, 'question': 1.4}
+MIN_SCENE = {'streaks': 3.4, 'table': 3.2, 'verdict': 3.0, 'shift': 2.6, 'versus': 2.4, 'need': 2.4, 'rival': 2.2, 'matchup': 2.4, 'hook': 1.0, 'big': 1.4, 'question': 1.4}
 
 SUB_MAX = 16   # 자막 한 줄 최대 글자 수(공백 포함, 한글 기준)
 

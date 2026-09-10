@@ -128,25 +128,49 @@ def probe_silences(path, thr='-35dB', mind=0.06):
     return d, list(zip(st, en))
 
 def seg_bounds(path, segs):
-    """한 번에 합성한 음성 안에서 각 호흡 구간이 시작하는 시각(초)과, 그 자리에 실제 쉼(무음 구간)이 있었는지.
-    글자 수 비율로 예상 위치를 잡고, 그 근처의 실제 짧은 쉼이 있으면 거기에 맞춘다. 반환: [(시작초, (무음시작,무음끝) 또는 None)]"""
-    d, sil = probe_silences(path)
+    """한 번에 합성한 음성 안에서 각 호흡 구간이 시작하는 시각(초)과 그 자리의 실제 쉼(무음 구간).
+    타입캐스트는 쉼표마다 짧게 쉬므로, 음성 속 쉼의 개수가 호흡 구간 경계 수와 같으면 그대로 순서대로 쓴다.
+    더 많으면 글자 수 비율로 예상한 위치에 가장 잘 맞는 조합을 고르고, 적으면 있는 것만 맞추고 나머지는 비율로 추정.
+    반환: [(시작초, (무음시작,무음끝) 또는 None)]"""
+    d, sil = probe_silences(path, thr='-36dB', mind=0.08)
     lead = sil[0][1] if sil and sil[0][0] < 0.02 else 0.0
     tail = sil[-1][0] if sil and sil[-1][1] >= d - 0.03 else d
     inner = [(a, b) for a, b in sil if a > lead + 0.05 and b < tail - 0.05]
+    need = len(segs) - 1
     syl = [max(1, len(re.findall(r'[가-힣A-Za-z0-9]', x))) for x in segs]
     tot = sum(syl); speech = max(0.2, tail - lead)
-    out, acc, prev = [(0.0, None)], 0, lead
-    for k in range(1, len(segs)):
-        acc += syl[k - 1]
-        exp = lead + speech * acc / tot
-        tol = max(0.25, 0.3 * speech * syl[k - 1] / tot)
-        cand = [(abs((a + b) / 2 - exp), (a, b)) for a, b in inner if abs((a + b) / 2 - exp) <= tol and b > prev + 0.15]
-        if cand:
-            iv = min(cand)[1]; pos = iv[1]; out.append((round(pos, 3), iv))
-        else:
-            pos = max(prev + 0.15, exp); out.append((round(pos, 3), None))
-        prev = pos
+    exp = []
+    acc = 0
+    for k in range(need):
+        acc += syl[k]; exp.append(lead + speech * acc / tot)
+    chosen = [None] * need
+    if len(inner) == need:
+        chosen = list(inner)
+    elif len(inner) > need:
+        # 순서를 지키며 need 개 고르기: 예상 위치와의 차이 합이 최소인 조합 (동적 계획법)
+        import functools
+        mids = [(a + b) / 2 for a, b in inner]
+        @functools.lru_cache(None)
+        def best(i, k):   # inner[i:] 에서 exp[k:] 를 순서대로 맞출 때 최소 비용, 선택 인덱스
+            if k == need: return (0.0, ())
+            if len(inner) - i < need - k: return (1e9, ())
+            skip = best(i + 1, k)
+            c, rest = best(i + 1, k + 1)
+            take = (c + abs(mids[i] - exp[k]), (i,) + rest)
+            return min(skip, take, key=lambda x: x[0])
+        for k, idx in enumerate(best(0, 0)[1]): chosen[k] = inner[idx]
+    else:
+        # 쉼이 부족: 가까운 예상 위치에 하나씩 배정
+        used = set()
+        for a, b in inner:
+            m = (a + b) / 2
+            k = min((abs(m - e), j) for j, e in enumerate(exp) if j not in used)[1] if len(used) < need else None
+            if k is not None: chosen[k] = (a, b); used.add(k)
+    out, prev = [(0.0, None)], lead
+    for k in range(need):
+        iv = chosen[k]
+        pos = iv[1] if iv else max(prev + 0.15, exp[k])
+        out.append((round(pos, 3), iv)); prev = pos
     return out
 
 BREATH = float(CFG.get('TTS_BREATH', '0.18'))   # 긴 대사의 호흡 자리(' / ')에 살짝 끼워 넣는 쉼(초). 실제 쉼이 감지된 자리에만 넣는다

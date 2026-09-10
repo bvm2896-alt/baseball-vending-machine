@@ -325,7 +325,11 @@
     "KT"
    ],
    "text": "0.5게임 차",
-   "size": 150
+   "size": 150,
+   "marks": {
+    "삼성": "😱",
+    "KT": "😏"
+   }
   },
   {
    "type": "table",
@@ -347,7 +351,8 @@
    "startLine": 3,
    "team": "KT",
    "text": "대구\nKT 승",
-   "size": 150
+   "size": 150,
+   "mark": "🎉"
   },
   {
    "type": "big",
@@ -356,8 +361,14 @@
    "size": 170
   },
   {
-   "type": "big",
+   "type": "matchup",
    "startLine": 5,
+   "left": "삼성",
+   "right": "KT",
+   "marks": {
+    "삼성": "💪",
+    "KT": "😓"
+   },
    "text": "상대 전적\n8승 4패",
    "size": 130,
    "num": 1
@@ -367,7 +378,8 @@
    "startLine": 6,
    "team": "삼성",
    "text": "1위 결정전\n대구",
-   "size": 130
+   "size": 130,
+   "mark": "🏟️"
   },
   {
    "type": "big",
@@ -382,12 +394,14 @@
    "left": {
     "team": "KT",
     "value": "9",
-    "label": "투수 3명 없이"
+    "label": "투수 3명 없이",
+    "mark": "😭"
    },
    "right": {
     "team": "삼성",
     "value": "8",
-    "label": "타자 2명 없이"
+    "label": "타자 2명 없이",
+    "mark": "🙂"
    }
   },
   {
@@ -424,7 +438,8 @@
    "label": "제 예측",
    "big": "여전히 삼성",
    "left": "삼성",
-   "right": "KT"
+   "right": "KT",
+   "mark": "🔥"
   },
   {
    "type": "big",

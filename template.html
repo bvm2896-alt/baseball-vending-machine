@@ -100,6 +100,16 @@ function chip(t, size = 'M', extra = '') {
   const [s, r] = SZ[size];
   return `<div class="chip" style="width:${s}px;height:${s}px;border-radius:${r}px;${extra}"><img src="${LOGO[t.code] || ''}"></div>`;
 }
+/* 로고에 붙는 이모지 배지(😰 🔥 …): marks 로 지정. p = 등장 진행도(0~1) */
+const EMOJI = "font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif";
+function chipM(t, size = 'M', mark = '', p = 1, extra = '') {
+  if (!mark) return chip(t, size, extra);
+  const w = size === 'L' ? 130 : 110, fs = size === 'L' ? 80 : 68;
+  return `<div style="position:relative;display:inline-block;flex:0 0 auto">${chip(t, size, extra)}
+    <div style="position:absolute;right:-${w * .22}px;bottom:-${w * .18}px;width:${w}px;height:${w}px;border-radius:50%;background:#111620;border:5px solid ${ACC};
+      display:flex;align-items:center;justify-content:center;font-size:${fs}px;line-height:1;${EMOJI};opacity:${c01(p * 1.5)};transform:scale(${0.4 + 0.6 * eb(p)}) rotate(${(1 - eb(p)) * -25}deg)">${esc(mark)}</div></div>`;
+}
+const markOf = (s, n, i) => (s.marks && (s.marks[n] || s.marks[i] || s.marks[String(i)])) || '';
 function B(h) {
   const body = document.getElementById('body'); body.innerHTML = h;
   // 큰 글씨가 폭(900)을 넘으면 단어 중간에서 줄바꿈되지 않도록 폰트를 줄인다. 세로(820)도 넘치면 줄인다
@@ -125,9 +135,14 @@ const SCENE = {};
 SCENE.hook = (lt, s) => {
   const pulse = 1 + 0.02 * Math.sin(lt * 4), p = seg(lt, .35, .7);
   const teams = s.teams || (s.team ? [s.team] : []);
-  const logos = teams.length ? `<div class="row" style="gap:40px;${pop(seg(lt, 0, .55))}">${teams.map(n => chip(T(n), teams.length > 1 ? 'M' : 'L')).join('')}</div>` : '';
+  const logos = teams.length ? `<div class="row" style="gap:${teams.length > 1 ? 56 : 40}px;${pop(seg(lt, 0, .55))}">${teams.map((n, i) => chipM(T(n), teams.length > 1 ? 'M' : 'L', markOf(s, n, i), seg(lt, .7, .4))).join('')}</div>` : '';
   B(`${logos}<div class="mega gold" style="margin-top:${teams.length ? 44 : 0}px;font-size:${s.size || 168}px;opacity:${c01(p * 1.4)};transform:scale(${(0.6 + 0.4 * eb(p)) * (lt > 1.1 ? pulse : 1)})">${br(s.text)}</div>`);
 };
+
+/* 번호 배지(❶): big/matchup 장면에서 num 또는 text 앞의 ①/1./첫째 */
+function numBadge(lt, num) {
+  return num ? `<div class="row" style="margin:30px 0;${pop(seg(lt, .1, .5))}"><div class="num" style="width:104px;height:104px;border-radius:50%;background:${ACC};color:#0B0F14;font-size:66px;font-weight:900;letter-spacing:0;display:flex;align-items:center;justify-content:center">${num}</div></div>` : '';
+}
 
 /* big: 큰 문구 하나 (로고 선택). 서브텍스트 없음 */
 SCENE.big = (lt, s) => {
@@ -135,9 +150,19 @@ SCENE.big = (lt, s) => {
   let text = s.text || '', num = s.num || '';
   const m = text.match(/^\s*(?:([①②③④⑤])|([1-5])[.)]|(첫째|둘째|셋째|넷째|다섯째))\s*/);
   if (!num && m) { num = m[1] ? '①②③④⑤'.indexOf(m[1]) + 1 : m[2] ? m[2] : ['첫째', '둘째', '셋째', '넷째', '다섯째'].indexOf(m[3]) + 1; text = text.slice(m[0].length); }
-  const badge = num ? `<div class="row" style="margin:30px 0;${pop(seg(lt, .1, .5))}"><div class="num" style="width:104px;height:104px;border-radius:50%;background:${ACC};color:#0B0F14;font-size:66px;font-weight:900;letter-spacing:0;display:flex;align-items:center;justify-content:center">${num}</div></div>` : '';
-  B(`${s.team ? `<div style="${pop(seg(lt, 0, .5))}">${chip(T(s.team), num ? 'M' : 'L')}</div>` : ''}${badge}
+  const badge = numBadge(lt, num);
+  B(`${s.team ? `<div style="${pop(seg(lt, 0, .5))}">${chipM(T(s.team), num ? 'M' : 'L', s.mark || markOf(s, s.team, 0), seg(lt, .8, .4))}</div>` : ''}${badge}
   <div class="mega ${s.gold === false ? '' : 'gold'}" style="margin-top:${s.team && !num ? 44 : 0}px;font-size:${s.size || 168}px;${pop(seg(lt, .25, .6))}">${br(text)}</div>`);
+};
+
+/* matchup: 두 팀 로고(이모지 배지 가능) + 가운데 vs + 큰 문구. 상대전적·맞대결 얘기에. {left:'기아', right:'NC', marks:{'기아':'😰','NC':'😎'}, text:'NC전\n2승 10패'} */
+SCENE.matchup = (lt, s) => {
+  const L = T(s.left), R = T(s.right);
+  B(`<div class="row" style="gap:36px">
+    <div style="${slideX(seg(lt, 0, .5), -160)}">${chipM(L, 'M', markOf(s, s.left, 0), seg(lt, .75, .4))}</div>
+    <div class="title gray" style="font-size:56px;opacity:${seg(lt, .4, .3)}">${esc(s.vsText || 'vs')}</div>
+    <div style="${slideX(seg(lt, 0, .5), 160)}">${chipM(R, 'M', markOf(s, s.right, 1), seg(lt, .95, .4))}</div></div>
+  ${numBadge(lt, s.num)}<div class="mega ${s.gold === false ? '' : 'gold'}" style="margin-top:${s.num ? 0 : 44}px;font-size:${s.size || 150}px;${pop(seg(lt, .45, .6))}">${br(s.text || '')}</div>`);
 };
 
 /* table: 순위표 */
@@ -186,7 +211,7 @@ function cards(lt, L, R, opts = {}) {
   const side = (x, i, p) => {
     const v = x.value != null ? br(x.value) : winLose(cnt(p, x.win), cnt(p, x.lose));
     const two = x.value == null || String(x.value).includes('\n');
-    const head = x.team ? chip(T(x.team), 'M') : `<div class="title" style="font-size:60px;font-weight:900;height:190px;display:flex;align-items:center">${br(x.name || '')}</div>`;   // 팀 없으면(선수 비교 등) 이름
+    const head = x.team ? chipM(T(x.team), 'M', x.mark || '', seg(lt, .9 + i * .3, .4)) : `<div class="title" style="font-size:60px;font-weight:900;height:190px;display:flex;align-items:center">${br(x.name || '')}</div>`;   // 팀 없으면(선수 비교 등) 이름
     return `<div class="card" style="${rise(seg(lt, i * .35, .5), 50)}">${head}
       <div class="v num ${two ? 'two' : ''} ${i === 0 ? 'gold' : ''}" style="${i ? 'color:' + GRAY : ''}">${v}</div>
       ${x.label ? `<div class="l">${br(x.label)}</div>` : ''}</div>`;
@@ -223,9 +248,9 @@ SCENE.verdict = (lt, s) => {
   B(`${s.label ? `<div class="title gray" style="opacity:${seg(lt, 0, .4)}">${br(s.label)}</div>` : ''}
   <div class="mega gold" style="margin-top:20px;font-size:${s.size || 150}px;opacity:${c01(drop * 1.5)};transform:translateY(${(1 - eb(drop)) * -120}px)">${br(s.big || '')}</div>
   ${s.left && s.right ? `<div class="row" style="margin-top:60px;gap:36px">
-    <div style="${slideX(seg(lt, 1.2, .5), -140)}">${chip(T(s.left), 'M')}</div>
+    <div style="${slideX(seg(lt, 1.2, .5), -140)}">${chipM(T(s.left), 'M', markOf(s, s.left, 0), seg(lt, 1.8, .4))}</div>
     <div class="title gray" style="opacity:${seg(lt, 1.6, .4)}">vs</div>
-    <div style="${slideX(seg(lt, 1.2, .5), 140)}">${chip(T(s.right), 'M')}</div></div>` : ''}`);
+    <div style="${slideX(seg(lt, 1.2, .5), 140)}">${chipM(T(s.right), 'M', markOf(s, s.right, 1), seg(lt, 2.0, .4))}</div></div>` : ''}`);
 };
 
 /* question: 시청자 질문 */
@@ -241,7 +266,7 @@ function drawSub(t) {
 }
 /* 장면별 모션이 끝나는 시점(초). 장면 길이의 75% 안에 못 끝나면 그만큼 빠르게 재생해서 항상 끝까지 보여준다 */
 const MOTION = {
-  hook: () => 1.1, big: () => 0.9, table: () => 2.3, versus: () => 1.6, need: () => 1.6,
+  hook: () => 1.1, big: () => 0.9, matchup: () => 1.4, table: () => 2.3, versus: () => 1.6, need: () => 1.6,
   shift: () => 1.4, rival: () => 1.5, verdict: s => (s.left && s.right ? 2.1 : 1.0), question: () => 0.7,
   streaks: s => { const ts = s.teams || []; const last = ts.length ? Math.min(stN(ts[ts.length - 1].streak || (T(ts[ts.length - 1].team) || {}).st || ''), 10) : 0; return .5 + (ts.length - 1) * 1.0 + last * .12 + .45; },
 };
