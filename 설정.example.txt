@@ -29,3 +29,10 @@ YOUTUBE_CLIENT_SECRET_FILE=client_secret.json
 # --- 스케줄 ---
 START_TIME=07:30
 SAFETY_SHUTDOWN=12:00
+
+# --- 음성 검수(qa_voice.py) ---
+# 톤·속도가 다른 줄은 다시 합성(최대 QA_RETRY 번), 자막 타이밍은 faster-whisper 로 정밀 맞춤
+# (PC에 한 번: python -m pip install faster-whisper)
+QA_RETRY=2
+QA_PITCH_TOL=2.5
+QA_WHISPER=small

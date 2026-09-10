@@ -172,6 +172,12 @@ def step_build(ep_path, only_lines=None):
         args = ['tts.py'] + ([f'--only={only_lines}'] if only_lines else [])
         rc, out = py(*args, timeout=1200)
         if rc: log(f'[{k}] 음성 실패: ' + out[-300:], '실패'); return None
+        # 음성 검수: 톤·속도 이탈 줄 다시 합성, 자막 타이밍 정밀 맞춤 (qa_voice.py)
+        log(f'[{k}] 음성 검수 시작', '검수')
+        rc, out = py('qa_voice.py', timeout=1500)
+        tail = [l for l in out.strip().splitlines() if l.strip()][-3:]
+        if rc: log(f'[{k}] 음성 검수 오류(무시하고 진행): ' + out[-300:])
+        else: log(f'[{k}] 음성 검수: ' + ' | '.join(tail))
     ok, ep = valid_episode(ep_path)
     n = len(ep['lines'])
     missing = [i for i in range(n) if not os.path.exists(f'work/voice/{i:02d}.mp3')]

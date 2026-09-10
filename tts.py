@@ -104,12 +104,13 @@ def synth(text, prev='', nxt='', out_path='work/voice/out.mp3'):
 
 os.makedirs('work/voice', exist_ok=True)
 
-if '--test' in sys.argv:
+if __name__ == '__main__' and '--test' in sys.argv:
     ok = synth('야구자판기 음성 테스트예요. 삼성이 일위, 케이티가 영점오 게임 차예요.', out_path='work/voice/test.mp3')
     print('OK → work/voice/test.mp3 재생해 보세요.' if ok else '실패')
     sys.exit(0 if ok else 1)
 
-lines = [l.strip() for l in io.open('work/narration.txt', encoding='utf-8-sig') if l.strip()]
+def load_lines():
+    return [l.strip() for l in io.open('work/narration.txt', encoding='utf-8-sig') if l.strip()]
 PAUSE = float(CFG.get('TTS_PAUSE', '0.12'))   # 대사 안의 " / " 표시 자리에서 쉬는 시간(초). 구간 자체의 앞뒤 무음은 잘라내므로 아주 짧게
 
 def tts_text(segs, is_last_q=False):
@@ -228,20 +229,26 @@ def synth_line(line, prev, nxt, out, pause=None):
         except Exception: pass
     return True
 
-only = None
-for a in sys.argv:
-    if a.startswith('--only='): only = {int(x) for x in a.split('=',1)[1].replace(',', ' ').split()}
-print(f'{len(lines)}줄 합성 시작' + (f' (줄 {sorted(only)} 만)' if only else ''))
-fail = 0
-for i, line in enumerate(lines):
-    if only is not None and i not in only: continue
+def synth_index(lines, i, out=None):
+    """i번째 줄 합성(앞뒤 문맥 포함). qa_voice.py 가 다시 만들 때도 이걸 쓴다"""
     prev = lines[i-1] if i > 0 else ''
     nxt = lines[i+1] if i+1 < len(lines) else ''
-    out = f'work/voice/{i:02d}.mp3'
-    ok = synth_line(line, prev, nxt, out, pause=0 if i == 0 else None)   # 첫 줄(후킹)은 한 호흡
-    print(f'{i:02d} {"OK " if ok else "XX "} {line}')
-    fail += (not ok)
-    time.sleep(0.3)
-if fail:
-    sys.exit(f'{fail}줄 실패')
-print('완료')
+    out = out or f'work/voice/{i:02d}.mp3'
+    return synth_line(lines[i], prev, nxt, out, pause=0 if i == 0 else None)   # 첫 줄(후킹)은 한 호흡
+
+if __name__ == '__main__':
+    lines = load_lines()
+    only = None
+    for a in sys.argv:
+        if a.startswith('--only='): only = {int(x) for x in a.split('=',1)[1].replace(',', ' ').split()}
+    print(f'{len(lines)}줄 합성 시작' + (f' (줄 {sorted(only)} 만)' if only else ''))
+    fail = 0
+    for i, line in enumerate(lines):
+        if only is not None and i not in only: continue
+        ok = synth_index(lines, i)
+        print(f'{i:02d} {"OK " if ok else "XX "} {line}')
+        fail += (not ok)
+        time.sleep(0.3)
+    if fail:
+        sys.exit(f'{fail}줄 실패')
+    print('완료')
