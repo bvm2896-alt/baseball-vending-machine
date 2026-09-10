@@ -96,8 +96,24 @@ def logos_data_uri():
     return out
 
 # ---------- prep ----------
+# 숫자 읽기 규칙: 나레이션은 한글로 적는다(타입캐스트가 숫자를 제멋대로 읽는 것 방지).
+#  고유어(하나·둘·셋…): 점, 경기, 게임 차, 개, 명, 번, 시, 가지, 장  → "열두 점", "스물두 경기", "두 시"
+#  한자어(일·이·삼…): 승, 패, 위, 이닝, 회, 년, 월, 일, 분, 초, 억, 달러, 순위, 라운드, 연승/연패, 점수(삼 대 십구), 승률·타율 → "이 승 십 패", "이십사 이닝"
+NATIVE = r'(한|두|세|네|다섯|여섯|일곱|여덟|아홉|열\S*|스물\S*|서른\S*)'
+SINO = r'(일|이|삼|사|오|육|칠|팔|구|십\S*|백\S*)'
+def narr_check(lines):
+    warns = []
+    for i, t in enumerate(lines):
+        if re.search(r'\d', t): warns.append(f'{i:02d} 숫자는 한글로 적어 주세요: {t}')
+        for m in re.finditer(NATIVE + r' ?(승|패|위|이닝|회|년|월|일|분|초|억|달러|순위|라운드)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (이 승, 십 패, 삼 위)')
+        for m in re.finditer(r'(?<![가-힣])' + SINO + r' ?(점|경기|게임|개|명|가지|장)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (열두 점, 스물두 경기)')
+    return warns
+
 def prep(ep):
     lines = [l['narr'].strip() for l in ep['lines']]
+    for w_ in narr_check(lines): print('숫자 읽기 경고:', w_)
     io.open(W('narration.txt'), 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
     print(f'work/narration.txt {len(lines)}줄')
 
