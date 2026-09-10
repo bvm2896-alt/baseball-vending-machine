@@ -9,7 +9,8 @@
 2) 자막 타이밍: faster-whisper(설치돼 있으면)로 단어 시각을 받아 ' / ' 호흡 구간의 실제 시작 시각을 잡고
    NN.segs.json 을 고쳐 쓴다 → build.py 가 자막을 정확히 그 시점에 바꾼다. (없으면 tts.py 의 무음 기반 추정 그대로)
    설치: python -m pip install faster-whisper   (처음 한 번 모델 내려받음, 이후엔 오프라인)
-설정.txt: QA_RETRY=2  QA_PITCH_TOL=2.5(반음)  QA_RATE_MIN=4.3  QA_RATE_MAX=8.5  QA_WHISPER=small
+3) 앞·끝 깨짐: 첫/끝 0.3초에 기계음·잡음·클릭이 섞이면(고역 잡음, 평탄한 스펙트럼, 음높이 떨림, 클릭) 다시 합성.
+설정.txt: QA_RETRY=2  QA_PITCH_TOL=2.5(반음)  QA_RATE_MIN=4.3  QA_RATE_MAX=8.5  QA_WHISPER=small  QA_EDGE_SEC=0.3
 """
 import os, sys, io, re, json, math, subprocess, shutil
 import numpy as np
@@ -95,7 +96,8 @@ def analyze(path, text):
     f0 = f0_track(x[int(lead * SR):int(tail * SR)])
     v = f0[f0 > 0]
     peak = float(np.abs(x).max()) if len(x) else 0
-    r = {'dur': round(float(dur), 2), 'speech': round(float(speech), 2), 'rate': round(float(syl / speech), 2), 'syl': syl,
+    edge = edge_artifacts(x, lead, tail)
+    r = {'edge': edge,'dur': round(float(dur), 2), 'speech': round(float(speech), 2), 'rate': round(float(syl / speech), 2), 'syl': syl,
          'f0': round(float(np.median(v)), 1) if len(v) else 0, 'f0_iqr': round(float(np.percentile(v, 75) - np.percentile(v, 25)), 1) if len(v) > 4 else 0,
          'voiced': round(len(v) / max(1, len(f0)), 2), 'peak': round(peak, 3), 'gaps': gaps}
     # 끝부분 억양(마지막 0.35초 vs 그 앞 0.35초, 반음)
@@ -104,6 +106,47 @@ def analyze(path, text):
         a, b = a[a > 0], b[b > 0]
         if len(a) > 5 and len(b) > 5: r['end_st'] = round(float(12 * math.log2(np.median(b) / np.median(a))), 1)
     return r
+
+EDGE = float(cfg('QA_EDGE_SEC', '0.3'))   # 앞·끝에서 검사할 길이(초)
+
+def spectral_feats(seg):
+    """프레임별 (고역 비율, 스펙트럼 평탄도) — 기계음·잡음 감지용"""
+    F, h = frames(seg, 0.032, 0.008)
+    if len(F) == 0: return np.zeros(0), np.zeros(0)
+    W = F * np.hanning(F.shape[1])
+    P = np.abs(np.fft.rfft(W, axis=1)) ** 2 + 1e-12
+    freqs = np.fft.rfftfreq(F.shape[1], 1 / SR)
+    hf = P[:, freqs > 4000].sum(axis=1) / P.sum(axis=1)
+    flat = np.exp(np.log(P).mean(axis=1)) / P.mean(axis=1)
+    return hf, flat
+
+def edge_artifacts(x, lead, tail):
+    """앞·끝 EDGE 초 구간이 몸통과 달리 잡음·버즈·클릭이 섞였는지. 문제 있으면 설명 목록"""
+    out = []
+    a, b = int(lead * SR), int(tail * SR)
+    body = x[a:b]
+    if len(body) < SR * 0.8: return out
+    hf_b, fl_b = spectral_feats(body)
+    f0_b = f0_track(body)
+    def stats(seg, f0):
+        hf, fl = spectral_feats(seg)
+        v = f0[f0 > 0]
+        jit = float(np.mean(np.abs(np.diff(v)) / v[:-1])) if len(v) > 4 else 0.0
+        rms = float(np.sqrt((seg ** 2).mean()) + 1e-9)
+        click = float(np.abs(np.diff(seg)).max() / rms) if len(seg) > 2 else 0.0
+        return (float(np.median(hf)) if len(hf) else 0, float(np.median(fl)) if len(fl) else 0, jit, click, len(v) / max(1, len(f0)))
+    hb, fb, jb, _, _ = stats(body, f0_b)
+    n = int(EDGE * SR)
+    for name, seg in (('앞부분', body[:n]), ('끝부분', body[-n:])):
+        if len(seg) < SR * 0.12: continue
+        hf, fl, jit, click, vr = stats(seg, f0_track(seg))
+        why = []
+        if hf > max(0.22, hb * 3.0): why.append(f'고역잡음 {hf:.2f}')
+        if fl > max(0.30, fb * 2.5): why.append(f'평탄스펙트럼 {fl:.2f}')
+        if jit > max(0.12, jb * 3.0): why.append(f'음높이 떨림 {jit:.2f}')
+        if click > 9.0: why.append(f'클릭 {click:.0f}')
+        if why: out.append(f'{name} 깨짐({", ".join(why)})')
+    return out
 
 def semitones(a, b): return 12 * math.log2(a / b) if a > 0 and b > 0 else 0.0
 
@@ -116,6 +159,7 @@ def flags(r, target_f0, text):
     if r['rate'] > RATE_MAX: bad.append(f'너무 빠름 {r["rate"]}음절/초')
     if target_f0 and r['f0'] and abs(semitones(r['f0'], target_f0)) > PITCH_TOL: bad.append(f'톤 이탈 {semitones(r["f0"], target_f0):+.1f}반음')
     if r['gaps']: bad.append(f'긴 무음 {r["gaps"]}')
+    bad += r.get('edge', [])
     if text.strip().endswith('?') and r.get('end_st', 0) < -3: bad.append('질문인데 끝이 내려감')
     return bad
 
@@ -123,7 +167,7 @@ def score(r, target_f0, target_rate):
     """작을수록 좋음: 톤 차이(반음) + 속도 차이 + 결함"""
     s = abs(semitones(r['f0'], target_f0)) if (r.get('f0') and target_f0) else 3
     s += abs(r.get('rate', 6) - target_rate) * 1.5
-    s += 4 * (r.get('peak', 0) > 0.985) + 4 * (r.get('voiced', 1) < 0.25) + 2 * len(r.get('gaps', []))
+    s += 4 * (r.get('peak', 0) > 0.985) + 4 * (r.get('voiced', 1) < 0.25) + 2 * len(r.get('gaps', [])) + 5 * len(r.get('edge', []))
     return round(s, 2)
 
 # ---------- 자막 타이밍 정밀 맞춤 (faster-whisper, 선택) ----------
