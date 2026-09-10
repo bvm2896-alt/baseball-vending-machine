@@ -27,7 +27,12 @@ def _cfg_raw(k, default=''):
     except Exception: pass
     return default
 # 설정.txt 에 OUTPUT_DIR=G:\내 드라이브\야구자판기 처럼 적으면 결과물을 그 폴더(구글 드라이브 동기화 폴더 등)에 저장
-OUT_ROOT = _cfg_raw('OUTPUT_DIR', OUT_ROOT)
+_out_cfg = _cfg_raw('OUTPUT_DIR', '')
+if _out_cfg:
+    # 설정된 드라이브/폴더가 이 PC 에 없으면(예: 구글 드라이브 앱이 없는 PC) 상위 폴더 영상\ 로 대신 저장
+    _drive = os.path.splitdrive(_out_cfg)[0] + os.sep if os.path.splitdrive(_out_cfg)[0] else os.path.dirname(_out_cfg)
+    if os.path.isdir(_drive): OUT_ROOT = _out_cfg
+    else: print(f'경고: OUTPUT_DIR {_out_cfg} 를 찾을 수 없어 상위 폴더 영상\\ 에 저장합니다')
 os.makedirs(WORK, exist_ok=True)
 W = lambda *a: os.path.join(WORK, *a)
 

@@ -5,6 +5,6 @@ set SYS=
 for /d %%D in (*) do if exist "%%D\run_daily.py" set SYS=%%D
 if "%SYS%"=="" (echo run_daily.py not found & pause & exit /b)
 cd /d "%SYS%"
-if exist ".git" git pull -q --ff-only
+if exist ".git" (git add -A & git commit -q -m "pc update" & git pull -q --rebase & git push -q)
 python -X utf8 run_daily.py --now --no-shutdown %*
 pause
