@@ -4,17 +4,17 @@
    세로: 상단 헤더 236~330 / 본문 400~1180 (세로 중앙 정렬) / 자막 1244~ / 하단 360px 은 유튜브 UI 영역이라 비움
    타이포 스케일: mega 168 / big 120 / num 104 / title 48 / label 34
    로고 칩: L 220 / M 150 / S 72 (흰 바탕, 둥근 사각형)
-   색: 배경 #111620, 카드 #1A2030, 선 #2B3448, 글 #F2F5F8, 보조 #8A94A6, 강조 #FFC24B, 승 #3ECF8E, 패 #FF6B6B */
+   색: 배경 #1B2230, 카드 #262F40, 선 #3A4560, 글 #F2F5F8, 보조 #A3ADBE, 강조 #FFC24B, 승 #3ECF8E, 패 #FF6B6B */
 @font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_bold.ttf') format('truetype');font-weight:700 900}
 @font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_medium.ttf') format('truetype');font-weight:400 600}
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:1080px;height:1920px;overflow:hidden;background:#111620}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#1B2230}
 body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-weight:700;-webkit-font-smoothing:antialiased;color:#F2F5F8}
 #stage{position:relative;width:1080px;height:1920px;
-  background:radial-gradient(88% 52% at 50% 30%, rgba(60,96,132,.22) 0%, rgba(17,22,32,0) 70%),#111620}
+  background:radial-gradient(88% 52% at 50% 30%, rgba(70,110,150,.32) 0%, rgba(27,34,48,0) 70%),#1B2230}
 .num{font-variant-numeric:tabular-nums;letter-spacing:-2px}
 /* 헤더 */
-#hdr{position:absolute;left:90px;right:90px;top:236px;height:94px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #2B3448}
+#hdr{position:absolute;left:90px;right:90px;top:236px;height:94px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #3A4560}
 #brand{display:flex;align-items:center;gap:16px;font-size:50px;font-weight:900;letter-spacing:-1px}
 #brand .m{width:12px;height:44px;border-radius:6px;background:#FFC24B}
 #brand b{color:#FFC24B;font-weight:900}
@@ -26,41 +26,41 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 /* 자막 */
 #sub{position:absolute;left:70px;right:70px;top:1270px;text-align:center}
-#sub span{display:inline;background:rgba(17,22,32,.94);color:#F2F5F8;font-size:56px;font-weight:700;
+#sub span{display:inline;background:rgba(27,34,48,.94);color:#F2F5F8;font-size:56px;font-weight:700;
   letter-spacing:-1px;line-height:1.7;padding:10px 20px;border-radius:16px;word-break:keep-all;
   -webkit-box-decoration-break:clone;box-decoration-break:clone}
 /* 타이포 */
 .mega{font-size:186px;font-weight:900;letter-spacing:-6px;line-height:1.04}
 .big{font-size:136px;font-weight:900;letter-spacing:-4px;line-height:1.05}
 .title{font-size:48px;font-weight:700;letter-spacing:-1.5px}
-.label{font-size:34px;font-weight:600;color:#8A94A6;letter-spacing:-1px}
-.gold{color:#FFC24B}.green{color:#3ECF8E}.red{color:#FF6B6B}.gray{color:#8A94A6}
+.label{font-size:34px;font-weight:600;color:#A3ADBE;letter-spacing:-1px}
+.gold{color:#FFC24B}.green{color:#3ECF8E}.red{color:#FF6B6B}.gray{color:#A3ADBE}
 /* 레이아웃 */
 .row{display:flex;align-items:center;justify-content:center}
 .col{display:flex;flex-direction:column;align-items:center;justify-content:center}
 .chip{background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .chip img{width:84%;height:84%;object-fit:contain;display:block}
 /* 스탯 카드: 두 장이 항상 같은 폭 */
-.card{width:430px;height:520px;background:#1A2030;border-radius:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.card{width:430px;height:520px;background:#262F40;border-radius:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
 .card .v{font-size:118px;font-weight:900;letter-spacing:-4px;line-height:1.05;white-space:nowrap}
 .card .v.two{font-size:96px}
-.card .l{font-size:36px;font-weight:600;color:#8A94A6;letter-spacing:-1px}
+.card .l{font-size:36px;font-weight:600;color:#A3ADBE;letter-spacing:-1px}
 /* 연승/연패 카드: 항상 전체 폭 */
-.sk{width:900px;height:170px;background:#1A2030;border-radius:32px;display:flex;align-items:center;padding:0 40px;gap:26px}
+.sk{width:900px;height:170px;background:#262F40;border-radius:32px;display:flex;align-items:center;padding:0 40px;gap:26px}
 .sk .nm{font-size:50px;font-weight:800;letter-spacing:-1.5px;width:150px;text-align:left}
 .sk .dots{display:flex;gap:11px;flex:1;justify-content:center}
-.sk .dot{width:34px;height:34px;border-radius:17px;background:#2B3448}
+.sk .dot{width:34px;height:34px;border-radius:17px;background:#3A4560}
 .sk .st{font-size:50px;font-weight:900;letter-spacing:-1.5px;width:170px;text-align:right}
 /* 순위표 */
 #table{width:900px}
-#table .hd{display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:2px solid #F2F5F8;font-size:24px;font-weight:700;color:#8A94A6;letter-spacing:1px}
-.tr{display:flex;align-items:center;gap:16px;height:76px;border-bottom:1px solid #2B3448}
+#table .hd{display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:2px solid #F2F5F8;font-size:24px;font-weight:700;color:#A3ADBE;letter-spacing:1px}
+.tr{display:flex;align-items:center;gap:16px;height:76px;border-bottom:1px solid #3A4560}
 .tr .rk{width:52px;font-size:34px;font-weight:800;text-align:center}
 .tr .tm{width:190px;display:flex;align-items:center;gap:14px}
 .tr .nm{font-size:38px;font-weight:800;letter-spacing:-1.5px;white-space:nowrap}
 .tr .bw{flex:1;height:30px;position:relative}
 .tr .bar{position:absolute;left:0;top:0;height:30px;border-radius:0 15px 15px 0}
-.tr .gp{width:100px;font-size:32px;font-weight:600;text-align:right;color:#8A94A6}
+.tr .gp{width:100px;font-size:32px;font-weight:600;text-align:right;color:#A3ADBE}
 .tr .wr{width:120px;font-size:38px;font-weight:800;text-align:right;letter-spacing:-1.5px}
 </style></head><body>
 <div id="stage">
@@ -79,7 +79,7 @@ const D = (EP.standings || []).map(t => ({
   rk: t.rank, nm: t.team, code: t.code, wr: t.winRate, gb: Number(t.gameBehind).toFixed(1),
   g: t.games, st: t.streak, win: t.win, lose: t.lose, draw: t.draw }));
 const LOGO = EP.logos || {};
-const ACC = '#FFC24B', GREEN = '#3ECF8E', RED = '#FF6B6B', GRAY = '#8A94A6';
+const ACC = '#FFC24B', GREEN = '#3ECF8E', RED = '#FF6B6B', GRAY = '#A3ADBE';
 const TEAMCOL = { SS: '#074CA1', KT: '#4A4A4A', LG: '#C30452', HT: '#EA0029', OB: '#2B2A5E', NC: '#315288', LT: '#1E3A6B', SK: '#CE0E2D', HH: '#FC4E00', WO: '#820024' };
 document.getElementById('railDate').textContent = EP.dateLabel || '';
 if (EP.railTitle) document.getElementById('railTitle').textContent = EP.railTitle;
@@ -106,7 +106,7 @@ function chipM(t, size = 'M', mark = '', p = 1, extra = '') {
   if (!mark) return chip(t, size, extra);
   const isText = !/\p{Extended_Pictographic}/u.test(mark);   // ";;" 같은 글자 표시
   const fs = (size === 'L' ? 104 : 80) * (isText ? 1.1 : 1);
-  const style = isText ? `font-family:'KBO';font-weight:900;color:#F2F5F8;text-shadow:0 4px 18px rgba(0,0,0,.8),0 0 6px #111620` : EMOJI + ';filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))';
+  const style = isText ? `font-family:'KBO';font-weight:900;color:#F2F5F8;text-shadow:0 4px 18px rgba(0,0,0,.8),0 0 6px #1B2230` : EMOJI + ';filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))';
   return `<div style="position:relative;display:inline-block;flex:0 0 auto">${chip(t, size, extra)}
     <div style="position:absolute;right:-${fs * .45}px;top:-${fs * .35}px;font-size:${fs}px;line-height:1;${style};opacity:${c01(p * 1.5)};transform:scale(${0.4 + 0.6 * eb(p)}) rotate(${(1 - eb(p)) * -25 + 8}deg)">${esc(mark)}</div></div>`;
 }
@@ -177,8 +177,8 @@ SCENE.table = (lt, s) => {
     const px = BM * ((t.wr - LO) / (HI - LO)) * eo(loc);
     const hi = hiSet.has(t.nm);
     const glow = hi ? `box-shadow:0 0 ${26 * seg(lt, 1.6, .6)}px rgba(255,194,75,${.45 * seg(lt, 1.6, .6)})` : '';
-    h += `<div class="tr" style="opacity:${hi ? 1 : .34 * c01(loc * 2)};transform:translateX(${(1 - eo(c01(loc * 1.5))) * -30}px);${hi ? 'background:rgba(255,194,75,.07);border-radius:14px;margin:0 -14px;padding:0 14px;border-bottom-color:transparent' : ''}">
-      <div class="rk num" style="color:${hi ? ACC : '#5E6874'}">${t.rk}</div>
+    h += `<div class="tr" style="opacity:${hi ? 1 : .5 * c01(loc * 2)};transform:translateX(${(1 - eo(c01(loc * 1.5))) * -30}px);${hi ? 'background:rgba(255,194,75,.07);border-radius:14px;margin:0 -14px;padding:0 14px;border-bottom-color:transparent' : ''}">
+      <div class="rk num" style="color:${hi ? ACC : '#7A8594'}">${t.rk}</div>
       <div class="tm">${chip(t, 'S')}<div class="nm" style="color:${hi ? ACC : '#F2F5F8'}">${esc(t.nm)}</div></div>
       <div class="bw"><div class="bar" style="width:${px.toFixed(1)}px;background:${hi ? ACC : 'rgba(242,245,248,.36)'};${glow}"></div></div>
       <div class="gp num" style="opacity:${c01((loc - .4) * 3)};color:${hi ? '#F2F5F8' : GRAY}">${t.gb}</div>
@@ -281,7 +281,7 @@ function render(t) {
   document.getElementById('body').style.opacity = String(c01((t - start) / 0.28));
   const gx = 50 + 3 * Math.sin(t * .5), gy = 30 + 2 * Math.cos(t * .37);
   const fc = TEAMCOL[(T(EP.focusTeam || '') || {}).code] || '#3C6084';
-  document.getElementById('stage').style.background = `radial-gradient(80% 46% at ${gx}% ${gy}%, ${fc}55 0%, rgba(17,22,32,0) 70%),#111620`;
+  document.getElementById('stage').style.background = `radial-gradient(80% 46% at ${gx}% ${gy}%, ${fc}70 0%, rgba(27,34,48,0) 70%),#1B2230`;
   drawSub(t);
 }
 window.render = render; render(0);

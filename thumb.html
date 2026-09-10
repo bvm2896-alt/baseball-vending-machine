@@ -1,11 +1,11 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
 @font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_bold.ttf') format('truetype');font-weight:700 900}
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:1080px;height:1920px;overflow:hidden;background:#0b0e14}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#161c28}
 body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic',sans-serif;font-weight:900;color:#fff;-webkit-font-smoothing:antialiased}
-#st{position:relative;width:1080px;height:1920px;overflow:hidden;background:#0b0e14}
+#st{position:relative;width:1080px;height:1920px;overflow:hidden;background:#161c28}
 .bg{position:absolute;inset:0}
-.date{position:absolute;left:50%;top:96px;transform:translateX(-50%) rotate(-2deg);background:#FFC24B;color:#0b0e14;font-size:132px;font-weight:900;padding:26px 84px;border-radius:34px;letter-spacing:-4px;border:10px solid #111620;box-shadow:0 0 0 8px #FFC24B,0 28px 80px rgba(0,0,0,.75);white-space:nowrap}
+.date{position:absolute;left:50%;top:96px;transform:translateX(-50%) rotate(-2deg);background:#FFC24B;color:#161c28;font-size:132px;font-weight:900;padding:26px 84px;border-radius:34px;letter-spacing:-4px;border:10px solid #111620;box-shadow:0 0 0 8px #FFC24B,0 28px 80px rgba(0,0,0,.75);white-space:nowrap}
 .chip{background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 30px 80px rgba(0,0,0,.6)}
 .chip img{width:82%;height:82%;object-fit:contain}
 .top{position:absolute;left:0;right:0;text-align:center;white-space:nowrap;font-size:120px;letter-spacing:-6px;line-height:1;text-shadow:0 10px 30px rgba(0,0,0,.8)}
@@ -44,13 +44,13 @@ if(layout==='clash'){
       <div class="date">${dateText}</div>
       <div class="chip" style="position:absolute;left:90px;top:420px;width:400px;height:400px;border-radius:80px;transform:rotate(-6deg)"><img src="${logo(teams[0])}"></div>
       <div class="chip" style="position:absolute;right:90px;top:420px;width:400px;height:400px;border-radius:80px;transform:rotate(6deg)"><img src="${logo(teams[1])}"></div>
-      <div style="position:absolute;left:50%;top:620px;transform:translate(-50%,-50%);width:220px;height:220px;border-radius:50%;background:#0b0e14;border:10px solid #fff;display:flex;align-items:center;justify-content:center;font-size:96px;color:#fff;box-shadow:0 20px 50px rgba(0,0,0,.6)">VS</div>
+      <div style="position:absolute;left:50%;top:620px;transform:translate(-50%,-50%);width:220px;height:220px;border-radius:50%;background:#161c28;border:10px solid #fff;display:flex;align-items:center;justify-content:center;font-size:96px;color:#fff;box-shadow:0 20px 50px rgba(0,0,0,.6)">VS</div>
       <div class="top" style="top:900px">${nl(TH.top)}</div>
       <div class="bigw white" style="top:1050px;font-size:${bigFs}px">${nl(TH.big)}</div>
       <div class="brand">야구<b>자판기</b></div>`);
 } else if(layout==='stat'){
   // 팀 색 배경 + 아주 큰 숫자/단어
-  el(`<div class="bg" style="background:linear-gradient(180deg,${c1} 0%,#0b0e14 78%)"></div>
+  el(`<div class="bg" style="background:linear-gradient(180deg,${c1} 0%,#161c28 78%)"></div>
       <div class="bg" style="background:radial-gradient(70% 45% at 50% 62%,${hex2('#FF3B30',.35)},rgba(0,0,0,0) 70%)"></div>
       <div class="date">${dateText}</div>
       <div class="chip" style="position:absolute;left:50%;top:330px;transform:translateX(-50%);width:380px;height:380px;border-radius:76px"><img src="${logo(teams[0])}"></div>
@@ -58,7 +58,7 @@ if(layout==='clash'){
       <div class="bigw" style="top:930px;font-size:${short?420:bigFs}px;letter-spacing:${short?-20:-14}px">${nl(TH.big)}</div>
       <div class="brand">야구<b>자판기</b></div>`);
 } else {
-  el(`<div class="bg" style="background:radial-gradient(70% 45% at 50% 38%, rgba(224,69,58,.55) 0%, rgba(224,69,58,0) 70%),radial-gradient(90% 60% at 50% 100%, rgba(255,194,75,.25) 0%, rgba(255,194,75,0) 60%), #0b0e14"></div>
+  el(`<div class="bg" style="background:radial-gradient(70% 45% at 50% 38%, rgba(224,69,58,.55) 0%, rgba(224,69,58,0) 70%),radial-gradient(90% 60% at 50% 100%, rgba(255,194,75,.25) 0%, rgba(255,194,75,0) 60%), #161c28"></div>
       <div class="bg" style="background-image:linear-gradient(rgba(255,255,255,.05) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.05) 2px,transparent 2px);background-size:120px 120px;transform:perspective(900px) rotateX(55deg) translateY(600px) scale(2.2);opacity:.6"></div>
       <div class="date">${dateText}</div>
       <div class="chip" style="position:absolute;left:50%;top:330px;transform:translateX(-50%);width:420px;height:420px;border-radius:80px"><img src="${logo(teams[0])}"></div>

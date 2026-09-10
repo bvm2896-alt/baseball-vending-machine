@@ -21,9 +21,20 @@ BASE = os.path.abspath(os.path.join(HERE, '..'))
 SIG = lambda n: os.path.join(BASE, n)
 STATUS_TXT = os.path.join(BASE, '오늘.txt')
 ARGS = sys.argv[1:]
-TODAY = datetime.date.today().isoformat()
+# 콘티 날짜 = '올리는 날'. 저녁(설정 NIGHT_HOUR, 기본 18시) 이후에 돌리면 그날 경기 결과로 '다음 날' 콘티를 만드는 것이므로 날짜를 하루 넘긴다.
+def _cfg(k, d=''):
+    try:
+        for line in io.open('설정.txt', encoding='utf-8-sig'):
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line and line.split('=', 1)[0].strip() == k: return line.split('=', 1)[1].strip()
+    except Exception: pass
+    return d
+_now = datetime.datetime.now()
+NIGHT = _now.hour >= int(_cfg('NIGHT_HOUR', '18'))
+TODAY = (_now.date() + datetime.timedelta(days=1 if NIGHT else 0)).isoformat()
 EPS = [ARGS[i + 1] for i, a in enumerate(ARGS) if a == '--episode' and i + 1 < len(ARGS)]
 if not EPS: EPS = [f'episodes/{TODAY}_1.json', f'episodes/{TODAY}_2.json']
+if NIGHT: print(f'저녁 실행 → 내일({TODAY}) 콘티로 만듭니다 (오늘 경기 결과 기준)')
 STATE_PATH = f'status/state_{TODAY}.json'   # 저장소에 올려서 다른 PC 에서도 오늘 상태를 이어받는다
 for d in ('data', 'episodes', 'work', 'work/voice', 'status', 'signals'): os.makedirs(d, exist_ok=True)
 import build   # 결과물 경로 계산(영상/날짜/번호_팀.mp4)
