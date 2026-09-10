@@ -73,6 +73,13 @@ def load_episode(path):
         ep['dateLabel'] = d.replace('-', '.')
     return ep
 
+def font_dir_url():
+    """상위 폴더 폰트\\ 의 file:// 주소 (템플릿의 __FONT_DIR__ 자리에 넣는다)"""
+    import pathlib
+    for d in (os.path.join(HERE, '..', '폰트'), os.path.join(HERE, 'fonts'), os.path.join(HERE, '폰트')):
+        if os.path.isdir(d): return pathlib.Path(os.path.abspath(d)).as_uri()
+    return ''
+
 def logos_data_uri():
     out = {}
     for code, name in LOGO_FILES.items():
@@ -214,7 +221,7 @@ def render(ep, ep_path):
     run(['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', W('voice', 'list.txt'), W('narration.wav')], check=True)
     # 4) 템플릿에 데이터 주입
     EP = dict(ep); EP['subs'] = subs; EP['bounds'] = bounds; EP['logos'] = logos_data_uri(); EP['total'] = round(total, 2)
-    html = io.open('template.html', encoding='utf-8').read()
+    html = io.open('template.html', encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
     html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)
     io.open(W('render.html'), 'w', encoding='utf-8').write(html)
     json.dump({'total': round(total, 2), 'starts': st, 'durs': clips, 'gaps': gaps, 'bounds': bounds, 'subs': subs},
@@ -283,7 +290,7 @@ def pick_bgm(ep):
 def make_thumb(EP, out):
     """thumb.html 에 데이터 주입 → out (jpg, 2MB 이하)"""
     if not EP.get('thumb'): return None
-    html = io.open('thumb.html', encoding='utf-8').read()
+    html = io.open('thumb.html', encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
     html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)
     io.open(W('render_thumb.html'), 'w', encoding='utf-8').write(html)
     os.makedirs(os.path.dirname(out), exist_ok=True)

@@ -5,31 +5,33 @@
    타이포 스케일: mega 168 / big 120 / num 104 / title 48 / label 34
    로고 칩: L 220 / M 150 / S 72 (흰 바탕, 둥근 사각형)
    색: 배경 #111620, 카드 #1A2030, 선 #2B3448, 글 #F2F5F8, 보조 #8A94A6, 강조 #FFC24B, 승 #3ECF8E, 패 #FF6B6B */
+@font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_bold.ttf') format('truetype');font-weight:700 900}
+@font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_medium.ttf') format('truetype');font-weight:400 600}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:1080px;height:1920px;overflow:hidden;background:#111620}
-body{font-family:'Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-weight:700;-webkit-font-smoothing:antialiased;color:#F2F5F8}
+body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-weight:700;-webkit-font-smoothing:antialiased;color:#F2F5F8}
 #stage{position:relative;width:1080px;height:1920px;
   background:radial-gradient(88% 52% at 50% 30%, rgba(60,96,132,.22) 0%, rgba(17,22,32,0) 70%),#111620}
 .num{font-variant-numeric:tabular-nums;letter-spacing:-2px}
 /* 헤더 */
 #hdr{position:absolute;left:90px;right:90px;top:236px;height:94px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #2B3448}
-#brand{display:flex;align-items:center;gap:16px;font-size:46px;font-weight:900;letter-spacing:-1px}
+#brand{display:flex;align-items:center;gap:16px;font-size:50px;font-weight:900;letter-spacing:-1px}
 #brand .m{width:12px;height:44px;border-radius:6px;background:#FFC24B}
 #brand b{color:#FFC24B;font-weight:900}
 #meta{text-align:right;line-height:1.15}
 #meta .t{font-size:44px;font-weight:800;letter-spacing:2px}
 #meta .d{font-size:38px;font-weight:600;color:#B4BCC8;letter-spacing:1px}
 /* 본문 */
-#body{position:absolute;left:90px;width:900px;top:400px;height:780px;will-change:opacity,transform;
+#body{position:absolute;left:90px;width:900px;top:400px;height:820px;will-change:opacity,transform;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 /* 자막 */
-#sub{position:absolute;left:90px;right:90px;top:1244px;text-align:center}
+#sub{position:absolute;left:70px;right:70px;top:1270px;text-align:center}
 #sub span{display:inline;background:rgba(17,22,32,.94);color:#F2F5F8;font-size:56px;font-weight:700;
-  letter-spacing:-0.5px;line-height:1.7;padding:10px 20px;border-radius:16px;word-break:keep-all;
+  letter-spacing:-1px;line-height:1.7;padding:10px 20px;border-radius:16px;word-break:keep-all;
   -webkit-box-decoration-break:clone;box-decoration-break:clone}
 /* 타이포 */
-.mega{font-size:168px;font-weight:900;letter-spacing:-7px;line-height:1.02}
-.big{font-size:120px;font-weight:900;letter-spacing:-5px;line-height:1.05}
+.mega{font-size:186px;font-weight:900;letter-spacing:-6px;line-height:1.04}
+.big{font-size:136px;font-weight:900;letter-spacing:-4px;line-height:1.05}
 .title{font-size:48px;font-weight:700;letter-spacing:-1.5px}
 .label{font-size:34px;font-weight:600;color:#8A94A6;letter-spacing:-1px}
 .gold{color:#FFC24B}.green{color:#3ECF8E}.red{color:#FF6B6B}.gray{color:#8A94A6}
@@ -39,27 +41,27 @@ body{font-family:'Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',sans-s
 .chip{background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .chip img{width:84%;height:84%;object-fit:contain;display:block}
 /* 스탯 카드: 두 장이 항상 같은 폭 */
-.card{width:430px;height:470px;background:#1A2030;border-radius:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
-.card .v{font-size:104px;font-weight:900;letter-spacing:-4px;line-height:1.05;white-space:nowrap}
-.card .v.two{font-size:88px}
-.card .l{font-size:34px;font-weight:600;color:#8A94A6;letter-spacing:-1px}
+.card{width:430px;height:520px;background:#1A2030;border-radius:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.card .v{font-size:118px;font-weight:900;letter-spacing:-4px;line-height:1.05;white-space:nowrap}
+.card .v.two{font-size:96px}
+.card .l{font-size:36px;font-weight:600;color:#8A94A6;letter-spacing:-1px}
 /* 연승/연패 카드: 항상 전체 폭 */
-.sk{width:900px;height:150px;background:#1A2030;border-radius:32px;display:flex;align-items:center;padding:0 40px;gap:26px}
-.sk .nm{font-size:46px;font-weight:800;letter-spacing:-1.5px;width:150px;text-align:left}
+.sk{width:900px;height:170px;background:#1A2030;border-radius:32px;display:flex;align-items:center;padding:0 40px;gap:26px}
+.sk .nm{font-size:50px;font-weight:800;letter-spacing:-1.5px;width:150px;text-align:left}
 .sk .dots{display:flex;gap:11px;flex:1;justify-content:center}
-.sk .dot{width:30px;height:30px;border-radius:15px;background:#2B3448}
-.sk .st{font-size:46px;font-weight:900;letter-spacing:-1.5px;width:170px;text-align:right}
+.sk .dot{width:34px;height:34px;border-radius:17px;background:#2B3448}
+.sk .st{font-size:50px;font-weight:900;letter-spacing:-1.5px;width:170px;text-align:right}
 /* 순위표 */
 #table{width:900px}
 #table .hd{display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:2px solid #F2F5F8;font-size:24px;font-weight:700;color:#8A94A6;letter-spacing:1px}
-.tr{display:flex;align-items:center;gap:16px;height:74px;border-bottom:1px solid #2B3448}
-.tr .rk{width:52px;font-size:34px;font-weight:800;text-align:center}
+.tr{display:flex;align-items:center;gap:16px;height:82px;border-bottom:1px solid #2B3448}
+.tr .rk{width:52px;font-size:36px;font-weight:800;text-align:center}
 .tr .tm{width:190px;display:flex;align-items:center;gap:14px}
-.tr .nm{font-size:36px;font-weight:800;letter-spacing:-1.5px;white-space:nowrap}
+.tr .nm{font-size:40px;font-weight:800;letter-spacing:-1.5px;white-space:nowrap}
 .tr .bw{flex:1;height:30px;position:relative}
 .tr .bar{position:absolute;left:0;top:0;height:30px;border-radius:0 15px 15px 0}
 .tr .gp{width:100px;font-size:32px;font-weight:600;text-align:right;color:#8A94A6}
-.tr .wr{width:120px;font-size:38px;font-weight:800;text-align:right;letter-spacing:-1.5px}
+.tr .wr{width:120px;font-size:40px;font-weight:800;text-align:right;letter-spacing:-1.5px}
 </style></head><body>
 <div id="stage">
   <div id="hdr">
@@ -78,6 +80,7 @@ const D = (EP.standings || []).map(t => ({
   g: t.games, st: t.streak, win: t.win, lose: t.lose, draw: t.draw }));
 const LOGO = EP.logos || {};
 const ACC = '#FFC24B', GREEN = '#3ECF8E', RED = '#FF6B6B', GRAY = '#8A94A6';
+const TEAMCOL = { SS: '#074CA1', KT: '#4A4A4A', LG: '#C30452', HT: '#EA0029', OB: '#2B2A5E', NC: '#315288', LT: '#1E3A6B', SK: '#CE0E2D', HH: '#FC4E00', WO: '#820024' };
 document.getElementById('railDate').textContent = EP.dateLabel || '';
 if (EP.railTitle) document.getElementById('railTitle').textContent = EP.railTitle;
 const WRS = D.map(t => t.wr);
@@ -92,7 +95,7 @@ const ALIAS = { '기아': 'HT', 'KIA': 'HT', '엘지': 'LG', '케이티': 'KT', 
 const T = n => D.find(t => t.nm === n || t.code === n || t.code === ALIAS[n]) || { nm: n, code: ALIAS[n] || n };
 const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const br = s => esc(s).split('\n').join('<br>');
-const SZ = { L: [220, 48], M: [150, 34], S: [72, 16] };
+const SZ = { L: [300, 64], M: [190, 42], S: [84, 18] };
 function chip(t, size = 'M', extra = '') {
   const [s, r] = SZ[size];
   return `<div class="chip" style="width:${s}px;height:${s}px;border-radius:${r}px;${extra}"><img src="${LOGO[t.code] || ''}"></div>`;
@@ -236,7 +239,8 @@ function render(t) {
   (SCENE[s.type] || SCENE.big)(lt, s);
   document.getElementById('body').style.opacity = String(c01((t - start) / 0.28));
   const gx = 50 + 3 * Math.sin(t * .5), gy = 30 + 2 * Math.cos(t * .37);
-  document.getElementById('stage').style.background = `radial-gradient(88% 52% at ${gx}% ${gy}%, rgba(60,96,132,.22) 0%, rgba(17,22,32,0) 70%),#111620`;
+  const fc = TEAMCOL[(T(EP.focusTeam || '') || {}).code] || '#3C6084';
+  document.getElementById('stage').style.background = `radial-gradient(80% 46% at ${gx}% ${gy}%, ${fc}55 0%, rgba(17,22,32,0) 70%),#111620`;
   drawSub(t);
 }
 window.render = render; render(0);
