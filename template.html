@@ -100,14 +100,15 @@ function chip(t, size = 'M', extra = '') {
   const [s, r] = SZ[size];
   return `<div class="chip" style="width:${s}px;height:${s}px;border-radius:${r}px;${extra}"><img src="${LOGO[t.code] || ''}"></div>`;
 }
-/* 로고에 붙는 이모지 배지(😰 🔥 …): marks 로 지정. p = 등장 진행도(0~1) */
-const EMOJI = "font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif";
+/* 로고 옆에 붙는 표시(💧 🔥 ;; …): 동그라미 없이 그냥 로고 오른쪽 위에 겹쳐 붙는다. 얼굴 이모지는 쓰지 않는다. p = 등장 진행도(0~1) */
+const EMOJI = "font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji','KBO',sans-serif";
 function chipM(t, size = 'M', mark = '', p = 1, extra = '') {
   if (!mark) return chip(t, size, extra);
-  const w = size === 'L' ? 130 : 110, fs = size === 'L' ? 80 : 68;
+  const isText = !/\p{Extended_Pictographic}/u.test(mark);   // ";;" 같은 글자 표시
+  const fs = (size === 'L' ? 104 : 80) * (isText ? 1.1 : 1);
+  const style = isText ? `font-family:'KBO';font-weight:900;color:#F2F5F8;text-shadow:0 4px 18px rgba(0,0,0,.8),0 0 6px #111620` : EMOJI + ';filter:drop-shadow(0 6px 14px rgba(0,0,0,.6))';
   return `<div style="position:relative;display:inline-block;flex:0 0 auto">${chip(t, size, extra)}
-    <div style="position:absolute;right:-${w * .22}px;bottom:-${w * .18}px;width:${w}px;height:${w}px;border-radius:50%;background:#111620;border:5px solid ${ACC};
-      display:flex;align-items:center;justify-content:center;font-size:${fs}px;line-height:1;${EMOJI};opacity:${c01(p * 1.5)};transform:scale(${0.4 + 0.6 * eb(p)}) rotate(${(1 - eb(p)) * -25}deg)">${esc(mark)}</div></div>`;
+    <div style="position:absolute;right:-${fs * .45}px;top:-${fs * .35}px;font-size:${fs}px;line-height:1;${style};opacity:${c01(p * 1.5)};transform:scale(${0.4 + 0.6 * eb(p)}) rotate(${(1 - eb(p)) * -25 + 8}deg)">${esc(mark)}</div></div>`;
 }
 const markOf = (s, n, i) => (s.marks && (s.marks[n] || s.marks[i] || s.marks[String(i)])) || '';
 function B(h) {

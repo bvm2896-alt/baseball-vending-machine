@@ -327,11 +327,7 @@
     "기아"
    ],
    "text": "3위\n진흙탕",
-   "size": 170,
-   "marks": {
-    "LG": "😵",
-    "기아": "🤕"
-   }
+   "size": 170
   },
   {
    "type": "table",
@@ -346,10 +342,6 @@
    "startLine": 2,
    "left": "LG",
    "right": "한화",
-   "marks": {
-    "LG": "😱",
-    "한화": "🔥"
-   },
    "text": "3 : 19",
    "size": 170
   },
@@ -364,20 +356,18 @@
    "startLine": 4,
    "left": "기아",
    "right": "NC",
-   "marks": {
-    "기아": "😰",
-    "NC": "😎"
-   },
    "text": "NC전\n2승 10패",
-   "size": 140
+   "size": 140,
+   "marks": {
+    "기아": "💧"
+   }
   },
   {
    "type": "big",
    "startLine": 5,
    "team": "기아",
    "text": "김도영",
-   "size": 190,
-   "mark": "🚑"
+   "size": 190
   },
   {
    "type": "big",
@@ -390,8 +380,7 @@
    "startLine": 7,
    "team": "기아",
    "text": "어젯밤 수술\n금요일 퇴원",
-   "size": 120,
-   "mark": "🏥"
+   "size": 120
   },
   {
    "type": "verdict",
@@ -399,11 +388,7 @@
    "label": "제 예측",
    "big": "그래도 기아",
    "left": "LG",
-   "right": "기아",
-   "marks": {
-    "LG": "😬",
-    "기아": "💪"
-   }
+   "right": "기아"
   },
   {
    "type": "big",
@@ -418,8 +403,7 @@
    "team": "LG",
    "text": "마운드\n붕괴",
    "size": 140,
-   "num": 2,
-   "mark": "💥"
+   "num": 2
   },
   {
    "type": "versus",
