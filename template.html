@@ -54,14 +54,14 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 /* 순위표 */
 #table{width:900px}
 #table .hd{display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:2px solid #F2F5F8;font-size:24px;font-weight:700;color:#8A94A6;letter-spacing:1px}
-.tr{display:flex;align-items:center;gap:16px;height:82px;border-bottom:1px solid #2B3448}
-.tr .rk{width:52px;font-size:36px;font-weight:800;text-align:center}
+.tr{display:flex;align-items:center;gap:16px;height:76px;border-bottom:1px solid #2B3448}
+.tr .rk{width:52px;font-size:34px;font-weight:800;text-align:center}
 .tr .tm{width:190px;display:flex;align-items:center;gap:14px}
-.tr .nm{font-size:40px;font-weight:800;letter-spacing:-1.5px;white-space:nowrap}
+.tr .nm{font-size:38px;font-weight:800;letter-spacing:-1.5px;white-space:nowrap}
 .tr .bw{flex:1;height:30px;position:relative}
 .tr .bar{position:absolute;left:0;top:0;height:30px;border-radius:0 15px 15px 0}
 .tr .gp{width:100px;font-size:32px;font-weight:600;text-align:right;color:#8A94A6}
-.tr .wr{width:120px;font-size:40px;font-weight:800;text-align:right;letter-spacing:-1.5px}
+.tr .wr{width:120px;font-size:38px;font-weight:800;text-align:right;letter-spacing:-1.5px}
 </style></head><body>
 <div id="stage">
   <div id="hdr">
@@ -95,7 +95,7 @@ const ALIAS = { '기아': 'HT', 'KIA': 'HT', '엘지': 'LG', '케이티': 'KT', 
 const T = n => D.find(t => t.nm === n || t.code === n || t.code === ALIAS[n]) || { nm: n, code: ALIAS[n] || n };
 const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const br = s => esc(s).split('\n').join('<br>');
-const SZ = { L: [300, 64], M: [190, 42], S: [84, 18] };
+const SZ = { L: [300, 64], M: [190, 42], S: [62, 14] };   // S 는 순위표 행(76px) 안에 여유 있게
 function chip(t, size = 'M', extra = '') {
   const [s, r] = SZ[size];
   return `<div class="chip" style="width:${s}px;height:${s}px;border-radius:${r}px;${extra}"><img src="${LOGO[t.code] || ''}"></div>`;
