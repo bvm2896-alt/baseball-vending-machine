@@ -8,7 +8,7 @@ cd /d "%SYS%"
 if not exist ".git" (echo This PC is not linked to GitHub yet. Run the link cmd first. & pause & exit /b)
 git add -A
 git commit -q -m "pc update"
-git pull -q --rebase
+git pull -q --rebase -X theirs || git rebase --abort
 git push
 echo.
 echo GitHub save done. On the other PC, run the launcher and it will pull the latest.
