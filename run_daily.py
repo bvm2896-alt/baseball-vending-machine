@@ -131,6 +131,8 @@ def step_fetch():
             log('순위 읽기 완료', '순위')
             rc2, out2 = sh(['node', 'fetch_news.js'], timeout=400)
             log('뉴스 헤드라인 수집 완료' if rc2 == 0 else '뉴스 수집 실패(콘티는 순위만으로 진행): ' + out2.strip()[-150:])
+            rc3, out3 = sh(['node', 'fetch_schedule.js'], timeout=300)   # 오늘·내일 경기 일정 + 예고 선발투수
+            log('경기 일정·선발 수집 완료' if rc3 == 0 else '일정 수집 실패(무시): ' + out3.strip()[-150:])
             return True
         log(f'순위 읽기 실패({i + 1}/3): {out.strip()[-200:]}')
         time.sleep(120)
