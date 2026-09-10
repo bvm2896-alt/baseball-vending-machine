@@ -133,6 +133,15 @@ def probe(f):
         tail = starts[-1]
     return d, lead, tail
 
+TARGET_MEAN, PEAK_CAP = -19.0, -1.0   # 줄 평균 음량 목표(dB), 피크 상한(dB)
+def static_gain(f, ss, to):
+    """잘라낼 구간의 평균·최대 음량을 재서 한 번에 적용할 고정 이득(dB). 평균을 목표에 맞추되 피크가 상한을 넘지 않게"""
+    r = run(['ffmpeg', '-i', f, '-af', f'atrim=start={ss:.3f}:end={to:.3f},volumedetect', '-f', 'null', '-'])
+    m = re.search(r'mean_volume: ([\-\d.]+)', r.stderr); p = re.search(r'max_volume: ([\-\d.]+)', r.stderr)
+    if not m or not p: return 0.0
+    mean, peak = float(m.group(1)), float(p.group(1))
+    return round(min(TARGET_MEAN - mean, PEAK_CAP - peak), 2)
+
 def end_level(f, ms=30):
     """파일 마지막 ms 구간의 평균 음량(dB). 말이 잘렸으면 크게 나온다"""
     d = dur_of(f)
@@ -154,7 +163,7 @@ def gap_after(i, line, n, nxt=None, scene_change=False):
     elif t.endswith('?'): gap = 0.30
     else: gap = 0.24
     if nxt and nxt['narr'].strip().startswith(TURN_START): gap = max(gap, 0.38)
-    if scene_change: gap = max(gap, 0.42)
+    if scene_change: gap = max(gap, 0.32)
     if i == 0: gap = min(gap, 0.18)   # 후킹 대사 뒤는 뜸 들이지 않고 바로 본론으로
     return round(min(gap, MAX_GAP), 2)
 
@@ -202,14 +211,16 @@ def render(ep, ep_path):
         src = W('voice', f'{i:02d}.mp3')
         if not os.path.exists(src): raise SystemExit(f'음성 없음: {src}')
         d, lead, tail = probe(src)
-        ss, to = max(0, lead - 0.10), min(d, tail + 0.25)
+        ss, to = max(0, lead - 0.06), min(d, tail + 0.12)
         dst = W('voice', f't{i:02d}.wav')
         rate = spd * pace_of(i, lines[i], N)
+        gain = static_gain(src, ss, to)
         def cut(ss, to):
             af = f'atrim=start={ss:.3f}:end={to:.3f},asetpts=PTS-STARTPTS'
             if abs(rate - 1.0) > 0.01: af += f',atempo={rate:.3f}'
-            # 음량 고르게(-16 LUFS, 피크 -1.5dB → 깨짐 방지) + 앞뒤 15ms 페이드(딱 끊기는 소리 방지)
-            af += ',loudnorm=I=-16:TP=-1.5:LRA=11,aresample=44100,afade=t=in:d=0.015,areverse,afade=t=in:d=0.015,areverse'
+            # 음량은 줄마다 '고정 이득'으로만 맞춘다(loudnorm 같은 동적 정규화는 짧은 클립의 앞뒤 음량을 출렁이게 해 기계음처럼 들림)
+            # + 앞뒤 12ms 페이드(딱 끊기는 소리 방지)
+            af += f',volume={gain:.2f}dB,aresample=44100,afade=t=in:d=0.012,areverse,afade=t=in:d=0.012,areverse'
             run(['ffmpeg', '-y', '-i', src, '-af', af, '-ar', '44100', '-ac', '1', dst], check=True)
         cut(ss, to)
         # 검수: 잘린 끝이 아직 말소리(-30dB 이상)면 끝을 자르지 않고 다시

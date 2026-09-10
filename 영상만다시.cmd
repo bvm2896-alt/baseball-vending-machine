@@ -1,0 +1,11 @@
+@echo off
+chcp 65001 >nul
+rem 음성은 그대로 두고(크레딧 안 씀) 영상·자막·썸네일만 다시 만든다 (프로그램·템플릿 수정 후 확인용)
+cd /d "%~dp0"
+set SYS=
+for /d %%D in (*) do if exist "%%D\run_daily.py" set SYS=%%D
+if "%SYS%"=="" (echo run_daily.py not found & pause & exit /b)
+cd /d "%SYS%"
+if exist ".git" (git add -A & git commit -q -m "pc update" & git pull -q --rebase & git push -q)
+python -X utf8 run_daily.py --now --no-shutdown --no-fetch --no-tts %*
+pause
