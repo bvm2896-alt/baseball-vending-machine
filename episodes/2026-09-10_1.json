@@ -1,5 +1,6 @@
 {
  "date": "2026-09-10",
+ "gameDate": "2026-09-09",
  "dateLabel": "2026.09.10",
  "railTitle": "KBO 순위",
  "focusTeam": "기아",
@@ -221,7 +222,6 @@
    "LG",
    "기아"
   ],
-  "date": "9월 10일 기준",
   "top": "김도영 코뼈 수술 · LG 19실점",
   "big": "3위 싸움\n진흙탕",
   "layout": "clash"

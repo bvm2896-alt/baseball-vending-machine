@@ -5,7 +5,7 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#0b0e14}
 body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic',sans-serif;font-weight:900;color:#fff;-webkit-font-smoothing:antialiased}
 #st{position:relative;width:1080px;height:1920px;overflow:hidden;background:#0b0e14}
 .bg{position:absolute;inset:0}
-.date{position:absolute;left:50%;top:150px;transform:translateX(-50%) rotate(-3deg);background:#FFC24B;color:#0b0e14;font-size:78px;padding:14px 54px;border-radius:22px;letter-spacing:-2px;box-shadow:0 20px 60px rgba(0,0,0,.6);white-space:nowrap}
+.date{position:absolute;left:50%;top:96px;transform:translateX(-50%) rotate(-2deg);background:#FFC24B;color:#0b0e14;font-size:132px;font-weight:900;padding:26px 84px;border-radius:34px;letter-spacing:-4px;border:10px solid #111620;box-shadow:0 0 0 8px #FFC24B,0 28px 80px rgba(0,0,0,.75);white-space:nowrap}
 .chip{background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 30px 80px rgba(0,0,0,.6)}
 .chip img{width:82%;height:82%;object-fit:contain}
 .top{position:absolute;left:0;right:0;text-align:center;white-space:nowrap;font-size:120px;letter-spacing:-6px;line-height:1;text-shadow:0 10px 30px rgba(0,0,0,.8)}
@@ -23,7 +23,12 @@ const codeOf=n=>{const t=(EP.standings||[]).find(t=>t.team===n||t.code===n||t.co
 const logo=c=>(EP.logos||{})[c]||'';
 const teams=(TH.teams||(TH.team?[TH.team]:[EP.focusTeam||''])).map(codeOf).filter(Boolean);
 const nl=t=>String(t||'').split('\n').join('<br>');
-const dateText=TH.date||((EP.dateLabel||'').replace(/^\d{4}\.(\d+)\.(\d+)$/,(m,a,b)=>`${+a}월 ${+b}일`)+' 기준');
+// 날짜 배지: "9월 10일 (목)" — 콘티 date 에서 요일 계산 (thumb.date 로 직접 지정하면 그대로)
+// 날짜 배지는 "경기가 치러진 날" — 콘티 gameDate(없으면 콘티 날짜 하루 전. 월요일 아침 영상 = 일요일 경기)
+// 화요일은 전날(월) 경기가 없으므로 순위 리뷰 대신 다른 주제 영상 → gameDate 없으면 영상 날짜 그대로
+const dateText=(()=>{ if(TH.date) return TH.date; let d=new Date((EP.gameDate||EP.date||'')+'T00:00:00'); if(isNaN(d)) return EP.dateLabel||'';
+  if(!EP.gameDate && d.getDay()!==2) d.setDate(d.getDate()-1);
+  return `${d.getMonth()+1}월 ${d.getDate()}일 (${'일월화수목금토'[d.getDay()]})`; })();
 // 레이아웃 자동 선택: 두 팀 → clash, 숫자/짧은 단어 → stat, 그 외 default
 const layout=TH.layout||(teams.length>1?'clash':(/^\d|^[가-힣]{1,2}[?!]?$/.test(TH.big||'')?'stat':'default'));
 const st=document.getElementById('st');
