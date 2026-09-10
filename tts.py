@@ -128,27 +128,61 @@ def probe_silences(path, thr='-35dB', mind=0.06):
     return d, list(zip(st, en))
 
 def seg_bounds(path, segs):
-    """한 번에 합성한 음성 안에서 각 호흡 구간이 시작하는 시각(초). 자막을 구간별로 바꾸기 위한 추정:
-    글자 수 비율로 예상 위치를 잡고, 그 근처의 실제 짧은 쉼(무음)이 있으면 거기에 맞춘다"""
+    """한 번에 합성한 음성 안에서 각 호흡 구간이 시작하는 시각(초)과, 그 자리에 실제 쉼(무음 구간)이 있었는지.
+    글자 수 비율로 예상 위치를 잡고, 그 근처의 실제 짧은 쉼이 있으면 거기에 맞춘다. 반환: [(시작초, (무음시작,무음끝) 또는 None)]"""
     d, sil = probe_silences(path)
     lead = sil[0][1] if sil and sil[0][0] < 0.02 else 0.0
     tail = sil[-1][0] if sil and sil[-1][1] >= d - 0.03 else d
     inner = [(a, b) for a, b in sil if a > lead + 0.05 and b < tail - 0.05]
     syl = [max(1, len(re.findall(r'[가-힣A-Za-z0-9]', x))) for x in segs]
     tot = sum(syl); speech = max(0.2, tail - lead)
-    bounds, acc, prev = [0.0], 0, lead
+    out, acc, prev = [(0.0, None)], 0, lead
     for k in range(1, len(segs)):
         acc += syl[k - 1]
         exp = lead + speech * acc / tot
         tol = max(0.25, 0.3 * speech * syl[k - 1] / tot)
-        cand = [(abs((a + b) / 2 - exp), b) for a, b in inner if abs((a + b) / 2 - exp) <= tol and b > prev + 0.15]
-        pos = min(cand)[1] if cand else max(prev + 0.15, exp)
-        bounds.append(round(pos, 3)); prev = pos
-    return bounds
+        cand = [(abs((a + b) / 2 - exp), (a, b)) for a, b in inner if abs((a + b) / 2 - exp) <= tol and b > prev + 0.15]
+        if cand:
+            iv = min(cand)[1]; pos = iv[1]; out.append((round(pos, 3), iv))
+        else:
+            pos = max(prev + 0.15, exp); out.append((round(pos, 3), None))
+        prev = pos
+    return out
+
+BREATH = float(CFG.get('TTS_BREATH', '0.18'))   # 긴 대사의 호흡 자리(' / ')에 살짝 끼워 넣는 쉼(초). 실제 쉼이 감지된 자리에만 넣는다
+
+def insert_breaths(path, bounds):
+    """실제 쉼이 감지된 호흡 자리마다 BREATH 초의 무음을 끼워 넣어 '와다다다' 읽는 느낌을 없앤다. 새 경계 목록을 돌려준다"""
+    cuts = [iv for _, iv in bounds[1:] if iv]
+    if not cuts or BREATH <= 0: return [b for b, _ in bounds]
+    wav = path.replace('.mp3', '_w.wav'); sil = path.replace('.mp3', '_b.wav'); lst = path.replace('.mp3', '_b.txt')
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', path, '-ar', '44100', '-ac', '1', wav], check=True)
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{BREATH:.2f}', sil], check=True)
+    mids = [round((a + b) / 2, 3) for a, b in cuts]
+    pieces, start = [], 0.0
+    for j, m in enumerate(mids + [None]):
+        pc = path.replace('.mp3', f'_p{j}.wav')
+        af = f'atrim=start={start:.3f}' + (f':end={m:.3f}' if m else '') + ',asetpts=PTS-STARTPTS'
+        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', wav, '-af', af, pc], check=True)
+        pieces.append(pc); start = m or start
+    with open(lst, 'w', encoding='utf-8') as f:
+        for j, pc in enumerate(pieces):
+            if j: f.write(f"file '{os.path.basename(sil)}'\n")
+            f.write(f"file '{os.path.basename(pc)}'\n")
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-ar', '44100', '-ac', '1', '-b:a', '192k', path], check=True)
+    for f_ in pieces + [wav, sil, lst]:
+        try: os.remove(f_)
+        except Exception: pass
+    # 경계 보정: 각 경계 앞에 끼워 넣은 쉼만큼 뒤로 밀린다
+    new, n_ins = [], 0
+    for b, iv in bounds:
+        if iv: n_ins += 1
+        new.append(round(b + n_ins * BREATH, 3))
+    return new
 
 def synth_line(line, prev, nxt, out, pause=None):
     """한 줄 합성. ' / ' 로 나뉜 호흡 구간을 따로 만들지 않고 한 문장으로 합성한다(억양이 끊기지 않게).
-    구간 경계는 음성 안의 쉼을 찾아 추정해 NN.segs.json 에 기록 → build.py 가 자막을 구간별로 바꾼다"""
+    그 다음 실제 쉼이 감지된 호흡 자리에만 짧은 쉼(TTS_BREATH)을 끼워 넣고, 경계를 NN.segs.json 에 기록 → build.py 가 자막을 구간별로 바꾼다"""
     segs = [x.strip() for x in line.split('/') if x.strip()]
     text = tts_text(segs) if segs else line
     p_ = [x.strip() for x in prev.split('/') if x.strip()]; n_ = [x.strip() for x in nxt.split('/') if x.strip()]
@@ -160,9 +194,10 @@ def synth_line(line, prev, nxt, out, pause=None):
         except Exception: pass
         return True
     try:
-        b = seg_bounds(out, segs)
+        bounds = seg_bounds(out, segs)
+        b = insert_breaths(out, bounds) if pause is None else [x for x, _ in bounds]   # pause=0 이면(후킹 대사) 쉼을 안 넣는다
         durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
-        json.dump({'durs': durs, 'pause': 0.0, 'bounds': b}, open(sj, 'w'))
+        json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'breaths': sum(1 for _, iv in bounds[1:] if iv)}, open(sj, 'w'))
     except Exception as e:
         print('  구간 추정 실패(자막은 한 덩어리로):', e)
         try: os.remove(sj)
@@ -179,7 +214,7 @@ for i, line in enumerate(lines):
     prev = lines[i-1] if i > 0 else ''
     nxt = lines[i+1] if i+1 < len(lines) else ''
     out = f'work/voice/{i:02d}.mp3'
-    ok = synth_line(line, prev, nxt, out)
+    ok = synth_line(line, prev, nxt, out, pause=0 if i == 0 else None)   # 첫 줄(후킹)은 한 호흡
     print(f'{i:02d} {"OK " if ok else "XX "} {line}')
     fail += (not ok)
     time.sleep(0.3)
