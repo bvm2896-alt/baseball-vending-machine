@@ -139,6 +139,7 @@ def gap_after(i, line, n, nxt=None, scene_change=False):
     else: gap = 0.24
     if nxt and nxt['narr'].strip().startswith(TURN_START): gap = max(gap, 0.38)
     if scene_change: gap = max(gap, 0.42)
+    if i == 0: gap = min(gap, 0.18)   # 후킹 대사 뒤는 뜸 들이지 않고 바로 본론으로
     return round(min(gap, MAX_GAP), 2)
 
 def pace_of(i, line, n):
@@ -148,7 +149,7 @@ def pace_of(i, line, n):
     return 1.0
 
 # 장면 종류별 최소 길이(초): 모션이 다 끝나기 전에 장면이 넘어가지 않도록, 나레이션이 짧으면 장면 끝에 여유를 둔다
-MIN_SCENE = {'streaks': 3.4, 'table': 3.2, 'verdict': 3.0, 'shift': 2.6, 'versus': 2.4, 'need': 2.4, 'rival': 2.2, 'hook': 1.6, 'big': 1.4, 'question': 1.4}
+MIN_SCENE = {'streaks': 3.4, 'table': 3.2, 'verdict': 3.0, 'shift': 2.6, 'versus': 2.4, 'need': 2.4, 'rival': 2.2, 'hook': 1.0, 'big': 1.4, 'question': 1.4}
 
 SUB_MAX = 16   # 자막 한 줄 최대 글자 수(공백 포함, 한글 기준)
 

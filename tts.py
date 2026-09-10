@@ -112,7 +112,10 @@ if '--test' in sys.argv:
 lines = [l.strip() for l in io.open('work/narration.txt', encoding='utf-8-sig') if l.strip()]
 PAUSE = float(CFG.get('TTS_PAUSE', '0.12'))   # 대사 안의 " / " 표시 자리에서 쉬는 시간(초). 구간 자체의 앞뒤 무음은 잘라내므로 아주 짧게
 
-def synth_line(line, prev, nxt, out):
+HOOK_PAUSE = float(CFG.get('TTS_HOOK_PAUSE', '0.04'))   # 첫 줄(후킹 대사)은 구간 사이를 거의 안 쉬고 한 호흡으로
+
+def synth_line(line, prev, nxt, out, pause=None):
+    pause = PAUSE if pause is None else pause
     """한 줄 합성. 줄 안에 ' / ' 가 있으면 호흡 단위로 나눠 따로 합성한 뒤 사이에 짧은 쉼을 넣어 붙인다."""
     segs = [x.strip() for x in line.split('/') if x.strip()]
     if len(segs) <= 1:
@@ -132,7 +135,7 @@ def synth_line(line, prev, nxt, out):
         subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', tmp, '-af', trim, '-ar', '44100', '-ac', '1', wav], check=True)
         os.remove(tmp); parts.append(wav)
     sil = out.replace('.mp3', '_sil.wav')
-    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{PAUSE:.2f}', sil], check=True)
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{max(0.01, pause):.2f}', sil], check=True)
     lst = out.replace('.mp3', '_list.txt')
     with open(lst, 'w', encoding='utf-8') as f:
         for j, ptn in enumerate(parts):
@@ -144,7 +147,7 @@ def synth_line(line, prev, nxt, out):
     for ptn in parts:
         d = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', ptn], capture_output=True, text=True).stdout.strip()
         durs.append(float(d or 0))
-    json.dump({'durs': durs, 'pause': PAUSE}, open(out.replace('.mp3', '.segs.json'), 'w'))
+    json.dump({'durs': durs, 'pause': pause}, open(out.replace('.mp3', '.segs.json'), 'w'))
     for f_ in parts + [sil, lst]:
         try: os.remove(f_)
         except Exception: pass
@@ -160,7 +163,7 @@ for i, line in enumerate(lines):
     prev = lines[i-1] if i > 0 else ''
     nxt = lines[i+1] if i+1 < len(lines) else ''
     out = f'work/voice/{i:02d}.mp3'
-    ok = synth_line(line, prev, nxt, out)
+    ok = synth_line(line, prev, nxt, out, pause=HOOK_PAUSE if i == 0 else None)
     print(f'{i:02d} {"OK " if ok else "XX "} {line}')
     fail += (not ok)
     time.sleep(0.3)
