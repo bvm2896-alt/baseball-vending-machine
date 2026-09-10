@@ -23,16 +23,33 @@ def load_cfg():
     return cfg
 
 CFG = load_cfg()
-API_KEY = CFG.get('TYPECAST_API_KEY', '')
-VOICE = CFG.get('TYPECAST_VOICE_ID', '')
-if not API_KEY or not VOICE:
+# 계정(키)을 여러 개 등록해 두면 크레딧이 떨어진 계정은 건너뛰고 다음 계정으로 자동 전환한다.
+#   TYPECAST_API_KEY=…  TYPECAST_VOICE_ID=…            (1번 계정)
+#   TYPECAST_API_KEY2=… TYPECAST_VOICE_ID2=…(없으면 1번 목소리)   (2번 계정)  … KEY3, KEY4 도 가능
+ACCOUNTS = []
+for n in ('', '2', '3', '4', '5'):
+    k = CFG.get('TYPECAST_API_KEY' + n, '').strip()
+    if k: ACCOUNTS.append({'key': k, 'voice': CFG.get('TYPECAST_VOICE_ID' + n, '').strip() or CFG.get('TYPECAST_VOICE_ID', '').strip(), 'name': '계정' + (n or '1')})
+if not ACCOUNTS or not ACCOUNTS[0]['voice']:
     sys.exit('설정.txt 에 TYPECAST_API_KEY 와 TYPECAST_VOICE_ID 를 채워주세요.')
+ACC = 0   # 지금 쓰는 계정 번호 (크레딧 소진·인증 오류 시 다음으로)
+API_KEY, VOICE = ACCOUNTS[0]['key'], ACCOUNTS[0]['voice']
 
 EMOTION = CFG.get('TTS_EMOTION', 'smart')      # smart | normal | happy | sad | angry | whisper | toneup | tonemid | tonedown
 INTENSITY = float(CFG.get('TTS_INTENSITY', '1.0'))
 TEMPO = float(CFG.get('TTS_TEMPO', '1.0'))      # 타입캐스트 자체 배속. 줄별 속도 조절은 build.py 가 하므로 보통 1.0
 URL = 'https://api.typecast.ai/v1/text-to-speech'
-HEAD = {'X-API-KEY': API_KEY, 'Content-Type': 'application/json'}
+def head(): return {'X-API-KEY': ACCOUNTS[ACC]['key'], 'Content-Type': 'application/json'}
+
+def next_account(reason):
+    """다음 계정으로 전환. 더 없으면 False"""
+    global ACC
+    if ACC + 1 >= len(ACCOUNTS):
+        print(f'  {ACCOUNTS[ACC]["name"]} {reason} — 남은 계정 없음. 설정.txt 에 TYPECAST_API_KEY2 를 추가하거나 크레딧을 충전하세요.')
+        return False
+    ACC += 1
+    print(f'  {ACCOUNTS[ACC - 1]["name"]} {reason} → {ACCOUNTS[ACC]["name"]} 으로 전환')
+    return True
 
 import re
 def check_audio(path, text):
@@ -63,13 +80,20 @@ def synth(text, prev='', nxt='', out_path='work/voice/out.mp3'):
     payload = {
         'model': 'ssfm-v30',
         'text': text,
-        'voice_id': VOICE,
+        'voice_id': ACCOUNTS[ACC]['voice'],
         'prompt': prompts[0],
         'output': ({'audio_format': 'mp3', 'audio_tempo': TEMPO} if abs(TEMPO - 1.0) > 0.01 else {'audio_format': 'mp3'}),
     }
     pi = 0
-    for attempt in range(6):
-        r = requests.post(URL, headers=HEAD, json=payload, timeout=60)
+    for attempt in range(6 + len(ACCOUNTS)):
+        payload['voice_id'] = ACCOUNTS[ACC]['voice']
+        r = requests.post(URL, headers=head(), json=payload, timeout=60)
+        if r.status_code in (402, 401, 403) or (r.status_code == 200 and not r.content):
+            # 크레딧 소진(402) / 키 오류(401·403) → 다음 계정으로
+            why = '크레딧 소진' if r.status_code == 402 else f'인증 오류 {r.status_code}'
+            if next_account(why): continue
+            print(f'  실패 {r.status_code}: {r.text[:200]}')
+            return False
         if r.status_code == 200:
             ctype = r.headers.get('Content-Type', '')
             print(f'  응답 {ctype} {len(r.content)} bytes')

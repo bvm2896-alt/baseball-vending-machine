@@ -7,7 +7,11 @@
 TYPECAST_API_KEY=여기에_키
 
 # https://studio.typecast.ai/developers/api/voices 에서 고른 목소리의 voice ID
-TYPECAST_VOICE_ID=여기에_보이스ID
+TYPECAST_VOICE_ID=
+
+# (선택) 예비 계정: 1번 계정 크레딧이 떨어지면 자동으로 여기로 넘어감. 목소리 ID 는 같으면 비워도 됨
+TYPECAST_API_KEY2=
+TYPECAST_VOICE_ID2=여기에_보이스ID
 
 # --- 음성 옵션 ---
 # 감정: smart(앞뒤 문맥 자동) | normal | happy | toneup(높은 톤) | tonedown | whisper
