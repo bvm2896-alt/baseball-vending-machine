@@ -4,7 +4,7 @@
   순위 읽기 → 콘티 2개(episodes/오늘_1.json, 오늘_2.json — Claude 예약 작업이 저장) 대기
   → 각각 음성 → 영상(상위 폴더 영상\\날짜\\번호_팀.mp4) → 비공개 업로드 → 신호 파일 감시 → 안전 종료 시각에 PC 종료
 
-옵션:  --now (시간과 상관없이 바로)  --no-upload  --no-shutdown  --no-fetch  --no-tts
+옵션:  --now (시간과 상관없이 바로)  --latest (오늘 콘티 없으면 최근 콘티로)  --no-upload  --no-shutdown  --no-fetch  --no-tts
         --episode 파일경로 (콘티 대기 생략, 여러 개 가능)
 신호 파일(상위 폴더 야구자판기\\):
   업로드.txt  만들어 둔 영상을 유튜브에 올림. 비어 있으면 전부(비공개), "1"/"2" 면 그 번호만, "공개" 가 들어 있으면 바로 공개로
@@ -142,12 +142,14 @@ def latest_episodes():
 
 def step_wait_episodes():
     global EPS
-    if '--now' in ARGS and not any(os.path.exists(p) for p in EPS):
+    if '--latest' in ARGS and not any(os.path.exists(p) for p in EPS):
         alt = latest_episodes()
         if alt:
-            log(f'오늘({TODAY}) 콘티가 없어 가장 최근 콘티 사용: {", ".join(alt)}')
+            log(f'(--latest) 오늘({TODAY}) 콘티가 없어 가장 최근 콘티 사용: {", ".join(alt)}')
             EPS = alt
-    wait_min = 2 if '--now' in ARGS else WAIT_EPISODE_MIN   # 지금 바로 실행일 땐 오래 기다리지 않는다
+    if not any(os.path.exists(p) for p in EPS):
+        log(f'오늘({TODAY}) 콘티가 아직 없어요. Claude 에게 "오늘 콘티 써줘" 라고 하면 episodes/{TODAY}_1.json, _2.json 이 들어옵니다')
+    wait_min = WAIT_EPISODE_MIN
     log(f'콘티 대기: {", ".join(EPS)} (최대 {wait_min}분)', '콘티대기')
     end = time.time() + wait_min * 60
     while time.time() < end:
