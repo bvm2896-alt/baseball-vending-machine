@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-rem 음성은 그대로 두고(크레딧 안 씀) 영상·자막·썸네일만 다시 만든다 (프로그램·템플릿 수정 후 확인용)
+rem Re-render video only (reuse voices, no TTS credits)
 cd /d "%~dp0"
 set SYS=
 for /d %%D in (*) do if exist "%%D\run_daily.py" set SYS=%%D
