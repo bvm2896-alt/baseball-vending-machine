@@ -14,7 +14,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(HERE)
 
 LEAD, TAIL, SUBLEAD = 0.25, 1.30, 0.05   # SUBLEAD: 자막을 말보다 살짝(0.05초) 먼저 — 거의 동시
-FPS = 15
+FPS = 15   # (옛 값, 지금은 설정.txt VIDEO_FPS 사용)
 WORK = 'work'                                        # 중간 파일(음성, 프레임, 임시 html) 폴더
 OUT_ROOT = os.path.join(HERE, '..', '영상')           # 결과물: 영상/2026-09-06/1_두산.mp4
 def _cfg_raw(k, default=''):
@@ -329,17 +329,19 @@ def render(ep, ep_path):
     io.open(W('render.html'), 'w', encoding='utf-8').write(html)
     json.dump({'total': round(total, 2), 'starts': st, 'durs': clips, 'gaps': gaps, 'bounds': bounds, 'subs': subs},
               io.open(W('timeline.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
-    # 5) 프레임 렌더
-    shutil.rmtree(W('frames'), ignore_errors=True); os.makedirs(W('frames'))
-    r = subprocess.run(['node', 'frames.js', str(round(total, 2))], capture_output=True, text=True, encoding='utf-8', errors='replace')
-    if r.returncode != 0: raise SystemExit('프레임 렌더 실패:\n' + (r.stderr or r.stdout)[-1500:])
-    nframes = len(os.listdir(W('frames')))
-    if nframes < FPS * total * 0.95: raise SystemExit(f'프레임 부족: {nframes}')
+    # 5) 프레임 렌더 → 무음 영상 (설정.txt VIDEO_FPS 기본 60, VIDEO_SCALE 기본 1.3333 = 1440x2560 2K)
+    fps = int(cfg_get('VIDEO_FPS', '60')); scale = cfg_get('VIDEO_SCALE', '1.3333')
+    shutil.rmtree(W('frames'), ignore_errors=True)
+    print(f'프레임 렌더 {fps}fps x{scale} ({round(total)}초) …')
+    r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale], capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode != 0 or not os.path.exists(W('silent.mp4')): raise SystemExit('프레임 렌더 실패:\n' + (r.stderr or r.stdout)[-1500:])
+    print((r.stdout or '').strip().splitlines()[-1] if r.stdout else '')
+    vd = dur_of(W('silent.mp4'))
+    if vd < total * 0.95: raise SystemExit(f'영상 길이 부족: {vd:.1f}s / {total:.1f}s')
     # 6) 합성 → 결과물 폴더(영상/날짜/번호_팀.mp4)
     out, thumb_path, yt_path = out_paths(ep, ep_path)
     os.makedirs(os.path.dirname(out), exist_ok=True)
     name = os.path.splitext(os.path.basename(ep_path))[0]
-    run(['ffmpeg', '-y', '-framerate', str(FPS), '-i', W('frames', 'f%04d.jpg'), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '30', '-crf', '20', W('silent.mp4')], check=True)
     bgm = pick_bgm(ep)
     if bgm:
         # 배경음악: 나레이션 아래에 깔고(볼륨 설정.txt BGM_VOLUME, 기본 0.12), 말할 때 자동으로 더 낮춤(사이드체인), 끝에 페이드아웃
