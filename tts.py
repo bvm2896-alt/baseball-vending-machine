@@ -116,6 +116,8 @@ def synth_line(line, prev, nxt, out):
     """한 줄 합성. 줄 안에 ' / ' 가 있으면 호흡 단위로 나눠 따로 합성한 뒤 사이에 짧은 쉼을 넣어 붙인다."""
     segs = [x.strip() for x in line.split('/') if x.strip()]
     if len(segs) <= 1:
+        try: os.remove(out.replace('.mp3', '.segs.json'))
+        except Exception: pass
         return synth(segs[0] if segs else line, prev, nxt, out)
     parts = []
     for j, seg in enumerate(segs):
@@ -134,6 +136,12 @@ def synth_line(line, prev, nxt, out):
             if j: f.write(f"file '{os.path.basename(sil)}'\n")
             f.write(f"file '{os.path.basename(ptn)}'\n")
     subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-ar', '44100', '-ac', '1', '-b:a', '192k', out], check=True)
+    # 자막을 호흡 단위로 맞추기 위해 각 구간 길이를 기록
+    durs = []
+    for ptn in parts:
+        d = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', ptn], capture_output=True, text=True).stdout.strip()
+        durs.append(float(d or 0))
+    json.dump({'durs': durs, 'pause': PAUSE}, open(out.replace('.mp3', '.segs.json'), 'w'))
     for f_ in parts + [sil, lst]:
         try: os.remove(f_)
         except Exception: pass

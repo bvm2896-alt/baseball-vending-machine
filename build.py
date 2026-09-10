@@ -154,6 +154,29 @@ def pace_of(i, line, n):
 # 장면 종류별 최소 길이(초): 모션이 다 끝나기 전에 장면이 넘어가지 않도록, 나레이션이 짧으면 장면 끝에 여유를 둔다
 MIN_SCENE = {'streaks': 3.4, 'table': 3.2, 'verdict': 3.0, 'shift': 2.6, 'versus': 2.4, 'need': 2.4, 'rival': 2.2, 'hook': 1.6, 'big': 1.4, 'question': 1.4}
 
+SUB_MAX = 16   # 자막 한 줄 최대 글자 수(공백 포함, 한글 기준)
+
+def wrap2(text):
+    """자막을 최대 2줄로. 이미 줄바꿈이 있으면 각 줄이 길지 않은지 확인하고, 없으면 띄어쓰기에서 균형 있게 나눈다"""
+    text = text.strip()
+    lines = [l.strip() for l in text.split('\n') if l.strip()]
+    if len(lines) == 2 and all(len(l) <= SUB_MAX for l in lines): return '\n'.join(lines)
+    flat = ' '.join(lines)
+    if len(flat) <= SUB_MAX: return flat
+    words = flat.split(' ')
+    best, bestd = None, 1e9
+    for k in range(1, len(words)):
+        a, b = ' '.join(words[:k]), ' '.join(words[k:])
+        d = abs(len(a) - len(b)) + (100 if max(len(a), len(b)) > SUB_MAX else 0)
+        if d < bestd: best, bestd = (a, b), d
+    return '\n'.join(best) if best else flat
+
+def sub_pieces(line):
+    """'sub' 가 '|' 로 나뉘어 있으면 호흡 단위 자막 조각들, 아니면 한 조각"""
+    sub = line.get('sub') or ''
+    pieces = [p_.strip() for p_ in sub.split('|')] if '|' in sub else [sub]
+    return [wrap2(p_) for p_ in pieces]
+
 def silence(name, sec):
     run(['ffmpeg', '-y', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{sec:.3f}', name])
 
@@ -161,7 +184,7 @@ def render(ep, ep_path):
     lines = ep['lines']; N = len(lines)
     spd = float(cfg_get('SPEED', '1.0'))   # 1.0 = 그대로(배속은 타입캐스트 TTS_TEMPO 로), 0.9 = 10% 느리게
     # 1) 음성 확인 + 트리밍 (자르기는 atrim 필터로, 속도 조절은 그 다음에 → -to 가 느려진 소리 끝을 잘라먹지 않는다)
-    clips, warns = [], []
+    clips, warns, seg_start, seg_rate = [], [], [], []
     for i in range(N):
         src = W('voice', f'{i:02d}.mp3')
         if not os.path.exists(src): raise SystemExit(f'음성 없음: {src}')
@@ -179,7 +202,7 @@ def render(ep, ep_path):
         # 검수: 잘린 끝이 아직 말소리(-30dB 이상)면 끝을 자르지 않고 다시
         if to < d and end_level(dst) > -30:
             cut(ss, d); warns.append(f'{i:02d} 끝 여운 보존')
-        clips.append(dur_of(dst))
+        clips.append(dur_of(dst)); seg_start.append(ss); seg_rate.append(rate)
         # 검수: 글자 수 대비 너무 짧으면(말이 잘린 음성) 중단
         syl = len(re.findall(r'[가-힣]', lines[i]['narr'])) or 1
         if syl / (clips[-1] * rate) > 9.0:
@@ -207,7 +230,25 @@ def render(ep, ep_path):
     subs = []
     for i in range(N):
         end = sst[i + 1] if i + 1 < N else st[i] + clips[i] + 0.4
-        subs.append([round(sst[i], 2), round(end, 2), lines[i]['sub']])
+        pieces = sub_pieces(lines[i])
+        segf = W('voice', f'{i:02d}.segs.json')
+        if len(pieces) > 1 and os.path.exists(segf):
+            # 호흡 구간(' / ')과 자막 조각('|') 수가 같으면 구간 시작마다 자막을 바꾼다
+            sg = json.load(open(segf)); durs, pause = sg['durs'], sg['pause']
+            if len(durs) == len(pieces):
+                ss_i = seg_start[i]; rate = seg_rate[i]
+                starts_k = []
+                acc = 0.0
+                for k, d_ in enumerate(durs):
+                    starts_k.append(st[i] + max(0, (acc - ss_i)) / rate); acc += d_ + pause
+                for k, pc in enumerate(pieces):
+                    a = max(sst[i], starts_k[k] - SUBLEAD) if k else sst[i]
+                    b = (starts_k[k + 1] - SUBLEAD) if k + 1 < len(pieces) else end
+                    subs.append([round(a, 2), round(b, 2), pc])
+                continue
+            print(f'경고: {i:02d} 자막 조각({len(pieces)})과 호흡 구간({len(durs)}) 수가 달라 한 덩어리로 표시')
+        subs.append([round(sst[i], 2), round(end, 2), ' '.join(pieces) if len(pieces) > 1 else pieces[0]])
+        if pieces and len(pieces) > 1: subs[-1][2] = wrap2(' '.join(pieces))
     bounds = [round(st[k] - 0.10, 2) for k in starts[1:]]
     # 3) 나레이션 합치기
     silence(W('voice', 'lead.wav'), LEAD); silence(W('voice', 'tail.wav'), TAIL)

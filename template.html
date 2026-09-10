@@ -122,8 +122,13 @@ SCENE.hook = (lt, s) => {
 
 /* big: 큰 문구 하나 (로고 선택). 서브텍스트 없음 */
 SCENE.big = (lt, s) => {
-  B(`${s.team ? `<div style="${pop(seg(lt, 0, .5))}">${chip(T(s.team), 'L')}</div>` : ''}
-  <div class="mega ${s.gold === false ? '' : 'gold'}" style="margin-top:${s.team ? 44 : 0}px;font-size:${s.size || 168}px;${pop(seg(lt, .25, .6))}">${br(s.text)}</div>`);
+  // 번호("① …", "1. …", "첫째 …")는 본문과 같은 줄에 두지 않고 위에 동그란 배지로 따로 뺀다
+  let text = s.text || '', num = s.num || '';
+  const m = text.match(/^\s*(?:([①②③④⑤])|([1-5])[.)]|(첫째|둘째|셋째|넷째|다섯째))\s*/);
+  if (!num && m) { num = m[1] ? '①②③④⑤'.indexOf(m[1]) + 1 : m[2] ? m[2] : ['첫째', '둘째', '셋째', '넷째', '다섯째'].indexOf(m[3]) + 1; text = text.slice(m[0].length); }
+  const badge = num ? `<div class="row" style="gap:16px;margin-bottom:26px;${pop(seg(lt, .1, .5))}"><div class="num" style="width:92px;height:92px;border-radius:50%;background:${ACC};color:#0B0F14;font-size:58px;font-weight:900;display:flex;align-items:center;justify-content:center">${num}</div><div class="label" style="font-size:50px;font-weight:700;color:#F2F5F8">${['', '첫째', '둘째', '셋째', '넷째', '다섯째'][+num] || ''}</div></div>` : '';
+  B(`${s.team ? `<div style="${pop(seg(lt, 0, .5))}">${chip(T(s.team), 'L')}</div>` : ''}${badge}
+  <div class="mega ${s.gold === false ? '' : 'gold'}" style="margin-top:${s.team && !num ? 44 : 0}px;font-size:${s.size || 168}px;${pop(seg(lt, .25, .6))}">${br(text)}</div>`);
 };
 
 /* table: 순위표 */
