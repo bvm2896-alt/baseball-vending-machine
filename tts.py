@@ -110,6 +110,35 @@ if '--test' in sys.argv:
     sys.exit(0 if ok else 1)
 
 lines = [l.strip() for l in io.open('work/narration.txt', encoding='utf-8-sig') if l.strip()]
+PAUSE = float(CFG.get('TTS_PAUSE', '0.3'))   # 대사 안의 " / " 표시 자리에서 쉬는 시간(초)
+
+def synth_line(line, prev, nxt, out):
+    """한 줄 합성. 줄 안에 ' / ' 가 있으면 호흡 단위로 나눠 따로 합성한 뒤 사이에 짧은 쉼을 넣어 붙인다."""
+    segs = [x.strip() for x in line.split('/') if x.strip()]
+    if len(segs) <= 1:
+        return synth(segs[0] if segs else line, prev, nxt, out)
+    parts = []
+    for j, seg in enumerate(segs):
+        p = segs[j - 1] if j > 0 else prev
+        n = segs[j + 1] if j + 1 < len(segs) else nxt
+        tmp = out.replace('.mp3', f'_s{j}.mp3')
+        if not synth(seg, p, n, tmp): return False
+        wav = tmp.replace('.mp3', '.wav')   # 이어 붙이기는 wav 로 (형식을 맞춰야 함)
+        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', tmp, '-ar', '44100', '-ac', '1', wav], check=True)
+        os.remove(tmp); parts.append(wav)
+    sil = out.replace('.mp3', '_sil.wav')
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{PAUSE:.2f}', sil], check=True)
+    lst = out.replace('.mp3', '_list.txt')
+    with open(lst, 'w', encoding='utf-8') as f:
+        for j, ptn in enumerate(parts):
+            if j: f.write(f"file '{os.path.basename(sil)}'\n")
+            f.write(f"file '{os.path.basename(ptn)}'\n")
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-ar', '44100', '-ac', '1', '-b:a', '192k', out], check=True)
+    for f_ in parts + [sil, lst]:
+        try: os.remove(f_)
+        except Exception: pass
+    return True
+
 only = None
 for a in sys.argv:
     if a.startswith('--only='): only = {int(x) for x in a.split('=',1)[1].replace(',', ' ').split()}
@@ -120,7 +149,7 @@ for i, line in enumerate(lines):
     prev = lines[i-1] if i > 0 else ''
     nxt = lines[i+1] if i+1 < len(lines) else ''
     out = f'work/voice/{i:02d}.mp3'
-    ok = synth(line, prev, nxt, out)
+    ok = synth_line(line, prev, nxt, out)
     print(f'{i:02d} {"OK " if ok else "XX "} {line}')
     fail += (not ok)
     time.sleep(0.3)
