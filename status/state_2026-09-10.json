@@ -1,6 +1,6 @@
 {
  "date": "2026-09-10",
- "step": "실패",
+ "step": "시작",
  "videos": {},
  "built": {
   "1": {
@@ -13,7 +13,6 @@
   }
  },
  "log": [
-  "[13:38:09] [2] 영상 완성 81.4초 → D:\\★희수\\야구자판기\\영상\\2026-09-10\\2_삼성_KT.mp4",
   "[13:38:17] [2] 영상 준비 완료. 확인 후 업로드.txt 신호를 주면 올립니다",
   "[13:38:17] 감시 시작 (안전 종료 12:00)",
   "[13:49:51] 시작",
@@ -112,6 +111,7 @@
   "[16:03:38] [1] 음성 실패: tus at https://typecast.ai/developers/api.\"}\n14 XX  김도영 없이 이번 주를 버티면 / 이 예측 그대로 가요\n  실패 402: {\"error_code\":\"CREDIT_INSUFFICIENT\",\"message\":\"Insufficient credits or account is inactive. Please check your status at https://typecast.ai/developers/api.\"}\n15 XX  김도영 없는 기아와 사연패 엘지 / 어느 쪽이 삼위 같으세요?\n16줄 실패\n",
   "[16:03:38] [2] 음성 생성 시작",
   "[16:04:00] [2] 음성 실패: tatus at https://typecast.ai/developers/api.\"}\n14 XX  마지막 경기가 / 시월 칠 일 수원 / 삼성 대 케이티예요\n  실패 402: {\"error_code\":\"CREDIT_INSUFFICIENT\",\"message\":\"Insufficient credits or account is inactive. Please check your status at https://typecast.ai/developers/api.\"}\n15 XX  일위는 삼성일까요 케이티일까요? / 어느 쪽 같으세요?\n16줄 실패\n",
-  "[16:04:00] 감시 시작 (안전 종료 12:00)"
+  "[16:04:00] 감시 시작 (안전 종료 12:00)",
+  "[16:26:09] 시작"
  ]
 }
