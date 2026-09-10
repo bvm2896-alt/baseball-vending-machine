@@ -43,11 +43,23 @@ def team_label(ep):
     lab = '_'.join(re.sub(r'[^0-9A-Za-z가-힣]', '', str(t)) for t in teams if t)
     return lab or 'KBO'
 
+def game_date(ep):
+    """영상이 다루는 '경기 날짜'(YYYY-MM-DD). 콘티 gameDate 가 있으면 그것, 없으면 콘티 날짜 하루 전
+    (월요일 아침 영상 = 일요일 경기). 화요일 콘티는 전날 경기가 없으니 콘티 날짜 그대로."""
+    g = ep.get('gameDate')
+    if g: return g
+    d = ep.get('date') or datetime.date.today().isoformat()
+    try:
+        dt = datetime.date.fromisoformat(d)
+        if dt.weekday() != 1: dt -= datetime.timedelta(days=1)   # 1 = 화요일
+        return dt.isoformat()
+    except Exception: return d
+
 def out_paths(ep, ep_path):
-    """(영상 mp4, 썸네일 jpg, 유튜브 제목설명 txt) 경로. 폴더는 영상/날짜/, 이름은 번호_팀"""
+    """(영상 mp4, 썸네일 jpg, 유튜브 제목설명 txt) 경로. 폴더는 영상/경기날짜/, 이름은 번호_팀"""
     stem = os.path.splitext(os.path.basename(ep_path))[0]
     key = stem.rsplit('_', 1)[-1] if '_' in stem else stem
-    date = ep.get('date') or (stem.split('_')[0] if re.match(r'\d{4}-\d{2}-\d{2}', stem) else datetime.date.today().isoformat())
+    date = game_date(ep)
     d = os.path.abspath(os.path.join(OUT_ROOT, date))
     base = os.path.join(d, f'{key}_{team_label(ep)}')
     return base + '.mp4', base + '_썸네일.jpg', base + '_유튜브.txt'
@@ -68,9 +80,8 @@ def load_episode(path):
     if not ep.get('standings'):
         rk = json.load(io.open('data/rank_latest.json', encoding='utf-8-sig'))
         ep['standings'] = rk['standings']
-    if not ep.get('dateLabel'):
-        d = ep.get('date') or datetime.date.today().isoformat()
-        ep['dateLabel'] = d.replace('-', '.')
+    # 화면 오른쪽 위 날짜·썸네일·폴더 모두 '경기 날짜' 기준
+    ep['dateLabel'] = game_date(ep).replace('-', '.')
     return ep
 
 def font_dir_url():
@@ -230,6 +241,17 @@ def render(ep, ep_path):
     while i < N:
         src = VW(f'{i:02d}.mp3')
         if not os.path.exists(src): raise SystemExit(f'음성 없음: {src}')
+        # 대사가 바뀌었는데 음성은 옛 대사면 그 줄만 다시 합성
+        txt = src.replace('.mp3', '.txt')
+        if os.path.exists(txt) and i not in retried:
+            made = io.open(txt, encoding='utf-8').read().strip()
+            if made != lines[i]['narr'].strip():
+                print(f'음성 {i:02d} 은 옛 대사로 만든 것 → 다시 합성')
+                retried.add(i)
+                r = subprocess.run([sys.executable, '-X', 'utf8', 'tts.py', f'--only={i}'], capture_output=True, text=True, encoding='utf-8', errors='replace')
+                if r.returncode != 0: print('  다시 합성 실패(옛 음성 그대로 사용):', (r.stdout + r.stderr)[-200:])
+                else:
+                    subprocess.run([sys.executable, '-X', 'utf8', 'qa_voice.py', '--check'], capture_output=True)   # 자막 경계 다시
         d, lead, tail = probe(src)
         ss, to = max(0, lead - 0.06), min(d, tail + 0.12)
         dst = VW(f't{i:02d}.wav')

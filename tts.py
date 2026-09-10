@@ -266,7 +266,10 @@ def synth_index(lines, i, out=None):
     prev = lines[i-1] if i > 0 else ''
     nxt = lines[i+1] if i+1 < len(lines) else ''
     out = out or os.path.join(VDIR, f'{i:02d}.mp3')
-    return synth_line(lines[i], prev, nxt, out, pause=0 if i == 0 else None)   # 첫 줄(후킹)은 한 호흡
+    ok = synth_line(lines[i], prev, nxt, out, pause=0 if i == 0 else None)   # 첫 줄(후킹)은 한 호흡
+    if ok:
+        io.open(out.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])   # 어떤 대사로 만든 음성인지 기록(대사 바뀌면 build 가 그 줄만 다시)
+    return ok
 
 if __name__ == '__main__':
     lines = load_lines()
