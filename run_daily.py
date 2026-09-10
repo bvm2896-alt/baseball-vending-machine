@@ -180,7 +180,8 @@ def step_build(ep_path, only_lines=None):
         else: log(f'[{k}] 음성 검수: ' + ' | '.join(tail))
     ok, ep = valid_episode(ep_path)
     n = len(ep['lines'])
-    missing = [i for i in range(n) if not os.path.exists(f'work/voice/{i:02d}.mp3')]
+    vdir = build.voice_dir(build.ep_key(ep_path))
+    missing = [i for i in range(n) if not os.path.exists(os.path.join(vdir, f'{i:02d}.mp3'))]
     if missing: log(f'[{k}] 음성 파일 누락 {missing}', '실패'); return None
     log(f'[{k}] 영상 렌더 시작 (3~5분)', '영상')
     rc, out = py('build.py', 'render', ep_path, timeout=1800)

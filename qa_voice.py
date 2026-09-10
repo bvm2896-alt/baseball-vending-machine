@@ -16,7 +16,11 @@ import os, sys, io, re, json, math, subprocess, shutil
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__)); os.chdir(HERE)
-VOICE = os.path.join('work', 'voice')
+def _voice_dir():
+    try: key = io.open(os.path.join('work', 'current.txt'), encoding='utf-8').read().strip()
+    except Exception: key = ''
+    return os.path.join('work', 'voice_' + key) if key else os.path.join('work', 'voice')
+VOICE = _voice_dir()   # 편별 음성 폴더 (build.py prep 이 정함)
 CHECK_ONLY = '--check' in sys.argv
 
 def cfg(k, d=''):

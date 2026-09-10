@@ -74,7 +74,8 @@ def prompt_variants(prev, nxt):
             {'emotion_preset': EMOTION, 'emotion_intensity': INTENSITY},
             {'emotion_type': 'smart', 'previous_text': prev, 'next_text': nxt}]
 
-def synth(text, prev='', nxt='', out_path='work/voice/out.mp3'):
+def synth(text, prev='', nxt='', out_path=None):
+    out_path = out_path or os.path.join(VDIR, 'out.mp3')
     """한 줄 합성. 앞뒤 문장을 같이 보내면 억양이 자연스럽게 이어진다."""
     prompts = prompt_variants(prev, nxt)
     payload = {
@@ -126,11 +127,18 @@ def synth(text, prev='', nxt='', out_path='work/voice/out.mp3'):
         return False
     return False
 
-os.makedirs('work/voice', exist_ok=True)
+def voice_dir():
+    """편별 음성 폴더: build.py prep 이 work/current.txt 에 적은 콘티 이름 → work/voice_<이름>/"""
+    try: key = io.open('work/current.txt', encoding='utf-8').read().strip()
+    except Exception: key = ''
+    d = os.path.join('work', 'voice_' + key) if key else os.path.join('work', 'voice')
+    os.makedirs(d, exist_ok=True)
+    return d
+VDIR = voice_dir()
 
 if __name__ == '__main__' and '--test' in sys.argv:
-    ok = synth('야구자판기 음성 테스트예요. 삼성이 일위, 케이티가 영점오 게임 차예요.', out_path='work/voice/test.mp3')
-    print('OK → work/voice/test.mp3 재생해 보세요.' if ok else '실패')
+    ok = synth('야구자판기 음성 테스트예요. 삼성이 일위, 케이티가 영점오 게임 차예요.', out_path=os.path.join(VDIR, 'test.mp3'))
+    print(f'OK → {VDIR}/test.mp3 재생해 보세요.' if ok else '실패')
     sys.exit(0 if ok else 1)
 
 def load_lines():
@@ -257,7 +265,7 @@ def synth_index(lines, i, out=None):
     """i번째 줄 합성(앞뒤 문맥 포함). qa_voice.py 가 다시 만들 때도 이걸 쓴다"""
     prev = lines[i-1] if i > 0 else ''
     nxt = lines[i+1] if i+1 < len(lines) else ''
-    out = out or f'work/voice/{i:02d}.mp3'
+    out = out or os.path.join(VDIR, f'{i:02d}.mp3')
     return synth_line(lines[i], prev, nxt, out, pause=0 if i == 0 else None)   # 첫 줄(후킹)은 한 호흡
 
 if __name__ == '__main__':

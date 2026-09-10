@@ -111,8 +111,26 @@ def narr_check(lines):
             warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (열두 점, 스물두 경기)')
     return warns
 
-def prep(ep):
+def ep_key(ep_path):
+    stem = os.path.splitext(os.path.basename(ep_path))[0]
+    return stem
+
+def voice_dir(key=None):
+    """편마다 음성 폴더를 따로 둔다(work/voice_<콘티이름>/). 1편·2편 음성이 서로 덮어쓰지 않게"""
+    if key is None:
+        try: key = io.open(W('current.txt'), encoding='utf-8').read().strip()
+        except Exception: key = ''
+    d = W('voice_' + key) if key else W('voice')
+    os.makedirs(d, exist_ok=True)
+    return d
+
+def VW(*a): return os.path.join(voice_dir(), *a)
+
+def prep(ep, ep_path=None):
     lines = [l['narr'].strip() for l in ep['lines']]
+    if ep_path:
+        io.open(W('current.txt'), 'w', encoding='utf-8').write(ep_key(ep_path))
+        voice_dir(ep_key(ep_path))
     for w_ in narr_check(lines): print('숫자 읽기 경고:', w_)
     io.open(W('narration.txt'), 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
     print(f'work/narration.txt {len(lines)}줄')
@@ -210,11 +228,11 @@ def render(ep, ep_path):
     retried = set()
     i = 0
     while i < N:
-        src = W('voice', f'{i:02d}.mp3')
+        src = VW(f'{i:02d}.mp3')
         if not os.path.exists(src): raise SystemExit(f'음성 없음: {src}')
         d, lead, tail = probe(src)
         ss, to = max(0, lead - 0.06), min(d, tail + 0.12)
-        dst = W('voice', f't{i:02d}.wav')
+        dst = VW(f't{i:02d}.wav')
         rate = spd * pace_of(i, lines[i], N)
         gain = static_gain(src, ss, to)
         def cut(ss, to):
@@ -267,7 +285,7 @@ def render(ep, ep_path):
     for i in range(N):
         end = sst[i + 1] if i + 1 < N else st[i] + clips[i] + 0.4
         pieces = sub_pieces(lines[i])
-        segf = W('voice', f'{i:02d}.segs.json')
+        segf = VW(f'{i:02d}.segs.json')
         if len(pieces) > 1 and os.path.exists(segf):
             # 호흡 구간(' / ')과 자막 조각('|') 수가 같으면 구간 시작마다 자막을 바꾼다
             sg = json.load(open(segf)); durs, pause = sg['durs'], sg['pause']
@@ -287,15 +305,15 @@ def render(ep, ep_path):
         if pieces and len(pieces) > 1: subs[-1][2] = wrap2(' '.join(pieces))
     bounds = [round(st[k] - 0.10, 2) for k in starts[1:]]
     # 3) 나레이션 합치기
-    silence(W('voice', 'lead.wav'), LEAD); silence(W('voice', 'tail.wav'), TAIL)
-    with open(W('voice', 'list.txt'), 'w') as f:
+    silence(VW('lead.wav'), LEAD); silence(VW('tail.wav'), TAIL)
+    with open(VW('list.txt'), 'w') as f:
         f.write("file 'lead.wav'\n")
         for i in range(N):
             f.write(f"file 't{i:02d}.wav'\n")
             if i < N - 1:
-                silence(W('voice', f'g{i:02d}.wav'), gaps[i]); f.write(f"file 'g{i:02d}.wav'\n")
+                silence(VW(f'g{i:02d}.wav'), gaps[i]); f.write(f"file 'g{i:02d}.wav'\n")
         f.write("file 'tail.wav'\n")
-    run(['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', W('voice', 'list.txt'), W('narration.wav')], check=True)
+    run(['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', VW('list.txt'), W('narration.wav')], check=True)
     # 4) 템플릿에 데이터 주입
     EP = dict(ep); EP['subs'] = subs; EP['bounds'] = bounds; EP['logos'] = logos_data_uri(); EP['total'] = round(total, 2)
     html = io.open('template.html', encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
@@ -381,7 +399,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 3: raise SystemExit(__doc__)
     mode, path = sys.argv[1], sys.argv[2]
     ep = load_episode(path)
-    if mode == 'prep': prep(ep)
+    if mode == 'prep': prep(ep, path)
     elif mode == 'render': render(ep, path)
     elif mode == 'thumb':
         EP = dict(ep); EP['logos'] = logos_data_uri()
