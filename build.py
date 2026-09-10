@@ -296,11 +296,18 @@ def render(ep, ep_path):
                 starts_k, acc = [], 0.0
                 for k, d_ in enumerate(durs):
                     starts_k.append(st[i] + max(0, (acc - ss_i)) / rate); acc += d_ + pause
+                items = []
                 for k, pc in enumerate(pieces):
                     a = sp_start if k == 0 else max(sp_start, starts_k[k] - SUBLEAD)
                     b = min(sp_end, starts_k[k + 1] - SUBLEAD) if k + 1 < len(pieces) else sp_end
-                    if b - a < 0.15: b = min(sp_end, a + 0.15)
-                    subs.append([round(a, 2), round(b, 2), pc])
+                    items.append([a, b, pc])
+                # 너무 짧게(0.45초 미만) 스쳐 가는 조각은 앞 조각과 합쳐 보여준다(깜빡임 방지)
+                merged = []
+                for it in items:
+                    if merged and (it[1] - it[0] < 0.45 or merged[-1][1] - merged[-1][0] < 0.45):
+                        merged[-1] = [merged[-1][0], it[1], wrap2(merged[-1][2].replace('\n', ' ') + ' ' + it[2].replace('\n', ' '))]
+                    else: merged.append(it)
+                for a, b, pc in merged: subs.append([round(a, 2), round(b, 2), pc])
                 continue
             print(f'경고: {i:02d} 자막 조각({len(pieces)})과 호흡 구간({len(durs)}) 수가 달라 한 덩어리로 표시')
         subs.append([round(sp_start, 2), round(sp_end, 2), wrap2(' '.join(pieces)) if len(pieces) > 1 else pieces[0]])

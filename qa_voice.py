@@ -234,42 +234,78 @@ def inner_silences(path, thr='-36dB', mind=0.08):
     if len(en) < len(st): en.append(d)
     return [(a, b) for a, b in zip(st, en) if a > 0.05 and b < d - 0.05], d
 
+def nchars(t): return len(re.sub(r'[^가-힣A-Za-z0-9]', '', t))
+
+def assign_bounds(sil, lead, tail, parts, guess=None):
+    """호흡 구간 경계 확정. 경계 후보는 실제 쉼(무음)뿐이다. 쉼이 경계 수보다 적으면(성우가 쉼표에서 안 쉼)
+    어떤 경계가 그 쉼인지는 '말 속도가 일정하다'는 가정으로 고른다: 각 배정마다 구간별 초당 글자 수를 계산해
+    전체 속도와 가장 고르게 맞는 배정을 택한다(whisper 예상 시각은 보조). 쉼이 없는 경계는 연속 발화 구간을 글자 수 비율로 나눈다."""
+    need = len(parts) - 1
+    syl = [max(1, nchars(x)) for x in parts]
+    tot = sum(syl); speech = max(0.2, tail - lead)
+    overall = tot / speech
+    import itertools, math as _m
+    def dist(t, iv):
+        a, e = iv
+        return 0.0 if a <= t <= e else min(abs(t - a), abs(t - e))
+    def build(pairs):
+        bounds = [lead] + [None] * need
+        anchors = [(0, lead, lead)]
+        for k in range(need):
+            j = pairs[k]
+            if j is not None:
+                bounds[k + 1] = sil[j][1]; anchors.append((k + 1, sil[j][1], sil[j][0]))
+        anchors.append((need + 1, tail, tail))
+        cost = 0.0
+        for (i0, start, _), (i1, _, stop) in zip(anchors, anchors[1:]):
+            seg_syl = syl[i0:i1]; tot2 = sum(seg_syl); dur = max(0.05, stop - start)
+            cost += abs(_m.log((tot2 / dur) / overall)) * (tot2 / tot + 0.3)   # 구간 속도가 전체와 다를수록 비용
+            acc = 0
+            for m in range(i0, i1 - 1):
+                acc += syl[m]; bounds[m + 1] = start + (stop - start) * acc / tot2
+        return bounds, cost
+    best = None
+    ns = len(sil)
+    # 경계마다 (쉼 번호 또는 None), 쉼 번호는 증가해야 함
+    def gen(k, j):
+        if k == need: yield (); return
+        for rest in gen(k + 1, j): yield (None,) + rest
+        for jj in range(j, ns):
+            for rest in gen(k + 1, jj + 1): yield (jj,) + rest
+    for pairs in gen(0, 0):
+        bounds, cost = build(pairs)
+        used = sum(1 for x in pairs if x is not None)
+        cost += 0.15 * (ns - used)                       # 안 쓴 쉼(조각 중간에 쉰 셈)은 약간 불리
+        cost += 0.25 * (need - used)                     # 쉼 없는 경계(비율 추정)도 약간 불리
+        if guess:
+            cost += 0.15 * sum(dist(guess[k], sil[pairs[k]]) for k in range(need) if pairs[k] is not None)
+        if best is None or cost < best[0]: best = (cost, bounds, used)
+    _, bounds, used = best
+    bounds[0] = 0.0
+    for k in range(1, need + 1): bounds[k] = round(max(bounds[k], bounds[k - 1] + 0.15), 3)
+    return bounds, used
+
 def refine_subs(i, line):
-    """호흡 구간 경계 확정. 원칙: 경계는 반드시 '실제 쉼(무음)의 끝'에 둔다 — 자막이 말 도중에 넘어가지 않도록.
-    1) tts.py 가 쉼을 전부 찾아 맞췄으면(breaths == 경계 수) 그 경계를 그대로 쓴다.
-    2) 아니면 whisper 단어 시각으로 대략 잡은 뒤, 가장 가까운 쉼 끝(±0.6초)으로 끌어당긴다."""
+    """호흡 구간 경계 확정 → NN.segs.json. 자막이 말 도중에 넘어가거나 잠깐 깜빡이지 않도록 경계는 쉼 끝에, 쉼이 없으면 글자 비율로"""
     parts = [p.strip() for p in line.split('/') if p.strip()]
     if len(parts) <= 1: return 'single'
     path = os.path.join(VOICE, f'{i:02d}.mp3'); sj = path.replace('.mp3', '.segs.json')
     need = len(parts) - 1
-    old = None
-    try: old = json.load(open(sj))
-    except Exception: pass
-    if old and old.get('breaths') == need and len(old.get('bounds', [])) == need + 1:
-        return 'silence ' + ' '.join(f'{x:.2f}' for x in old['bounds'][1:])
     sil, d = inner_silences(path)
+    x = load(path)
+    F, h = frames(x, 0.03, 0.01)
+    rms = np.sqrt((F ** 2).mean(axis=1)) if len(F) else np.zeros(0)
+    on = np.where(rms > max(0.01, (rms.max() if len(rms) else 0) * 0.06))[0]
+    lead = on[0] * 0.01 if len(on) else 0.0
+    tail = (on[-1] * 0.01 + 0.03) if len(on) else d
     words = align_words(path, line)
-    b = bounds_from_words(words, parts) if words else None
-    if not b:
-        # whisper 없음/불일치: 쉼이 경계 수와 같으면 쉼 끝을 그대로
-        if len(sil) == need:
-            b = [0.0] + [round(e, 3) for _, e in sil]
-            durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
-            json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'src': 'silence'}, open(sj, 'w'))
-            return 'silence ' + ' '.join(f'{x:.2f}' for x in b[1:])
-        return 'estimate' if old else 'estimate(경계 못 찾음)'
-    # whisper 경계를 가장 가까운 쉼 끝으로 끌어당김 (쉼 하나를 두 경계가 같이 쓰지 않게)
-    used, snapped, prev = set(), [0.0], 0.0
-    for t in b[1:]:
-        dist = lambda a, e: 0.0 if a <= t <= e else min(abs(t - a), abs(t - e))   # 쉼 구간까지의 거리(안이면 0)
-        cand = [(dist(a, e), k, e) for k, (a, e) in enumerate(sil) if k not in used and dist(a, e) <= 0.6 and e > prev + 0.15]
-        if cand:
-            _, k, e = min(cand); used.add(k); t = e
-        t = max(t, prev + 0.15); snapped.append(round(t, 3)); prev = t
-    b = snapped
+    guess = bounds_from_words(words, parts) if words else None
+    guess = guess[1:] if guess else None
+    b, matched = assign_bounds(sil, lead, tail, parts, guess)
     durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
-    json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'src': 'whisper+silence'}, open(sj, 'w'))
-    return 'whisper+silence ' + ' '.join(f'{x:.2f}' for x in b[1:])
+    src = f'쉼 {matched}/{need}' + (' +whisper' if guess else '') + ('' if matched == need else ' +비율')
+    json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'src': src}, open(sj, 'w'))
+    return src + ' ' + ' '.join(f'{x:.2f}' for x in b[1:])
 
 # ---------- 메인 ----------
 def main():
