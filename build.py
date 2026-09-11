@@ -55,12 +55,26 @@ def game_date(ep):
         return dt.isoformat()
     except Exception: return d
 
+SERIES_BY_SLOT = {'1': '야구순위', '2': '야구이슈'}   # 하루 콘티 슬롯 → 시리즈 폴더 (콘티에 "series" 를 적으면 그게 우선)
+
+def series_of(ep, ep_path):
+    """결과물을 나눠 담을 시리즈 폴더 이름: 콘티의 series → 없으면 슬롯 번호(1=야구순위, 2=야구이슈)"""
+    if ep.get('series'): return str(ep['series']).strip()
+    stem = os.path.splitext(os.path.basename(ep_path))[0]
+    key = stem.rsplit('_', 1)[-1] if '_' in stem else stem
+    return SERIES_BY_SLOT.get(key, '야구순위')
+
 def out_paths(ep, ep_path):
-    """(영상 mp4, 썸네일 jpg, 유튜브 제목설명 txt) 경로. 폴더는 영상/경기날짜/, 이름은 번호_팀"""
+    """(영상 mp4, 썸네일 jpg, 유튜브 제목설명 txt) 경로. 폴더는 <결과물 루트>/<시리즈>/경기날짜/, 이름은 번호_팀
+       결과물 루트: 설정 OUTPUT_DIR(드라이브) 또는 상위 폴더. 상위 폴더일 땐 야구자판기\야구순위\영상\날짜 처럼 시리즈 폴더 안의 영상\ 에 둔다"""
     stem = os.path.splitext(os.path.basename(ep_path))[0]
     key = stem.rsplit('_', 1)[-1] if '_' in stem else stem
     date = game_date(ep)
-    d = os.path.abspath(os.path.join(OUT_ROOT, date))
+    series = series_of(ep, ep_path)
+    if os.path.abspath(OUT_ROOT) == os.path.abspath(os.path.join(HERE, '..', '영상')):
+        d = os.path.abspath(os.path.join(HERE, '..', series, '영상', date))       # 드라이브 없을 때: 야구자판기\<시리즈>\영상\날짜
+    else:
+        d = os.path.abspath(os.path.join(OUT_ROOT, series, date))                # 드라이브: 야구자판기_영상확인\<시리즈>\날짜
     base = os.path.join(d, f'{key}_{team_label(ep)}')
     return base + '.mp4', base + '_썸네일.jpg', base + '_유튜브.txt'
 
