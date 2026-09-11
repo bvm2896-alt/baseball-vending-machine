@@ -112,9 +112,10 @@ def _photo_names(ep):
     walk(ep.get('scenes') or [])
     return names
 
+PHOTO_SIZES = {}   # 이름 → [가로, 세로] (photos_data_uri 가 채움, EP.photoSizes 로 템플릿에 전달)
 def photos_data_uri(ep, ep_path=None):
     """콘티가 쓰는 사진만 data URI 로 (키 = 콘티에 적힌 이름 그대로). 큰 사진은 렌더 html 이 무거워지니 1600px 이하로 줄여 넣는다"""
-    out = {}
+    out = {}; sizes = PHOTO_SIZES
     names = _photo_names(ep)
     if not names: return out
     dirs = [d for d in photo_dirs(ep_key(ep_path) if ep_path else '') if d]
@@ -139,6 +140,13 @@ def photos_data_uri(ep, ep_path=None):
         ext = os.path.splitext(src)[1].lower()
         mime = 'image/png' if ext == '.png' else 'image/webp' if ext == '.webp' else 'image/jpeg'
         out[name] = f'data:{mime};base64,' + base64.b64encode(open(src, 'rb').read()).decode()
+        # 원본 크기(템플릿이 작은 사진은 늘리지 않고 흐린 배경 위에 원본 크기로 놓는다)
+        try:
+            pr = run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', found])
+            w_, h_ = [int(x) for x in pr.stdout.strip().split(',')[:2]]
+            sizes[name] = [w_, h_]
+            if min(w_, h_) < 500: print(f'참고: 사진 "{name}" 해상도 낮음({w_}x{h_}) → 화면에서 흐릿할 수 있음. 900px 이상 권장')
+        except Exception: pass
     print(f'사진 {len(out)}/{len(names)}장 넣음')
     return out
 
@@ -420,6 +428,7 @@ def render(ep, ep_path):
     # 4) 템플릿에 데이터 주입
     EP = dict(ep); EP['subs'] = subs; EP['bounds'] = bounds; EP['logos'] = logos_data_uri(); EP['total'] = round(total, 2)
     EP['photos'] = photos_data_uri(ep, ep_path)  # 야구이슈 편 사진(없으면 빈 dict)
+    EP['photoSizes'] = PHOTO_SIZES
     tpl = template_for(ep); print('템플릿:', tpl)
     html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
     html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)

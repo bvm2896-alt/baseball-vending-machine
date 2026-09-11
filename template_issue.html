@@ -152,10 +152,27 @@ function photoSrc(name) {
   return k ? PHOTO[k] : '';
 }
 /* 사진 틀: 사진이 있으면 사진, 없으면 팀 로고가 든 연한 상자(렌더가 멈추지 않게). h=높이, focus=object-position(top/center) */
+const PSIZE = EP.photoSizes || {};
+function photoSize(name) {
+  if (!name) return null;
+  const base = String(name).replace(/\.[a-z0-9]+$/i, '');
+  const k = Object.keys(PSIZE).find(x => x === name || x === base || x.replace(/\.[a-z0-9]+$/i, '') === base);
+  return k ? PSIZE[k] : null;
+}
+/* 사진을 틀에 어떻게 넣을지: 원본이 틀보다 크면 잘라 채우기(cover), 작으면 늘리지 않고 원본 크기로 놓고 뒤에 같은 사진을 흐리게 깔아 채운다(흐려짐 방지).
+   s.fit = 'cover' | 'contain' 으로 강제할 수 있다 */
+function photoImg(s, src, w, h) {
+  const sz = photoSize(s.img), fit = s.fit || (sz && (sz[0] < w * 0.9 && sz[1] < h * 0.9) ? 'contain' : 'cover');
+  if (fit === 'cover') return `<img src="${src}" style="object-position:${esc(s.focus || 'center')}">`;
+  const scale = sz ? Math.min(1.25, w / sz[0], h / sz[1]) : 1, iw = sz ? Math.round(sz[0] * scale) : 'auto', ih = sz ? Math.round(sz[1] * scale) : 'auto';
+  return `<img src="${src}" style="position:absolute;inset:-40px;width:calc(100% + 80px);height:calc(100% + 80px);object-fit:cover;filter:blur(28px) saturate(1.1);opacity:.85">
+    <div style="position:absolute;inset:0;background:rgba(18,22,31,.12)"></div>
+    <img src="${src}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${iw}${sz ? 'px' : ''};height:${ih}${sz ? 'px' : ''};object-fit:contain;border-radius:18px;box-shadow:0 14px 40px rgba(0,0,0,.35)">`;
+}
 function photoBox(s, h = 560, p = 1, extra = '') {
   const src = photoSrc(s.img), team = s.team || (s.teams || [])[0];
   const inner = src
-    ? `<img src="${src}" style="object-position:${esc(s.focus || 'center')}">`
+    ? photoImg(s, src, 900, h)
     : `<div class="col" style="width:100%;height:100%;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${team ? chip(T(team), 'L') : ''}</div>`;
   const tag = s.tag ? `<div class="tag">${esc(s.tag)}</div>` : '';
   const cap = s.caption ? `<div class="cap">${br(s.caption)}</div>` : '';
