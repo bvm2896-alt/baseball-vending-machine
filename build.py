@@ -85,13 +85,14 @@ LOGO_DIRS = [os.path.join(HERE, '..', 'KBO_logos'), os.path.join(HERE, 'KBO_logo
 
 # 야구이슈 편 사진: 콘티 장면의 img("김도영_번트.jpg" 또는 확장자 없이 "김도영_번트")를 아래 순서로 찾는다.
 #   1) 야구자판기\야구이슈\재료\사진\<콘티 이름>\   (예: 사진\2026-09-11_이슈\ — 그 편 전용)
-#   2) 야구자판기\야구이슈\재료\사진\공용\           (선수 프로필처럼 매번 쓰는 사진)
-#   3) 야구자판기\야구이슈\재료\사진\                (옛 위치)
+#   2) 야구자판기\선수이미지\                        (선수·감독 프로필 — 사용자가 계속 모아 두는 공용 폴더. 파일명 = 이름, 예: 김도영.jpg)
+#   3) 야구자판기\야구이슈\재료\사진\공용\ , 야구자판기\야구이슈\재료\사진\  (옛 위치)
 # 없으면 템플릿이 로고로 대신 그린다.
 PHOTO_ROOT = os.path.join(HERE, '..', '야구이슈', '재료', '사진')
+PLAYER_IMG_DIR = os.path.join(HERE, '..', '선수이미지')
 PHOTO_EXTS = ('.jpg', '.jpeg', '.png', '.webp')
 def photo_dirs(ep_key_name=''):
-    return [os.path.join(PHOTO_ROOT, ep_key_name) if ep_key_name else '', os.path.join(PHOTO_ROOT, '공용'), PHOTO_ROOT, os.path.join(HERE, 'photos')]
+    return [os.path.join(PHOTO_ROOT, ep_key_name) if ep_key_name else '', PLAYER_IMG_DIR, os.path.join(PHOTO_ROOT, '공용'), PHOTO_ROOT, os.path.join(HERE, 'photos')]
 
 def template_for(ep):
     """시리즈별 템플릿: 야구이슈 이고 template_issue.html 이 있으면 그것(화이트), 아니면 template.html(순위 편, 다크)"""
@@ -129,7 +130,7 @@ def photos_data_uri(ep, ep_path=None):
                     found = os.path.join(d, f); break
             if found: break
         if not found:
-            print(f'경고: 사진 없음 "{name}" → 로고로 대신 표시 (야구이슈\\재료\\사진\\<콘티이름>\\ 에 넣어 주세요)')
+            print(f'경고: 사진 없음 "{name}" → 로고로 대신 표시 (야구이슈\\재료\\사진\\<콘티이름>\\ 또는 선수이미지\\ 에 넣어 주세요)')
             continue
         src = found
         try:
