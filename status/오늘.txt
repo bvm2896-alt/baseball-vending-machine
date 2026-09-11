@@ -1,16 +1,13 @@
 날짜: 2026-09-11
-단계: 업로드
+단계: 업로드완료
 
 영상 1 파일: D:\★희수\야구자판기\영상\2026-09-10\1_삼성_KT.mp4
 영상 2 파일: D:\★희수\야구자판기\영상\2026-09-10\2_LG_KIA.mp4
+영상 1 유튜브: 삼성 vs KT 1위 경우의 수, 승률 같으면 삼성이 이기는 이유 #야구순위  https://youtu.be/7tIYwtQkwlM  (private)
+영상 2 유튜브: LG vs 기아 3위 경우의 수, 맞대결 5경기·상대전적 7승 4패의 의미 #야구순위  https://youtu.be/j58njlLdPFA  (private)
 → 영상 폴더에서 확인한 뒤 업로드.txt 신호를 주면 유튜브에 올립니다
 
 기록:
-[02:14:45] [1] 영상 완성 89.3초 → H:\내 드라이브\야구자판기_영상확인\2026-09-10\1_삼성_KT.mp4
-[02:14:48] [1] 영상 준비 완료. 확인 후 업로드.txt 신호를 주면 올립니다
-[02:14:48] [2] 음성 생성 시작
-[02:15:17] [2] 음성 검수 시작
-[02:16:12] [2] 음성 검수:   14 쉼 2/2 +whisper 0.88 3.94 |   15 쉼 1/1 +whisper 2.33 | 남은 주의 줄: [0, 4, 5, 14] (00: 톤 이탈 -3.9반음; 04: 긴 무음 [0.7]; 05: 긴 무음 [0.91]; 14: 톤 이탈 -2.7반음)
 [02:16:14] [2] 영상 렌더 시작 (3~5분)
 [02:20:03] [2] 영상 완성 83.3초 → H:\내 드라이브\야구자판기_영상확인\2026-09-10\2_LG_기아.mp4
 [02:20:05] [2] 영상 준비 완료. 확인 후 업로드.txt 신호를 주면 올립니다
@@ -36,3 +33,10 @@
 [09:29:46] [2] 영상 준비 완료. 확인 후 업로드.txt 신호를 주면 올립니다
 [09:29:46] 감시 시작 (안전 종료 12:00)
 [09:38:26] [1] 업로드 신호 → 비공개 업로드
+[09:38:56] [1] 비공개 업로드 완료 https://youtu.be/7tIYwtQkwlM
+[09:38:58] [1] 썸네일 등록 실패: uthenticated user doesn't have permissions to upload and set custom video thumbnails.", 'domain': 'youtube.thumbnail', 'reason': 'forbidden', 'location': 'Authorization', 'locationType': 'header'}]">
+
+[09:38:58] [2] 업로드 신호 → 비공개 업로드
+[09:39:24] [2] 비공개 업로드 완료 https://youtu.be/j58njlLdPFA
+[09:39:27] [2] 썸네일 등록 실패: uthenticated user doesn't have permissions to upload and set custom video thumbnails.", 'domain': 'youtube.thumbnail', 'reason': 'forbidden', 'location': 'Authorization', 'locationType': 'header'}]">
+

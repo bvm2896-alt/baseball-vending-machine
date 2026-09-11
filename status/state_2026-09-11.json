@@ -1,7 +1,20 @@
 {
  "date": "2026-09-11",
- "step": "업로드",
- "videos": {},
+ "step": "업로드완료",
+ "videos": {
+  "1": {
+   "id": "7tIYwtQkwlM",
+   "privacy": "private",
+   "title": "삼성 vs KT 1위 경우의 수, 승률 같으면 삼성이 이기는 이유 #야구순위",
+   "ep": "episodes/2026-09-11_1.json"
+  },
+  "2": {
+   "id": "j58njlLdPFA",
+   "privacy": "private",
+   "title": "LG vs 기아 3위 경우의 수, 맞대결 5경기·상대전적 7승 4패의 의미 #야구순위",
+   "ep": "episodes/2026-09-11_2.json"
+  }
+ },
  "built": {
   "1": {
    "video": "D:\\★희수\\야구자판기\\영상\\2026-09-10\\1_삼성_KT.mp4",
@@ -78,6 +91,11 @@
   "[09:29:39] [2] 영상 완성 85.2초 → D:\\★희수\\야구자판기\\영상\\2026-09-10\\2_LG_KIA.mp4",
   "[09:29:46] [2] 영상 준비 완료. 확인 후 업로드.txt 신호를 주면 올립니다",
   "[09:29:46] 감시 시작 (안전 종료 12:00)",
-  "[09:38:26] [1] 업로드 신호 → 비공개 업로드"
+  "[09:38:26] [1] 업로드 신호 → 비공개 업로드",
+  "[09:38:56] [1] 비공개 업로드 완료 https://youtu.be/7tIYwtQkwlM",
+  "[09:38:58] [1] 썸네일 등록 실패: uthenticated user doesn't have permissions to upload and set custom video thumbnails.\", 'domain': 'youtube.thumbnail', 'reason': 'forbidden', 'location': 'Authorization', 'locationType': 'header'}]\">\n",
+  "[09:38:58] [2] 업로드 신호 → 비공개 업로드",
+  "[09:39:24] [2] 비공개 업로드 완료 https://youtu.be/j58njlLdPFA",
+  "[09:39:27] [2] 썸네일 등록 실패: uthenticated user doesn't have permissions to upload and set custom video thumbnails.\", 'domain': 'youtube.thumbnail', 'reason': 'forbidden', 'location': 'Authorization', 'locationType': 'header'}]\">\n"
  ]
 }
