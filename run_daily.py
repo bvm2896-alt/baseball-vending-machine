@@ -10,6 +10,7 @@
   업로드.txt  만들어 둔 영상을 유튜브에 올림. 비어 있으면 전부(비공개), "1"/"2" 면 그 번호만, "공개" 가 들어 있으면 바로 공개로
   공개.txt    올라간 영상을 공개로 전환. 비어 있으면 전부, "1" 또는 "2" 면 그 번호만
   재생성.txt  내용이 비어 있으면 전부, "1"/"2" 면 그 번호만 다시 만듦 ("1 lines=3,7" 이면 그 줄 음성만 다시)
+  메타.txt    이미 올린 영상의 제목·설명·태그를 콘티 youtube 항목으로 교체(재업로드 없음). 비어 있으면 전부, "1"/"2" 면 그 번호만
   종료.txt / 절전.txt
 설정.txt 의 AUTO_UPLOAD=1 이면 만들자마자 비공개로 자동 업로드(기본 0: 업로드.txt 신호를 기다림)
 상태는 상위 폴더의 오늘.txt 에 한국어로 기록.
@@ -298,6 +299,17 @@ def check_signals(during_build=False):
             if rc: log(f'[{k}] 공개 전환 실패: ' + out[-200:])
             else: v['privacy'] = 'public'; log(f'[{k}] 공개 전환 완료', '공개')
         if not state['videos']: log('공개할 영상이 없음')
+    sel = take('메타.txt')
+    if sel is not None:
+        # 이미 올린 영상의 제목·설명·태그를 콘티 파일 youtube 항목으로 교체(재업로드 없음). 비어 있으면 전부, "1"/"2" 면 그 번호만
+        for k in targets(sel):
+            v = state['videos'][k]; b = state.get('built', {}).get(k) or {}
+            ep_path = b.get('ep') or next((p for p in EPS if key_of(p) == k), None)
+            if not ep_path or not os.path.exists(ep_path): log(f'[{k}] 콘티 파일을 못 찾아 메타 갱신 불가'); continue
+            rc, out = py('upload.py', 'update', v['id'], ep_path)
+            if rc: log(f'[{k}] 제목·설명 갱신 실패: ' + out[-200:])
+            else: log(f'[{k}] 제목·설명 갱신 완료', '메타')
+        if not state['videos']: log('갱신할 영상이 없음')
     sel = take('재생성.txt')
     if sel is not None:
         # 형식: "all" | "1" | "1 2" | "1 lines=3,7" (그 줄 음성만 다시 뽑고 렌더)

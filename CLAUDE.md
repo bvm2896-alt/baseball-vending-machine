@@ -33,6 +33,8 @@ git pull → fetch_rank.js → fetch_news.js → fetch_schedule.js → 오늘 �
 - 실행 cmd 파일은 ASCII·CRLF. 프로그램 폴더를 OneDrive/구글드라이브 동기화 폴더 안에 두지 않는다(결과물만 드라이브로).
 
 ## 콘티 규칙 (episodes JSON)
+- 유튜브 제목: **맨 앞에 경기 날짜와 두 구단명**, 뒤에 핵심 문구, 끝에 해시태그 `#야구순위 #구단 #구단`(예: "9월 10일 삼성 vs KT 1위 경우의 수, 승률 같으면 삼성이 이기는 이유 #야구순위 #삼성 #KT"). 100자 이내. 설명 첫 줄은 기준 날짜, 설명 끝에 #Shorts.
+- 업로드 뒤 제목·설명만 고칠 땐 재업로드 금지 → 콘티 youtube 항목 수정 후 `메타.txt` 신호(감시 중일 때) 또는 `메타갱신.cmd`.
 - `lines[].narr` 나레이션, `lines[].sub` 자막(`|` 로 호흡 구간과 같은 수로 나눔, `\n` 줄바꿈), `scenes` 장면(hook/big/table/streaks/versus/matchup/need/wins/schedule/shift/rival/verdict/question), `thumb`, `youtube`, `standings`, `gameDate`.
 - 장면 옵션: `wins` {rows:[{team,total,need,label}],text} 남은 경기 칸에 필요 승수 채우기 / `schedule` {title,items:[{date,teams:[a,b],place,tbd}],text} 날짜별 맞대결 / `next` {팀:상대} 또는 카드의 `next`·`nextNote` → 주인공 로고 아래 "vs 작은 로고" (hook·matchup·versus 지원) / `num` 번호 배지(big·matchup·versus).
 - 나레이션: 영어 팀명은 한글 발음(기아/엘지/케이티/엔씨/에스에스지), 콤마·마침표 금지(소수점·물음표 예외), 어미 ~인데요/~에요/~거든요, “~입니다” 금지, 반올림 금지.
