@@ -13,6 +13,17 @@
 설정.txt: QA_RETRY=2  QA_PITCH_TOL=2.5(반음)  QA_RATE_MIN=4.3  QA_RATE_MAX=8.5  QA_WHISPER=small  QA_EDGE_SEC=0.3
 """
 import os, sys, io, re, json, math, subprocess, shutil
+
+def open_cfg(path='설정.txt'):
+    """설정.txt 열기 — 메모장이 ANSI(cp949)로 저장해도 읽히게 utf-8 → cp949 순서로 시도"""
+    import io as _io
+    for enc in ('utf-8-sig', 'cp949', 'euc-kr'):
+        try:
+            f = _io.open(path, encoding=enc); f.read(); f.seek(0); return f
+        except UnicodeDecodeError:
+            try: f.close()
+            except Exception: pass
+    return _io.open(path, encoding='utf-8-sig', errors='replace')
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__)); os.chdir(HERE)
@@ -25,7 +36,7 @@ CHECK_ONLY = '--check' in sys.argv
 
 def cfg(k, d=''):
     try:
-        for line in io.open('설정.txt', encoding='utf-8-sig'):
+        for line in open_cfg():
             line = line.strip()
             if line and not line.startswith('#') and '=' in line:
                 kk, v = line.split('=', 1)

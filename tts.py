@@ -6,6 +6,17 @@
 설정은 같은 폴더의 설정.txt 에서 읽는다 (TYPECAST_API_KEY, TYPECAST_VOICE_ID)
 """
 import os, sys, json, time, subprocess, io
+
+def open_cfg(path='설정.txt'):
+    """설정.txt 열기 — 메모장이 ANSI(cp949)로 저장해도 읽히게 utf-8 → cp949 순서로 시도"""
+    import io as _io
+    for enc in ('utf-8-sig', 'cp949', 'euc-kr'):
+        try:
+            f = _io.open(path, encoding=enc); f.read(); f.seek(0); return f
+        except UnicodeDecodeError:
+            try: f.close()
+            except Exception: pass
+    return _io.open(path, encoding='utf-8-sig', errors='replace')
 import requests
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -13,7 +24,7 @@ os.chdir(HERE)
 
 def load_cfg():
     cfg = {}
-    with io.open('설정.txt', encoding='utf-8-sig') as f:
+    with open_cfg() as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith('#') or '=' not in line:

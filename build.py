@@ -10,6 +10,17 @@ episode.json 하나로 영상을 만든다.
 """
 import json, re, subprocess, os, shutil, sys, base64, io, datetime
 
+def open_cfg(path='설정.txt'):
+    """설정.txt 열기 — 메모장이 ANSI(cp949)로 저장해도 읽히게 utf-8 → cp949 순서로 시도"""
+    import io as _io
+    for enc in ('utf-8-sig', 'cp949', 'euc-kr'):
+        try:
+            f = _io.open(path, encoding=enc); f.read(); f.seek(0); return f
+        except UnicodeDecodeError:
+            try: f.close()
+            except Exception: pass
+    return _io.open(path, encoding='utf-8-sig', errors='replace')
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(HERE)
 
@@ -19,7 +30,7 @@ WORK = 'work'                                        # 중간 파일(음성, 프
 OUT_ROOT = os.path.join(HERE, '..', '영상')           # 결과물: 영상/2026-09-06/1_두산.mp4
 def _cfg_raw(k, default=''):
     try:
-        for line in io.open(os.path.join(HERE, '설정.txt'), encoding='utf-8-sig'):
+        for line in open_cfg(os.path.join(HERE, '설정.txt')):
             line = line.strip()
             if line and not line.startswith('#') and '=' in line:
                 kk, v = line.split('=', 1)
@@ -65,7 +76,7 @@ def series_of(ep, ep_path):
     return SERIES_BY_SLOT.get(key, '야구순위')
 
 def out_paths(ep, ep_path):
-    """(영상 mp4, 썸네일 jpg, 유튜브 제목설명 txt) 경로. 폴더는 <결과물 루트>/<시리즈>/경기날짜/, 이름은 번호_팀
+    r"""(영상 mp4, 썸네일 jpg, 유튜브 제목설명 txt) 경로. 폴더는 <결과물 루트>/<시리즈>/경기날짜/, 이름은 번호_팀
        결과물 루트: 설정 OUTPUT_DIR(드라이브) 또는 상위 폴더. 상위 폴더일 땐 야구자판기\야구순위\영상\날짜 처럼 시리즈 폴더 안의 영상\ 에 둔다"""
     stem = os.path.splitext(os.path.basename(ep_path))[0]
     key = stem.rsplit('_', 1)[-1] if '_' in stem else stem
@@ -483,7 +494,7 @@ def write_youtube_txt(ep, path, dur=0):
 
 def cfg_get(k, default=''):
     try:
-        for line in io.open('설정.txt', encoding='utf-8-sig'):
+        for line in open_cfg():
             line = line.strip()
             if line and not line.startswith('#') and '=' in line:
                 kk, v = line.split('=', 1)

@@ -17,6 +17,17 @@
 """
 import os, sys, io, json, time, datetime, subprocess, traceback, glob, re
 
+def open_cfg(path='설정.txt'):
+    """설정.txt 열기 — 메모장이 ANSI(cp949)로 저장해도 읽히게 utf-8 → cp949 순서로 시도"""
+    import io as _io
+    for enc in ('utf-8-sig', 'cp949', 'euc-kr'):
+        try:
+            f = _io.open(path, encoding=enc); f.read(); f.seek(0); return f
+        except UnicodeDecodeError:
+            try: f.close()
+            except Exception: pass
+    return _io.open(path, encoding='utf-8-sig', errors='replace')
+
 HERE = os.path.dirname(os.path.abspath(__file__)); os.chdir(HERE)
 BASE = os.path.abspath(os.path.join(HERE, '..'))
 SIG = lambda n: os.path.join(BASE, n)
@@ -25,7 +36,7 @@ ARGS = sys.argv[1:]
 # 콘티 날짜 = '올리는 날'. 저녁(설정 NIGHT_HOUR, 기본 18시) 이후에 돌리면 그날 경기 결과로 '다음 날' 콘티를 만드는 것이므로 날짜를 하루 넘긴다.
 def _cfg(k, d=''):
     try:
-        for line in io.open('설정.txt', encoding='utf-8-sig'):
+        for line in open_cfg():
             line = line.strip()
             if line and not line.startswith('#') and '=' in line and line.split('=', 1)[0].strip() == k: return line.split('=', 1)[1].strip()
     except Exception: pass
@@ -56,7 +67,7 @@ import build   # 결과물 경로 계산(영상/날짜/번호_팀.mp4)
 
 def cfg():
     c = {}
-    for line in io.open('설정.txt', encoding='utf-8-sig'):
+    for line in open_cfg():
         line = line.strip()
         if line and not line.startswith('#') and '=' in line:
             k, v = line.split('=', 1); c[k.strip()] = v.strip()
