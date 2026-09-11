@@ -74,11 +74,16 @@ def git(*args, timeout=90):
 def git_pull(quiet=True):
     """깃허브와 맞춘다: 이 PC 에서 바뀐 파일(Claude 가 PC 연결로 넣은 것)은 먼저 올리고, 최신을 받아온다 (실패해도 계속 진행)"""
     if not REPO_GIT: return False
+    try: subprocess.run([sys.executable, '-X', 'utf8', 'sync_assets.py'], cwd=HERE, capture_output=True, timeout=120)
+    except Exception: pass
     git('add', '-A')
     git('commit', '-q', '-m', f'pc update {now()}')
     r = git('pull', '--rebase', '-q')
     if r is not None and r.returncode == 0:
         git('push', '-q')
+    try:   # 사진 폴더(선수이미지, 야구이슈\재료\사진) <-> assets\ 동기화 (깃으로 받은 사진을 바깥 폴더로, 바깥 새 사진을 assets 로)
+        subprocess.run([sys.executable, '-X', 'utf8', 'sync_assets.py'], cwd=HERE, capture_output=True, timeout=120)
+    except Exception: pass
     if r is None or r.returncode != 0:
         if not quiet: log('깃허브 받기 실패: ' + ((r.stderr if r else '') or '')[-160:])
         return False

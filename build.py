@@ -91,8 +91,10 @@ LOGO_DIRS = [os.path.join(HERE, '..', 'KBO_logos'), os.path.join(HERE, 'KBO_logo
 PHOTO_ROOT = os.path.join(HERE, '..', '야구이슈', '재료', '사진')
 PLAYER_IMG_DIR = os.path.join(HERE, '..', '선수이미지')
 PHOTO_EXTS = ('.jpg', '.jpeg', '.png', '.webp')
+ASSETS = os.path.join(HERE, 'assets')   # 깃허브로 주고받는 사진 사본 (sync_assets.py 가 바깥 폴더와 맞춘다)
 def photo_dirs(ep_key_name=''):
-    return [os.path.join(PHOTO_ROOT, ep_key_name) if ep_key_name else '', PLAYER_IMG_DIR, os.path.join(PHOTO_ROOT, '공용'), PHOTO_ROOT, os.path.join(HERE, 'photos')]
+    return [os.path.join(PHOTO_ROOT, ep_key_name) if ep_key_name else '', PLAYER_IMG_DIR, os.path.join(PHOTO_ROOT, '공용'), PHOTO_ROOT,
+            os.path.join(ASSETS, '이슈사진', ep_key_name) if ep_key_name else '', os.path.join(ASSETS, '선수이미지'), os.path.join(HERE, 'photos')]
 
 def template_for(ep):
     """시리즈별 템플릿: 야구이슈 이고 template_issue.html 이 있으면 그것(화이트), 아니면 template.html(순위 편, 다크)"""
@@ -111,6 +113,7 @@ def _photo_names(ep):
         elif isinstance(x, list):
             for vv in x: walk(vv)
     walk(ep.get('scenes') or [])
+    walk(ep.get('thumb') or {})
     return names
 
 PHOTO_SIZES = {}   # 이름 → [가로, 세로] (photos_data_uri 가 채움, EP.photoSizes 로 템플릿에 전달)
@@ -133,19 +136,22 @@ def photos_data_uri(ep, ep_path=None):
             print(f'경고: 사진 없음 "{name}" → 로고로 대신 표시 (야구이슈\\재료\\사진\\<콘티이름>\\ 또는 선수이미지\\ 에 넣어 주세요)')
             continue
         src = found
-        try:
-            tmp = W('photo_' + re.sub(r'[^0-9A-Za-z가-힣_.-]', '_', base) + '.jpg')
-            r = run(['ffmpeg', '-y', '-loglevel', 'error', '-i', found, '-vf', "scale='min(1600,iw)':-2", '-q:v', '3', tmp])
-            if r.returncode == 0 and os.path.exists(tmp): src = tmp
-        except Exception: pass
+        if not found.lower().endswith('.png'):   # png(투명 가능)는 원본 그대로, jpg/webp 만 1600px 로 줄인다
+            try:
+                tmp = W('photo_' + re.sub(r'[^0-9A-Za-z가-힣_.-]', '_', base) + '.jpg')
+                r = run(['ffmpeg', '-y', '-loglevel', 'error', '-i', found, '-vf', "scale='min(1600,iw)':-2", '-q:v', '3', tmp])
+                if r.returncode == 0 and os.path.exists(tmp): src = tmp
+            except Exception: pass
         ext = os.path.splitext(src)[1].lower()
         mime = 'image/png' if ext == '.png' else 'image/webp' if ext == '.webp' else 'image/jpeg'
         out[name] = f'data:{mime};base64,' + base64.b64encode(open(src, 'rb').read()).decode()
         # 원본 크기(템플릿이 작은 사진은 늘리지 않고 흐린 배경 위에 원본 크기로 놓는다)
         try:
-            pr = run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height', '-of', 'csv=p=0', found])
-            w_, h_ = [int(x) for x in pr.stdout.strip().split(',')[:2]]
-            sizes[name] = [w_, h_]
+            pr = run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height,pix_fmt', '-of', 'csv=p=0', found])
+            parts = pr.stdout.strip().split(',')
+            w_, h_ = int(parts[0]), int(parts[1])
+            alpha = 1 if (len(parts) > 2 and re.search(r'a|pal', parts[2])) else 0   # 투명 배경(rgba·pal8) → 템플릿이 흐린 배경 대신 단색 배경에 놓는다
+            sizes[name] = [w_, h_, alpha]
             if min(w_, h_) < 500: print(f'참고: 사진 "{name}" 해상도 낮음({w_}x{h_}) → 화면에서 흐릿할 수 있음. 900px 이상 권장')
         except Exception: pass
     print(f'사진 {len(out)}/{len(names)}장 넣음')
@@ -502,7 +508,11 @@ def pick_bgm(ep):
 def make_thumb(EP, out):
     """thumb.html 에 데이터 주입 → out (jpg, 2MB 이하)"""
     if not EP.get('thumb'): return None
-    html = io.open('thumb.html', encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
+    # 야구이슈 편은 화이트 사진형 썸네일(thumb_issue.html), 순위 편은 기존 thumb.html
+    tpl = 'thumb_issue.html' if (str(EP.get('series', '')).strip() == '야구이슈' and os.path.exists('thumb_issue.html')) else 'thumb.html'
+    if 'photos' not in EP:
+        EP['photos'] = photos_data_uri(EP, EP.get('_path')); EP['photoSizes'] = PHOTO_SIZES
+    html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
     html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)
     io.open(W('render_thumb.html'), 'w', encoding='utf-8').write(html)
     os.makedirs(os.path.dirname(out), exist_ok=True)
@@ -519,6 +529,6 @@ if __name__ == '__main__':
     if mode == 'prep': prep(ep, path)
     elif mode == 'render': render(ep, path)
     elif mode == 'thumb':
-        EP = dict(ep); EP['logos'] = logos_data_uri()
+        EP = dict(ep); EP['logos'] = logos_data_uri(); EP['_path'] = path
         print(make_thumb(EP, out_paths(ep, path)[1]))
     else: raise SystemExit(__doc__)

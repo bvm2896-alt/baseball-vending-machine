@@ -52,7 +52,7 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 .sk .st{font-size:50px;font-weight:900;letter-spacing:-1.5px;width:170px;text-align:right}
 /* 사진 틀 */
 .photo{position:relative;width:900px;border-radius:36px;overflow:hidden;background:#E9EDF3;border:3px solid #E3E7EE;box-shadow:0 18px 50px rgba(18,22,31,.14);flex:0 0 auto}
-.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo img,.pp img{width:100%;height:100%;object-fit:cover;display:block}
 .photo .cap{position:absolute;left:0;right:0;bottom:0;padding:22px 30px;background:linear-gradient(180deg,rgba(18,22,31,0),rgba(18,22,31,.72));color:#fff;font-size:34px;font-weight:700;text-align:left;letter-spacing:-1px}
 .photo .tag{position:absolute;left:26px;top:26px;background:rgba(255,255,255,.92);color:#12161F;font-size:32px;font-weight:800;padding:10px 22px;border-radius:999px;letter-spacing:-1px}
 /* 순위표 */
@@ -159,15 +159,26 @@ function photoSize(name) {
   const k = Object.keys(PSIZE).find(x => x === name || x === base || x.replace(/\.[a-z0-9]+$/i, '') === base);
   return k ? PSIZE[k] : null;
 }
-/* 사진을 틀에 어떻게 넣을지: 원본이 틀보다 크면 잘라 채우기(cover), 작으면 늘리지 않고 원본 크기로 놓고 뒤에 같은 사진을 흐리게 깔아 채운다(흐려짐 방지).
-   s.fit = 'cover' | 'contain' 으로 강제할 수 있다 */
-function photoImg(s, src, w, h) {
-  const sz = photoSize(s.img), fit = s.fit || (sz && (sz[0] < w * 0.9 && sz[1] < h * 0.9) ? 'contain' : 'cover');
-  if (fit === 'cover') return `<img src="${src}" style="object-position:${esc(s.focus || 'center')}">`;
+/* 사진을 틀(w×h)에 어떻게 넣을지 — 얼굴이 잘리지 않게:
+   · 잘라 채우기(cover)는 사진이 틀보다 크고(1.15배 넘게 늘릴 필요 없음) 비율도 비슷할 때만. 자를 땐 위쪽(얼굴) 기준.
+   · 그 외(작은 사진, 세로 사진을 가로 틀에, 투명 배경 png)는 늘리지 않고 통째로 보이게(contain) 놓고,
+     뒤는 같은 사진을 흐리게 깔거나(투명 png 는 단색) 채운다.  s.fit = 'cover' | 'contain' 으로 강제 가능 */
+function photoImg(s, src, w, h, focus) {
+  const sz = photoSize(s.img), alpha = sz && sz[2];
+  let fit = s.fit;
+  if (!fit) {
+    if (!sz) fit = 'cover';
+    else {
+      const coverScale = Math.max(w / sz[0], h / sz[1]), ratio = (sz[0] / sz[1]) / (w / h);
+      fit = (!alpha && coverScale <= 1.15 && ratio > 0.72 && ratio < 1.4) ? 'cover' : 'contain';
+    }
+  }
+  if (fit === 'cover') return `<img src="${src}" style="object-position:${esc(s.focus || focus || '50% 12%')}">`;
   const scale = sz ? Math.min(1.25, w / sz[0], h / sz[1]) : 1, iw = sz ? Math.round(sz[0] * scale) : 'auto', ih = sz ? Math.round(sz[1] * scale) : 'auto';
-  return `<img src="${src}" style="position:absolute;inset:-40px;width:calc(100% + 80px);height:calc(100% + 80px);object-fit:cover;filter:blur(28px) saturate(1.1);opacity:.85">
-    <div style="position:absolute;inset:0;background:rgba(18,22,31,.12)"></div>
-    <img src="${src}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${iw}${sz ? 'px' : ''};height:${ih}${sz ? 'px' : ''};object-fit:contain;border-radius:18px;box-shadow:0 14px 40px rgba(0,0,0,.35)">`;
+  const back = alpha
+    ? `<div style="position:absolute;inset:0;background:linear-gradient(160deg,#F7F8FB,#E4E9F1)"></div>`
+    : `<img src="${src}" style="position:absolute;inset:-40px;width:calc(100% + 80px);height:calc(100% + 80px);object-fit:cover;filter:blur(28px) saturate(1.1);opacity:.85"><div style="position:absolute;inset:0;background:rgba(18,22,31,.12)"></div>`;
+  return `${back}<img src="${src}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${iw}${sz ? 'px' : ''};height:${ih}${sz ? 'px' : ''};object-fit:contain;${alpha ? '' : 'border-radius:18px;box-shadow:0 14px 40px rgba(0,0,0,.35)'}">`;
 }
 function photoBox(s, h = 560, p = 1, extra = '') {
   const src = photoSrc(s.img), team = s.team || (s.teams || [])[0];
@@ -226,7 +237,7 @@ SCENE.people = (lt, s) => {
   h += `<div class="row" style="gap:${n === 3 ? 30 : 40}px;align-items:stretch">`;
   items.forEach((it, i) => {
     const src = photoSrc(it.img), t = it.team ? T(it.team) : null, p = seg(lt, .25 + i * .3, .5);
-    const pic = src ? `<img src="${src}" style="width:100%;height:${ph}px;object-fit:cover;object-position:${esc(it.focus || 'top')};display:block">`
+    const pic = src ? `<div style="position:relative;width:100%;height:${ph}px;overflow:hidden;background:#E9EDF3"><div class="pp" style="position:absolute;inset:0">${photoImg(it, src, w, ph, it.focus || '50% 10%')}</div></div>`
       : `<div class="col" style="width:100%;height:${ph}px;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${t ? chip(t, n === 3 ? 'M' : 'L') : ''}</div>`;
     const col = it.bad === true ? RED : it.bad === false ? GREEN : TXT;
     h += `<div class="pane" style="width:${w}px;border-radius:32px;overflow:hidden;display:flex;flex-direction:column;${rise(p, 50)}">
@@ -295,7 +306,7 @@ function cards(lt, L, R) {
     const v = x.value != null ? br(x.value) : winLose(cnt(p, x.win), cnt(p, x.lose));
     const two = x.value == null || String(x.value).includes('\n');
     const src = photoSrc(x.img);
-    const head = src ? `<div style="width:380px;height:220px;border-radius:26px;overflow:hidden;position:relative"><img src="${src}" style="width:100%;height:100%;object-fit:cover;object-position:${esc(x.focus || 'top')}">${x.team ? `<div style="position:absolute;left:12px;top:12px">${chip(T(x.team), 'S')}</div>` : ''}</div>`
+    const head = src ? `<div style="width:380px;height:220px;border-radius:26px;overflow:hidden;position:relative;background:#E9EDF3"><div class="pp" style="position:absolute;inset:0">${photoImg(x, src, 380, 220, x.focus || '50% 10%')}</div>${x.team ? `<div style="position:absolute;left:12px;top:12px">${chip(T(x.team), 'S')}</div>` : ''}</div>`
       : x.team ? withNext(chipM(T(x.team), 'M', x.mark || '', seg(lt, .9 + i * .3, .4)), x.next || '', seg(lt, 1.0 + i * .3, .4), x.nextNote || '')
       : `<div class="title" style="font-size:60px;font-weight:900;height:190px;display:flex;align-items:center">${br(x.name || '')}</div>`;
     return `<div class="card" style="${x.next || src ? 'height:600px;' : ''}${rise(seg(lt, i * .35, .5), 50)}">${head}
