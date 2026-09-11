@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 야구자판기 하루 자동 실행 (윈도우 작업 스케줄러가 07:30 에 실행)
-  순위 읽기 → 콘티 2개(episodes/오늘_1.json, 오늘_2.json — Claude 예약 작업이 저장) 대기
+  순위 읽기 → 콘티(episodes/오늘_순위.json = 야구순위, 오늘_이슈.json = 야구이슈) 대기
   → 각각 음성 → 영상(상위 폴더 영상\\날짜\\번호_팀.mp4) → 비공개 업로드 → 신호 파일 감시 → 안전 종료 시각에 PC 종료
 
-옵션:  --now (시간과 상관없이 바로)  --latest (오늘 콘티 없으면 최근 콘티로)  --no-upload  --no-shutdown  --no-fetch  --no-tts
+옵션:  --series rank|issue (야구순위/야구이슈 전용 — 그 시리즈 콘티만, 신호·오늘.txt 는 시리즈 폴더)  --now (시간과 상관없이 바로)  --latest (오늘 콘티 없으면 최근 콘티로)  --no-upload  --no-shutdown  --no-fetch  --no-tts
         --episode 파일경로 (콘티 대기 생략, 여러 개 가능)
 신호 파일(상위 폴더 야구자판기\\):
   업로드.txt  만들어 둔 영상을 유튜브에 올림. 비어 있으면 전부(비공개), "1"/"2" 면 그 번호만, "공개" 가 들어 있으면 바로 공개로
@@ -33,10 +33,24 @@ def _cfg(k, d=''):
 _now = datetime.datetime.now()
 NIGHT = _now.hour >= int(_cfg('NIGHT_HOUR', '18'))
 TODAY = (_now.date() + datetime.timedelta(days=1 if NIGHT else 0)).isoformat()
+# 시리즈: --series rank(야구순위) / issue(야구이슈). 시리즈 전용 실행이면 콘티는 episodes/날짜_순위.json 처럼 하나만 다루고,
+# 신호 파일과 오늘.txt 는 그 시리즈 폴더(야구자판기\야구순위\)에서 읽고 쓴다. 시리즈 없이 실행하면 순위·이슈 둘 다.
+SERIES_CODES = {'rank': ('야구순위', '순위'), 'issue': ('야구이슈', '이슈')}
+SERIES = [ARGS[i + 1] for i, a in enumerate(ARGS) if a == '--series' and i + 1 < len(ARGS) and ARGS[i + 1] in SERIES_CODES]
 EPS = [ARGS[i + 1] for i, a in enumerate(ARGS) if a == '--episode' and i + 1 < len(ARGS)]
-if not EPS: EPS = [f'episodes/{TODAY}_1.json', f'episodes/{TODAY}_2.json']
+if not EPS:
+    slots = [SERIES_CODES[c][1] for c in SERIES] or ['순위', '이슈']
+    EPS = [f'episodes/{TODAY}_{k}.json' for k in slots]
+    if not SERIES:   # 옛 이름(_1, _2)으로 된 콘티만 있으면 그걸 쓴다
+        legacy = [f'episodes/{TODAY}_1.json', f'episodes/{TODAY}_2.json']
+        if not any(os.path.exists(p) for p in EPS) and any(os.path.exists(p) for p in legacy): EPS = legacy
+if len(SERIES) == 1:
+    SERIES_DIR = os.path.join(BASE, SERIES_CODES[SERIES[0]][0]); os.makedirs(SERIES_DIR, exist_ok=True)
+    SIG = lambda n: os.path.join(SERIES_DIR, n)
+    STATUS_TXT = os.path.join(SERIES_DIR, '오늘.txt')
+    print(f'[{SERIES_CODES[SERIES[0]][0]}] 전용 실행 — 콘티 {EPS[0]}, 신호·오늘.txt 는 {SERIES_DIR}')
 if NIGHT: print(f'저녁 실행 → 내일({TODAY}) 콘티로 만듭니다 (오늘 경기 결과 기준)')
-STATE_PATH = f'status/state_{TODAY}.json'   # 저장소에 올려서 다른 PC 에서도 오늘 상태를 이어받는다
+STATE_PATH = f'status/state_{TODAY}' + (('_' + SERIES[0]) if len(SERIES) == 1 else '') + '.json'   # 저장소에 올려서 다른 PC 에서도 오늘 상태를 이어받는다
 for d in ('data', 'episodes', 'work', 'work/voice', 'status', 'signals'): os.makedirs(d, exist_ok=True)
 import build   # 결과물 경로 계산(영상/날짜/번호_팀.mp4)
 
@@ -78,8 +92,8 @@ def git_push_status(force=False):
     _last_push = time.time()
     try:
         os.makedirs('status', exist_ok=True)
-        import shutil; shutil.copyfile(STATUS_TXT, os.path.join('status', '오늘.txt'))
-        git('add', 'status/오늘.txt', STATE_PATH)
+        import shutil; sname = '오늘' + (('_' + SERIES[0]) if len(SERIES) == 1 else '') + '.txt'; shutil.copyfile(STATUS_TXT, os.path.join('status', sname))
+        git('add', 'status/' + sname, STATE_PATH)
         git('commit', '-q', '-m', f'status {TODAY} {now()}')
         git('push', '-q')
     except Exception: pass

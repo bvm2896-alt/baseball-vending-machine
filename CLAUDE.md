@@ -4,18 +4,18 @@
 설명은 한국어로, 짧고 구체적으로. 코드 변경은 반드시 이 파일의 규칙을 지킨다.
 
 ## 폴더
-- `episodes\YYYY-MM-DD_N.json` 콘티(그날 1·2편). `{"draft": true}` 만 있으면 아직 미완성 → run_daily 는 계속 기다린다.
+- `episodes\YYYY-MM-DD_순위.json`(야구순위 시리즈) / `YYYY-MM-DD_이슈.json`(야구이슈 시리즈). 옛 이름 `_1`·`_2` 도 읽힌다. `{"draft": true}` 만 있으면 아직 미완성 → run_daily 는 계속 기다린다. 콘티 `series` 항목("야구순위"/"야구이슈")이 결과물 폴더를 정한다.
 - `work\voice_<콘티이름>\NN.mp3 / NN.segs.json / NN.txt / qa.json` 편별 음성·검수 결과. `work\current.txt` = 지금 쓰는 편.
 - `data\rank_latest.json`(네이버 순위) · `news_latest.json`(구글 뉴스) · `schedule_latest.json`(네이버 일정·선발)
 - 결과물: `설정.txt` 의 `OUTPUT_DIR`(집 PC: `H:\내 드라이브\야구자판기_영상확인`) 아래 `YYYY-MM-DD\번호_팀.mp4 + _썸네일.jpg + _유튜브.txt`. 날짜 폴더 = **경기 날짜**(밤 제작이면 그날, 아침 제작이면 어제).
-- 상위 폴더 `야구자판기\` : `오늘.txt`(진행 상태·기록), `폰트\`, `KBO_logos\`, `브랜드\`, 실행 cmd 들.
+- 상위 폴더 `야구자판기\` : 공용(`시스템\`, `폰트\`, `KBO_logos\`, `브랜드\`, 전체 실행 cmd, `오늘.txt`) + 시리즈 폴더 `야구순위\`, `야구이슈\`(각각 전용 `지금실행.cmd`·`영상만다시.cmd`, 그 시리즈의 `오늘.txt`·신호 파일·`영상\날짜\`·`메모\`). **시리즈 폴더의 지금실행은 그 시리즈 콘티만 만든다**(`run_daily.py --series rank|issue`). 루트의 지금실행은 둘 다.
 - `설정.txt`, `client_secret.json`, `token.json`, `work\`, `data\`, 영상은 git 에 올리지 않는다(.gitignore). 절대 채팅·커밋에 노출 금지.
 
 ## 실행 흐름 (run_daily.py)
 git pull → fetch_rank.js → fetch_news.js → fetch_schedule.js → 오늘 콘티 대기(최대 45분) → `build.py prep` → `tts.py` → `qa_voice.py`(검수·재합성·자막 구간) → `build.py render`(frames.js 2K 60fps) → OUTPUT_DIR 저장 → 신호 감시(업로드.txt/공개.txt/재생성.txt/종료.txt)
 - `NIGHT_HOUR=18` 이후 실행이면 다음날 콘티(`내일 날짜_N.json`)를 만든다(밤 제작).
 - 옵션: `--now --no-upload --no-shutdown --no-fetch --no-tts --latest --episode 경로`
-- 실행 cmd(상위 폴더, **파일 내용은 ASCII 만** — 한글 있으면 cmd 가 깨짐): `지금실행`(전체) `영상만다시`(음성 재사용, `--no-tts`) `깃저장` `일정확인` `작업등록`(07:30) `pc연결`(최초 1회)
+- 실행 cmd(**파일 내용은 ASCII 만** — 한글 있으면 cmd 가 깨짐): 루트 `지금실행`(두 시리즈) `영상만다시` `깃저장` `일정확인` `작업등록`(07:30) `메타갱신` `pc연결`(최초 1회) / 시리즈 폴더 `지금실행`·`영상만다시`(그 시리즈만, `--series rank` 또는 `issue`). 두 시리즈를 동시에 돌리지 않는다(work\ 공유) — 하나 끝나고 다음.
 - 한 편만 다시: `python -X utf8 build.py render episodes\2026-09-11_1.json` (음성 재사용). 음성부터: `python -X utf8 tts.py episodes\...json` 후 `qa_voice.py`.
 - 실행 중인 run_daily 가 있으면 `지금실행` 을 또 누르지 않는다(음성 폴더 충돌).
 

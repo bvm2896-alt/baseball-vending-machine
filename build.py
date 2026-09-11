@@ -55,7 +55,7 @@ def game_date(ep):
         return dt.isoformat()
     except Exception: return d
 
-SERIES_BY_SLOT = {'1': '야구순위', '2': '야구이슈'}   # 하루 콘티 슬롯 → 시리즈 폴더 (콘티에 "series" 를 적으면 그게 우선)
+SERIES_BY_SLOT = {'순위': '야구순위', '이슈': '야구이슈', '1': '야구순위', '2': '야구이슈'}   # 하루 콘티 슬롯 → 시리즈 폴더 (콘티에 "series" 를 적으면 그게 우선)
 
 def series_of(ep, ep_path):
     """결과물을 나눠 담을 시리즈 폴더 이름: 콘티의 series → 없으면 슬롯 번호(1=야구순위, 2=야구이슈)"""
