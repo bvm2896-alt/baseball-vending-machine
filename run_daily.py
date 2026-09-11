@@ -212,14 +212,33 @@ def step_build(ep_path, only_lines=None):
     log(f'[{k}] 영상 완성 {dur:.1f}초 → {video}', '영상완료')
     return video
 
+UPLOAD_ENABLED = CFG.get('UPLOAD_ENABLED', '1').strip() != '0'          # 설정 UPLOAD_ENABLED=0 → 이 PC 에서는 절대 업로드하지 않음(회사 PC 용)
+UPLOAD_MIN_GAP_MIN = int(CFG.get('UPLOAD_MIN_GAP_MIN', '120'))               # 업로드 사이 최소 간격(분). 사람 손 속도처럼 보이게
+UPLOAD_MAX_PER_DAY = int(CFG.get('UPLOAD_MAX_PER_DAY', '2'))
+
+def upload_allowed(k):
+    """업로드해도 되는지: 이 PC 허용 여부, 하루 편수, 직전 업로드와의 간격. 안 되면 이유를 돌려준다"""
+    if not UPLOAD_ENABLED: return '이 PC 는 업로드 금지(설정 UPLOAD_ENABLED=0). 집 PC 에서 올리세요'
+    if len(state['videos']) >= UPLOAD_MAX_PER_DAY and k not in state['videos']: return f'오늘 업로드 {UPLOAD_MAX_PER_DAY}편 한도'
+    last = state.get('last_upload_ts', 0)
+    gap = (time.time() - last) / 60
+    if last and gap < UPLOAD_MIN_GAP_MIN: return f'직전 업로드 후 {int(gap)}분 — {UPLOAD_MIN_GAP_MIN}분 지나면 자동으로 올립니다'
+    return ''
+
 def step_upload(ep_path, video, privacy='private'):
     k = key_of(ep_path)
     if '--no-upload' in ARGS: log(f'[{k}] 업로드 생략(--no-upload)', '업로드생략'); return None
     old = state['videos'].get(k, {}).get('id')
     if old:
-        rc, out = py('upload.py', 'delete', old)
-        log(f'[{k}] 이전 영상 삭제 {old}' if not rc else f'[{k}] 이전 영상 삭제 실패: ' + out[-150:])
-        state['videos'].pop(k, None)
+        # 절대 삭제·재업로드하지 않는다(채널 정지 원인). 이미 올라간 영상은 제목·설명만 콘티대로 갱신
+        rc, out = py('upload.py', 'update', old, ep_path)
+        log(f'[{k}] 이미 올라간 영상 https://youtu.be/{old} — 재업로드 안 함, 제목·설명만 갱신' + ('' if not rc else ' 실패: ' + out[-150:]))
+        return old
+    why = upload_allowed(k)
+    if why:
+        q = state.setdefault('upload_queue', [])
+        if not any(x['ep'] == ep_path for x in q): q.append({'ep': ep_path, 'video': video, 'privacy': privacy})
+        log(f'[{k}] 업로드 보류: {why}', '업로드대기'); return None
     rc, out = py('upload.py', 'upload', video, ep_path, privacy, timeout=1200)
     vid = None
     for line in out.splitlines():
@@ -227,6 +246,7 @@ def step_upload(ep_path, video, privacy='private'):
     if rc or not vid: log(f'[{k}] 업로드 실패: ' + out[-300:], '실패'); return None
     ok, ep = valid_episode(ep_path)
     state['videos'][k] = {'id': vid, 'privacy': privacy, 'title': ep.get('youtube', {}).get('title', ''), 'ep': ep_path}
+    state['last_upload_ts'] = time.time()
     log(f'[{k}] {"공개" if privacy == "public" else "비공개"} 업로드 완료 https://youtu.be/{vid}', '업로드완료')
     thumb = build.out_paths(ep, ep_path)[1]
     if os.path.exists(thumb):
@@ -234,11 +254,22 @@ def step_upload(ep_path, video, privacy='private'):
         log(f'[{k}] 썸네일 등록' if not rc else f'[{k}] 썸네일 등록 실패: ' + out[-200:])
     return vid
 
+def flush_upload_queue():
+    """보류된 업로드를 간격이 지났을 때 하나씩 처리"""
+    q = state.get('upload_queue') or []
+    if not q: return
+    item = q[0]
+    if upload_allowed(key_of(item['ep'])): return
+    q.pop(0)
+    if os.path.exists(item['video']): step_upload(item['ep'], item['video'], item.get('privacy', 'private'))
+
 def after_build(ep_path, video):
     k = key_of(ep_path)
     state.setdefault('built', {})[k] = {'video': video, 'ep': ep_path}
     if '--no-upload' in ARGS: log(f'[{k}] 업로드 생략(--no-upload)', '영상완료'); return
-    if AUTO_UPLOAD or k in state['videos']:     # 자동 업로드이거나, 이미 올라간 영상을 다시 만든 경우엔 바로 교체
+    if k in state['videos']:
+        log(f'[{k}] 이미 유튜브에 올라간 편이라 다시 올리지 않습니다(삭제·재업로드 금지). 새 영상은 폴더에만 저장', '영상완료'); return
+    if AUTO_UPLOAD:
         step_upload(ep_path, video)
     else:
         log(f'[{k}] 영상 준비 완료. 확인 후 업로드.txt 신호를 주면 올립니다', '업로드대기')
@@ -342,6 +373,7 @@ def watch_loop():
         if time.time() - last_pull > 60:
             git_pull(); last_pull = time.time()
         if check_signals() == 'stop': return
+        flush_upload_queue()
         n = datetime.datetime.now()
         if (n.hour, n.minute) >= (hh, mm) and '--now' not in ARGS:
             log('안전 종료 시각 → PC 종료', '종료'); shutdown('shutdown'); return
