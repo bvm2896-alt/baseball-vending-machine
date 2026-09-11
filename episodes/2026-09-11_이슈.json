@@ -106,20 +106,24 @@
       "teams": [
         "기아"
       ],
+      "img": "김도영_번트",
       "text": "김도영\nAG 갈까?",
       "size": 150
     },
     {
-      "type": "big",
+      "type": "photo",
       "startLine": 1,
       "team": "기아",
-      "text": "9월 9일\n번트 타구",
+      "img": "김도영_번트",
+      "tag": "9월 9일 광주",
+      "text": "번트 타구\n얼굴 강타",
       "size": 130
     },
     {
-      "type": "big",
+      "type": "photo",
       "startLine": 2,
       "team": "기아",
+      "img": "김도영_부상",
       "text": "코뼈 골절\n11일 퇴원",
       "size": 130
     },
@@ -128,47 +132,50 @@
       "startLine": 3,
       "left": {
         "team": "기아",
+        "img": "김도영_타격",
         "value": "39",
         "label": "홈런"
       },
       "right": {
         "team": "기아",
+        "img": "김도영_수비",
         "value": "98",
         "label": "타점"
       }
     },
     {
-      "type": "schedule",
+      "type": "people",
       "startLine": 4,
       "title": "대표팀 3루수 3명",
       "items": [
         {
-          "date": "김도영",
-          "teams": [
-            "기아"
-          ],
-          "place": "코뼈 골절"
+          "img": "김도영_프로필",
+          "name": "김도영",
+          "team": "기아",
+          "note": "코뼈 골절",
+          "bad": true
         },
         {
-          "date": "문보경",
-          "teams": [
-            "LG"
-          ],
-          "place": "허리 통증"
+          "img": "문보경",
+          "name": "문보경",
+          "team": "LG",
+          "note": "허리 통증",
+          "bad": true
         },
         {
-          "date": "노시환",
-          "teams": [
-            "한화"
-          ],
-          "place": "정상"
+          "img": "노시환",
+          "name": "노시환",
+          "team": "한화",
+          "note": "정상",
+          "bad": false
         }
       ]
     },
     {
-      "type": "big",
+      "type": "photo",
       "startLine": 5,
       "team": "LG",
+      "img": "문보경",
       "text": "문보경\n2경기 결장",
       "size": 130
     },
@@ -177,14 +184,14 @@
       "startLine": 6,
       "left": {
         "team": "한화",
+        "img": "노시환",
         "value": "1명",
         "label": "정상 3루수"
       },
       "right": {
-        "team": "LG",
+        "name": "1루",
         "value": "0명",
-        "label": "전업 1루수",
-        "mark": "💧"
+        "label": "전업 1루수"
       }
     },
     {
@@ -194,23 +201,12 @@
       "size": 130
     },
     {
-      "type": "schedule",
+      "type": "photo",
       "startLine": 8,
-      "title": "결정 시간표",
-      "items": [
-        {
-          "date": "11일",
-          "teams": [
-            "기아"
-          ],
-          "place": "진단서 제출"
-        },
-        {
-          "date": "12~13일",
-          "teams": [],
-          "place": "출전 여부 결정"
-        }
-      ]
+      "img": "류지현",
+      "tag": "류지현 감독",
+      "text": "12~13일\n결정",
+      "size": 140
     },
     {
       "type": "schedule",
@@ -237,8 +233,9 @@
       "size": 96
     },
     {
-      "type": "big",
+      "type": "photo",
       "startLine": 10,
+      "img": "대표팀",
       "text": "vs 대만\n3월 WBC 패배",
       "size": 120
     },
@@ -256,14 +253,16 @@
     {
       "type": "verdict",
       "startLine": 12,
+      "img": "김도영_타격",
       "label": "그래서 제 생각은",
       "big": "데려간다",
       "size": 150
     },
     {
-      "type": "big",
+      "type": "photo",
       "startLine": 13,
       "team": "기아",
+      "img": "김도영_수비",
       "text": "수비 안 되면\n교체",
       "size": 130
     },
@@ -272,5 +271,6 @@
       "startLine": 14,
       "text": "김도영\n데려간다 vs 교체?"
     }
-  ]
+  ],
+  "photosNote": "사진은 야구자판기\\야구이슈\\재료\\사진\\ 에 img 이름과 같은 파일명(jpg/png/webp)으로. 없으면 로고로 대신 그려진다."
 }
