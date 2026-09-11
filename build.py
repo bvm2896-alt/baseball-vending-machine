@@ -83,10 +83,15 @@ LOGO_FILES = {'HT': '기아', 'SS': '삼성', 'LG': 'LG', 'OB': '두산', 'KT': 
               'NC': 'NC', 'LT': '롯데', 'SK': 'SSG', 'HH': '한화', 'WO': '키움'}
 LOGO_DIRS = [os.path.join(HERE, '..', 'KBO_logos'), os.path.join(HERE, 'KBO_logos'), os.path.join(HERE, 'logos')]
 
-# 야구이슈 편 사진: 콘티 장면의 img("김도영_번트.jpg" 또는 확장자 없이 "김도영_번트")를 이 폴더들에서 찾는다.
-# 사용자가 직접 구한 사진을 야구자판기\야구이슈\재료\사진\ 에 넣어 두면 된다. 없으면 템플릿이 로고로 대신 그린다.
-PHOTO_DIRS = [os.path.join(HERE, '..', '야구이슈', '재료', '사진'), os.path.join(HERE, 'photos')]
+# 야구이슈 편 사진: 콘티 장면의 img("김도영_번트.jpg" 또는 확장자 없이 "김도영_번트")를 아래 순서로 찾는다.
+#   1) 야구자판기\야구이슈\재료\사진\<콘티 이름>\   (예: 사진\2026-09-11_이슈\ — 그 편 전용)
+#   2) 야구자판기\야구이슈\재료\사진\공용\           (선수 프로필처럼 매번 쓰는 사진)
+#   3) 야구자판기\야구이슈\재료\사진\                (옛 위치)
+# 없으면 템플릿이 로고로 대신 그린다.
+PHOTO_ROOT = os.path.join(HERE, '..', '야구이슈', '재료', '사진')
 PHOTO_EXTS = ('.jpg', '.jpeg', '.png', '.webp')
+def photo_dirs(ep_key_name=''):
+    return [os.path.join(PHOTO_ROOT, ep_key_name) if ep_key_name else '', os.path.join(PHOTO_ROOT, '공용'), PHOTO_ROOT, os.path.join(HERE, 'photos')]
 
 def template_for(ep):
     """시리즈별 템플릿: 야구이슈 이고 template_issue.html 이 있으면 그것(화이트), 아니면 template.html(순위 편, 다크)"""
@@ -107,22 +112,23 @@ def _photo_names(ep):
     walk(ep.get('scenes') or [])
     return names
 
-def photos_data_uri(ep):
+def photos_data_uri(ep, ep_path=None):
     """콘티가 쓰는 사진만 data URI 로 (키 = 콘티에 적힌 이름 그대로). 큰 사진은 렌더 html 이 무거워지니 1600px 이하로 줄여 넣는다"""
     out = {}
     names = _photo_names(ep)
     if not names: return out
+    dirs = [d for d in photo_dirs(ep_key(ep_path) if ep_path else '') if d]
     for name in names:
         base = os.path.splitext(name)[0]
         found = None
-        for d in PHOTO_DIRS:
+        for d in dirs:
             if not os.path.isdir(d): continue
             for f in os.listdir(d):
                 if f == name or os.path.splitext(f)[0] == base and f.lower().endswith(PHOTO_EXTS):
                     found = os.path.join(d, f); break
             if found: break
         if not found:
-            print(f'경고: 사진 없음 "{name}" → 로고로 대신 표시 (야구이슈\\재료\\사진\\ 에 넣어 주세요)')
+            print(f'경고: 사진 없음 "{name}" → 로고로 대신 표시 (야구이슈\\재료\\사진\\<콘티이름>\\ 에 넣어 주세요)')
             continue
         src = found
         try:
@@ -413,7 +419,7 @@ def render(ep, ep_path):
     run(['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', VW('list.txt'), W('narration.wav')], check=True)
     # 4) 템플릿에 데이터 주입
     EP = dict(ep); EP['subs'] = subs; EP['bounds'] = bounds; EP['logos'] = logos_data_uri(); EP['total'] = round(total, 2)
-    EP['photos'] = photos_data_uri(ep)          # 야구이슈 편 사진(없으면 빈 dict)
+    EP['photos'] = photos_data_uri(ep, ep_path)  # 야구이슈 편 사진(없으면 빈 dict)
     tpl = template_for(ep); print('템플릿:', tpl)
     html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
     html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)
