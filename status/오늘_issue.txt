@@ -1,8 +1,8 @@
 날짜: 2026-09-12
-단계: 실패
+단계: 시작
 
 영상 이슈 파일: G:\내 드라이브\야구자판기\야구이슈\2026-09-11\이슈_NC_두산.mp4
-→ 수동 업로드 모드: 영상 폴더의 mp4 와 _유튜브.txt(제목·설명·태그)로 유튜브 스튜디오에서 직접 올리세요
+→ 영상 폴더에서 확인한 뒤 업로드.txt 신호를 주면 유튜브에 올립니다
 
 기록:
 [15:32:44] 시작
@@ -35,3 +35,5 @@
     return float(run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).stdout.strip())
 ValueError: could not convert string to float: 'N/A'
 
+[15:50:58] 감시 시작 (안전 종료 12:00)
+[16:10:07] 시작
