@@ -1,6 +1,6 @@
 {
  "date": "2026-09-12",
- "step": "콘티",
+ "step": "실패",
  "videos": {},
  "built": {
   "순위": {
@@ -44,6 +44,10 @@
   "[22:45:38] 뉴스 헤드라인 수집 완료",
   "[22:45:45] 경기 일정·선발 수집 완료",
   "[22:45:45] 콘티 대기: episodes/2026-09-12_순위.json, episodes/2026-09-12_순위2.json (최대 45분)",
-  "[22:46:10] 콘티 도착: 2편"
+  "[22:46:10] 콘티 도착: 2편",
+  "[22:46:12] [순위] 오늘 이미 만든 영상이 있어 건너뜀 → H:\\내 드라이브\\야구자판기_영상확인\\야구순위\\2026-09-11\\순위_LG_기아.mp4 (다시 만들려면 재생성.txt 에 번호, 또는 콘티를 고치면 자동으로 다시)",
+  "[22:46:12] [순위2] 음성 생성 시작",
+  "[22:46:21] [순위2] 음성 실패: t 에 TYPECAST_API_KEY2 를 추가하거나 크레딧을 충전하세요.\n  실패 403: {\"error_code\":\"UNUSUAL_ACTIVITY_DETECTED\",\"message\":\"Unusual account activity has been detected. If this activity is determined to be abuse of free accounts, your access may be suspended. If you need \n13 XX  단판이 열리면 누가 이길까요? / 삼성일까요 케이티일까요?\n14줄 실패\n",
+  "[22:46:21] 감시 시작 (안전 종료 12:00)"
  ]
 }
