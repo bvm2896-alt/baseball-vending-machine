@@ -82,16 +82,46 @@ def git(*args, timeout=90):
     except Exception:
         return None
 
+class step_lock:
+    """두 시리즈 창을 동시에 켜도 깃허브 동기화·재료 수집이 겹치지 않게 순서를 잡는 잠금 (work\\<이름>.lock).
+       먼저 잡은 쪽이 끝날 때까지 기다린다(최대 wait 초, 10분 넘게 안 바뀐 잠금은 죽은 것으로 보고 무시)."""
+    def __init__(self, name, wait=600):
+        os.makedirs('work', exist_ok=True)
+        self.path = os.path.join('work', name + '.lock'); self.wait = wait; self.fd = None
+    def __enter__(self):
+        end = time.time() + self.wait
+        while True:
+            try:
+                self.fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY); os.write(self.fd, MY_SERIES.encode('utf-8')); return self
+            except FileExistsError:
+                try: stale = time.time() - os.path.getmtime(self.path) > 600
+                except Exception: stale = True
+                if stale or time.time() > end:
+                    try: os.remove(self.path)
+                    except Exception: pass
+                    continue
+                time.sleep(3)
+    def __exit__(self, *a):
+        try:
+            if self.fd is not None: os.close(self.fd)
+            os.remove(self.path)
+        except Exception: pass
+        return False
+
 def git_pull(quiet=True):
     """깃허브와 맞춘다: 이 PC 에서 바뀐 파일(Claude 가 PC 연결로 넣은 것)은 먼저 올리고, 최신을 받아온다 (실패해도 계속 진행)"""
     if not REPO_GIT: return False
     try: subprocess.run([sys.executable, '-X', 'utf8', 'sync_assets.py'], cwd=HERE, capture_output=True, timeout=120)
     except Exception: pass
-    git('add', '-A')
-    git('commit', '-q', '-m', f'pc update {now()}')
-    r = git('pull', '--rebase', '-q')
-    if r is not None and r.returncode == 0:
-        git('push', '-q')
+    with step_lock('git'):
+        git('add', '-A')
+        git('commit', '-q', '-m', f'pc update {now()}')
+        r = git('pull', '--rebase', '-q')
+        if r is not None and r.returncode == 0:
+            pr = git('push', '-q')
+            if pr is not None and pr.returncode != 0:   # 다른 창이 그 사이 올렸으면 한 번 더 받아서 올린다
+                r2 = git('pull', '--rebase', '-q')
+                if r2 is not None and r2.returncode == 0: git('push', '-q')
     try:   # 사진 폴더(선수이미지, 야구이슈\재료\사진) <-> assets\ 동기화 (깃으로 받은 사진을 바깥 폴더로, 바깥 새 사진을 assets 로)
         subprocess.run([sys.executable, '-X', 'utf8', 'sync_assets.py'], cwd=HERE, capture_output=True, timeout=120)
     except Exception: pass
@@ -158,6 +188,14 @@ def key_of(ep_path):
 # ---------- 단계 ----------
 def step_fetch():
     if '--no-fetch' in ARGS: log('순위 읽기 생략(--no-fetch)', '순위'); return True
+    with step_lock('fetch'):
+        return _fetch()
+
+def _fetch():
+    # 다른 시리즈 창이 방금(10분 안) 받아 둔 순위·뉴스·일정이 있으면 그대로 쓴다(동시에 켜도 두 번 안 받게)
+    fresh = [f for f in ('data/rank_latest.json', 'data/news_latest.json', 'data/schedule_latest.json') if os.path.exists(f) and time.time() - os.path.getmtime(f) < 600]
+    if len(fresh) == 3:
+        log('순위·뉴스·일정: 방금 받은 것 사용', '순위'); return True
     for i in range(3):
         rc, out = sh(['node', 'fetch_rank.js'], timeout=300)
         if rc == 0 and os.path.exists('data/rank_latest.json'):
@@ -410,7 +448,7 @@ def build_one(ep_path, only_lines=None):
     finally: clear_busy()
 
 def inputs_mtime(p):
-    """이 편을 만드는 데 쓰인 것들의 가장 최근 수정 시각: 콘티, 그 편의 음성 파일(<시리즈>\음성\<콘티이름>.zip/mp3 ...), 프로그램(build.py·tts.py·템플릿).
+    r"""이 편을 만드는 데 쓰인 것들의 가장 최근 수정 시각: 콘티, 그 편의 음성 파일(<시리즈>\음성\<콘티이름>.zip/mp3 ...), 프로그램(build.py·tts.py·템플릿).
        이 중 하나라도 영상보다 새것이면 다시 만든다 — 새 음성 zip 을 넣거나 프로그램을 고친 뒤 지금실행만 눌러도 되게."""
     ts = [os.path.getmtime(p)]
     try:
