@@ -238,7 +238,9 @@ def step_build(ep_path, only_lines=None):
     else:
         args = ['tts.py'] + ([f'--only={only_lines}'] if only_lines else [])
         rc, out = py(*args, timeout=1200)
-        if rc: log(f'[{k}] 음성 실패: ' + out[-300:], '실패'); return None
+        if rc:
+            keep = [l for l in out.splitlines() if l.strip() and ('계정' in l or '실패' in l or 'XX' in l)][-8:]   # 계정 전환·거부 사유가 보이게
+            log(f'[{k}] 음성 실패:\n' + '\n'.join(keep)[-900:], '실패'); return None
         # 음성 검수: 톤·속도 이탈 줄 다시 합성, 자막 타이밍 정밀 맞춤 (qa_voice.py)
         log(f'[{k}] 음성 검수 시작', '검수')
         rc, out = py('qa_voice.py', timeout=1500)
