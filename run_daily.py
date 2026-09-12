@@ -352,7 +352,9 @@ def wait_photos(paths):
                 print(f'   {"O" if f else "X"}  {n}' + (f'   ← {os.path.relpath(f, os.path.join(HERE, ".."))}' if f else '   (없음 → 로고로 대체)'))
         if not need_any: return
         missing = sum(1 for p in paths for n, f in photo_check(p) if not f)
-        msg = '사진이 모두 준비됐어요. ' if not missing else f'사진 {missing}장이 아직 없어요(없는 채로 만들면 로고로 나옵니다). '
+        if not missing:
+            print('사진이 모두 준비됐어요 → 바로 제작 시작'); return   # 다 있으면 묻지 않고 진행
+        msg = f'사진 {missing}장이 아직 없어요(없는 채로 만들면 로고로 나옵니다). '
         try: ans = input(msg + 'Enter 를 누르면 제작 시작 / r 입력 후 Enter 면 다시 확인: ').strip().lower()
         except EOFError: return
         if ans != 'r': return
