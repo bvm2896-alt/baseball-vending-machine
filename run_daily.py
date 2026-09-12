@@ -395,6 +395,10 @@ def build_one(ep_path, only_lines=None):
 def make_all(paths):
     wait_photos(paths)
     for p in paths:
+        b = state.get('built', {}).get(key_of(p)) or {}
+        v = b.get('video', '')
+        if v and os.path.exists(v) and os.path.getmtime(v) >= os.path.getmtime(p) and '--force' not in ARGS:
+            log(f'[{key_of(p)}] 오늘 이미 만든 영상이 있어 건너뜀 → {v} (다시 만들려면 재생성.txt 에 번호, 또는 콘티를 고치면 자동으로 다시)', '영상완료'); continue
         video = build_one(p)
         if video: after_build(p, video)
 
