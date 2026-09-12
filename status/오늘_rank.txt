@@ -1,5 +1,5 @@
 날짜: 2026-09-12
-단계: 실패
+단계: 시작
 
 영상: 아직 없음
 
@@ -22,3 +22,5 @@
     return float(run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).stdout.strip())
 ValueError: could not convert string to float: 'N/A'
 
+[15:53:27] 감시 시작 (안전 종료 12:00)
+[16:36:33] 시작

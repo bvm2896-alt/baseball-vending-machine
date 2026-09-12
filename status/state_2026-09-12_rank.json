@@ -1,6 +1,6 @@
 {
  "date": "2026-09-12",
- "step": "실패",
+ "step": "시작",
  "videos": {},
  "built": {},
  "log": [
@@ -16,6 +16,7 @@
   "[15:49:59] [순위] 음성 검수:   12 쉼 2/2 +whisper 0.76 2.98 |   13 쉼 1/1 +whisper 2.37 | 검수 통과: 톤·속도 일관, 결함 없음",
   "[15:50:01] [순위] 영상 렌더 시작 (3~5분)",
   "[15:53:25] [순위] 렌더 실패:                  ~~~~~~^^^^^^^^^^\n  File \"C:\\Users\\sh705\\OneDrive\\바탕 화면\\야구자판기\\시스템\\build.py\", line 463, in render\n    vd = dur_of(W('silent.mp4'))\n  File \"C:\\Users\\sh705\\OneDrive\\바탕 화면\\야구자판기\\시스템\\build.py\", line 250, in dur_of\n    return float(run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).stdout.strip())\nValueError: could not convert string to float: 'N/A'\n",
-  "[15:53:27] 감시 시작 (안전 종료 12:00)"
+  "[15:53:27] 감시 시작 (안전 종료 12:00)",
+  "[16:36:33] 시작"
  ]
 }
