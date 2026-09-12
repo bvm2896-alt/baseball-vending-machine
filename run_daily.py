@@ -186,8 +186,21 @@ def latest_episodes():
     latest = os.path.basename(cand[-1])[:10]
     return sorted(f.replace('\\', '/') for f in cand if os.path.basename(f).startswith(latest))
 
+def series_episodes():
+    """시리즈 전용 실행이면 같은 날 여러 편도 잡는다: episodes/날짜_순위.json + 날짜_순위2.json, 날짜_순위3.json ...
+       (파일이 있는 것만, 번호 순). 없으면 기본 EPS 그대로"""
+    if len(SERIES) != 1: return EPS
+    slot = SERIES_CODES[SERIES[0]][1]
+    found = []
+    for f in glob.glob(os.path.join('episodes', f'{TODAY}_{slot}*.json')):
+        stem = os.path.splitext(os.path.basename(f))[0]
+        m = re.fullmatch(re.escape(f'{TODAY}_{slot}') + r'(\d*)', stem)
+        if m: found.append((int(m.group(1) or 1), f.replace('\\', '/')))
+    return [f for _, f in sorted(found)] or EPS
+
 def step_wait_episodes():
     global EPS
+    if len(SERIES) == 1: EPS = series_episodes()
     if '--latest' in ARGS and not any(os.path.exists(p) for p in EPS):
         alt = latest_episodes()
         if alt:
@@ -199,9 +212,14 @@ def step_wait_episodes():
     log(f'콘티 대기: {", ".join(EPS)} (최대 {wait_min}분)', '콘티대기')
     end = time.time() + wait_min * 60
     while time.time() < end:
+        if len(SERIES) == 1: EPS = series_episodes()
         ready = [p for p in EPS if os.path.exists(p) and valid_episode(p)[0]]
         if len(ready) == len(EPS):
-            time.sleep(3); log('콘티 도착', '콘티'); return EPS
+            time.sleep(25)   # 같은 날 두 번째 콘티(_순위2)가 바로 뒤따라 들어오는 경우를 기다린다
+            if len(SERIES) == 1: EPS = series_episodes()
+            ready = [p for p in EPS if os.path.exists(p) and valid_episode(p)[0]]
+            if len(ready) == len(EPS): log(f'콘티 도착: {len(EPS)}편', '콘티'); return EPS
+            continue
         if check_signals(during_build=True) == 'stop': return []
         time.sleep(20); git_pull()
     ready = [p for p in EPS if os.path.exists(p) and valid_episode(p)[0]]
@@ -390,6 +408,7 @@ def check_signals(during_build=False):
         keys = toks or [key_of(p) for p in EPS]
         for k in keys:
             ep_path = next((p for p in EPS if key_of(p) == k), None)
+            if not ep_path and k.isdigit() and 1 <= int(k) <= len(EPS): ep_path = EPS[int(k) - 1]; k = key_of(ep_path)   # "1"/"2" = 오늘 첫째·둘째 편
             if not ep_path or not os.path.exists(ep_path): log(f'[{k}] 콘티 파일 없음'); continue
             video = step_build(ep_path, only)
             if video: after_build(ep_path, video)
