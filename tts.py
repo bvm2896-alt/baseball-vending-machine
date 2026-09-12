@@ -313,8 +313,99 @@ def fetch_external(lines):
     if got: print(f'외부 음성 {got}줄 준비됨 (external.json)')
     return got
 
+def _silences(path, thr='-32dB', min_d=0.35):
+    """(시작, 끝) 무음 구간 목록 (ffmpeg silencedetect)"""
+    r = subprocess.run(['ffmpeg', '-i', path, '-af', f'silencedetect=noise={thr}:d={min_d}', '-f', 'null', '-'], capture_output=True, text=True, errors='replace')
+    out = []; st = None
+    for ln in r.stderr.splitlines():
+        m = re.search(r'silence_start: ([\d.]+)', ln)
+        if m: st = float(m.group(1)); continue
+        m = re.search(r'silence_end: ([\d.]+)', ln)
+        if m and st is not None: out.append((st, float(m.group(1)))); st = None
+    return out
+
+def _dur(path):
+    try: return float(subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path], capture_output=True, text=True).stdout.strip())
+    except Exception: return 0.0
+
+def split_full(full_path, lines, keep_idx=None):
+    """대본 전체를 한 번에 합성한 음성을 줄(장면) 단위로 자른다.
+       1차: 줄 사이에 넣은 문단 쉼(긴 무음)을 찾아 자른다 — 무음 중 긴 것 N-1개를 시간순으로.
+       검증: 잘린 조각 길이가 글자 수 비율과 크게 어긋나면 2차(faster-whisper 단어 시각으로 경계 추정)로 넘어간다.
+       결과: work/voice_<편>/NN.mp3 + NN.txt (keep_idx 가 있으면 그 줄만 저장)"""
+    N = len(lines); total = _dur(full_path)
+    if N == 1: bounds = [(0.0, total)]
+    else:
+        sil = _silences(full_path)
+        inner = [x for x in sil if x[0] > 0.2 and x[1] < total - 0.2]
+        cuts = None
+        if len(inner) >= N - 1:
+            top = sorted(inner, key=lambda x: x[1] - x[0], reverse=True)[:N - 1]
+            cuts = sorted((a + b) / 2 for a, b in top)
+            bounds = [(0.0 if i == 0 else cuts[i - 1], total if i == N - 1 else cuts[i]) for i in range(N)]
+            # 글자 수 비율로 검증 (각 조각이 기대 길이의 0.5~2배 안이면 OK)
+            chars = [max(1, len(re.sub(r'[^가-힣]', '', l))) for l in lines]; sc = sum(chars)
+            ok = all(0.5 <= ((b - a) / max(total * c / sc, 0.1)) <= 2.0 for (a, b), c in zip(bounds, chars))
+            if not ok: print('  무음 기준 분할이 글자 수와 안 맞아 whisper 로 다시 잡습니다'); cuts = None
+        if cuts is None:
+            # 2차: whisper 단어 시각 → 누적 글자 비율로 경계
+            from faster_whisper import WhisperModel
+            m = WhisperModel(CFG.get('QA_WHISPER', 'small'), device='cpu', compute_type='int8')
+            segs, _ = m.transcribe(full_path, language='ko', word_timestamps=True, beam_size=3, initial_prompt=' '.join(lines)[:200], vad_filter=False)
+            words = [w for sg in segs for w in (sg.words or [])]
+            if not words: raise SystemExit('통 음성 분할 실패: whisper 단어 시각을 못 얻음')
+            wchars = [len(re.sub(r'[^가-힣]', '', w.word)) for w in words]; wsum = sum(wchars) or 1
+            chars = [len(re.sub(r'[^가-힣]', '', l)) for l in lines]; sc = sum(chars) or 1
+            targets = []; acc = 0
+            for c in chars[:-1]: acc += c; targets.append(acc / sc)
+            cuts = []; acc = 0; ti = 0
+            for i, w in enumerate(words):
+                acc += wchars[i]
+                while ti < len(targets) and acc / wsum >= targets[ti]:
+                    nxt = words[i + 1].start if i + 1 < len(words) else total
+                    cuts.append((w.end + nxt) / 2); ti += 1
+            while len(cuts) < N - 1: cuts.append(total)
+            bounds = [(0.0 if i == 0 else cuts[i - 1], total if i == N - 1 else cuts[i]) for i in range(N)]
+    af = 'silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse'
+    for i, (a, b) in enumerate(bounds):
+        if keep_idx is not None and i not in keep_idx: continue
+        mp3 = os.path.join(VDIR, f'{i:02d}.mp3')
+        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{a:.3f}', '-to', f'{b:.3f}', '-i', full_path, '-af', af, '-b:a', '192k', mp3], check=True)
+        io.open(mp3.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])
+        sj = mp3.replace('.mp3', '.segs.json')
+        if os.path.exists(sj): os.remove(sj)
+        print(f'{i:02d} 통 음성에서 잘라냄 {a:.2f}~{b:.2f}s')
+    return N
+
+def fetch_full(lines):
+    """external.json 에 "full": {"url": ..., "lines": [...]} 가 있으면(대본 통째 합성) 내려받아 줄별로 자른다.
+       lines 가 현재 대사와 같아야 하고, 같은 url 로 이미 잘라 둔 게 있으면 건너뛴다."""
+    ext = os.path.join(VDIR, 'external.json')
+    if not os.path.exists(ext): return 0
+    try: data = json.load(io.open(ext, encoding='utf-8-sig'))
+    except Exception: return 0
+    full = data.get('full') or {}
+    url = full.get('url', '')
+    if not url: return 0
+    if [t.strip() for t in full.get('lines', [])] != [l.strip() for l in lines]:
+        print('  external.json 의 full.lines 가 지금 대사와 달라 통 음성을 쓰지 않습니다'); return 0
+    src = os.path.join(VDIR, 'full.src')
+    if os.path.exists(src) and io.open(src, encoding='utf-8').read().strip() == url and all(os.path.exists(os.path.join(VDIR, f'{i:02d}.mp3')) for i in range(len(lines))):
+        return len(lines)
+    raw = os.path.join(VDIR, 'full.dl')
+    r = requests.get(url, timeout=300); r.raise_for_status(); open(raw, 'wb').write(r.content)
+    wav = os.path.join(VDIR, 'full.wav')
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-ac', '1', '-ar', '24000', wav], check=True)
+    n = split_full(wav, lines)
+    io.open(src, 'w', encoding='utf-8').write(url)
+    print(f'통 음성 {n}줄로 분할 완료')
+    return n
+
 if __name__ == '__main__':
     lines = load_lines()
+    try: fetch_full(lines)
+    except SystemExit: raise
+    except Exception as e: print(f'  통 음성 처리 실패(줄별 external 또는 TTS 로 진행): {e}')
     fetch_external(lines)
     only = None
     for a in sys.argv:
