@@ -139,9 +139,7 @@ def write_status():
     for k, v in sorted(state['videos'].items()):
         lines.append(f'영상 {k} 유튜브: {v.get("title","")}  https://youtu.be/{v["id"]}  ({v.get("privacy")})')
     if not state['videos'] and not state.get('built'): lines.append('영상: 아직 없음')
-    if state.get('built') and not UPLOAD_ENABLED:
-        lines.append('→ 수동 업로드 모드: 영상 폴더의 mp4 와 _유튜브.txt(제목·설명·태그)로 유튜브 스튜디오에서 직접 올리세요')
-    elif state.get('built') and not AUTO_UPLOAD:
+    if state.get('built') and not AUTO_UPLOAD:
         lines.append('→ 영상 폴더에서 확인한 뒤 업로드.txt 신호를 주면 유튜브에 올립니다')
     lines += ['', '기록:'] + state['log'][-30:]
     io.open(STATUS_TXT, 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
@@ -186,21 +184,8 @@ def latest_episodes():
     latest = os.path.basename(cand[-1])[:10]
     return sorted(f.replace('\\', '/') for f in cand if os.path.basename(f).startswith(latest))
 
-def series_episodes():
-    """시리즈 전용 실행이면 같은 날 여러 편도 잡는다: episodes/날짜_순위.json + 날짜_순위2.json, 날짜_순위3.json ...
-       (파일이 있는 것만, 번호 순). 없으면 기본 EPS 그대로"""
-    if len(SERIES) != 1: return EPS
-    slot = SERIES_CODES[SERIES[0]][1]
-    found = []
-    for f in glob.glob(os.path.join('episodes', f'{TODAY}_{slot}*.json')):
-        stem = os.path.splitext(os.path.basename(f))[0]
-        m = re.fullmatch(re.escape(f'{TODAY}_{slot}') + r'(\d*)', stem)
-        if m: found.append((int(m.group(1) or 1), f.replace('\\', '/')))
-    return [f for _, f in sorted(found)] or EPS
-
 def step_wait_episodes():
     global EPS
-    if len(SERIES) == 1: EPS = series_episodes()
     if '--latest' in ARGS and not any(os.path.exists(p) for p in EPS):
         alt = latest_episodes()
         if alt:
@@ -212,14 +197,9 @@ def step_wait_episodes():
     log(f'콘티 대기: {", ".join(EPS)} (최대 {wait_min}분)', '콘티대기')
     end = time.time() + wait_min * 60
     while time.time() < end:
-        if len(SERIES) == 1: EPS = series_episodes()
         ready = [p for p in EPS if os.path.exists(p) and valid_episode(p)[0]]
         if len(ready) == len(EPS):
-            time.sleep(25)   # 같은 날 두 번째 콘티(_순위2)가 바로 뒤따라 들어오는 경우를 기다린다
-            if len(SERIES) == 1: EPS = series_episodes()
-            ready = [p for p in EPS if os.path.exists(p) and valid_episode(p)[0]]
-            if len(ready) == len(EPS): log(f'콘티 도착: {len(EPS)}편', '콘티'); return EPS
-            continue
+            time.sleep(3); log('콘티 도착', '콘티'); return EPS
         if check_signals(during_build=True) == 'stop': return []
         time.sleep(20); git_pull()
     ready = [p for p in EPS if os.path.exists(p) and valid_episode(p)[0]]
@@ -262,13 +242,13 @@ def step_build(ep_path, only_lines=None):
     log(f'[{k}] 영상 완성 {dur:.1f}초 → {video}', '영상완료')
     return video
 
-UPLOAD_ENABLED = CFG.get('UPLOAD_ENABLED', '0').strip() == '1'          # 기본 0 = 수동 업로드(API 안 씀). 설정 UPLOAD_ENABLED=1 일 때만 API 업로드
+UPLOAD_ENABLED = CFG.get('UPLOAD_ENABLED', '1').strip() != '0'          # 설정 UPLOAD_ENABLED=0 → 이 PC 에서는 절대 업로드하지 않음(회사 PC 용)
 UPLOAD_MIN_GAP_MIN = int(CFG.get('UPLOAD_MIN_GAP_MIN', '120'))               # 업로드 사이 최소 간격(분). 사람 손 속도처럼 보이게
 UPLOAD_MAX_PER_DAY = int(CFG.get('UPLOAD_MAX_PER_DAY', '2'))
 
 def upload_allowed(k):
     """업로드해도 되는지: 이 PC 허용 여부, 하루 편수, 직전 업로드와의 간격. 안 되면 이유를 돌려준다"""
-    if not UPLOAD_ENABLED: return '수동 업로드 모드(API 안 씀). 결과물 폴더의 mp4 와 _유튜브.txt 로 유튜브 스튜디오에서 직접 올리세요'
+    if not UPLOAD_ENABLED: return '이 PC 는 업로드 금지(설정 UPLOAD_ENABLED=0). 집 PC 에서 올리세요'
     if len(state['videos']) >= UPLOAD_MAX_PER_DAY and k not in state['videos']: return f'오늘 업로드 {UPLOAD_MAX_PER_DAY}편 한도'
     last = state.get('last_upload_ts', 0)
     gap = (time.time() - last) / 60
@@ -319,14 +299,54 @@ def after_build(ep_path, video):
     if '--no-upload' in ARGS: log(f'[{k}] 업로드 생략(--no-upload)', '영상완료'); return
     if k in state['videos']:
         log(f'[{k}] 이미 유튜브에 올라간 편이라 다시 올리지 않습니다(삭제·재업로드 금지). 새 영상은 폴더에만 저장', '영상완료'); return
-    if not UPLOAD_ENABLED:
-        log(f'[{k}] 영상 준비 완료 (수동 업로드 모드): 폴더의 mp4 와 _유튜브.txt 제목·설명을 유튜브 스튜디오에 직접 올리세요', '영상완료'); return
     if AUTO_UPLOAD:
         step_upload(ep_path, video)
     else:
         log(f'[{k}] 영상 준비 완료. 확인 후 업로드.txt 신호를 주면 올립니다', '업로드대기')
 
+def photo_check(ep_path):
+    """콘티가 쓰는 사진(장면 img·썸네일 img) 중 준비된 것/없는 것. [(이름, 찾은 경로 또는 None)]"""
+    try:
+        ep = json.load(io.open(ep_path, encoding='utf-8-sig'))
+        names = sorted(build._photo_names(ep))
+        dirs = [d for d in build.photo_dirs(build.ep_key(ep_path)) if d and os.path.isdir(d)]
+    except Exception:
+        return []
+    out = []
+    for n in names:
+        base = os.path.splitext(n)[0]; found = None
+        for d in dirs:
+            for f in os.listdir(d):
+                if f == n or (os.path.splitext(f)[0] == base and f.lower().endswith(build.PHOTO_EXTS)):
+                    found = os.path.join(d, f); break
+            if found: break
+        out.append((n, found))
+    return out
+
+def wait_photos(paths):
+    """사진이 다 준비되고 Enter 를 눌러야 제작을 시작한다 (지금실행 처럼 사람이 보고 있는 --now 실행에서만).
+    설정 PHOTO_GATE=0 이면 묻지 않고 바로 만든다. 예약 실행(07:30, --now 없음)은 사람이 없으니 묻지 않는다."""
+    if '--now' not in ARGS or CFG.get('PHOTO_GATE', '1').strip() == '0': return
+    if not sys.stdin or not sys.stdin.isatty(): return
+    while True:
+        print()
+        need_any = False
+        for p in paths:
+            chk = photo_check(p)
+            if not chk: continue
+            need_any = True
+            print(f'[{key_of(p)}] 사진 준비 상태  ({os.path.basename(p)})')
+            for n, f in chk:
+                print(f'   {"O" if f else "X"}  {n}' + (f'   ← {os.path.relpath(f, os.path.join(HERE, ".."))}' if f else '   (없음 → 로고로 대체)'))
+        if not need_any: return
+        missing = sum(1 for p in paths for n, f in photo_check(p) if not f)
+        msg = '사진이 모두 준비됐어요. ' if not missing else f'사진 {missing}장이 아직 없어요(없는 채로 만들면 로고로 나옵니다). '
+        try: ans = input(msg + 'Enter 를 누르면 제작 시작 / r 입력 후 Enter 면 다시 확인: ').strip().lower()
+        except EOFError: return
+        if ans != 'r': return
+
 def make_all(paths):
+    wait_photos(paths)
     for p in paths:
         video = step_build(p)
         if video: after_build(p, video)
@@ -363,10 +383,7 @@ def check_signals(during_build=False):
     if take('종료.txt') is not None: log('종료 신호 → PC 종료', '종료'); shutdown('shutdown'); return 'stop'
     if take('절전.txt') is not None: log('절전 신호 → 절전', '절전'); shutdown('sleep'); return 'stop'
     if during_build: return None
-    if not UPLOAD_ENABLED:
-        for n in ('업로드.txt', '공개.txt', '메타.txt'):
-            if take(n) is not None: log(f'{n} 신호 무시 — 수동 업로드 모드(API 안 씀)')
-    sel = take('업로드.txt') if UPLOAD_ENABLED else None
+    sel = take('업로드.txt')
     if sel is not None:
         # 형식: "" | "1" | "2" | "1 2" | "공개" | "1 공개"  (공개 가 있으면 바로 공개로 올림)
         privacy = 'public' if '공개' in sel else 'private'
@@ -377,7 +394,7 @@ def check_signals(during_build=False):
             if not os.path.exists(b['video']): log(f'[{k}] 영상 파일이 없음: {b["video"]}'); continue
             log(f'[{k}] 업로드 신호 → {"공개" if privacy == "public" else "비공개"} 업로드', '업로드')
             step_upload(b['ep'], b['video'], privacy)
-    sel = take('공개.txt') if UPLOAD_ENABLED else None
+    sel = take('공개.txt')
     if sel is not None:
         for k in targets(sel):
             v = state['videos'][k]
@@ -385,7 +402,7 @@ def check_signals(during_build=False):
             if rc: log(f'[{k}] 공개 전환 실패: ' + out[-200:])
             else: v['privacy'] = 'public'; log(f'[{k}] 공개 전환 완료', '공개')
         if not state['videos']: log('공개할 영상이 없음')
-    sel = take('메타.txt') if UPLOAD_ENABLED else None
+    sel = take('메타.txt')
     if sel is not None:
         # 이미 올린 영상의 제목·설명·태그를 콘티 파일 youtube 항목으로 교체(재업로드 없음). 비어 있으면 전부, "1"/"2" 면 그 번호만
         for k in targets(sel):
@@ -408,7 +425,6 @@ def check_signals(during_build=False):
         keys = toks or [key_of(p) for p in EPS]
         for k in keys:
             ep_path = next((p for p in EPS if key_of(p) == k), None)
-            if not ep_path and k.isdigit() and 1 <= int(k) <= len(EPS): ep_path = EPS[int(k) - 1]; k = key_of(ep_path)   # "1"/"2" = 오늘 첫째·둘째 편
             if not ep_path or not os.path.exists(ep_path): log(f'[{k}] 콘티 파일 없음'); continue
             video = step_build(ep_path, only)
             if video: after_build(ep_path, video)
