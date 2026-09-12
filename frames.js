@@ -5,7 +5,7 @@ const { chromium } = require('playwright');
 const path = require('path'); const fs = require('fs'); const os = require('os'); const { spawn } = require('child_process');
 
 function ffArgs(fps, W, H, out) {
-  return ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-',
+  return ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(fps), '-i', '-',
     '-vf', `scale=${W}:${H}:flags=lanczos`, '-c:v', 'libx264', '-preset', 'medium', '-crf', '17', '-tune', 'animation',
     '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-r', String(fps), '-g', String(fps * 2), '-movflags', '+faststart', out];
 }
@@ -13,18 +13,24 @@ function ffArgs(fps, W, H, out) {
 async function worker(browser, idx, from, to, fps, scale, W, H, out, quality, onProgress) {
   const p = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: scale });
   await p.goto('file://' + path.join(__dirname, 'work', 'render.html')); await p.waitForTimeout(900);
-  const ff = spawn('ffmpeg', ffArgs(fps, W, H, out), { stdio: ['pipe', 'inherit', 'inherit'] });
-  let err = null; ff.on('error', e => { err = e; });
+  const ff = spawn('ffmpeg', ffArgs(fps, W, H, out), { stdio: ['pipe', 'ignore', 'pipe'] });
+  let err = null, errText = ''; ff.on('error', e => { err = e; }); ff.stdin.on('error', e => { err = err || e; });
+  ff.stderr.on('data', d => { errText += d.toString(); if (errText.length > 4000) errText = errText.slice(-4000); });
+  const closed = new Promise(res => ff.on('close', res));
   const write = buf => new Promise(res => { if (!ff.stdin.write(buf)) ff.stdin.once('drain', res); else res(); });
-  for (let i = from; i < to; i++) {
+  let shot = 0;
+  for (let i = from; i < to && !err; i++) {
     await p.evaluate(t => window.render(t), i / fps);
-    await write(await p.screenshot({ type: 'jpeg', quality }));
+    await write(await p.screenshot({ type: 'jpeg', quality })); shot++;
     if ((i - from) % 60 === 0) onProgress(60);
   }
   ff.stdin.end();
-  await new Promise(res => ff.on('close', res));
+  const code = await closed;
   await p.close();
-  if (err) throw err;
+  if (err) throw new Error(`ffmpeg 실행 오류(조각 ${idx}): ${err.message}\n${errText}`);
+  if (code !== 0) throw new Error(`ffmpeg 종료 코드 ${code}(조각 ${idx}, ${shot}프레임)\n${errText}`);
+  const size = fs.existsSync(out) ? fs.statSync(out).size : 0;
+  if (shot === 0 || size < 1000 + 50 * shot) throw new Error(`조각 ${idx} 영상이 비었어요 (${shot}프레임, ${size}바이트, 범위 ${from}~${to})\n${errText}`);
   return to - from;
 }
 
@@ -35,6 +41,7 @@ async function worker(browser, idx, from, to, fps, scale, W, H, out, quality, on
   const QUALITY = parseInt(process.env.FRAME_JPEG_Q || '95', 10);
   const W = Math.round(1080 * SCALE / 2) * 2, H = Math.round(1920 * SCALE / 2) * 2;
   const n = Math.ceil(FPS * DUR);
+  if (!(n > 0)) throw new Error(`총 길이·fps 가 이상해요 (길이 ${process.argv[2]}, fps ${process.argv[4]})`);
   const opts = {}; if (process.env.CHROME_PATH) opts.executablePath = process.env.CHROME_PATH;
   const browser = await chromium.launch(opts);
   const t0 = Date.now(); let done = 0;
@@ -53,9 +60,11 @@ async function worker(browser, idx, from, to, fps, scale, W, H, out, quality, on
   else {
     const lst = path.join(__dirname, 'work', 'silent_parts.txt');
     fs.writeFileSync(lst, parts.map(x => `file '${path.basename(x)}'`).join('\n'));
-    await new Promise((res, rej) => { const c = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-c', 'copy', '-movflags', '+faststart', OUT], { stdio: 'inherit' }); c.on('close', code => code ? rej(new Error('concat 실패 ' + code)) : res()); });
+    await new Promise((res, rej) => { let e = ''; const c = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-c', 'copy', '-movflags', '+faststart', OUT], { stdio: ['ignore', 'ignore', 'pipe'] }); c.stderr.on('data', d => { e += d.toString(); }); c.on('close', code => code ? rej(new Error('concat 실패 ' + code + '\n' + e)) : res()); });
     for (const x of parts) { try { fs.unlinkSync(x); } catch (e) {} }
     try { fs.unlinkSync(lst); } catch (e) {}
   }
-  console.log(`frames ${n} → ${W}x${H} ${FPS}fps, ${NW}개 동시, ${Math.round((Date.now() - t0) / 1000)}초`);
+  const outSize = fs.existsSync(OUT) ? fs.statSync(OUT).size : 0;
+  if (outSize < 1000 + 50 * n) throw new Error(`무음 영상이 비었어요 (${outSize}바이트) — ffmpeg 가 프레임을 못 받았어요`);
+  console.log(`frames ${n} → ${W}x${H} ${FPS}fps, ${NW}개 동시, ${Math.round((Date.now() - t0) / 1000)}초, ${Math.round(outSize / 1048576)}MB`);
 })().catch(e => { console.error('프레임 렌더 오류:', e.message); process.exit(1); });

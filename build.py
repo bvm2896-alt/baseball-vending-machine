@@ -460,16 +460,16 @@ def render(ep, ep_path):
     shutil.rmtree(W('frames'), ignore_errors=True)
     print(f'프레임 렌더 {fps}fps x{scale} ({round(total)}초) …')
     r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale], capture_output=True, text=True, encoding='utf-8', errors='replace')
-    if r.returncode != 0 or not os.path.exists(W('silent.mp4')): raise SystemExit('프레임 렌더 실패:\n' + (r.stderr or r.stdout)[-1500:])
-    print((r.stdout or '').strip().splitlines()[-1] if r.stdout else '')
-    vd = dur_of(W('silent.mp4'))
-    if vd < total * 0.95:
+    if r.returncode != 0: print('프레임 렌더 1차 실패 → 동시작업 1 로 다시:\n' + ((r.stderr or '') + '\n' + (r.stdout or ''))[-1200:])
+    elif r.stdout: print((r.stdout or '').strip().splitlines()[-1])
+    vd = dur_of(W('silent.mp4')) if os.path.exists(W('silent.mp4')) else 0.0
+    if r.returncode != 0 or vd < total * 0.95:
         # 조각 파일을 동시에 쓰다 깨진 경우(OneDrive 동기화 폴더에서 가끔) → 한 번 더, 이번엔 조각 없이 한 번에 그린다
         print(f'경고: 무음 영상이 깨졌거나 짧음({vd:.1f}s / {total:.1f}s) → 한 번 더 그립니다(동시작업 1)')
         try: os.remove(W('silent.mp4'))
         except Exception: pass
         r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale, '1'], capture_output=True, text=True, encoding='utf-8', errors='replace')
-        if r.returncode != 0 or not os.path.exists(W('silent.mp4')): raise SystemExit('프레임 렌더 실패(재시도):\n' + (r.stderr or r.stdout)[-1500:])
+        if r.returncode != 0 or not os.path.exists(W('silent.mp4')): raise SystemExit('프레임 렌더 실패(재시도):\n' + ((r.stderr or '') + '\n' + (r.stdout or ''))[-1500:])
         vd = dur_of(W('silent.mp4'))
         if vd < total * 0.95: raise SystemExit(f'영상 길이 부족: {vd:.1f}s / {total:.1f}s (재시도 후에도)')
     # 6) 합성 → 결과물 폴더(영상/날짜/번호_팀.mp4)
