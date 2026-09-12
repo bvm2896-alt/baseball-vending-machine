@@ -269,6 +269,22 @@ def synth_line(line, prev, nxt, out, pause=None):
         except Exception: pass
     return True
 
+def mark_breaths(mp3, line, first=False):
+    """웹(zip/통 음성)에서 받은 한 줄 음성에도 API 음성과 똑같이: ' / ' 호흡 자리의 실제 쉼을 찾아 TTS_BREATH 만큼 쉼을 더 끼우고 NN.segs.json 을 쓴다.
+    첫 줄(후킹)은 한 호흡이라 쉼을 안 끼운다."""
+    segs = [x.strip() for x in line.split('/') if x.strip()]
+    sj = mp3.replace('.mp3', '.segs.json')
+    if len(segs) <= 1: return
+    try:
+        bounds = seg_bounds(mp3, segs)
+        b = [x for x, _ in bounds] if first else insert_breaths(mp3, bounds)
+        durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
+        json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'breaths': 0 if first else sum(1 for _, iv in bounds[1:] if iv)}, open(sj, 'w'))
+    except Exception as e:
+        print(f'  {os.path.basename(mp3)} 구간 추정 실패(자막은 한 덩어리로):', e)
+        try: os.remove(sj)
+        except Exception: pass
+
 def synth_index(lines, i, out=None):
     """i번째 줄 합성(앞뒤 문맥 포함). qa_voice.py 가 다시 만들 때도 이걸 쓴다"""
     prev = lines[i-1] if i > 0 else ''
@@ -454,7 +470,8 @@ def split_zip(zip_path, lines):
             io.open(mp3.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])
             for suf in ('.segs.json', '.src'):
                 if os.path.exists(mp3.replace('.mp3', suf)): os.remove(mp3.replace('.mp3', suf))
-        print(f'zip 의 문장 파일 {len(files)}개 → 줄별 음성으로 사용'); shutil_rm(tmp); return len(files)
+            mark_breaths(mp3, lines[i], first=(i == 0))
+        print(f'zip 의 문장 파일 {len(files)}개 → 줄별 음성으로 사용 (호흡 자리 쉼 {BREATH:.2f}초)'); shutil_rm(tmp); return len(files)
     print(f'zip 파일 수({len(files)})가 줄 수({len(lines)})와 달라 이어 붙여 통 음성으로 자릅니다')
     lst = os.path.join(tmp, 'list.txt')
     io.open(lst, 'w', encoding='utf-8').write('\n'.join("file '" + f.replace("'", "'\\''") + "'" for f in files) + '\n')

@@ -290,7 +290,11 @@ def end_level(f, ms=30):
 CONNECT_END = re.compile(r'(는데|고요|지만|면|니까|서|고|도|은|는|이|가)$')   # 말이 이어지는 어미
 TURN_START = ('그래서', '근데', '그런데', '그러니까', '변수는', '결론', '제 예측', '문제는', '이유는', '단 ', '그럼', '만약')
 
-MAX_GAP = 0.5   # 어떤 쉼도 이보다 길지 않게(답답함 방지)
+def gap_scale():
+    """줄 사이 쉼 배율 (9/13 "흐름이 너무 빨라, 텀이 짧다" → 기본 1.5배). 설정.txt GAP_SCALE 로 조절"""
+    try: return max(0.5, float(cfg_get('GAP_SCALE', '1.5')))
+    except Exception: return 1.5
+MAX_GAP = 0.75   # 어떤 쉼도 이보다 길지 않게(답답함 방지) — 예전 0.5 × 1.5
 
 def gap_after(i, line, n, nxt=None, scene_change=False):
     """줄과 줄 사이 쉼(초). 말이 이어지면 거의 안 쉬고, 문장이 끝나면 짧게, 장면(이미지)이 바뀌거나 방향을 바꾸는 말 앞에서만 조금 더 (최대 0.5초)"""
@@ -303,7 +307,7 @@ def gap_after(i, line, n, nxt=None, scene_change=False):
     if nxt and nxt['narr'].strip().startswith(TURN_START): gap = max(gap, 0.38)
     if scene_change: gap = max(gap, 0.32)
     if i == 0: gap = min(gap, 0.18)   # 후킹 대사 뒤는 뜸 들이지 않고 바로 본론으로
-    return round(min(gap, MAX_GAP), 2)
+    return round(min(gap * gap_scale(), MAX_GAP), 2)
 
 def pace_of(i, line, n):
     """줄별 말 속도 배율. 기본은 그대로(1.0) — 느리게 하면 답답하다는 피드백. 콘티에 pace: slow|normal|fast 로만 조절"""
