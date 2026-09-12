@@ -4,7 +4,7 @@
   순위 읽기 → 콘티(episodes/오늘_순위.json = 야구순위, 오늘_이슈.json = 야구이슈) 대기
   → 각각 음성 → 영상(상위 폴더 영상\\날짜\\번호_팀.mp4) → 비공개 업로드 → 신호 파일 감시 → 안전 종료 시각에 PC 종료
 
-옵션:  --series rank|issue (야구순위/야구이슈 전용 — 그 시리즈 콘티만, 신호·오늘.txt 는 시리즈 폴더)  --now (시간과 상관없이 바로)  --latest (오늘 콘티 없으면 최근 콘티로)  --no-upload  --no-shutdown  --no-fetch  --no-tts
+옵션:  --series rank|issue (야구순위/야구이슈 전용 — 그 시리즈 콘티만, 신호·오늘.txt 는 시리즈 폴더)  --now (시간과 상관없이 바로)  --today (18시 넘어도 오늘 날짜 콘티)  --latest (오늘 콘티 없으면 최근 콘티로)  --no-upload  --no-shutdown  --no-fetch  --no-tts
         --episode 파일경로 (콘티 대기 생략, 여러 개 가능)
 신호 파일(상위 폴더 야구자판기\\):
   업로드.txt  만들어 둔 영상을 유튜브에 올림. 비어 있으면 전부(비공개), "1"/"2" 면 그 번호만, "공개" 가 들어 있으면 바로 공개로
@@ -42,7 +42,7 @@ def _cfg(k, d=''):
     except Exception: pass
     return d
 _now = datetime.datetime.now()
-NIGHT = _now.hour >= int(_cfg('NIGHT_HOUR', '18'))
+NIGHT = _now.hour >= int(_cfg('NIGHT_HOUR', '18')) and '--today' not in ARGS   # --today: 저녁이라도 오늘 날짜 콘티로(낮에 못 만든 편을 저녁에 마저 만들 때)
 TODAY = (_now.date() + datetime.timedelta(days=1 if NIGHT else 0)).isoformat()
 # 시리즈: --series rank(야구순위) / issue(야구이슈). 시리즈 전용 실행이면 콘티는 episodes/날짜_순위.json 처럼 하나만 다루고,
 # 신호 파일과 오늘.txt 는 그 시리즈 폴더(야구자판기\야구순위\)에서 읽고 쓴다. 시리즈 없이 실행하면 순위·이슈 둘 다.
