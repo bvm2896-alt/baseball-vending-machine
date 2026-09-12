@@ -6,17 +6,6 @@
 설정은 같은 폴더의 설정.txt 에서 읽는다 (TYPECAST_API_KEY, TYPECAST_VOICE_ID)
 """
 import os, sys, json, time, subprocess, io
-
-def open_cfg(path='설정.txt'):
-    """설정.txt 열기 — 메모장이 ANSI(cp949)로 저장해도 읽히게 utf-8 → cp949 순서로 시도"""
-    import io as _io
-    for enc in ('utf-8-sig', 'cp949', 'euc-kr'):
-        try:
-            f = _io.open(path, encoding=enc); f.read(); f.seek(0); return f
-        except UnicodeDecodeError:
-            try: f.close()
-            except Exception: pass
-    return _io.open(path, encoding='utf-8-sig', errors='replace')
 import requests
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -24,7 +13,7 @@ os.chdir(HERE)
 
 def load_cfg():
     cfg = {}
-    with open_cfg() as f:
+    with io.open('설정.txt', encoding='utf-8-sig') as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith('#') or '=' not in line:
@@ -52,15 +41,23 @@ TEMPO = float(CFG.get('TTS_TEMPO', '1.0'))      # 타입캐스트 자체 배속.
 URL = 'https://api.typecast.ai/v1/text-to-speech'
 def head(): return {'X-API-KEY': ACCOUNTS[ACC]['key'], 'Content-Type': 'application/json'}
 
+FAILS = {}   # 계정 이름 → 왜 못 썼는지 (마지막에 한 줄로 정리해서 보여준다)
 def next_account(reason):
     """다음 계정으로 전환. 더 없으면 False"""
     global ACC
+    FAILS[ACCOUNTS[ACC]['name']] = reason
     if ACC + 1 >= len(ACCOUNTS):
-        print(f'  {ACCOUNTS[ACC]["name"]} {reason} — 남은 계정 없음. 설정.txt 에 TYPECAST_API_KEY2 를 추가하거나 크레딧을 충전하세요.')
+        print(f'  {ACCOUNTS[ACC]["name"]} {reason} — 남은 계정 없음')
+        print('  계정별 결과: ' + ' / '.join(f'{k}({ACCOUNTS[i]["key"][:6]}…): {v}' for i, (k, v) in enumerate(FAILS.items())))
         return False
     ACC += 1
     print(f'  {ACCOUNTS[ACC - 1]["name"]} {reason} → {ACCOUNTS[ACC]["name"]} 으로 전환')
     return True
+
+def err_code(r):
+    """타입캐스트 오류 응답의 error_code (예: UNUSUAL_ACTIVITY_DETECTED, INSUFFICIENT_CREDITS)"""
+    try: return r.json().get('error_code') or r.json().get('message', '')[:60]
+    except Exception: return r.text[:60]
 
 import re
 def check_audio(path, text):
@@ -102,7 +99,7 @@ def synth(text, prev='', nxt='', out_path=None):
         r = requests.post(URL, headers=head(), json=payload, timeout=60)
         if r.status_code in (402, 401, 403) or (r.status_code == 200 and not r.content):
             # 크레딧 소진(402) / 키 오류(401·403) → 다음 계정으로
-            why = '크레딧 소진' if r.status_code == 402 else f'인증 오류 {r.status_code}'
+            why = ('크레딧 소진' if r.status_code == 402 else f'거부 {r.status_code}') + f' {err_code(r)}'
             if next_account(why): continue
             print(f'  실패 {r.status_code}: {r.text[:200]}')
             return False
@@ -176,7 +173,7 @@ def seg_bounds(path, segs):
     타입캐스트는 쉼표마다 짧게 쉬므로, 음성 속 쉼의 개수가 호흡 구간 경계 수와 같으면 그대로 순서대로 쓴다.
     더 많으면 글자 수 비율로 예상한 위치에 가장 잘 맞는 조합을 고르고, 적으면 있는 것만 맞추고 나머지는 비율로 추정.
     반환: [(시작초, (무음시작,무음끝) 또는 None)]"""
-    d, sil = probe_silences(path, thr='-36dB', mind=0.11)   # 0.08 → 0.11: 'ㅂ·ㄱ·ㄷ' 받침 뒤의 짧은 닫힘(십|팔)을 쉼으로 잡아 단어 가운데가 끊기던 문제 방지
+    d, sil = probe_silences(path, thr='-36dB', mind=0.08)
     lead = sil[0][1] if sil and sil[0][0] < 0.02 else 0.0
     tail = sil[-1][0] if sil and sil[-1][1] >= d - 0.03 else d
     inner = [(a, b) for a, b in sil if a > lead + 0.05 and b < tail - 0.05]
@@ -210,11 +207,6 @@ def seg_bounds(path, segs):
             m = (a + b) / 2
             k = min((abs(m - e), j) for j, e in enumerate(exp) if j not in used)[1] if len(used) < need else None
             if k is not None: chosen[k] = (a, b); used.add(k)
-    # 예상 위치(글자 수 비율)에서 너무 먼 무음은 단어 사이가 아니라 단어 속일 가능성이 크다 → 쉼 삽입 대상에서 뺀다
-    tol = max(0.45, 0.22 * speech)
-    for k in range(need):
-        iv = chosen[k]
-        if iv and abs((iv[0] + iv[1]) / 2 - exp[k]) > tol: chosen[k] = None
     out, prev = [(0.0, None)], lead
     for k in range(need):
         iv = chosen[k]
@@ -224,15 +216,8 @@ def seg_bounds(path, segs):
 
 BREATH = float(CFG.get('TTS_BREATH', '0.18'))   # 긴 대사의 호흡 자리(' / ')에 살짝 끼워 넣는 쉼(초). 실제 쉼이 감지된 자리에만 넣는다
 
-def insert_breaths(path, bounds, segs=None):
-    """실제 쉼이 감지된 호흡 자리마다 BREATH 초의 무음을 끼워 넣어 '와다다다' 읽는 느낌을 없앤다. 새 경계 목록을 돌려준다.
-    넣지 않는 경우: 이미 0.28초 이상 쉰 자리(더 넣으면 답답), 앞뒤 구간이 둘 다 짧은 목록형 대사("십사일 소집 / 십팔일 출국" — 쉼표 억양만으로 충분)"""
-    bounds = list(bounds)
-    if segs and len(segs) == len(bounds):
-        syl = [len(re.findall(r'[가-힣A-Za-z0-9]', x)) for x in segs]
-        for k in range(1, len(bounds)):
-            b, iv = bounds[k]
-            if iv and ((iv[1] - iv[0]) >= 0.28 or (syl[k - 1] <= 7 and syl[k] <= 7)): bounds[k] = (b, None)
+def insert_breaths(path, bounds):
+    """실제 쉼이 감지된 호흡 자리마다 BREATH 초의 무음을 끼워 넣어 '와다다다' 읽는 느낌을 없앤다. 새 경계 목록을 돌려준다"""
     cuts = [iv for _, iv in bounds[1:] if iv]
     if not cuts or BREATH <= 0: return [b for b, _ in bounds]
     wav = path.replace('.mp3', '_w.wav'); sil = path.replace('.mp3', '_b.wav'); lst = path.replace('.mp3', '_b.txt')
@@ -275,7 +260,7 @@ def synth_line(line, prev, nxt, out, pause=None):
         return True
     try:
         bounds = seg_bounds(out, segs)
-        b = insert_breaths(out, bounds, segs) if pause is None else [x for x, _ in bounds]   # pause=0 이면(후킹 대사) 쉼을 안 넣는다
+        b = insert_breaths(out, bounds) if pause is None else [x for x, _ in bounds]   # pause=0 이면(후킹 대사) 쉼을 안 넣는다
         durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
         json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'breaths': sum(1 for _, iv in bounds[1:] if iv)}, open(sj, 'w'))
     except Exception as e:
@@ -294,24 +279,56 @@ def synth_index(lines, i, out=None):
         io.open(out.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])   # 어떤 대사로 만든 음성인지 기록(대사 바뀌면 build 가 그 줄만 다시)
     return ok
 
+def fetch_external(lines):
+    """다른 TTS(힉스필드 등)로 만든 음성을 쓰는 경우: work/voice_<편>/external.json 에
+       {"0": {"url": "...wav", "text": "대사"}, ...} 가 있으면 내려받아 NN.mp3 + NN.txt 로 저장한다(대사가 같은 줄만).
+       그 뒤 아래 루프가 '재사용'으로 건너뛰므로 타입캐스트를 안 쓴다."""
+    ext = os.path.join(VDIR, 'external.json')
+    if not os.path.exists(ext): return 0
+    try: data = json.load(io.open(ext, encoding='utf-8-sig'))
+    except Exception as e: print(f'  external.json 읽기 실패: {e}'); return 0
+    got = 0
+    for i, line in enumerate(lines):
+        item = data.get(str(i)) or {}
+        url, text = item.get('url', ''), item.get('text', '')
+        if not url or text.strip() != line.strip(): continue
+        mp3 = os.path.join(VDIR, f'{i:02d}.mp3'); txt = mp3.replace('.mp3', '.txt')
+        if os.path.exists(mp3) and os.path.exists(txt) and io.open(txt, encoding='utf-8').read().strip() == line.strip(): got += 1; continue
+        try:
+            r = requests.get(url, timeout=120); r.raise_for_status()
+            raw = mp3 + '.dl'
+            open(raw, 'wb').write(r.content)
+            subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-b:a', '192k', mp3], check=True)
+            os.remove(raw)
+            io.open(txt, 'w', encoding='utf-8').write(line)
+            sj = mp3.replace('.mp3', '.segs.json')
+            if os.path.exists(sj): os.remove(sj)   # 호흡 경계는 qa_voice(whisper)가 새로 잡는다
+            got += 1; print(f'{i:02d} 외부 음성 받음')
+        except Exception as e:
+            print(f'{i:02d} 외부 음성 실패: {e}')
+    if got: print(f'외부 음성 {got}줄 준비됨 (external.json)')
+    return got
+
 if __name__ == '__main__':
     lines = load_lines()
+    fetch_external(lines)
     only = None
     for a in sys.argv:
         if a.startswith('--only='): only = {int(x) for x in a.split('=',1)[1].replace(',', ' ').split()}
     print(f'{len(lines)}줄 합성 시작' + (f' (줄 {sorted(only)} 만)' if only else ''))
     fail = 0
-    force = '--force' in sys.argv
+    reuse = 0
     for i, line in enumerate(lines):
         if only is not None and i not in only: continue
-        # 이미 같은 대사로 만든 음성이 있으면 다시 만들지 않는다(크레딧 절약, 중간에 실패해도 이어서 진행). --force 면 전부 다시
-        mp3 = os.path.join(VDIR, f'{i:02d}.mp3'); txt = mp3.replace('.mp3', '.txt')
-        if not force and os.path.exists(mp3) and os.path.getsize(mp3) > 1000 and os.path.exists(txt) and io.open(txt, encoding='utf-8').read().strip() == line.strip():
-            print(f'{i:02d} --  (이미 있음) {line}'); continue
+        mp3 = os.path.join(VDIR, f'{i:02d}.mp3'); txt = mp3.replace('.mp3', '.txt'); segs = mp3.replace('.mp3', '.segs.json')
+        if '--fresh' not in sys.argv and only is None and os.path.exists(mp3) and os.path.exists(txt) \
+                and io.open(txt, encoding='utf-8').read().strip() == line.strip():
+            reuse += 1; print(f'{i:02d} 재사용 {line}'); continue   # 같은 대사로 이미 만든 음성이 있으면 크레딧 안 씀 (--fresh 면 전부 새로)
         ok = synth_index(lines, i)
         print(f'{i:02d} {"OK " if ok else "XX "} {line}')
         fail += (not ok)
         time.sleep(0.3)
     if fail:
-        sys.exit(f'{fail}줄 실패')
-    print('완료')
+        if FAILS: print('계정별 결과: ' + ' / '.join(f'{k}: {v}' for k, v in FAILS.items()))
+        sys.exit(f'{fail}줄 실패' + (' — 모든 타입캐스트 계정이 거부됨(UNUSUAL_ACTIVITY 는 같은 PC 에서 무료 계정 여러 개를 쓴다고 본 것 → 계정 하나에 크레딧 충전이 확실한 해결)' if FAILS and all('UNUSUAL' in v for v in FAILS.values()) else ''))
+    print('완료' + (f' (기존 음성 {reuse}줄 재사용)' if reuse else ''))
