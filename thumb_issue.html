@@ -10,7 +10,7 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic',sans-serif;font-weight
 #st{position:relative;width:1080px;height:1920px;overflow:hidden;background:#F4F6FA}
 .bg{position:absolute;inset:0}
 .pill{position:absolute;display:inline-flex;align-items:center;gap:18px;height:104px;padding:0 40px;border-radius:52px;font-size:52px;letter-spacing:-1px;white-space:nowrap}
-.photo{position:absolute;left:70px;right:70px;top:300px;height:980px;border-radius:56px;overflow:hidden;background:#E9EDF3;box-shadow:0 40px 100px rgba(18,22,31,.28)}
+.photo{position:absolute;left:70px;right:70px;top:340px;height:980px;border-radius:56px;overflow:hidden;background:#E9EDF3;box-shadow:0 40px 100px rgba(18,22,31,.28)}
 .photo img{width:100%;height:100%;object-fit:cover;display:block}
 .chip{position:absolute;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 20px 50px rgba(0,0,0,.35);border:8px solid #fff}
 .chip img{width:80%;height:80%;object-fit:contain}
@@ -48,13 +48,14 @@ function photoHtml(w,h){
     :`<img src="${src}" style="position:absolute;inset:-60px;width:calc(100% + 120px);height:calc(100% + 120px);object-fit:cover;filter:blur(34px) saturate(1.1);opacity:.9"><div style="position:absolute;inset:0;background:rgba(18,22,31,.15)"></div>`;
   return `${back}<img src="${src}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${iw}${sz?'px':''};height:${ih}${sz?'px':''};object-fit:contain;${sz&&sz[2]?'':'border-radius:28px;box-shadow:0 20px 60px rgba(0,0,0,.4)'}">`;
 }
-const PH_H = (()=>{ if(!src||!sz) return 980; const h=Math.round(940*sz[1]/sz[0]); return Math.max(600, Math.min(980, h)); })();   // 사진 카드 높이: 사진 비율대로(600~980)
-const Y0 = 300 + PH_H;   // 사진 아래 글 시작 기준
+const bigLines=String(TH.big||'').split('\n').length, PH_MAX=Math.min(980, 1100-250*bigLines);   // 큰 글씨가 1660px(안전 영역) 안에 끝나도록 사진 높이 상한(1줄 850, 2줄 600)
+const PH_H = (()=>{ if(!src||!sz) return PH_MAX; const h=Math.round(940*sz[1]/sz[0]); return Math.max(520, Math.min(PH_MAX, h)); })();   // 사진 카드 높이: 사진 비율대로
+const Y0 = 340 + PH_H;   // 사진 아래 글 시작 기준
 const st=document.getElementById('st');
 st.insertAdjacentHTML('beforeend',`
   <div class="bg" style="background:radial-gradient(70% 36% at 50% 18%,${hex2(c1,.16)} 0%,rgba(244,246,250,0) 70%),#F4F6FA"></div>
-  <div class="pill" style="left:70px;top:130px;background:#12161F;color:#fff"><span style="width:18px;height:18px;border-radius:9px;background:${c1};display:inline-block"></span>KBO 이슈</div>
-  <div class="pill" style="right:70px;top:130px;background:#fff;color:#12161F;border:6px solid #12161F;font-size:56px">${esc(dateText)}</div>
+  <div class="pill" style="left:70px;top:200px;background:#12161F;color:#fff"><span style="width:18px;height:18px;border-radius:9px;background:${c1};display:inline-block"></span>KBO 이슈</div>
+  <div class="pill" style="right:70px;top:200px;background:#fff;color:#12161F;border:6px solid #12161F;font-size:56px">${esc(dateText)}</div>
   <div id="blk" style="position:absolute;inset:0"><div class="photo" style="height:${PH_H}px">${photoHtml(940,PH_H)}
     ${src&&teams[0]?`<div class="chip" style="left:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[0])}"></div>`:''}
     ${src&&teams[1]?`<div class="chip" style="right:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[1])}"></div>`:''}
@@ -75,5 +76,5 @@ for(const sel of ['.top','.bigw']){
 }
 // 사진+글 덩어리를 세로 가운데(살짝 위)로 — 쇼츠 피드에서 가운데가 보이므로
 const big=document.querySelector('.bigw'), blk=document.getElementById('blk');
-if(big&&blk){ const bottom=big.getBoundingClientRect().bottom, top=300; const shift=Math.round((1920-(bottom-top))/2 - top - 40); blk.style.transform=`translateY(${Math.max(-60, Math.min(shift, 1780-bottom))}px)`; }
+if(big&&blk){ const bottom=big.getBoundingClientRect().bottom, top=340; const shift=Math.round((1920-(bottom-top))/2 - top - 40); blk.style.transform=`translateY(${Math.max(-20, Math.min(shift, 1660-bottom))}px)`; }   // 안전 영역: 위 340 ~ 아래 1660
 </script></body></html>
