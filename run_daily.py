@@ -367,10 +367,35 @@ def wait_photos(paths):
         except EOFError: return
         if ans != 'r': return
 
+# ---------- 두 시리즈 동시 제작 금지 (work\ 폴더를 같이 쓰므로 겹치면 둘 다 깨진다) ----------
+BUSY = os.path.join('work', 'busy.txt')
+MY_SERIES = SERIES_CODES[SERIES[0]][0] if len(SERIES) == 1 else '전체'
+def wait_busy():
+    """다른 시리즈가 지금 음성·렌더 중이면 끝날 때까지 기다린다(최대 90분). 20분 넘게 안 바뀐 표시는 죽은 것으로 보고 무시"""
+    end = time.time() + 90 * 60; said = False
+    while os.path.exists(BUSY) and time.time() - os.path.getmtime(BUSY) < 20 * 60 and time.time() < end:
+        try: who = io.open(BUSY, encoding='utf-8').read().strip()
+        except Exception: who = ''
+        if who == MY_SERIES: break   # 내 시리즈가 남긴 표시(이전 실행이 죽음) → 무시
+        if not said: log(f'{who} 편을 만드는 중이라 끝나면 이어서 만듭니다 (두 시리즈 동시 제작 금지)', '대기'); said = True
+        time.sleep(20)
+def set_busy():
+    try: io.open(BUSY, 'w', encoding='utf-8').write(MY_SERIES)
+    except Exception: pass
+def clear_busy():
+    try:
+        if os.path.exists(BUSY) and io.open(BUSY, encoding='utf-8').read().strip() == MY_SERIES: os.remove(BUSY)
+    except Exception: pass
+
+def build_one(ep_path, only_lines=None):
+    wait_busy(); set_busy()
+    try: return step_build(ep_path, only_lines)
+    finally: clear_busy()
+
 def make_all(paths):
     wait_photos(paths)
     for p in paths:
-        video = step_build(p)
+        video = build_one(p)
         if video: after_build(p, video)
 
 # ---------- 신호 ----------
@@ -452,7 +477,7 @@ def check_signals(during_build=False):
             ep_path = next((p for p in EPS if key_of(p) == k), None)
             if not ep_path and k.isdigit() and 1 <= int(k) <= len(EPS): ep_path = EPS[int(k) - 1]; k = key_of(ep_path)   # "1"/"2" = 오늘 첫째·둘째 편
             if not ep_path or not os.path.exists(ep_path): log(f'[{k}] 콘티 파일 없음'); continue
-            video = step_build(ep_path, only)
+            video = build_one(ep_path, only)
             if video: after_build(ep_path, video)
     return None
 
