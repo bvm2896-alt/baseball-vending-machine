@@ -247,7 +247,9 @@ def prep(ep, ep_path=None):
 
 # ---------- render ----------
 def dur_of(f):
-    return float(run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).stdout.strip())
+    """영상/음성 길이(초). 파일이 깨져 있으면(N/A) 0"""
+    try: return float(run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).stdout.strip())
+    except (ValueError, TypeError): return 0.0
 
 def probe(f):
     """앞뒤 무음 위치. 문턱 -40dB/0.12초 (말끝 여운을 자르지 않도록 넉넉하게)"""
@@ -461,7 +463,15 @@ def render(ep, ep_path):
     if r.returncode != 0 or not os.path.exists(W('silent.mp4')): raise SystemExit('프레임 렌더 실패:\n' + (r.stderr or r.stdout)[-1500:])
     print((r.stdout or '').strip().splitlines()[-1] if r.stdout else '')
     vd = dur_of(W('silent.mp4'))
-    if vd < total * 0.95: raise SystemExit(f'영상 길이 부족: {vd:.1f}s / {total:.1f}s')
+    if vd < total * 0.95:
+        # 조각 파일을 동시에 쓰다 깨진 경우(OneDrive 동기화 폴더에서 가끔) → 한 번 더, 이번엔 조각 없이 한 번에 그린다
+        print(f'경고: 무음 영상이 깨졌거나 짧음({vd:.1f}s / {total:.1f}s) → 한 번 더 그립니다(동시작업 1)')
+        try: os.remove(W('silent.mp4'))
+        except Exception: pass
+        r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale, '1'], capture_output=True, text=True, encoding='utf-8', errors='replace')
+        if r.returncode != 0 or not os.path.exists(W('silent.mp4')): raise SystemExit('프레임 렌더 실패(재시도):\n' + (r.stderr or r.stdout)[-1500:])
+        vd = dur_of(W('silent.mp4'))
+        if vd < total * 0.95: raise SystemExit(f'영상 길이 부족: {vd:.1f}s / {total:.1f}s (재시도 후에도)')
     # 6) 합성 → 결과물 폴더(영상/날짜/번호_팀.mp4)
     out, thumb_path, yt_path = out_paths(ep, ep_path)
     os.makedirs(os.path.dirname(out), exist_ok=True)
