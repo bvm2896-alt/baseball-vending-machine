@@ -279,6 +279,30 @@ def synth_index(lines, i, out=None):
         io.open(out.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])   # 어떤 대사로 만든 음성인지 기록(대사 바뀌면 build 가 그 줄만 다시)
     return ok
 
+def drop_external(lines):
+    """external.json 에 {"disabled": true} 가 있으면 외부(힉스필드)에서 받았던 음성(NN.src / full.src 표시가 있는 것)을 지워서
+       타입캐스트로 다시 만들게 한다. 타입캐스트로 만든 음성은 그대로 둔다."""
+    ext = os.path.join(VDIR, 'external.json')
+    if not os.path.exists(ext): return False
+    try: data = json.load(io.open(ext, encoding='utf-8-sig'))
+    except Exception: return False
+    if not data.get('disabled'): return False
+    n = 0
+    fsrc = os.path.join(VDIR, 'full.src')
+    full_is_url = os.path.exists(fsrc) and io.open(fsrc, encoding='utf-8').read().strip().lower().startswith('http')   # 사람이 넣은 파일(경로|시각)은 남긴다
+    for i in range(len(lines)):
+        base = os.path.join(VDIR, f'{i:02d}')
+        if os.path.exists(base + '.src') or full_is_url:
+            for suf in ('.mp3', '.txt', '.src', '.segs.json'):
+                try: os.remove(base + suf); n += 1
+                except FileNotFoundError: pass
+    if full_is_url:
+        for f in ('full.src', 'full.wav', 'full.dl'):
+            try: os.remove(os.path.join(VDIR, f))
+            except FileNotFoundError: pass
+    if n: print(f'외부 음성 {n}개 파일 정리 — 타입캐스트로 다시 만듭니다')
+    return True
+
 def fetch_external(lines):
     """다른 TTS(힉스필드 등)로 만든 음성을 쓰는 경우: work/voice_<편>/external.json 에
        {"0": {"url": "...wav", "text": "대사"}, ...} 가 있으면 내려받아 NN.mp3 + NN.txt 로 저장한다(대사가 같은 줄만).
@@ -372,8 +396,8 @@ def split_full(full_path, lines, keep_idx=None):
         mp3 = os.path.join(VDIR, f'{i:02d}.mp3')
         subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{a:.3f}', '-to', f'{b:.3f}', '-i', full_path, '-af', af, '-b:a', '192k', mp3], check=True)
         io.open(mp3.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])
-        sj = mp3.replace('.mp3', '.segs.json')
-        if os.path.exists(sj): os.remove(sj)
+        for suf in ('.segs.json', '.src'):
+            if os.path.exists(mp3.replace('.mp3', suf)): os.remove(mp3.replace('.mp3', suf))
         print(f'{i:02d} 통 음성에서 잘라냄 {a:.2f}~{b:.2f}s')
     return N
 
@@ -401,12 +425,94 @@ def fetch_full(lines):
     print(f'통 음성 {n}줄로 분할 완료')
     return n
 
+def drop_paths():
+    """사람이 타입캐스트 웹에서 받아 넣는 통 음성 파일 후보: <야구자판기>\<시리즈>\음성\<콘티이름>.mp3|wav|m4a, 또는 work\voice_<편>\full.mp3"""
+    key = os.path.basename(VDIR).replace('voice_', '')
+    slot = key.rsplit('_', 1)[-1] if '_' in key else ''
+    series = '야구이슈' if slot.startswith('이슈') or slot == '2' else '야구순위'
+    base = os.path.join(HERE, '..', series, '음성')
+    out = [os.path.join(base, key + ext) for ext in ('.zip', '.mp3', '.wav', '.m4a')]
+    out += [os.path.join(VDIR, 'full' + ext) for ext in ('.zip', '.mp3', '.wav', '.m4a')]
+    return out
+
+def _natkey(name):
+    return [int(t) if t.isdigit() else t.lower() for t in re.split(r'(\d+)', name)]
+
+def split_zip(zip_path, lines):
+    """타입캐스트 '문장 별로 나누기' zip: 파일 수가 줄 수와 같으면 이름 순서대로 NN.mp3 로. 다르면 이어 붙여 통 음성으로 취급해 무음으로 자른다."""
+    import zipfile, tempfile
+    tmp = os.path.join(VDIR, 'zip_tmp'); shutil_rm(tmp); os.makedirs(tmp, exist_ok=True)
+    with zipfile.ZipFile(zip_path) as z:
+        names = [n for n in z.namelist() if n.lower().endswith(('.mp3', '.wav', '.m4a')) and not n.endswith('/')]
+        for n in names: z.extract(n, tmp)
+    files = sorted([os.path.join(tmp, n) for n in names], key=lambda p_: _natkey(os.path.basename(p_)))
+    af = 'silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse'
+    if len(files) == len(lines):
+        for i, f in enumerate(files):
+            mp3 = os.path.join(VDIR, f'{i:02d}.mp3')
+            subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', f, '-af', af, '-b:a', '192k', mp3], check=True)
+            io.open(mp3.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])
+            for suf in ('.segs.json', '.src'):
+                if os.path.exists(mp3.replace('.mp3', suf)): os.remove(mp3.replace('.mp3', suf))
+        print(f'zip 의 문장 파일 {len(files)}개 → 줄별 음성으로 사용'); shutil_rm(tmp); return len(files)
+    print(f'zip 파일 수({len(files)})가 줄 수({len(lines)})와 달라 이어 붙여 통 음성으로 자릅니다')
+    lst = os.path.join(tmp, 'list.txt')
+    io.open(lst, 'w', encoding='utf-8').write('\n'.join("file '" + f.replace("'", "'\\''") + "'" for f in files) + '\n')
+    wav = os.path.join(VDIR, 'full.wav')
+    # 문장 사이에 0.9초 무음을 넣어 이어 붙인다(자르기 쉽게)
+    gap = os.path.join(tmp, 'gap.wav'); subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=24000:cl=mono', '-t', '0.9', gap], check=True)
+    parts = []
+    for f in files:
+        w = f + '.wav'; subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', f, '-ac', '1', '-ar', '24000', w], check=True); parts += [w, gap]
+    io.open(lst, 'w', encoding='utf-8').write('\n'.join("file '" + f.replace("'", "'\\''") + "'" for f in parts[:-1]) + '\n')
+    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, wav], check=True)
+    n = split_full(wav, lines); shutil_rm(tmp); return n
+
+def shutil_rm(p):
+    import shutil
+    shutil.rmtree(p, ignore_errors=True)
+
+def fetch_drop(lines, wait_min=0):
+    """통 음성 파일이 있으면 줄별로 자른다. 같은 파일(수정 시각)로 이미 잘라 뒀으면 건너뛴다. wait_min>0 이면 파일이 올 때까지 기다린다."""
+    end = time.time() + wait_min * 60; said = False
+    while True:
+        found = [p for p in drop_paths() if os.path.exists(p)]
+        if found: break
+        if time.time() >= end:
+            return 0
+        if not said:
+            print(f'통 음성 파일 대기 중 (최대 {wait_min}분): {os.path.abspath(drop_paths()[0])}  ← 타입캐스트 웹에서 받은 mp3 를 이 이름으로 넣어 주세요'); said = True
+        time.sleep(10)
+    src_file = found[0]
+    stamp = f'{os.path.abspath(src_file)}|{os.path.getmtime(src_file):.0f}'
+    mark = os.path.join(VDIR, 'full.src')
+    if os.path.exists(mark) and io.open(mark, encoding='utf-8').read().strip() == stamp and all(os.path.exists(os.path.join(VDIR, f'{i:02d}.mp3')) for i in range(len(lines))):
+        return len(lines)
+    if src_file.lower().endswith('.zip'):
+        n = split_zip(src_file, lines)
+    else:
+        wav = os.path.join(VDIR, 'full.wav') if not src_file.endswith('full.wav') else os.path.join(VDIR, 'full_src.wav')
+        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', src_file, '-ac', '1', '-ar', '24000', wav], check=True)
+        n = split_full(wav, lines)
+    io.open(mark, 'w', encoding='utf-8').write(stamp)
+    print(f'통 음성({os.path.basename(src_file)}) {n}줄로 분할 완료')
+    return n
+
 if __name__ == '__main__':
     lines = load_lines()
-    try: fetch_full(lines)
+    manual = CFG.get('TTS_MANUAL', '0').strip() == '1'
+    try:
+        got = fetch_drop(lines, wait_min=int(CFG.get('TTS_WAIT_MIN', '40')) if manual else 0)
+        if got and manual:
+            print(f'완료 (통 음성에서 {got}줄 잘라 씀)'); sys.exit(0)
+    except SystemExit: raise
+    except Exception as e: print(f'  통 음성 파일 처리 실패: {e}')
+    disabled = drop_external(lines)
+    try:
+        if not disabled: fetch_full(lines)
     except SystemExit: raise
     except Exception as e: print(f'  통 음성 처리 실패(줄별 external 또는 TTS 로 진행): {e}')
-    fetch_external(lines)
+    if not disabled: fetch_external(lines)
     only = None
     for a in sys.argv:
         if a.startswith('--only='): only = {int(x) for x in a.split('=',1)[1].replace(',', ' ').split()}

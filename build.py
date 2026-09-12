@@ -244,6 +244,14 @@ def prep(ep, ep_path=None):
     for w_ in narr_check(lines): print('숫자 읽기 경고:', w_)
     io.open(W('narration.txt'), 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
     print(f'work/narration.txt {len(lines)}줄')
+    if ep_path:
+        # 타입캐스트 웹(구독)에 붙여 넣을 대본: 줄 사이 빈 줄(문단 쉼) → 통째로 내려받아 <시리즈>\음성\<콘티이름>.mp3 로 두면 tts.py 가 줄별로 자른다
+        try:
+            drop = os.path.join(HERE, '..', series_of(ep, ep_path), '음성'); os.makedirs(drop, exist_ok=True)
+            txt = '\n\n'.join(l.replace(' / ', ', ') for l in lines) + '\n'
+            io.open(os.path.join(drop, ep_key(ep_path) + '_대본.txt'), 'w', encoding='utf-8').write(txt)
+            print(f'대본 저장: {os.path.relpath(os.path.join(drop, ep_key(ep_path) + "_대본.txt"), os.path.join(HERE, ".."))}  (타입캐스트 웹에 붙여 넣고, 받은 mp3 를 같은 폴더에 {ep_key(ep_path)}.mp3 로)')
+        except Exception as e: print('대본 저장 실패(무시):', e)
 
 # ---------- render ----------
 def dur_of(f):
