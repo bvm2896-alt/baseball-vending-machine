@@ -1,5 +1,5 @@
 날짜: 2026-09-13
-단계: 음성
+단계: 시작
 
 영상: 아직 없음
 
@@ -13,3 +13,10 @@
 [22:41:37] 콘티 대기: episodes/2026-09-13_이슈.json (최대 45분)
 [22:49:52] 콘티 도착: 1편
 [22:54:05] [이슈] 음성 생성 시작
+[22:54:15] [이슈] 음성 실패: API_KEY2 를 추가하거나 크레딧을 충전하세요.
+  실패 403: {"error_code":"UNUSUAL_ACTIVITY_DETECTED","message":"Unusual account activity has been detected. If this activity is determined to be abuse of free accounts, your access may be suspended. If you need 
+10 XX  여러분 생각은요? / 십 억 기록을 깨야 할까요 / 아니면 칠 억이면 충분할까요?
+11줄 실패
+
+[22:54:15] 감시 시작 (안전 종료 12:00)
+[23:31:51] 시작
