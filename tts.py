@@ -292,15 +292,19 @@ def fetch_external(lines):
         item = data.get(str(i)) or {}
         url, text = item.get('url', ''), item.get('text', '')
         if not url or text.strip() != line.strip(): continue
-        mp3 = os.path.join(VDIR, f'{i:02d}.mp3'); txt = mp3.replace('.mp3', '.txt')
-        if os.path.exists(mp3) and os.path.exists(txt) and io.open(txt, encoding='utf-8').read().strip() == line.strip(): got += 1; continue
+        mp3 = os.path.join(VDIR, f'{i:02d}.mp3'); txt = mp3.replace('.mp3', '.txt'); src = mp3.replace('.mp3', '.src')
+        same_src = os.path.exists(src) and io.open(src, encoding='utf-8').read().strip() == url
+        if same_src and os.path.exists(mp3) and os.path.exists(txt) and io.open(txt, encoding='utf-8').read().strip() == line.strip(): got += 1; continue
         try:
             r = requests.get(url, timeout=120); r.raise_for_status()
             raw = mp3 + '.dl'
             open(raw, 'wb').write(r.content)
-            subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-b:a', '192k', mp3], check=True)
+            # 앞뒤 무음을 -38dB 기준으로 잘라낸다(외부 TTS 는 바닥 잡음이 높아 build 의 -40dB 트림에 안 걸리는 경우가 있음)
+            af = 'silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse'
+            subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', raw, '-af', af, '-b:a', '192k', mp3], check=True)
             os.remove(raw)
             io.open(txt, 'w', encoding='utf-8').write(line)
+            io.open(src, 'w', encoding='utf-8').write(url)   # 어느 주소에서 받은 음성인지 (주소가 바뀌면 다시 받는다)
             sj = mp3.replace('.mp3', '.segs.json')
             if os.path.exists(sj): os.remove(sj)   # 호흡 경계는 qa_voice(whisper)가 새로 잡는다
             got += 1; print(f'{i:02d} 외부 음성 받음')
