@@ -409,13 +409,31 @@ def build_one(ep_path, only_lines=None):
     try: return step_build(ep_path, only_lines)
     finally: clear_busy()
 
+def inputs_mtime(p):
+    """이 편을 만드는 데 쓰인 것들의 가장 최근 수정 시각: 콘티, 그 편의 음성 파일(<시리즈>\음성\<콘티이름>.zip/mp3 ...), 프로그램(build.py·tts.py·템플릿).
+       이 중 하나라도 영상보다 새것이면 다시 만든다 — 새 음성 zip 을 넣거나 프로그램을 고친 뒤 지금실행만 눌러도 되게."""
+    ts = [os.path.getmtime(p)]
+    try:
+        import json as _j
+        ep = _j.load(io.open(p, encoding='utf-8-sig'))
+        series = str(ep.get('series') or '').strip() or SERIES_CODES.get((SERIES or ['rank'])[0], ('야구순위',))[0]
+        k = key_of(p)
+        for ext in ('.zip', '.mp3', '.wav', '.m4a'):
+            f = os.path.join(BASE, series, '음성', k + ext)
+            if os.path.exists(f): ts.append(os.path.getmtime(f))
+    except Exception: pass
+    for f in ('build.py', 'tts.py', 'qa_voice.py', 'template.html', 'template_issue.html', 'thumb.html', 'thumb_issue.html'):
+        fp = os.path.join(HERE, f)
+        if os.path.exists(fp): ts.append(os.path.getmtime(fp))
+    return max(ts)
+
 def make_all(paths):
     wait_photos(paths)
     for p in paths:
         b = state.get('built', {}).get(key_of(p)) or {}
         v = b.get('video', '')
-        if v and os.path.exists(v) and os.path.getmtime(v) >= os.path.getmtime(p) and '--force' not in ARGS:
-            log(f'[{key_of(p)}] 오늘 이미 만든 영상이 있어 건너뜀 → {v} (다시 만들려면 재생성.txt 에 번호, 또는 콘티를 고치면 자동으로 다시)', '영상완료'); continue
+        if v and os.path.exists(v) and os.path.getmtime(v) >= inputs_mtime(p) and '--force' not in ARGS:
+            log(f'[{key_of(p)}] 오늘 이미 만든 영상이 있어 건너뜀 → {v} (콘티·음성 zip·프로그램을 고치면 자동으로 다시, 아니면 재생성.txt)', '영상완료'); continue
         video = build_one(p)
         if video: after_build(p, video)
 
