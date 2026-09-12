@@ -26,7 +26,8 @@ os.chdir(HERE)
 
 LEAD, TAIL, SUBLEAD = 0.25, 1.30, 0.05   # SUBLEAD: 자막을 말보다 살짝(0.05초) 먼저 — 거의 동시
 FPS = 15   # (옛 값, 지금은 설정.txt VIDEO_FPS 사용)
-WORK = 'work'                                        # 중간 파일(음성, 프레임, 임시 html) 폴더
+WORK = os.environ.get('KBO_WORK', 'work')            # 중간 파일(프레임, 임시 html) 폴더. 시리즈 창마다 다르게(work\순위, work\이슈) 주면 두 시리즈를 동시에 만들 수 있다
+VOICE_ROOT = 'work'                                  # 편별 음성 폴더(voice_<콘티이름>)는 시리즈와 상관없이 늘 여기
 OUT_ROOT = os.path.join(HERE, '..', '영상')           # 결과물: 영상/2026-09-06/1_두산.mp4
 def _cfg_raw(k, default=''):
     try:
@@ -230,7 +231,7 @@ def voice_dir(key=None):
     if key is None:
         try: key = io.open(W('current.txt'), encoding='utf-8').read().strip()
         except Exception: key = ''
-    d = W('voice_' + key) if key else W('voice')
+    d = os.path.join(VOICE_ROOT, 'voice_' + key) if key else os.path.join(VOICE_ROOT, 'voice')
     os.makedirs(d, exist_ok=True)
     return d
 

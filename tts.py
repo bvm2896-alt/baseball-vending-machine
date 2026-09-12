@@ -135,9 +135,11 @@ def synth(text, prev='', nxt='', out_path=None):
         return False
     return False
 
+WORK = os.environ.get('KBO_WORK', 'work')   # 시리즈별 작업 폴더(current.txt·narration.txt). 음성 폴더는 늘 work\voice_<편>
+
 def voice_dir():
     """편별 음성 폴더: build.py prep 이 work/current.txt 에 적은 콘티 이름 → work/voice_<이름>/"""
-    try: key = io.open('work/current.txt', encoding='utf-8').read().strip()
+    try: key = io.open(os.path.join(WORK, 'current.txt'), encoding='utf-8').read().strip()
     except Exception: key = ''
     d = os.path.join('work', 'voice_' + key) if key else os.path.join('work', 'voice')
     os.makedirs(d, exist_ok=True)
@@ -150,7 +152,7 @@ if __name__ == '__main__' and '--test' in sys.argv:
     sys.exit(0 if ok else 1)
 
 def load_lines():
-    return [l.strip() for l in io.open('work/narration.txt', encoding='utf-8-sig') if l.strip()]
+    return [l.strip() for l in io.open(os.path.join(WORK, 'narration.txt'), encoding='utf-8-sig') if l.strip()]
 PAUSE = float(CFG.get('TTS_PAUSE', '0.12'))   # 대사 안의 " / " 표시 자리에서 쉬는 시간(초). 구간 자체의 앞뒤 무음은 잘라내므로 아주 짧게
 
 def tts_text(segs, is_last_q=False):
@@ -442,7 +444,7 @@ def fetch_full(lines):
     return n
 
 def drop_paths():
-    """사람이 타입캐스트 웹에서 받아 넣는 통 음성 파일 후보: <야구자판기>\<시리즈>\음성\<콘티이름>.mp3|wav|m4a, 또는 work\voice_<편>\full.mp3"""
+    r"""사람이 타입캐스트 웹에서 받아 넣는 통 음성 파일 후보: <야구자판기>\<시리즈>\음성\<콘티이름>.mp3|wav|m4a, 또는 work\voice_<편>\full.mp3"""
     key = os.path.basename(VDIR).replace('voice_', '')
     slot = key.rsplit('_', 1)[-1] if '_' in key else ''
     series = '야구이슈' if slot.startswith('이슈') or slot == '2' else '야구순위'

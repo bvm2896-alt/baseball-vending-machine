@@ -59,7 +59,10 @@ if len(SERIES) == 1:
     SERIES_DIR = os.path.join(BASE, SERIES_CODES[SERIES[0]][0]); os.makedirs(SERIES_DIR, exist_ok=True)
     SIG = lambda n: os.path.join(SERIES_DIR, n)
     STATUS_TXT = os.path.join(SERIES_DIR, '오늘.txt')
-    print(f'[{SERIES_CODES[SERIES[0]][0]}] 전용 실행 — 콘티 {EPS[0]}, 신호·오늘.txt 는 {SERIES_DIR}')
+    # 시리즈마다 작업 폴더를 따로 써서(work\순위, work\이슈) 순위·이슈 창을 동시에 켜도 같이 만들어진다. 음성 폴더(work\voice_<편>)는 공용(편마다 다르니 안 겹침)
+    os.environ['KBO_WORK'] = os.path.join('work', SERIES_CODES[SERIES[0]][1]); os.makedirs(os.environ['KBO_WORK'], exist_ok=True)
+    os.environ.setdefault('FRAME_WORKERS', '2')   # 두 창이 같이 렌더할 수 있으니 창당 화면 2개씩(CPU 나눠 쓰기)
+    print(f'[{SERIES_CODES[SERIES[0]][0]}] 전용 실행 — 콘티 {EPS[0]}, 신호·오늘.txt 는 {SERIES_DIR}, 작업 폴더 {os.environ["KBO_WORK"]}')
 if NIGHT: print(f'저녁 실행 → 내일({TODAY}) 콘티로 만듭니다 (오늘 경기 결과 기준)')
 STATE_PATH = f'status/state_{TODAY}' + (('_' + SERIES[0]) if len(SERIES) == 1 else '') + '.json'   # 저장소에 올려서 다른 PC 에서도 오늘 상태를 이어받는다
 for d in ('data', 'episodes', 'work', 'work/voice', 'status', 'signals'): os.makedirs(d, exist_ok=True)
@@ -422,8 +425,10 @@ def wait_photos(paths):
         except EOFError: return
         if ans != 'r': return
 
-# ---------- 두 시리즈 동시 제작 금지 (work\ 폴더를 같이 쓰므로 겹치면 둘 다 깨진다) ----------
-BUSY = os.path.join('work', 'busy.txt')
+# ---------- 같은 작업 폴더를 쓰는 창끼리만 순서를 잡는다 ----------
+# 시리즈 창(--series)은 work\순위, work\이슈 로 작업 폴더가 달라 동시에 만들어도 안 겹친다. 루트 지금실행(두 시리즈 한 번에)이나
+# 같은 시리즈 창을 두 번 켠 경우만 work\<폴더>\busy.txt 로 한 편씩 기다린다.
+BUSY = os.path.join(os.environ.get('KBO_WORK', 'work'), 'busy.txt')
 MY_SERIES = SERIES_CODES[SERIES[0]][0] if len(SERIES) == 1 else '전체'
 def wait_busy():
     """다른 시리즈가 지금 음성·렌더 중이면 끝날 때까지 기다린다(최대 90분). 20분 넘게 안 바뀐 표시는 죽은 것으로 보고 무시"""
@@ -432,7 +437,7 @@ def wait_busy():
         try: who = io.open(BUSY, encoding='utf-8').read().strip()
         except Exception: who = ''
         if who == MY_SERIES: break   # 내 시리즈가 남긴 표시(이전 실행이 죽음) → 무시
-        if not said: log(f'{who} 편을 만드는 중이라 끝나면 이어서 만듭니다 (두 시리즈 동시 제작 금지)', '대기'); said = True
+        if not said: log(f'{who} 편을 다른 창이 만드는 중이라 끝나면 이어서 만듭니다', '대기'); said = True
         time.sleep(20)
 def set_busy():
     try: io.open(BUSY, 'w', encoding='utf-8').write(MY_SERIES)
