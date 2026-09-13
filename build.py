@@ -385,7 +385,7 @@ def render(ep, ep_path):
         clips.append(dur_of(dst)); seg_start.append(ss); seg_rate.append(rate)
         # 검수: 글자 수 대비 너무 짧으면(말이 잘린 음성) 중단
         syl = len(re.findall(r'[가-힣]', lines[i]['narr'])) or 1
-        if syl / (clips[-1] * rate) > 9.3:
+        if syl / (clips[-1] * rate) > 10.5:   # 9/14: 장운 1.1x 후킹 줄은 9~10음절/초가 정상이라 기준을 올림
             if i not in retried:
                 # 잘린 음성으로 보임 → 그 줄만 자동으로 다시 만들고 한 번 더 시도
                 print(f'음성 {i:02d} 이 글자 수에 비해 너무 짧아요 ({clips[-1]:.2f}s/{syl}음절) → 다시 합성')
@@ -394,7 +394,9 @@ def render(ep, ep_path):
                 if r.returncode == 0:
                     clips.pop(); seg_start.pop(); seg_rate.pop(); continue
                 print('  다시 합성 실패:', (r.stdout + r.stderr)[-300:])
-            raise SystemExit(f'음성 {i:02d} 이 글자 수에 비해 너무 짧아요 ({clips[-1]:.2f}s/{syl}음절). 타입캐스트 크레딧을 확인하고 tts.py --only={i} 로 다시 만들어 주세요.')
+            # 다시 못 만들면(웹에서 받은 음성·API 없음) 멈추지 말고 경고만 남기고 그대로 쓴다 — 사람이 듣고 그 줄만 다시 뽑는다
+            warns.append(f'{i:02d} 글자 수 대비 짧음({clips[-1]:.2f}s/{syl}음절) — 잘렸는지 들어보세요')
+            print(f'음성 {i:02d} 이 글자 수에 비해 짧아요 ({clips[-1]:.2f}s/{syl}음절) — 그대로 진행')
         i += 1
     if warns: print('트리밍 조정:', ', '.join(warns))
     # 2) 타임라인 (장면 최소 길이 보장: 장면의 마지막 줄 뒤 여유를 늘린다)
