@@ -91,14 +91,36 @@ class step_lock:
     def __init__(self, name, wait=600):
         os.makedirs('work', exist_ok=True)
         self.path = os.path.join('work', name + '.lock'); self.wait = wait; self.fd = None
+    @staticmethod
+    def _owner_alive(path):
+        """잠금 파일에 적힌 PID 의 창이 아직 살아 있는지 (창을 닫았으면 잠금을 바로 무시하려고)"""
+        try:
+            txt = open(path, encoding='utf-8', errors='replace').read()
+            pid = int(txt.rsplit('|', 1)[1])
+        except Exception:
+            return True   # 옛 형식(PID 없음) 이면 판단 불가 → 살아 있다고 본다
+        try:
+            if os.name == 'nt':
+                import ctypes
+                k = ctypes.windll.kernel32
+                h = k.OpenProcess(0x1000, False, pid)   # PROCESS_QUERY_LIMITED_INFORMATION
+                if not h: return k.GetLastError() == 5   # 접근 거부(5)면 살아 있는 것, 그 외(없는 PID)면 죽은 것
+                code = ctypes.c_ulong(); ok = k.GetExitCodeProcess(h, ctypes.byref(code)); k.CloseHandle(h)
+                return (not ok) or code.value == 259   # STILL_ACTIVE
+            try: os.kill(pid, 0); return True
+            except ProcessLookupError: return False
+        except Exception:
+            return True
     def __enter__(self):
         end = time.time() + self.wait
         while True:
             try:
-                self.fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY); os.write(self.fd, MY_SERIES.encode('utf-8')); return self
+                self.fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY); os.write(self.fd, f'{MY_SERIES}|{os.getpid()}'.encode('utf-8')); return self
             except FileExistsError:
                 try: stale = time.time() - os.path.getmtime(self.path) > 600
                 except Exception: stale = True
+                if not stale and not self._owner_alive(self.path):
+                    stale = True   # 잠금을 잡은 창이 닫혔다 → 기다리지 않는다
                 if stale or time.time() > end:
                     try: os.remove(self.path)
                     except Exception: pass
