@@ -508,10 +508,26 @@ def render(ep, ep_path):
     print(f'완료: {out} {d:.2f}초 (자막 {len(subs)}개, 장면 {len(ep["scenes"])}개) 썸네일 {thumb}')
     return out
 
+def upload_tag(ep):
+    """제목 맨 앞 해시태그 = 영상 올리는 날짜(콘티 date, 밤 제작이면 다음날). 예: #9월13일"""
+    try:
+        d = datetime.date.fromisoformat(str(ep.get('date', ''))[:10])
+        return f'#{d.month}월{d.day}일'
+    except Exception: return ''
+
+def title_with_date(ep):
+    """제목의 첫 해시태그를 업로드 날짜로(9/13 규칙): '... 이유 #야구순위 #KT #삼성' → '... 이유 #9월13일 #야구순위 #KT #삼성'. 이미 있으면 그대로"""
+    t = ((ep.get('youtube') or {}).get('title') or '').strip()
+    tag = upload_tag(ep)
+    if not tag or not t: return t
+    if re.search(r'#\d+월\d+일', t): return t
+    m = re.search(r'\s#', t)   # 첫 해시태그 앞
+    return (t[:m.start()] + ' ' + tag + t[m.start():]) if m else (t + ' ' + tag)
+
 def write_youtube_txt(ep, path, dur=0):
     """사용자가 확인하기 쉽게 유튜브 제목·설명·태그를 텍스트로 같이 저장"""
     y = ep.get('youtube') or {}
-    body = [f'[제목]', y.get('title', ''), '', '[설명]', y.get('description', ''), '', '[태그]', ', '.join(y.get('tags', [])), '',
+    body = [f'[제목]', title_with_date(ep), '', '[설명]', y.get('description', ''), '', '[태그]', ', '.join(y.get('tags', [])), '',
             f'[정보] 기준 {ep.get("dateLabel", "")} / 길이 {dur:.1f}초 / 콘티 {ep.get("focusTeam", "")}']
     io.open(path, 'w', encoding='utf-8').write('\n'.join(body) + '\n')
 

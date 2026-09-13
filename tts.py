@@ -390,23 +390,30 @@ def split_full(full_path, lines, keep_idx=None):
             ok = all(0.5 <= ((b - a) / max(total * c / sc, 0.1)) <= 2.0 for (a, b), c in zip(bounds, chars))
             if not ok: print('  무음 기준 분할이 글자 수와 안 맞아 whisper 로 다시 잡습니다'); cuts = None
         if cuts is None:
-            # 2차: whisper 단어 시각 → 누적 글자 비율로 경계
-            from faster_whisper import WhisperModel
-            m = WhisperModel(CFG.get('QA_WHISPER', 'small'), device='cpu', compute_type='int8')
-            segs, _ = m.transcribe(full_path, language='ko', word_timestamps=True, beam_size=3, initial_prompt=' '.join(lines)[:200], vad_filter=False)
-            words = [w for sg in segs for w in (sg.words or [])]
-            if not words: raise SystemExit('통 음성 분할 실패: whisper 단어 시각을 못 얻음')
-            wchars = [len(re.sub(r'[^가-힣]', '', w.word)) for w in words]; wsum = sum(wchars) or 1
-            chars = [len(re.sub(r'[^가-힣]', '', l)) for l in lines]; sc = sum(chars) or 1
-            targets = []; acc = 0
-            for c in chars[:-1]: acc += c; targets.append(acc / sc)
-            cuts = []; acc = 0; ti = 0
-            for i, w in enumerate(words):
-                acc += wchars[i]
-                while ti < len(targets) and acc / wsum >= targets[ti]:
-                    nxt = words[i + 1].start if i + 1 < len(words) else total
-                    cuts.append((w.end + nxt) / 2); ti += 1
-            while len(cuts) < N - 1: cuts.append(total)
+            try:
+                # 2차: whisper 단어 시각 → 누적 글자 비율로 경계
+                from faster_whisper import WhisperModel
+                m = WhisperModel(CFG.get('QA_WHISPER', 'small'), device='cpu', compute_type='int8')
+                segs, _ = m.transcribe(full_path, language='ko', word_timestamps=True, beam_size=3, initial_prompt=' '.join(lines)[:200], vad_filter=False)
+                words = [w for sg in segs for w in (sg.words or [])]
+                if not words: raise RuntimeError('whisper 단어 시각을 못 얻음')
+                wchars = [len(re.sub(r'[^가-힣]', '', w.word)) for w in words]; wsum = sum(wchars) or 1
+                chars = [len(re.sub(r'[^가-힣]', '', l)) for l in lines]; sc = sum(chars) or 1
+                targets = []; acc = 0
+                for c in chars[:-1]: acc += c; targets.append(acc / sc)
+                cuts = []; acc = 0; ti = 0
+                for i, w in enumerate(words):
+                    acc += wchars[i]
+                    while ti < len(targets) and acc / wsum >= targets[ti]:
+                        nxt = words[i + 1].start if i + 1 < len(words) else total
+                        cuts.append((w.end + nxt) / 2); ti += 1
+                while len(cuts) < N - 1: cuts.append(total)
+            except Exception as e:
+                # 3차(안전망): whisper 를 못 쓰면 글자 수 비율로 시간을 나눈다(대략적이지만 영상은 만들어짐)
+                print(f'  whisper 분할 실패({e}) → 글자 수 비율로 대략 분할합니다')
+                chars = [max(1, len(re.sub(r'[^가-힣]', '', l))) for l in lines]; sc = sum(chars) or 1
+                cuts = []; acc = 0
+                for c in chars[:-1]: acc += c; cuts.append(total * acc / sc)
             bounds = [(0.0 if i == 0 else cuts[i - 1], total if i == N - 1 else cuts[i]) for i in range(N)]
     af = 'silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse'
     for i, (a, b) in enumerate(bounds):
