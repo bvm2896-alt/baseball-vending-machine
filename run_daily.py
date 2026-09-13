@@ -393,7 +393,7 @@ def flush_upload_queue():
 
 def after_build(ep_path, video):
     k = key_of(ep_path)
-    state.setdefault('built', {})[k] = {'video': video, 'ep': ep_path}
+    state.setdefault('built', {})[k] = {'video': video, 'ep': ep_path, 'inputs': inputs_mtime(ep_path)}   # 만들 때 쓴 재료 시각 — 다음 실행에서 재료가 바뀌었는지 이걸로 비교
     if '--no-upload' in ARGS: log(f'[{k}] 업로드 생략(--no-upload)', '영상완료'); return
     if k in state['videos']:
         log(f'[{k}] 이미 유튜브에 올라간 편이라 다시 올리지 않습니다(삭제·재업로드 금지). 새 영상은 폴더에만 저장', '영상완료'); return
@@ -497,8 +497,11 @@ def make_all(paths):
     for p in paths:
         b = state.get('built', {}).get(key_of(p)) or {}
         v = b.get('video', '')
-        if v and os.path.exists(v) and os.path.getmtime(v) >= inputs_mtime(p) and '--force' not in ARGS:
-            log(f'[{key_of(p)}] 오늘 이미 만든 영상이 있어 건너뜀 → {v} (콘티·음성 zip·프로그램을 고치면 자동으로 다시, 아니면 재생성.txt)', '영상완료'); continue
+        cur = inputs_mtime(p)
+        # 재료(콘티·음성 zip·프로그램)가 '만들 때'보다 새것이면 다시 만든다. 영상 파일 시각은 구글 드라이브(H:)가 동기화하며 바꿀 수 있어 믿지 않는다
+        same = (cur <= b['inputs'] + 1) if b.get('inputs') is not None else (os.path.getmtime(v) >= cur if v and os.path.exists(v) else False)
+        if v and os.path.exists(v) and same and '--force' not in ARGS:
+            log(f'[{key_of(p)}] 오늘 이미 만든 영상이 있어 건너뜀 → {v} (콘티·음성 zip·프로그램을 고치면 자동으로 다시, 영상을 지워도 다시)', '영상완료'); continue
         video = build_one(p)
         if video: after_build(p, video)
 
