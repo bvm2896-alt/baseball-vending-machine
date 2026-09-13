@@ -216,7 +216,7 @@ def seg_bounds(path, segs):
         out.append((round(pos, 3), iv)); prev = pos
     return out
 
-BREATH = float(CFG.get('TTS_BREATH', '0.18'))   # 긴 대사의 호흡 자리(' / ')에 살짝 끼워 넣는 쉼(초). 실제 쉼이 감지된 자리에만 넣는다
+BREATH = float(CFG.get('TTS_BREATH', '0.3'))   # 긴 대사의 호흡 자리(' / ')에 살짝 끼워 넣는 쉼(초). 실제 쉼이 감지된 자리에만 넣는다
 
 def insert_breaths(path, bounds):
     """실제 쉼이 감지된 호흡 자리마다 BREATH 초의 무음을 끼워 넣어 '와다다다' 읽는 느낌을 없앤다. 새 경계 목록을 돌려준다"""
