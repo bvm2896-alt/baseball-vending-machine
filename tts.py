@@ -216,7 +216,7 @@ def seg_bounds(path, segs):
         out.append((round(pos, 3), iv)); prev = pos
     return out
 
-BREATH = float(CFG.get('TTS_BREATH', '0.3'))   # 긴 대사의 호흡 자리(' / ')에 살짝 끼워 넣는 쉼(초). 실제 쉼이 감지된 자리에만 넣는다
+BREATH = float(CFG.get('TTS_BREATH', '0.1'))   # 긴 대사의 호흡 자리(' / ')에 살짝 끼워 넣는 쉼(초). 실제 쉼이 감지된 자리에만 넣는다
 
 def insert_breaths(path, bounds):
     """실제 쉼이 감지된 호흡 자리마다 BREATH 초의 무음을 끼워 넣어 '와다다다' 읽는 느낌을 없앤다. 새 경계 목록을 돌려준다"""
@@ -510,7 +510,7 @@ def fetch_drop(lines, wait_min=0):
             print(f'통 음성 파일 대기 중 (최대 {wait_min}분): {os.path.abspath(drop_paths()[0])}  ← 타입캐스트 웹에서 받은 mp3 를 이 이름으로 넣어 주세요'); said = True
         time.sleep(10)
     src_file = found[0]
-    stamp = f'{os.path.abspath(src_file)}|{os.path.getmtime(src_file):.0f}'
+    stamp = f'{os.path.abspath(src_file)}|{os.path.getmtime(src_file):.0f}|b{BREATH:.2f}'   # 호흡 쉼 길이가 바뀌면 다시 자른다
     mark = os.path.join(VDIR, 'full.src')
     if os.path.exists(mark) and io.open(mark, encoding='utf-8').read().strip() == stamp and all(os.path.exists(os.path.join(VDIR, f'{i:02d}.mp3')) for i in range(len(lines))):
         return len(lines)

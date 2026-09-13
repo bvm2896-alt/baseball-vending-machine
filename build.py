@@ -292,10 +292,10 @@ CONNECT_END = re.compile(r'(는데|고요|지만|면|니까|서|고|도|은|는|
 TURN_START = ('그래서', '근데', '그런데', '그러니까', '변수는', '결론', '제 예측', '문제는', '이유는', '단 ', '그럼', '만약')
 
 def gap_scale():
-    """줄 사이 쉼 배율 (9/13 "흐름이 너무 빨라, 텀이 짧다" → 기본 1.5배). 설정.txt GAP_SCALE 로 조절"""
-    try: return max(0.5, float(cfg_get('GAP_SCALE', '1.5')))
-    except Exception: return 1.5
-MAX_GAP = 0.75   # 어떤 쉼도 이보다 길지 않게(답답함 방지) — 예전 0.5 × 1.5
+    """줄 사이 쉼 배율 (9/13 1.5배는 "텀이 너무 길어 지루" → 9/14 기본 1.25배). 설정.txt GAP_SCALE 로 조절"""
+    try: return max(0.5, float(cfg_get('GAP_SCALE', '1.25')))
+    except Exception: return 1.25
+MAX_GAP = 0.6   # 어떤 쉼도 이보다 길지 않게(답답함 방지)
 
 def gap_after(i, line, n, nxt=None, scene_change=False):
     """줄과 줄 사이 쉼(초). 말이 이어지면 거의 안 쉬고, 문장이 끝나면 짧게, 장면(이미지)이 바뀌거나 방향을 바꾸는 말 앞에서만 조금 더 (최대 0.5초)"""
@@ -347,7 +347,7 @@ def silence(name, sec):
 
 def render(ep, ep_path):
     lines = ep['lines']; N = len(lines)
-    spd = float(cfg_get('SPEED', '1.0'))   # 1.0 = 그대로(배속은 타입캐스트 TTS_TEMPO 로), 0.9 = 10% 느리게
+    spd = float(cfg_get('SPEED', '1.12'))   # 말 자체 배속(9/14 "말은 빠르되 문단 사이 텀은 적절히" → 기본 1.12). 타입캐스트는 1.0x 로 뽑고 여기서 올린다. 설정.txt SPEED 로 조절
     # 1) 음성 확인 + 트리밍 (자르기는 atrim 필터로, 속도 조절은 그 다음에 → -to 가 느려진 소리 끝을 잘라먹지 않는다)
     clips, warns, seg_start, seg_rate = [], [], [], []
     retried = set()
