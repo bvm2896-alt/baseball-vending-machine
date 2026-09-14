@@ -24,12 +24,14 @@ const codeOf=n=>{const t=(EP.standings||[]).find(t=>t.team===n||t.code===n||t.co
 const logo=c=>(EP.logos||{})[c]||'';
 const teams=(TH.teams||(TH.team?[TH.team]:[EP.focusTeam||''])).map(codeOf).filter(Boolean);
 const nl=t=>String(t||'').split('\n').join('<br>');
-/* 큰 글씨 색: 줄마다 번갈아(빨강 → 노랑 → 흰색), **글자** 는 다음 색으로 강조 (9/15). thumb.colors 로 직접 지정 가능 */
-const SH={'#FF3B30':'0 0 40px rgba(255,59,48,.6),0 16px 0 #7a0f0a,0 24px 50px rgba(0,0,0,.9)','#FFC24B':'0 0 40px rgba(255,194,75,.45),0 16px 0 #7a5a10,0 24px 50px rgba(0,0,0,.9)','#fff':'0 0 30px rgba(0,0,0,.6),0 16px 0 rgba(0,0,0,.55),0 24px 50px rgba(0,0,0,.9)'};
-const sty=c=>`color:${c};text-shadow:${SH[c]||SH['#fff']}`;
-const nlc=(t,pal)=>String(t||'').split('\n').map((ln,i)=>{const c=pal[i%pal.length], a=pal[(i+1)%pal.length];
-  const inner=ln.replace(/\*\*(.+?)\*\*/g,(m,w)=>`<span style="${sty(a)}">${w}</span>`); return `<span style="${sty(c)}">${inner}</span>`;}).join('<br>');
-const PAL=TH.colors||['#FF3B30','#FFC24B','#fff'], PALW=TH.colors||['#fff','#FFC24B','#FF3B30'];
+/* 큰 글씨 색(9/15): 한 썸네일 안에서는 한 색, 편마다 바꾼다 — 첫 편 빨강, 다음 편부터 노랑·하늘·연두·주황 순. thumb.color 로 직접 지정 가능 */
+const BIGC=['#FF3B30','#FFC24B','#22D3EE','#A3E635','#FB923C'];
+const cBig=TH.color||BIGC[(EP.epIndex||0)%BIGC.length];
+const dark=h=>{const n=parseInt(h.slice(1),16);return '#'+[n>>16&255,n>>8&255,n&255].map(v=>Math.round(v*.45).toString(16).padStart(2,'0')).join('')};
+const glow=h=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},.55)`};
+const bigStyle=`color:${cBig};text-shadow:0 0 40px ${glow(cBig)},0 16px 0 ${dark(cBig)},0 24px 50px rgba(0,0,0,.9)`;
+const BIGW=['#fff','#FFC24B','#22D3EE','#A3E635','#FB923C'], cBigW=TH.color||BIGW[(EP.epIndex||0)%BIGW.length];   // 두 팀 맞대결(clash) 틀은 첫 편 흰색, 다음 편부터 노랑·하늘…
+const bigStyleW=cBigW==='#fff'?'':`color:${cBigW};text-shadow:0 0 40px ${glow(cBigW)},0 16px 0 ${dark(cBigW)},0 24px 50px rgba(0,0,0,.9)`;
 // 날짜 배지: "9월 10일 (목)" — 콘티 date 에서 요일 계산 (thumb.date 로 직접 지정하면 그대로)
 // 날짜 배지는 "경기가 치러진 날" — 콘티 gameDate(없으면 콘티 날짜 하루 전. 월요일 아침 영상 = 일요일 경기)
 // 화요일은 전날(월) 경기가 없으므로 순위 리뷰 대신 다른 주제 영상 → gameDate 없으면 영상 날짜 그대로
@@ -53,7 +55,7 @@ if(layout==='clash'){
       <div class="chip" style="position:absolute;right:110px;top:480px;width:360px;height:360px;border-radius:72px;transform:rotate(6deg)"><img src="${logo(teams[1])}"></div>
       <div style="position:absolute;left:50%;top:660px;transform:translate(-50%,-50%);width:200px;height:200px;border-radius:50%;background:#161c28;border:10px solid #fff;display:flex;align-items:center;justify-content:center;font-size:96px;color:#fff;box-shadow:0 20px 50px rgba(0,0,0,.6)">VS</div>
       <div class="top" style="top:920px">${nl(TH.top)}</div>
-      <div class="bigw white" style="top:1060px;font-size:${bigFs}px">${nlc(TH.big,PALW)}</div>
+      <div class="bigw white" style="${bigStyleW};top:1060px;font-size:${bigFs}px">${nl(TH.big)}</div>
       <div class="brand">야구<b>자판기</b></div>`);
 } else if(layout==='stat'){
   // 팀 색 배경 + 아주 큰 숫자/단어
@@ -62,7 +64,7 @@ if(layout==='clash'){
       <div class="date">${dateText}</div>
       <div class="chip" style="position:absolute;left:50%;top:420px;transform:translateX(-50%);width:380px;height:380px;border-radius:76px"><img src="${logo(teams[0])}"></div>
       <div class="top" style="top:860px">${nl(TH.top)}</div>
-      <div class="bigw" style="top:1000px;font-size:${short?420:bigFs}px;letter-spacing:${short?-20:-14}px">${nlc(TH.big,PAL)}</div>
+      <div class="bigw" style="${bigStyle};top:1000px;font-size:${short?420:bigFs}px;letter-spacing:${short?-20:-14}px">${nl(TH.big)}</div>
       <div class="brand">야구<b>자판기</b></div>`);
 } else {
   el(`<div class="bg" style="background:radial-gradient(70% 45% at 50% 38%, rgba(224,69,58,.55) 0%, rgba(224,69,58,0) 70%),radial-gradient(90% 60% at 50% 100%, rgba(255,194,75,.25) 0%, rgba(255,194,75,0) 60%), #161c28"></div>
@@ -70,7 +72,7 @@ if(layout==='clash'){
       <div class="date">${dateText}</div>
       <div class="chip" style="position:absolute;left:50%;top:420px;transform:translateX(-50%);width:420px;height:420px;border-radius:80px"><img src="${logo(teams[0])}"></div>
       <div class="top" style="top:890px">${nl(TH.top)}</div>
-      <div class="bigw" style="top:1030px;font-size:${bigFs}px">${nlc(TH.big,PAL)}</div>
+      <div class="bigw" style="${bigStyle};top:1030px;font-size:${bigFs}px">${nl(TH.big)}</div>
       <div class="brand">야구<b>자판기</b></div>`);
 }
 // 글자가 폭을 넘치면 자동 축소 (여러 줄이면 가장 긴 줄 기준)

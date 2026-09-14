@@ -477,7 +477,7 @@ def render(ep, ep_path):
         f.write("file 'tail.wav'\n")
     run(['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', VW('list.txt'), W('narration.wav')], check=True)
     # 4) 템플릿에 데이터 주입
-    EP = dict(ep); EP['subs'] = subs; EP['bounds'] = bounds; EP['logos'] = logos_data_uri(); EP['total'] = round(total, 2)
+    EP = dict(ep); EP['subs'] = subs; EP['bounds'] = bounds; EP['logos'] = logos_data_uri(); EP['total'] = round(total, 2); EP['_path'] = ep_path
     EP['photos'] = photos_data_uri(ep, ep_path)  # 야구이슈 편 사진(없으면 빈 dict)
     EP['photoSizes'] = PHOTO_SIZES
     tpl = template_for(ep); print('템플릿:', tpl)
@@ -588,6 +588,8 @@ def make_thumb(EP, out):
     tpl = 'thumb_issue.html' if (str(EP.get('series', '')).strip() == '야구이슈' and os.path.exists('thumb_issue.html')) else 'thumb.html'
     if 'photos' not in EP:
         EP['photos'] = photos_data_uri(EP, EP.get('_path')); EP['photoSizes'] = PHOTO_SIZES
+    m = re.search(r'_(?:순위|이슈)(\d*)\.json$', str(EP.get('_path') or ''))   # 그날 몇 번째 편인지(이슈=0, 이슈2=1 …) → 썸네일 큰 글씨 색을 편마다 바꾼다(9/15)
+    EP['epIndex'] = (int(m.group(1)) - 1) if (m and m.group(1)) else 0
     html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
     html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)
     io.open(W('render_thumb.html'), 'w', encoding='utf-8').write(html)
