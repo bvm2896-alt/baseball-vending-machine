@@ -135,9 +135,9 @@ def photos_data_uri(ep, ep_path=None):
     names = _photo_names(ep)
     if not names: return out
     dirs = [d for d in photo_dirs(ep_key(ep_path) if ep_path else '') if d]
-    # 선수이미지\ 는 하위 폴더로 나눠 둘 수 있다(9/14): KBO프로필\ · 국가대표프로필\ · 상황별\ (+ 그 외 폴더).
-    # 콘티 img 가 "국가대표프로필/김도영" 처럼 폴더를 지정하면 그 폴더에서만, "김도영" 이면 KBO프로필 → 국가대표프로필 → 상황별 → 나머지 순으로 찾는다.
-    SUB_ORDER = ['KBO프로필', '국가대표프로필', '상황별']
+    # 선수이미지\ 는 하위 폴더로 나눠 둘 수 있다(9/14): KBO프로필\ · 국가대표프로필\ · 고등학교\(하현승·엄준상 같은 고교 선수) · 상황별\ (+ 그 외 폴더).
+    # 콘티 img 가 "국가대표프로필/김도영" 처럼 폴더를 지정하면 그 폴더에서만, "김도영" 이면 KBO프로필 → 국가대표프로필 → 고등학교 → 상황별 → 나머지 순으로 찾는다.
+    SUB_ORDER = ['KBO프로필', '국가대표프로필', '고등학교', '상황별']
     def search_dirs(d):
         out = [d]
         if os.path.isdir(d):
