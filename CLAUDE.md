@@ -34,7 +34,9 @@ git pull → fetch_rank.js → fetch_news.js → fetch_schedule.js → 오늘 �
 - 실행 cmd 파일은 ASCII·CRLF. 프로그램 폴더를 OneDrive/구글드라이브 동기화 폴더 안에 두지 않는다(결과물만 드라이브로).
 
 ## 콘티 규칙 (episodes JSON)
-- 유튜브 제목: **맨 앞에 경기 날짜와 두 구단명**, 뒤에 핵심 문구, 끝에 해시태그 `#야구순위 #구단 #구단`(예: "9월 10일 삼성 vs KT 1위 경우의 수, 승률 같으면 삼성이 이기는 이유 #야구순위 #삼성 #KT"). 100자 이내. 설명 첫 줄은 기준 날짜, 설명 끝에 #Shorts.
+- 유튜브 제목(9/15): **맨 앞에 날짜를 쓰지 않는다** — 날짜는 해시태그로만(build.py 가 첫 해시태그로 올리는 날짜 `#9월15일` 을 넣고, 앞의 "9월 14일 " 은 지운다). "구단명·핵심 문구 … #야구순위 #구단 #구단". 100자 이내.
+- 유튜브 설명(9/15): 나열 금지 — 처음 보는 사람에게 **친절하게 설명하듯 문단으로**(영상 내용을 3~4문단, 용어 뜻 포함), 마지막에 채널 소개·구독 한 줄. "📊 이 영상의 숫자" 목록·[정보] 줄은 쓰지 않는다. 해시태그는 설명 안에 넣지 말고 콘티 `youtube.hashtags`(리스트)에 — `_유튜브.txt` 가 [해시태그] 칸(인스타·틱톡 복붙용)으로 따로 쓴다(없으면 태그로 자동 생성).
+- 썸네일 큰 글씨(9/15): 한 가지 색만 쓰지 않는다 — 줄마다 번갈아(이슈: 구단색→남색→빨강, 순위: 빨강→노랑→흰색), `**글자**` 로 한 단어만 강조 가능, `thumb.colors` 로 직접 지정 가능.
 - 업로드 뒤 제목·설명만 고칠 땐 재업로드 금지 → 콘티 youtube 항목 수정 후 `메타.txt` 신호(감시 중일 때) 또는 `메타갱신.cmd`.
 - `lines[].narr` 나레이션, `lines[].sub` 자막(`|` 로 호흡 구간과 같은 수로 나눔, `\n` 줄바꿈), `scenes` 장면(hook/big/table/streaks/versus/matchup/need/wins/schedule/shift/rival/verdict/question), `thumb`, `youtube`, `standings`, `gameDate`.
 - 장면 옵션: `wins` {rows:[{team,total,need,label}],text} 남은 경기 칸에 필요 승수 채우기 / `schedule` {title,items:[{date,teams:[a,b],place,tbd}],text} 날짜별 맞대결 / `next` {팀:상대} 또는 카드의 `next`·`nextNote` → 주인공 로고 아래 "vs 작은 로고" (hook·matchup·versus 지원) / `num` 번호 배지(big·matchup·versus).

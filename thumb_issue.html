@@ -28,6 +28,9 @@ const codeOf=n=>{const t=(EP.standings||[]).find(t=>t.team===n||t.code===n||t.co
 const logo=c=>(EP.logos||{})[c]||'';
 const teams=(TH.teams||(TH.team?[TH.team]:[EP.focusTeam||''])).map(codeOf).filter(Boolean);
 const nl=t=>String(t||'').split('\n').join('<br>');
+/* 큰 글씨 색: 줄마다 번갈아(구단색 → 짙은 남색 → 강조색), **글자** 는 그 줄의 다음 색으로 강조 (9/15 "한 가지 색만 쓰지 말고"). thumb.colors 로 직접 지정 가능 */
+const nlc=(t,pal)=>String(t||'').split('\n').map((ln,i)=>{const c=pal[i%pal.length], a=pal[(i+1)%pal.length];
+  const inner=ln.replace(/\*\*(.+?)\*\*/g,(m,w)=>`<span style="color:${a}">${w}</span>`); return `<span style="color:${c}">${inner}</span>`;}).join('<br>');
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const c1=COLOR[teams[0]]||'#E5484D';
 const hex2=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`};
@@ -62,7 +65,7 @@ st.insertAdjacentHTML('beforeend',`
   </div>
   <div class="bar" style="background:${c1};top:${Y0+50}px"></div>
   <div class="top" style="top:${Y0+90}px">${nl(TH.top)}</div>
-  <div class="bigw" style="color:${c1};top:${Y0+220}px">${nl(TH.big)}</div></div>
+  <div class="bigw" style="top:${Y0+220}px">${nlc(TH.big, TH.colors||[c1,'#12161F','#E5484D'])}</div></div>
   <div class="brand">야구<b>자판기</b></div>`);
 // 글자가 폭(920)을 넘치면 자동 축소. 큰 글씨가 두 줄이면 위치를 위로 당긴다
 for(const sel of ['.top','.bigw']){
