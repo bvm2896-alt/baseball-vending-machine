@@ -536,6 +536,7 @@ def upload_tag(ep):
 def title_with_date(ep):
     """제목의 첫 해시태그를 업로드 날짜로(9/13 규칙): '... 이유 #야구순위 #KT #삼성' → '... 이유 #9월13일 #야구순위 #KT #삼성'. 이미 있으면 그대로"""
     t = ((ep.get('youtube') or {}).get('title') or '').strip()
+    t = re.sub(r'^\d{1,2}월\s*\d{1,2}일\s*', '', t)   # 제목 맨 앞 날짜는 쓰지 않는다(9/15) — 날짜는 해시태그(#9월15일)로만
     tag = upload_tag(ep)
     if not tag or not t: return t
     if re.search(r'#\d+월\d+일', t): return t
@@ -545,8 +546,15 @@ def title_with_date(ep):
 def write_youtube_txt(ep, path, dur=0):
     """사용자가 확인하기 쉽게 유튜브 제목·설명·태그를 텍스트로 같이 저장"""
     y = ep.get('youtube') or {}
-    body = [f'[제목]', title_with_date(ep), '', '[설명]', y.get('description', ''), '', '[태그]', ', '.join(y.get('tags', [])), '',
-            f'[정보] 기준 {ep.get("dateLabel", "")} / 길이 {dur:.1f}초 / 콘티 {ep.get("focusTeam", "")}']
+    desc = (y.get('description') or '').rstrip()
+    desc = re.sub(r'\n*📊 이 영상의 숫자\n(?:•[^\n]*\n?)+', '\n', desc)   # 옛 콘티의 숫자 목록은 빼고(9/15)
+    desc = re.sub(r'\n+(?:#\S+\s*)+$', '', desc).strip()   # 설명 끝 해시태그 줄은 [해시태그] 칸으로
+    hashtags = y.get('hashtags') or []
+    if not hashtags:   # 콘티에 없으면 태그로 만든다(띄어쓰기 제거)
+        base = ['#야구자판기', '#야구이슈' if str(ep.get('series', '')) == '야구이슈' else '#야구순위', '#프로야구', '#KBO', '#야구']
+        hashtags = base + ['#' + t.replace(' ', '') for t in y.get('tags', []) if '#' + t.replace(' ', '') not in base][:10] + ['#야구스타그램', '#야구팬', '#Shorts']
+    body = ['[제목]', title_with_date(ep), '', '[설명]', desc, '', '[태그]  (유튜브 태그 칸에 그대로)', ', '.join(y.get('tags', [])), '',
+            '[해시태그]  (인스타그램·틱톡 캡션에 복붙 / 유튜브 설명 끝에 붙여도 됨)', ' '.join(hashtags)]
     io.open(path, 'w', encoding='utf-8').write('\n'.join(body) + '\n')
 
 def cfg_get(k, default=''):
