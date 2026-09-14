@@ -135,14 +135,30 @@ def photos_data_uri(ep, ep_path=None):
     names = _photo_names(ep)
     if not names: return out
     dirs = [d for d in photo_dirs(ep_key(ep_path) if ep_path else '') if d]
+    # 선수이미지\ 는 하위 폴더로 나눠 둘 수 있다(9/14): KBO프로필\ · 국가대표프로필\ · 상황별\ (+ 그 외 폴더).
+    # 콘티 img 가 "국가대표프로필/김도영" 처럼 폴더를 지정하면 그 폴더에서만, "김도영" 이면 KBO프로필 → 국가대표프로필 → 상황별 → 나머지 순으로 찾는다.
+    SUB_ORDER = ['KBO프로필', '국가대표프로필', '상황별']
+    def search_dirs(d):
+        out = [d]
+        if os.path.isdir(d):
+            subs = [x for x in os.listdir(d) if os.path.isdir(os.path.join(d, x))]
+            subs.sort(key=lambda x: (SUB_ORDER.index(x) if x in SUB_ORDER else len(SUB_ORDER), x))
+            out += [os.path.join(d, x) for x in subs]
+        return out
     for name in names:
-        base = os.path.splitext(name)[0]
+        sub = ''
+        key = name.replace('\\', '/')
+        if '/' in key: sub, key = key.rsplit('/', 1)
+        base = os.path.splitext(key)[0]
         found = None
-        for d in dirs:
-            if not os.path.isdir(d): continue
-            for f in os.listdir(d):
-                if f == name or os.path.splitext(f)[0] == base and f.lower().endswith(PHOTO_EXTS):
-                    found = os.path.join(d, f); break
+        for d0 in dirs:
+            cands = [os.path.join(d0, sub)] if sub else search_dirs(d0)
+            for d in cands:
+                if not os.path.isdir(d): continue
+                for f in os.listdir(d):
+                    if f == key or os.path.splitext(f)[0] == base and f.lower().endswith(PHOTO_EXTS):
+                        found = os.path.join(d, f); break
+                if found: break
             if found: break
         if not found:
             print(f'경고: 사진 없음 "{name}" → 로고로 대신 표시 (야구이슈\\재료\\사진\\<콘티이름>\\ 또는 선수이미지\\ 에 넣어 주세요)')
