@@ -129,37 +129,42 @@ def _photo_names(ep):
     return names
 
 PHOTO_SIZES = {}   # 이름 → [가로, 세로] (photos_data_uri 가 채움, EP.photoSizes 로 템플릿에 전달)
+# 선수이미지\ 는 하위 폴더로 나눠 둘 수 있다(9/14): KBO프로필\ · 국가대표프로필\ · 고등학교\(하현승·엄준상 같은 고교 선수) · 상황별\ (+ 그 외 폴더).
+# 콘티 img 가 "국가대표프로필/김도영" 처럼 폴더를 지정하면 그 폴더에서만, "김도영" 이면 KBO프로필 → 국가대표프로필 → 고등학교 → 상황별 → 나머지 순으로 찾는다.
+SUB_ORDER = ['KBO프로필', '국가대표프로필', '고등학교', '상황별']
+
+def _search_dirs(d):
+    out = [d]
+    if os.path.isdir(d):
+        subs = [x for x in os.listdir(d) if os.path.isdir(os.path.join(d, x))]
+        subs.sort(key=lambda x: (SUB_ORDER.index(x) if x in SUB_ORDER else len(SUB_ORDER), x))
+        out += [os.path.join(d, x) for x in subs]
+    return out
+
+def find_photo(name, ep_path=None):
+    """콘티에 적힌 사진 이름 → 실제 파일 경로(없으면 None). run_daily 의 사진 준비 확인도 이 함수를 쓴다(같은 규칙)."""
+    dirs = [d for d in photo_dirs(ep_key(ep_path) if ep_path else '') if d]
+    sub = ''
+    key = str(name).replace('\\', '/')
+    if '/' in key: sub, key = key.rsplit('/', 1)
+    base = os.path.splitext(key)[0]
+    for d0 in dirs:
+        cands = [os.path.join(d0, sub)] if sub else _search_dirs(d0)
+        for d in cands:
+            if not os.path.isdir(d): continue
+            for f in os.listdir(d):
+                if f.lower() == key.lower() or os.path.splitext(f)[0].lower() == base.lower() and f.lower().endswith(PHOTO_EXTS):   # 대소문자 무시(kt_2021우승 = KT_2021우승)
+                    return os.path.join(d, f)
+    return None
+
 def photos_data_uri(ep, ep_path=None):
     """콘티가 쓰는 사진만 data URI 로 (키 = 콘티에 적힌 이름 그대로). 큰 사진은 렌더 html 이 무거워지니 1600px 이하로 줄여 넣는다"""
     out = {}; sizes = PHOTO_SIZES
     names = _photo_names(ep)
     if not names: return out
-    dirs = [d for d in photo_dirs(ep_key(ep_path) if ep_path else '') if d]
-    # 선수이미지\ 는 하위 폴더로 나눠 둘 수 있다(9/14): KBO프로필\ · 국가대표프로필\ · 고등학교\(하현승·엄준상 같은 고교 선수) · 상황별\ (+ 그 외 폴더).
-    # 콘티 img 가 "국가대표프로필/김도영" 처럼 폴더를 지정하면 그 폴더에서만, "김도영" 이면 KBO프로필 → 국가대표프로필 → 고등학교 → 상황별 → 나머지 순으로 찾는다.
-    SUB_ORDER = ['KBO프로필', '국가대표프로필', '고등학교', '상황별']
-    def search_dirs(d):
-        out = [d]
-        if os.path.isdir(d):
-            subs = [x for x in os.listdir(d) if os.path.isdir(os.path.join(d, x))]
-            subs.sort(key=lambda x: (SUB_ORDER.index(x) if x in SUB_ORDER else len(SUB_ORDER), x))
-            out += [os.path.join(d, x) for x in subs]
-        return out
     for name in names:
-        sub = ''
-        key = name.replace('\\', '/')
-        if '/' in key: sub, key = key.rsplit('/', 1)
-        base = os.path.splitext(key)[0]
-        found = None
-        for d0 in dirs:
-            cands = [os.path.join(d0, sub)] if sub else search_dirs(d0)
-            for d in cands:
-                if not os.path.isdir(d): continue
-                for f in os.listdir(d):
-                    if f.lower() == key.lower() or os.path.splitext(f)[0].lower() == base.lower() and f.lower().endswith(PHOTO_EXTS):   # 대소문자 무시(kt_2021우승 = KT_2021우승)
-                        found = os.path.join(d, f); break
-                if found: break
-            if found: break
+        base = os.path.splitext(str(name).replace('\\', '/').rsplit('/', 1)[-1])[0]
+        found = find_photo(name, ep_path)
         if not found:
             print(f'경고: 사진 없음 "{name}" → 로고로 대신 표시 (야구이슈\\재료\\사진\\<콘티이름>\\ 또는 선수이미지\\ 에 넣어 주세요)')
             continue

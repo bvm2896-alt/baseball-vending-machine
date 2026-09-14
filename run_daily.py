@@ -405,23 +405,13 @@ def after_build(ep_path, video):
         log(f'[{k}] 영상 준비 완료. 확인 후 업로드.txt 신호를 주면 올립니다', '업로드대기')
 
 def photo_check(ep_path):
-    """콘티가 쓰는 사진(장면 img·썸네일 img) 중 준비된 것/없는 것. [(이름, 찾은 경로 또는 None)]"""
+    """콘티가 쓰는 사진(장면 img·썸네일 img) 중 준비된 것/없는 것. [(이름, 찾은 경로 또는 None)] — 찾는 규칙은 build.find_photo 와 같다(하위 폴더·대소문자·다른 날짜 폴더 포함)"""
     try:
         ep = json.load(io.open(ep_path, encoding='utf-8-sig'))
         names = sorted(build._photo_names(ep))
-        dirs = [d for d in build.photo_dirs(build.ep_key(ep_path)) if d and os.path.isdir(d)]
     except Exception:
         return []
-    out = []
-    for n in names:
-        base = os.path.splitext(n)[0]; found = None
-        for d in dirs:
-            for f in os.listdir(d):
-                if f == n or (os.path.splitext(f)[0] == base and f.lower().endswith(build.PHOTO_EXTS)):
-                    found = os.path.join(d, f); break
-            if found: break
-        out.append((n, found))
-    return out
+    return [(n, build.find_photo(n, ep_path)) for n in names]
 
 def wait_photos(paths):
     """사진이 다 준비되고 Enter 를 눌러야 제작을 시작한다 (지금실행 처럼 사람이 보고 있는 --now 실행에서만).
