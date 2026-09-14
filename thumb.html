@@ -23,7 +23,7 @@ const ALIAS={'기아':'HT','KIA':'HT','엘지':'LG','케이티':'KT','엔씨':'N
 const codeOf=n=>{const t=(EP.standings||[]).find(t=>t.team===n||t.code===n||t.code===ALIAS[n]);return t?t.code:(ALIAS[n]||n)};
 const logo=c=>(EP.logos||{})[c]||'';
 const teams=(TH.teams||(TH.team?[TH.team]:[EP.focusTeam||''])).map(codeOf).filter(Boolean);
-const nl=t=>String(t||'').split('\n').join('<br>');
+const nl=t=>String(t||'').replace(/["“”'‘’]/g,'').split('\n').join('<br>');   // 썸네일 글씨엔 따옴표를 넣지 않는다(9/15)
 /* 큰 글씨 색(9/15): 한 썸네일 안에서는 한 색, 편마다 바꾼다 — 첫 편 빨강, 다음 편부터 노랑·하늘·연두·주황 순. thumb.color 로 직접 지정 가능 */
 const BIGC=['#FF3B30','#FFC24B','#22D3EE','#A3E635','#FB923C'];
 const cBig=TH.color||BIGC[(EP.epIndex||0)%BIGC.length];

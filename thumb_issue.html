@@ -27,7 +27,7 @@ const ALIAS={'기아':'HT','KIA':'HT','엘지':'LG','케이티':'KT','엔씨':'N
 const codeOf=n=>{const t=(EP.standings||[]).find(t=>t.team===n||t.code===n||t.code===ALIAS[n]);return t?t.code:(ALIAS[n]||n)};
 const logo=c=>(EP.logos||{})[c]||'';
 const teams=(TH.teams||(TH.team?[TH.team]:[EP.focusTeam||''])).map(codeOf).filter(Boolean);
-const nl=t=>String(t||'').split('\n').join('<br>');
+const nl=t=>String(t||'').replace(/["“”'‘’]/g,'').split('\n').join('<br>');   // 썸네일 글씨엔 따옴표를 넣지 않는다(9/15)
 /* 큰 글씨 색(9/15): 한 썸네일 안에서는 한 색, 편마다 강조색을 바꾼다 — 그날 첫 편은 구단색, 2·3·4편은 주황·보라·초록·파랑·빨강 순(구단색과 비슷한 색은 건너뜀). thumb.color 로 직접 지정 가능 */
 const hue=h=>{const n=parseInt(h.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn; if(!d) return -999; let H=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4; H*=60; return H<0?H+360:H;};
 const nearHue=(a,b)=>{const x=hue(a),y=hue(b); if(x<-1||y<-1) return false; const d=Math.abs(x-y); return Math.min(d,360-d)<35;};
