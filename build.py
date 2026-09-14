@@ -169,21 +169,28 @@ def photos_data_uri(ep, ep_path=None):
             print(f'경고: 사진 없음 "{name}" → 로고로 대신 표시 (야구이슈\\재료\\사진\\<콘티이름>\\ 또는 선수이미지\\ 에 넣어 주세요)')
             continue
         src = found
-        if not found.lower().endswith('.png'):   # png(투명 가능)는 원본 그대로, jpg/webp 만 1600px 로 줄인다
+        ext0 = os.path.splitext(found)[1].lower()
+        if ext0 != '.png':   # png 는 원본 그대로. webp 는 png 로(투명 배경이 있으면 지켜야 누끼 사진이 흐린 배경 없이 놓인다, 9/15), jpg 는 1600px jpg 로
             try:
-                tmp = W('photo_' + re.sub(r'[^0-9A-Za-z가-힣_.-]', '_', base) + '.jpg')
-                r = run(['ffmpeg', '-y', '-loglevel', 'error', '-i', found, '-vf', "scale='min(1600,iw)':-2", '-q:v', '3', tmp])
+                safe = re.sub(r'[^0-9A-Za-z가-힣_.-]', '_', base)
+                if ext0 == '.webp':
+                    tmp = W('photo_' + safe + '.png')
+                    r = run(['ffmpeg', '-y', '-loglevel', 'error', '-i', found, '-vf', "scale='min(1600,iw)':-2", tmp])
+                else:
+                    tmp = W('photo_' + safe + '.jpg')
+                    r = run(['ffmpeg', '-y', '-loglevel', 'error', '-i', found, '-vf', "scale='min(1600,iw)':-2", '-q:v', '3', tmp])
                 if r.returncode == 0 and os.path.exists(tmp): src = tmp
             except Exception: pass
         ext = os.path.splitext(src)[1].lower()
         mime = 'image/png' if ext == '.png' else 'image/webp' if ext == '.webp' else 'image/jpeg'
         out[name] = f'data:{mime};base64,' + base64.b64encode(open(src, 'rb').read()).decode()
-        # 원본 크기(템플릿이 작은 사진은 늘리지 않고 흐린 배경 위에 원본 크기로 놓는다)
+        # 원본 크기(템플릿이 작은 사진은 늘리지 않고 흐린 배경 위에 원본 크기로 놓는다) + 투명 배경 여부(변환된 파일 기준)
         try:
             pr = run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height,pix_fmt', '-of', 'csv=p=0', found])
             parts = pr.stdout.strip().split(',')
             w_, h_ = int(parts[0]), int(parts[1])
-            alpha = 1 if (len(parts) > 2 and re.search(r'a|pal', parts[2])) else 0   # 투명 배경(rgba·pal8) → 템플릿이 흐린 배경 대신 단색 배경에 놓는다
+            pf = run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=pix_fmt', '-of', 'csv=p=0', src]).stdout.strip().lower()
+            alpha = 1 if re.search(r'^(rgba|bgra|argb|abgr|ya8|ya16|gbrap|pal8|yuva)', pf) else 0   # 투명 배경(누끼) → 템플릿이 흐린 배경 대신 단색 배경에 놓는다
             sizes[name] = [w_, h_, alpha]
             if min(w_, h_) < 500: print(f'참고: 사진 "{name}" 해상도 낮음({w_}x{h_}) → 화면에서 흐릿할 수 있음. 900px 이상 권장')
         except Exception: pass
