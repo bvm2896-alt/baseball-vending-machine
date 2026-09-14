@@ -156,7 +156,7 @@ def photos_data_uri(ep, ep_path=None):
             for d in cands:
                 if not os.path.isdir(d): continue
                 for f in os.listdir(d):
-                    if f == key or os.path.splitext(f)[0] == base and f.lower().endswith(PHOTO_EXTS):
+                    if f.lower() == key.lower() or os.path.splitext(f)[0].lower() == base.lower() and f.lower().endswith(PHOTO_EXTS):   # 대소문자 무시(kt_2021우승 = KT_2021우승)
                         found = os.path.join(d, f); break
                 if found: break
             if found: break

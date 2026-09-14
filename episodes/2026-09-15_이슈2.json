@@ -189,18 +189,29 @@
    "size": 120
   },
   {
-   "type": "photo",
+   "type": "people",
    "startLine": 11,
-   "img": "하현승_엄준상",
-   "team": "키움",
-   "tag": "21일 드래프트",
-   "text": "MVP 하현승\n+ 엄준상",
-   "size": 100
+   "title": "21일 드래프트 → 프로로",
+   "items": [
+    {
+     "img": "고등학교/하현승",
+     "name": "하현승",
+     "team": "키움",
+     "note": "대회 MVP · 1순위",
+     "bad": false
+    },
+    {
+     "img": "고등학교/엄준상",
+     "name": "엄준상",
+     "team": "",
+     "note": "일본 2번 꺾은 투수",
+     "bad": false
+    }
+   ]
   },
   {
    "type": "question",
    "startLine": 12,
-   "img": "하현승",
    "text": "첫해 10승\nvs 아직은?"
   }
  ]
