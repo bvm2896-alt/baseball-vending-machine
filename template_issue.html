@@ -224,6 +224,10 @@ SCENE.big = (lt, s) => {
 
 /* photo: 사진이 주인공인 장면. {img, team, text, caption, tag, focus, size} — 사진 크게(640) + 아래 큰 문구 */
 SCENE.photo = (lt, s) => {
+  if (!photoSrc(s.img) && !(s.team || (s.teams || [])[0])) {   // 사진도 로고도 없으면 빈 카드를 띄우지 않고 글씨만(9/15)
+    const t = (s.tag && s.text && !String(s.text).includes(s.tag)) ? `${s.tag}\n${s.text}` : (s.text || s.tag || '');
+    return SCENE.big(lt, { text: t, size: Math.min(s.size || 130, 120) });
+  }
   B(`${photoBox(s, s.h || 640, seg(lt, 0, .6))}
   ${s.text ? `<div class="mega gold" style="margin-top:36px;font-size:${s.size || 130}px;${pop(seg(lt, .35, .6))}">${br(s.text)}</div>` : ''}`);
 };

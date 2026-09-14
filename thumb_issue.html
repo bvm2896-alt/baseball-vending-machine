@@ -62,8 +62,8 @@ st.insertAdjacentHTML('beforeend',`
   <div class="pill" style="left:70px;top:200px;background:#12161F;color:#fff"><span style="width:18px;height:18px;border-radius:9px;background:${c1};display:inline-block"></span>KBO 이슈</div>
   <div class="pill" style="right:70px;top:200px;background:#fff;color:#12161F;border:6px solid #12161F;font-size:56px">${esc(dateText)}</div>
   <div id="blk" style="position:absolute;inset:0"><div class="photo" style="height:${PH_H}px">${photoHtml(940,PH_H)}
-    ${src&&teams[0]?`<div class="chip" style="left:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[0])}"></div>`:''}
-    ${src&&teams[1]?`<div class="chip" style="right:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[1])}"></div>`:''}
+    ${src&&teams[0]&&TH.logos!==false?`<div class="chip" style="left:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[0])}"></div>`:''}
+    ${src&&teams[1]&&TH.logos!==false?`<div class="chip" style="right:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[1])}"></div>`:''}
   </div>
   <div class="bar" style="background:${c1};top:${Y0+50}px"></div>
   <div class="top" style="top:${Y0+90}px">${nl(TH.top)}</div>
