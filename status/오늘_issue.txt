@@ -8,16 +8,6 @@
 → 수동 업로드 모드: 영상 폴더의 mp4 와 _유튜브.txt(제목·설명·태그)로 유튜브 스튜디오에서 직접 올리세요
 
 기록:
-[23:37:27] [이슈3] 음성 생성 시작
-[23:37:33] [이슈3] 음성 검수 시작
-[23:38:13] [이슈3] 음성 검수:   12 쉼 1/1 +whisper 3.79 |   13 쉼 1/2 +whisper +비율 2.01 4.02 | 남은 주의 줄: [2, 3, 5, 6, 7, 9, 12, 13] (02: 긴 무음 [0.62]; 03: 긴 무음 [0.63]; 05: 긴 무음 [0.84]; 06: 긴 무음 [0.74]; 07: 긴 무음 [0.67]; 09: 긴 무음 [0.71]; 12: 긴 무음 [0.75]; 13: 긴 무음 [0.74])
-[23:38:13] [이슈3] 영상 렌더 시작 (3~5분)
-[23:42:09] [이슈3] 영상 완성 77.1초 → H:\내 드라이브\야구자판기_영상확인\야구이슈\2026-09-14\이슈3_기아.mp4
-[23:42:11] [이슈3] 영상 준비 완료 (수동 업로드 모드): 폴더의 mp4 와 _유튜브.txt 제목·설명을 유튜브 스튜디오에 직접 올리세요
-[23:42:11] [이슈4] 음성 생성 시작
-[23:42:16] [이슈4] 음성 검수 시작
-[23:42:47] [이슈4] 음성 검수:   11 쉼 1/1 +whisper 2.28 |   12 쉼 1/1 +whisper 2.68 | 남은 주의 줄: [2, 7, 8, 12] (02: 톤 이탈 +2.6반음; 07: 끝부분 깨짐(음높이 떨림 0.17); 08: 긴 무음 [0.63]; 12: 톤 이탈 +3.5반음)
-[23:42:47] [이슈4] 영상 렌더 시작 (3~5분)
 [23:46:19] [이슈4] 영상 완성 69.1초 → H:\내 드라이브\야구자판기_영상확인\야구이슈\2026-09-14\이슈4_LG.mp4
 [23:46:22] [이슈4] 영상 준비 완료 (수동 업로드 모드): 폴더의 mp4 와 _유튜브.txt 제목·설명을 유튜브 스튜디오에 직접 올리세요
 [23:46:22] 감시 시작 (안전 종료 12:00)
@@ -38,3 +28,29 @@
 [02:31:59] [이슈] 음성 검수:   13 쉼 1/1 +whisper 2.28 |   14 쉼 2/2 +whisper 1.95 4.32 | 남은 주의 줄: [0, 1, 6, 12, 14] (00: 톤 이탈 +5.3반음; 01: 톤 이탈 +2.8반음; 06: 긴 무음 [0.87], 끝부분 깨짐(음높이 떨림 0.15); 12: 긴 무음 [0.66]; 14: 끝부분 깨짐(음높이 떨림 0.18))
 [02:32:01] [이슈] 영상 렌더 시작 (3~5분)
 [02:36:05] [이슈] 영상 완성 77.6초 → H:\내 드라이브\야구자판기_영상확인\야구이슈\2026-09-14\이슈_기아.mp4
+[02:36:07] [이슈] 영상 준비 완료 (수동 업로드 모드): 폴더의 mp4 와 _유튜브.txt 제목·설명을 유튜브 스튜디오에 직접 올리세요
+[02:36:07] [이슈2] 음성 생성 시작
+[02:36:15] [이슈2] 음성 실패:
+account activity has been detected. If this activity is determined to be abuse of free accounts, your access may be suspended. If you need 
+11 XX  이십일 일 드래프트에서 키움이 일 순위로 부를 거예요 / 대회 엠브이피 하현승과 / 일본을 두 번 꺾은 엄준상이 나란히 프로에 와요
+  계정3 거부 403 UNUSUAL_ACTIVITY_DETECTED — 남은 계정 없음
+  계정별 결과: 계정1(__pltB…): 거부 403 UNUSUAL_ACTIVITY_DETECTED / 계정2(__pltX…): 거부 403 UNUSUAL_ACTIVITY_DETECTED / 계정3(__pltP…): 거부 403 UNUSUAL_ACTIVITY_DETECTED
+  실패 403: {"error_code":"UNUSUAL_ACTIVITY_DETECTED","message":"Unusual account activity has been detected. If this activity is determined to be abuse of free accounts, your access may be suspended. If you need 
+12 XX  하현승 데뷔 첫해에 십 승 할까요 / 아직은 무리일까요?
+계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED / 계정2: 거부 403 UNUSUAL_ACTIVITY_DETECTED / 계정3: 거부 403 UNUSUAL_ACTIVITY_DETECTED
+13줄 실패 — 모든 타입캐스트 계정이 거부됨(UNUSUAL_ACTIVITY 는 같은 PC 에서 무료 계정 여러 개를 쓴다고 본 것 → 계정 하나에 크레딧 충전이 확실한 해결)
+[02:36:15] [이슈3] 음성 생성 시작
+[02:36:24] [이슈3] 음성 실패:
+ount activity has been detected. If this activity is determined to be abuse of free accounts, your access may be suspended. If you need 
+13 XX  물론 금메달 하나로 병역을 푸는 게 맞냐는 논쟁도 있어요 / 병역특례를 다시 설계하자는 말이 나오거든요
+  계정3 거부 403 UNUSUAL_ACTIVITY_DETECTED — 남은 계정 없음
+  계정별 결과: 계정1(__pltB…): 거부 403 UNUSUAL_ACTIVITY_DETECTED / 계정2(__pltX…): 거부 403 UNUSUAL_ACTIVITY_DETECTED / 계정3(__pltP…): 거부 403 UNUSUAL_ACTIVITY_DETECTED
+  실패 403: {"error_code":"UNUSUAL_ACTIVITY_DETECTED","message":"Unusual account activity has been detected. If this activity is determined to be abuse of free accounts, your access may be suspended. If you need 
+14 XX  결승은 이십칠 일이에요 / 열여섯 명은 금메달을 목에 걸까요 / 아니면 이 년을 잃을까요?
+계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED / 계정2: 거부 403 UNUSUAL_ACTIVITY_DETECTED / 계정3: 거부 403 UNUSUAL_ACTIVITY_DETECTED
+13줄 실패 — 모든 타입캐스트 계정이 거부됨(UNUSUAL_ACTIVITY 는 같은 PC 에서 무료 계정 여러 개를 쓴다고 본 것 → 계정 하나에 크레딧 충전이 확실한 해결)
+[02:36:24] [이슈4] 음성 생성 시작
+[02:36:29] [이슈4] 음성 검수 시작
+[02:36:59] [이슈4] 음성 검수:   11 쉼 0/2 +whisper +비율 1.34 3.70 |   12 쉼 1/2 +whisper +비율 0.99 2.73 | 남은 주의 줄: [1, 2, 6, 9] (01: 너무 느림 3.85음절/초, 앞부분 깨짐(고역잡음 0.27); 02: 톤 이탈 +3.1반음, 긴 무음 [0.62]; 06: 긴 무음 [0.8]; 09: 너무 느림 3.15음절/초)
+[02:36:59] [이슈4] 영상 렌더 시작 (3~5분)
+[02:40:24] [이슈4] 영상 완성 69.5초 → H:\내 드라이브\야구자판기_영상확인\야구이슈\2026-09-14\이슈4_KT_한화_롯데.mp4
