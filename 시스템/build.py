@@ -541,8 +541,23 @@ def render(ep, ep_path):
     d = dur_of(out)
     thumb = make_thumb(EP, thumb_path)
     write_youtube_txt(ep, yt_path, d)
+    srt_path = yt_path.replace('_유튜브.txt', '_자막.srt')
+    write_srt(subs, srt_path)   # 9/15 SEO: 유튜브 업로드 때 자막 파일로 첨부 → 자동 자막보다 정확하게 검색 색인
     print(f'완료: {out} {d:.2f}초 (자막 {len(subs)}개, 장면 {len(ep["scenes"])}개) 썸네일 {thumb}')
     return out
+
+def write_srt(subs, path):
+    """영상 자막(subs: [시작초, 끝초, 글])을 SRT 로. 유튜브 업로드 화면 → 자막 → 파일 업로드에 쓴다(검색 색인용, 화면엔 이미 자막이 있으니 '자막 표시'는 꺼도 됨)"""
+    def ts(t):
+        t = max(0.0, float(t)); h = int(t // 3600); m = int(t % 3600 // 60); s = int(t % 60); ms = int(round((t - int(t)) * 1000))
+        if ms == 1000: s, ms = s + 1, 0
+        return f'{h:02d}:{m:02d}:{s:02d},{ms:03d}'
+    body = []
+    for k, (a, b_, text) in enumerate(subs, 1):
+        if b_ <= a: continue
+        body.append(f'{k}\n{ts(a)} --> {ts(b_)}\n{str(text).replace(chr(10), " ").strip()}\n')
+    io.open(path, 'w', encoding='utf-8').write('\n'.join(body) + '\n')
+    return path
 
 def upload_tag(ep):
     """제목 맨 앞 해시태그 = 영상 올리는 날짜(콘티 date, 밤 제작이면 다음날). 예: #9월13일"""
