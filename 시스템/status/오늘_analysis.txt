@@ -16,3 +16,17 @@
 
 [14:16:59] 감시 시작 (안전 종료 12:00)
 [14:21:57] 시작
+[14:22:17] 깃허브에서 최신 프로그램·콘티 받음
+[14:22:17] 순위·뉴스·일정: 방금 받은 것 사용
+[14:22:17] 콘티 대기: episodes/2026-09-15_분석.json (최대 45분)
+[14:22:42] 콘티 도착: 1편
+[14:22:42] [분석] 음성 생성 시작
+[14:22:43] [분석] 음성 실패:
+                ^
+  File "<frozen codecs>", line 325, in decode
+  File "C:\Users\standard\AppData\Local\Python\pythoncore-3.14-64\Lib\encodings\utf_8_sig.py", line 69, in _buffer_decode
+    return codecs.utf_8_decode(input, errors, final)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfa in position 21: invalid start byte
+[14:22:43] 감시 시작 (안전 종료 12:00)
+[14:24:13] 시작

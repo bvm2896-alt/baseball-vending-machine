@@ -1,6 +1,6 @@
 {
  "date": "2026-09-15",
- "step": "실패",
+ "step": "시작",
  "videos": {},
  "built": {},
  "log": [
@@ -21,6 +21,7 @@
   "[14:22:42] 콘티 도착: 1편",
   "[14:22:42] [분석] 음성 생성 시작",
   "[14:22:43] [분석] 음성 실패:\n                ^\n  File \"<frozen codecs>\", line 325, in decode\n  File \"C:\\Users\\standard\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\encodings\\utf_8_sig.py\", line 69, in _buffer_decode\n    return codecs.utf_8_decode(input, errors, final)\n           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^\nUnicodeDecodeError: 'utf-8' codec can't decode byte 0xfa in position 21: invalid start byte",
-  "[14:22:43] 감시 시작 (안전 종료 12:00)"
+  "[14:22:43] 감시 시작 (안전 종료 12:00)",
+  "[14:24:13] 시작"
  ]
 }
