@@ -76,7 +76,7 @@ def cfg():
             k, v = line.split('=', 1); c[k.strip()] = v.strip()
     return c
 CFG = cfg()
-REPO_GIT = os.path.isdir(os.path.join(HERE, '.git'))   # 깃허브 저장소로 연결돼 있으면 pull/push 사용
+REPO_GIT = os.path.isdir(os.path.join(HERE, '.git')) or os.path.isdir(os.path.join(HERE, '..', '.git'))   # 깃허브 저장소로 연결돼 있으면 pull/push 사용 (9/15: 저장소 루트가 야구자판기\ 로 올라감)
 _last_push = 0.0
 
 def git(*args, timeout=90):

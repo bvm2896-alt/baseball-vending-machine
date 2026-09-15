@@ -85,5 +85,7 @@ git pull → fetch_rank.js → fetch_news.js → fetch_schedule.js → 오늘 �
 
 ## git
 - 원본은 GitHub 비공개 `bvm2896-alt/baseball-vending-machine`. 회사 PC 와 집 PC 가 이 저장소로 동기화한다.
+- **저장소 루트 = `야구자판기\`(9/15, `깃구조변경.cmd` 로 옮김)**: 선수이미지·시리즈 폴더(음성 zip·재료 사진·오늘.txt·영상 폴더의 썸네일/유튜브.txt)·폰트·로고·썸네일·cmd 가 전부 깃으로 따라간다. 제외(루트 .gitignore = 시스템\gitignore_root.txt): 설정.txt·client_secret·token, work/·data/·out/·node_modules/·assets/, *.mp4·*.wav·*.mp3, 신호 파일(재생성·종료·업로드·공개·메타.txt), busy/lock, `Claude outputs/`, `시스템/야구이슈/`·`시스템/야구순위/`(잘못 넣은 음성). sync_assets.py 는 루트에 .git 이 있으면 아무것도 안 한다. run_daily 는 `HERE\.git` 또는 `HERE\..\.git` 이 있으면 pull/push. cmd 들은 `.git` 이 시스템\ 또는 그 위에 있는지 둘 다 본다.
+- 깃구조변경.cmd 는 PC 마다 한 번, **그 PC 에서 다른 깃 동작(깃저장·지금실행)을 하기 전에** 실행한다(옛 배치로 pull 하면 시스템\시스템\ 이 생김 — 그 경우 cmd 가 멈추고 Claude 에게 물어보라고 함).
 - 커밋 메시지는 한국어 한 줄. 커밋 전 `python -X utf8 build.py prep episodes\<오늘>.json` 이 통과해야 한다.
-- 다른 PC 로 옮기기 전 `깃저장.cmd`, 도착해서 `지금실행.cmd`(자동 pull).
+- 다른 PC 로 옮기기 전 `깃저장.cmd`, 도착해서 `깃가져오기.cmd`(또는 지금실행 — 자동 pull).

@@ -6,6 +6,8 @@ r"""
 그래서 시스템\assets\ 안에 사본을 두고 깃으로 주고받는다.
   야구자판기\선수이미지\            <->  시스템\assets\선수이미지\
   야구자판기\야구이슈\재료\사진\    <->  시스템\assets\이슈사진\
+  야구자판기\야구이슈\음성\*.zip    <->  시스템\assets\음성\야구이슈\   (9/15 음성 zip 도 깃으로)
+  야구자판기\야구순위\음성\*.zip    <->  시스템\assets\음성\야구순위\
 양방향, 새 파일·더 최신 파일이 이긴다.
 삭제: 지난번 동기화 때 양쪽에 다 있던 파일(work\sync_assets.json 에 기록)이 한쪽에서 사라지면 → 다른 쪽도 지운다.
       (예전엔 삭제를 안 옮겨서, 선수이미지\ 에서 지워도 assets\ 사본이 계속 되살아났다)
@@ -16,18 +18,21 @@ import os, shutil, sys, json
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..'))
 EXTS = ('.jpg', '.jpeg', '.png', '.webp', '.txt')
+VOICE_EXTS = ('.zip',)   # 타입캐스트 음성 zip (mp3 는 .gitignore 라 zip 만 — 9/15: 회사·집 PC 사이에 음성도 깃으로 옮긴다)
 PAIRS = [
-    (os.path.join(ROOT, '선수이미지'), os.path.join(HERE, 'assets', '선수이미지')),
-    (os.path.join(ROOT, '야구이슈', '재료', '사진'), os.path.join(HERE, 'assets', '이슈사진')),
+    (os.path.join(ROOT, '선수이미지'), os.path.join(HERE, 'assets', '선수이미지'), EXTS),
+    (os.path.join(ROOT, '야구이슈', '재료', '사진'), os.path.join(HERE, 'assets', '이슈사진'), EXTS),
+    (os.path.join(ROOT, '야구이슈', '음성'), os.path.join(HERE, 'assets', '음성', '야구이슈'), VOICE_EXTS),
+    (os.path.join(ROOT, '야구순위', '음성'), os.path.join(HERE, 'assets', '음성', '야구순위'), VOICE_EXTS),
 ]
 SEEN_PATH = os.path.join(HERE, 'work', 'sync_assets.json')   # 지난 동기화 때 양쪽에 있던 파일 목록 (쌍 이름별)
 
-def _files(root):
+def _files(root, exts=EXTS):
     out = {}
     if not os.path.isdir(root): return out
     for dp, dn, fn in os.walk(root):
         for f in fn:
-            if f.lower().endswith(EXTS):
+            if f.lower().endswith(exts):
                 p = os.path.join(dp, f)
                 out[os.path.relpath(p, root)] = os.path.getmtime(p)
     return out
@@ -57,10 +62,10 @@ def _save_seen(seen):
         json.dump(seen, open(SEEN_PATH, 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
     except Exception: pass
 
-def sync_pair(a, b, seen, first=False):
+def sync_pair(a, b, seen, first=False, exts=EXTS):
     """seen: 지난번 동기화 뒤 양쪽에 있던 rel 목록. 반환 (복사 수, 삭제 수, 이번에 양쪽에 남은 rel 목록)
        first: 기록이 아직 없는 첫 실행 → 바깥 폴더(a)를 기준으로 보고, assets(b)에만 있는 파일은 되살리지 않고 지운다"""
-    fa, fb = _files(a), _files(b)
+    fa, fb = _files(a, exts), _files(b, exts)
     n = m = 0
     if first:
         for rel in sorted(set(fb) - set(fa)): _remove(b, rel); fb.pop(rel, None); m += 1
@@ -75,13 +80,17 @@ def sync_pair(a, b, seen, first=False):
     return n, m, both
 
 def main():
+    if os.path.isdir(os.path.join(ROOT, '.git')):   # 9/15: 저장소 루트가 야구자판기\ 면 사진·음성이 그대로 깃에 들어가므로 assets 사본은 쓰지 않는다
+        return 0
     total = 0
     seen_all = _load_seen()
-    for a, b in PAIRS:
+    for a, b, exts in PAIRS:
         if not os.path.isdir(a) and not os.path.isdir(b): continue
         os.makedirs(a, exist_ok=True); os.makedirs(b, exist_ok=True)
-        key = os.path.basename(a)
-        n, m, both = sync_pair(a, b, seen_all.get(key, []), first=(key not in seen_all))
+        key = os.path.relpath(a, ROOT).replace('\\', '/')
+        if key not in seen_all and os.path.basename(a) in seen_all: seen_all[key] = seen_all.pop(os.path.basename(a))   # 옛 기록 이름 이어받기
+        first = key not in seen_all and bool(_files(a, exts))   # 기록 없는 첫 실행이라도 바깥 폴더가 비어 있으면(새 PC) assets 에서 그대로 받는다
+        n, m, both = sync_pair(a, b, seen_all.get(key, []), first=first, exts=exts)
         seen_all[key] = both
         total += n + m
         if n or m: print(f'사진 동기화 {key}: 복사 {n}개, 삭제 {m}개')

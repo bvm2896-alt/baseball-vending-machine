@@ -1,0 +1,70 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_bold.ttf') format('truetype');font-weight:700 900}
+@font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_medium.ttf') format('truetype');font-weight:400 600}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:2048px;height:1152px;overflow:hidden;background:#0F1420}
+body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic',sans-serif;color:#F2F5F8;font-weight:700}
+#stage{position:relative;width:2048px;height:1152px;overflow:hidden;
+  background:
+    radial-gradient(60% 70% at 50% 55%, rgba(255,194,75,.10) 0%, rgba(255,194,75,0) 60%),
+    radial-gradient(45% 60% at 10% 25%, rgba(234,0,41,.42) 0%, rgba(234,0,41,0) 70%),
+    radial-gradient(45% 60% at 90% 80%, rgba(30,120,255,.55) 0%, rgba(7,76,161,0) 70%),
+    linear-gradient(135deg,#131A28 0%,#0F1420 50%,#151C2B 100%)}
+/* 사선 빛줄기 */
+.beam{position:absolute;top:-400px;height:2000px;width:260px;transform:rotate(28deg);
+  background:linear-gradient(180deg,rgba(255,194,75,0) 0%,rgba(255,194,75,.16) 30%,rgba(255,194,75,.16) 70%,rgba(255,194,75,0) 100%);filter:blur(2px)}
+.beam.b1{left:180px;width:120px;opacity:.9;background:linear-gradient(180deg,rgba(255,80,110,0),rgba(255,80,110,.22) 40%,rgba(255,80,110,.22) 60%,rgba(255,80,110,0))}.beam.b2{left:330px;width:40px;opacity:.7}
+.beam.b3{left:1560px;width:180px;background:linear-gradient(180deg,rgba(80,160,255,0),rgba(80,160,255,.16) 40%,rgba(80,160,255,.16) 60%,rgba(80,160,255,0))}
+.beam.b4{left:1760px;width:36px;opacity:.8;background:linear-gradient(180deg,rgba(80,160,255,0),rgba(80,160,255,.3) 40%,rgba(80,160,255,.3) 60%,rgba(80,160,255,0))}
+/* 코너 사선 스트라이프 */
+.stripes{position:absolute;width:900px;height:900px;background:repeating-linear-gradient(135deg,rgba(255,194,75,.9) 0 26px,transparent 26px 74px);opacity:.10}
+.stripes.tl{left:-520px;top:-560px;background:repeating-linear-gradient(135deg,rgba(255,90,120,.9) 0 26px,transparent 26px 74px);opacity:.14}.stripes.br{right:-520px;bottom:-560px;background:repeating-linear-gradient(135deg,rgba(242,245,248,.9) 0 26px,transparent 26px 74px);background:repeating-linear-gradient(135deg,rgba(80,160,255,.9) 0 26px,transparent 26px 74px);opacity:.12}
+/* 야구공 실밥 곡선 */
+svg.seam{position:absolute;opacity:.16}
+/* 점 격자 */
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(242,245,248,.10) 1.6px,transparent 1.6px);background-size:34px 34px;mask-image:radial-gradient(70% 70% at 50% 50%,#000 20%,transparent 75%);-webkit-mask-image:radial-gradient(70% 70% at 50% 50%,#000 20%,transparent 75%)}
+/* 안전영역 1546x423 중앙 */
+#safe{position:absolute;left:406px;top:407px;width:1236px;height:338px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+.tag{display:flex;align-items:center;gap:14px;font-size:26px;font-weight:800;letter-spacing:5px;color:#F2F5F8;text-transform:uppercase}
+.tag .line{width:70px;height:3px;background:linear-gradient(90deg,transparent,#FF5A78)}
+.tag .line.r{background:linear-gradient(90deg,#50A0FF,transparent)}
+.title{margin-top:4px;font-size:150px;font-weight:900;letter-spacing:-6px;line-height:1;white-space:nowrap;
+  text-shadow:0 10px 40px rgba(0,0,0,.6)}
+.title b{color:#FFC24B;text-shadow:0 10px 40px rgba(0,0,0,.6),0 0 60px rgba(255,194,75,.30)}
+.sub{margin-top:10px;font-size:40px;font-weight:600;color:#DDE3EC;letter-spacing:-1px}
+.sub b{color:#F2F5F8;font-weight:800;text-decoration:underline;text-decoration-color:#FF5A78;text-underline-offset:7px;text-decoration-thickness:4px}
+.chips{margin-top:26px;display:flex;gap:18px}
+.chip{font-size:30px;font-weight:800;letter-spacing:1px;padding:12px 30px;border-radius:999px;border:3px solid rgba(255,194,75,.85);color:#FFE29A;background:rgba(255,194,75,.08);box-shadow:0 0 24px rgba(255,194,75,.18) inset}
+.chip.w{border-color:rgba(242,245,248,.5);color:#F2F5F8;background:rgba(242,245,248,.05);box-shadow:none}
+/* 큰 배경 글자 */
+.ghost{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-6deg);font-size:640px;font-weight:900;letter-spacing:-20px;color:transparent;-webkit-text-stroke:3px rgba(242,245,248,.06);white-space:nowrap;pointer-events:none}
+.vignette{position:absolute;inset:0;background:radial-gradient(80% 80% at 50% 50%,transparent 55%,rgba(8,11,18,.75) 100%)}
+</style></head><body>
+<div id="stage">
+  <div class="stripes tl"></div><div class="stripes br"></div>
+  <div class="beam b1"></div><div class="beam b2"></div><div class="beam b3"></div><div class="beam b4"></div>
+  <div class="dots"></div>
+  <!-- 야구공 실밥: 좌하·우상 큰 호 -->
+  <svg class="seam" style="left:-300px;top:120px" width="1300" height="1300" viewBox="0 0 1300 1300" fill="none">
+    <path d="M120 1180 C 260 700, 700 420, 1180 300" stroke="#F2F5F8" stroke-width="10" stroke-linecap="round"/>
+    <g stroke="#50A0FF" stroke-width="9" stroke-linecap="round">
+      <path d="M180 1010 l 70 -40 M235 900 l 72 -30 M300 800 l 74 -22 M375 712 l 76 -14 M455 635 l 78 -8 M540 570 l 78 -2 M628 515 l 78 4 M718 468 l 78 10 M810 428 l 78 14 M905 393 l 76 18 M1000 362 l 74 22"/>
+      <path d="M100 1120 l 70 -30 M160 1000 l 60 -50 M225 885 l 62 -46 M295 780 l 64 -42 M370 690 l 66 -36 M450 612 l 68 -30 M535 548 l 70 -24 M624 494 l 70 -18 M715 448 l 70 -12 M808 410 l 70 -8 M903 376 l 70 -4"/>
+    </g>
+  </svg>
+  <svg class="seam" style="right:-260px;top:-380px" width="1200" height="1200" viewBox="0 0 1200 1200" fill="none">
+    <path d="M80 1120 C 260 700, 620 380, 1140 200" stroke="#F2F5F8" stroke-width="10" stroke-linecap="round"/>
+    <g stroke="#FF5A78" stroke-width="9" stroke-linecap="round">
+      <path d="M140 960 l 70 -40 M200 850 l 72 -32 M268 750 l 74 -24 M345 660 l 76 -16 M428 582 l 78 -10 M516 515 l 78 -4 M608 458 l 78 2 M704 410 l 78 8 M802 368 l 78 12 M902 332 l 76 16"/>
+      <path d="M70 1060 l 64 -50 M132 950 l 60 -50 M198 840 l 62 -46 M270 740 l 64 -42 M348 650 l 66 -36 M432 572 l 68 -30 M520 506 l 70 -24 M612 450 l 70 -18 M708 402 l 70 -12 M806 362 l 70 -8"/>
+    </g>
+  </svg>
+  <div class="ghost">KBO</div>
+  <div id="safe">
+    <div class="tag"><span class="line"></span>매일 밤 1분 · 야구 순위<span class="line r"></span></div>
+    <div class="title">야구<b>자판기</b></div>
+    <div class="sub">오늘의 <b>야구 이야기</b>를 뽑아드려요</div>
+      </div>
+  <div class="vignette"></div>
+</div>
+</body></html>
