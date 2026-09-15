@@ -67,7 +67,7 @@ def game_date(ep):
         return dt.isoformat()
     except Exception: return d
 
-SERIES_BY_SLOT = {'순위': '야구순위', '이슈': '야구이슈', '1': '야구순위', '2': '야구이슈'}   # 하루 콘티 슬롯 → 시리즈 폴더 (콘티에 "series" 를 적으면 그게 우선)
+SERIES_BY_SLOT = {'순위': '야구순위', '이슈': '야구이슈', '분석': '야구분석', '1': '야구순위', '2': '야구이슈'}   # 하루 콘티 슬롯 → 시리즈 폴더 (콘티에 "series" 를 적으면 그게 우선)
 
 def series_of(ep, ep_path):
     """결과물을 나눠 담을 시리즈 폴더 이름: 콘티의 series → 없으면 슬롯 번호(1=야구순위, 2=야구이슈)"""
@@ -101,16 +101,17 @@ LOGO_DIRS = [os.path.join(HERE, '..', 'KBO_logos'), os.path.join(HERE, 'KBO_logo
 #   3) 야구자판기\야구이슈\재료\사진\공용\ , 야구자판기\야구이슈\재료\사진\  (옛 위치)
 # 없으면 템플릿이 로고로 대신 그린다.
 PHOTO_ROOT = os.path.join(HERE, '..', '야구이슈', '재료', '사진')
+PHOTO_ROOT2 = os.path.join(HERE, '..', '야구분석', '재료', '사진')   # 야구분석 편 전용 사진 (9/15)
 PLAYER_IMG_DIR = os.path.join(HERE, '..', '선수이미지')
 PHOTO_EXTS = ('.jpg', '.jpeg', '.png', '.webp')
 ASSETS = os.path.join(HERE, 'assets')   # 깃허브로 주고받는 사진 사본 (sync_assets.py 가 바깥 폴더와 맞춘다)
 def photo_dirs(ep_key_name=''):
-    return [os.path.join(PHOTO_ROOT, ep_key_name) if ep_key_name else '', PLAYER_IMG_DIR, os.path.join(PHOTO_ROOT, '공용'), PHOTO_ROOT,
+    return [os.path.join(PHOTO_ROOT, ep_key_name) if ep_key_name else '', os.path.join(PHOTO_ROOT2, ep_key_name) if ep_key_name else '', PLAYER_IMG_DIR, os.path.join(PHOTO_ROOT, '공용'), PHOTO_ROOT, PHOTO_ROOT2,
             os.path.join(ASSETS, '이슈사진', ep_key_name) if ep_key_name else '', os.path.join(ASSETS, '선수이미지'), os.path.join(HERE, 'photos')]
 
 def template_for(ep):
     """시리즈별 템플릿: 야구이슈 이고 template_issue.html 이 있으면 그것(화이트), 아니면 template.html(순위 편, 다크)"""
-    if str(ep.get('series', '')).strip() == '야구이슈' and os.path.exists('template_issue.html'):
+    if str(ep.get('series', '')).strip() in ('야구이슈', '야구분석') and os.path.exists('template_issue.html'):   # 분석 편도 화이트 템플릿
         return 'template_issue.html'
     return 'template.html'
 
@@ -247,6 +248,8 @@ def narr_check(lines):
         for m in re.finditer(NATIVE + r' ?(승|패|위|이닝|회|년|월|일|분|초|억|달러|순위|라운드)(?![가-힣])', t):
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (이 승, 십 패, 삼 위)')
         for m in re.finditer(r'(?<![가-힣])' + SINO + r' ?(점|경기|게임|개|명|가지|장)(?![가-힣])', t):
+            # 소수점("십이 점 삼팔", "오 점 영이")은 한자어가 맞다 — 점 뒤에 바로 숫자가 이어지면 넘어간다
+            if m.group(2) == '점' and re.match(r' ?(영|일|이|삼|사|오|육|칠|팔|구)', t[m.end():]): continue
             warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (열두 점, 스물두 경기)')
     return warns
 
@@ -563,7 +566,8 @@ def write_youtube_txt(ep, path, dur=0):
     desc = re.sub(r'\n+(?:#\S+\s*)+$', '', desc).strip()   # 설명 끝 해시태그 줄은 [해시태그] 칸으로
     hashtags = y.get('hashtags') or []
     if not hashtags:   # 콘티에 없으면 태그로 만든다(띄어쓰기 제거)
-        base = ['#야구자판기', '#야구이슈' if str(ep.get('series', '')) == '야구이슈' else '#야구순위', '#프로야구', '#KBO', '#야구']
+        stag = {'야구이슈': '#야구이슈', '야구분석': '#야구분석'}.get(str(ep.get('series', '')), '#야구순위')
+        base = ['#야구자판기', stag, '#프로야구', '#KBO', '#야구']
         hashtags = base + ['#' + t.replace(' ', '') for t in y.get('tags', []) if '#' + t.replace(' ', '') not in base][:10] + ['#야구스타그램', '#야구팬', '#Shorts']
     body = ['[제목]', title_with_date(ep), '', '[설명]', desc, '', '[태그]  (유튜브 태그 칸에 그대로)', ', '.join(y.get('tags', [])), '',
             '[해시태그]  (인스타그램·틱톡 캡션에 복붙 / 유튜브 설명 끝에 붙여도 됨)', ' '.join(hashtags)]
@@ -597,10 +601,10 @@ def make_thumb(EP, out):
     """thumb.html 에 데이터 주입 → out (jpg, 2MB 이하)"""
     if not EP.get('thumb'): return None
     # 야구이슈 편은 화이트 사진형 썸네일(thumb_issue.html), 순위 편은 기존 thumb.html
-    tpl = 'thumb_issue.html' if (str(EP.get('series', '')).strip() == '야구이슈' and os.path.exists('thumb_issue.html')) else 'thumb.html'
+    tpl = 'thumb_issue.html' if (str(EP.get('series', '')).strip() in ('야구이슈', '야구분석') and os.path.exists('thumb_issue.html')) else 'thumb.html'
     if 'photos' not in EP:
         EP['photos'] = photos_data_uri(EP, EP.get('_path')); EP['photoSizes'] = PHOTO_SIZES
-    m = re.search(r'_(?:순위|이슈)(\d*)\.json$', str(EP.get('_path') or ''))   # 그날 몇 번째 편인지(이슈=0, 이슈2=1 …) → 썸네일 큰 글씨 색을 편마다 바꾼다(9/15)
+    m = re.search(r'_(?:순위|이슈|분석)(\d*)\.json$', str(EP.get('_path') or ''))   # 그날 몇 번째 편인지(이슈=0, 이슈2=1 …) → 썸네일 큰 글씨 색을 편마다 바꾼다(9/15)
     EP['epIndex'] = (int(m.group(1)) - 1) if (m and m.group(1)) else 0
     html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
     html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)

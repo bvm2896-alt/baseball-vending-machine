@@ -34,7 +34,7 @@ const nearHue=(a,b)=>{const x=hue(a),y=hue(b); if(x<-1||y<-1) return false; cons
 const pickAccent=(base,idx)=>{ if(idx<=0) return base; const alt=['#D97706','#7C3AED','#059669','#1E5EFF','#E5484D'].filter(c=>!nearHue(c,base)); return alt[(idx-1)%alt.length]; };
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
 const c1=COLOR[teams[0]]||'#E5484D';
-const cBig=TH.color||pickAccent(c1, EP.epIndex||0);   // 큰 글씨 색(편마다 다름)
+const cBig=TH.color||(EP.series==='야구분석'?c1:pickAccent(c1, EP.epIndex||0));   // 큰 글씨 색: 이슈는 편마다 다르게, 분석은 그 편 구단 키컬러(9/15)
 const hex2=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`};
 const dateText=(()=>{ if(TH.date) return TH.date; let d=new Date((EP.gameDate||EP.date||'')+'T00:00:00'); if(isNaN(d)) return EP.dateLabel||'';
   if(!EP.gameDate && d.getDay()!==2) d.setDate(d.getDate()-1);
@@ -59,7 +59,7 @@ const Y0 = 340 + PH_H;   // 사진 아래 글 시작 기준
 const st=document.getElementById('st');
 st.insertAdjacentHTML('beforeend',`
   <div class="bg" style="background:radial-gradient(70% 36% at 50% 18%,${hex2(c1,.16)} 0%,rgba(244,246,250,0) 70%),#F4F6FA"></div>
-  <div class="pill" style="left:70px;top:200px;background:#12161F;color:#fff"><span style="width:18px;height:18px;border-radius:9px;background:${c1};display:inline-block"></span>KBO 이슈</div>
+  <div class="pill" style="left:70px;top:200px;background:#12161F;color:#fff"><span style="width:18px;height:18px;border-radius:9px;background:${c1};display:inline-block"></span>${esc(EP.railTitle||"KBO 이슈")}</div>
   <div class="pill" style="right:70px;top:200px;background:#fff;color:#12161F;border:6px solid #12161F;font-size:56px">${esc(dateText)}</div>
   <div id="blk" style="position:absolute;inset:0"><div class="photo" style="height:${PH_H}px">${photoHtml(940,PH_H)}
     ${src&&teams[0]&&TH.logos!==false?`<div class="chip" style="left:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[0])}"></div>`:''}
