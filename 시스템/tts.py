@@ -11,9 +11,19 @@ import requests
 HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(HERE)
 
+def open_cfg(path='설정.txt'):
+    """설정.txt 열기 — 메모장이 ANSI(cp949)로 저장해도 읽히게 utf-8 → cp949 순서로 시도 (build.py 와 같음, 9/15 회사 PC 사고)"""
+    for enc in ('utf-8-sig', 'cp949', 'euc-kr'):
+        try:
+            f = io.open(path, encoding=enc); f.read(); f.seek(0); return f
+        except UnicodeDecodeError:
+            try: f.close()
+            except Exception: pass
+    return io.open(path, encoding='utf-8-sig', errors='replace')
+
 def load_cfg():
     cfg = {}
-    with io.open('설정.txt', encoding='utf-8-sig') as f:
+    with open_cfg('설정.txt') as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith('#') or '=' not in line:
