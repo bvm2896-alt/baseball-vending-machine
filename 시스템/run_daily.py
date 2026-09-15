@@ -1,0 +1,619 @@
+# -*- coding: utf-8 -*-
+"""
+야구자판기 하루 자동 실행 (윈도우 작업 스케줄러가 07:30 에 실행)
+  순위 읽기 → 콘티(episodes/오늘_순위.json = 야구순위, 오늘_이슈.json = 야구이슈) 대기
+  → 각각 음성 → 영상(상위 폴더 영상\\날짜\\번호_팀.mp4) → 비공개 업로드 → 신호 파일 감시 → 안전 종료 시각에 PC 종료
+
+옵션:  --series rank|issue (야구순위/야구이슈 전용 — 그 시리즈 콘티만, 신호·오늘.txt 는 시리즈 폴더)  --now (시간과 상관없이 바로)  --today (18시 넘어도 오늘 날짜 콘티)  --latest (오늘 콘티 없으면 최근 콘티로)  --no-upload  --no-shutdown  --no-fetch  --no-tts
+        --episode 파일경로 (콘티 대기 생략, 여러 개 가능)
+신호 파일(상위 폴더 야구자판기\\):
+  업로드.txt  만들어 둔 영상을 유튜브에 올림. 비어 있으면 전부(비공개), "1"/"2" 면 그 번호만, "공개" 가 들어 있으면 바로 공개로
+  공개.txt    올라간 영상을 공개로 전환. 비어 있으면 전부, "1" 또는 "2" 면 그 번호만
+  재생성.txt  내용이 비어 있으면 전부, "1"/"2" 면 그 번호만 다시 만듦 ("1 lines=3,7" 이면 그 줄 음성만 다시)
+  메타.txt    이미 올린 영상의 제목·설명·태그를 콘티 youtube 항목으로 교체(재업로드 없음). 비어 있으면 전부, "1"/"2" 면 그 번호만
+  종료.txt / 절전.txt
+설정.txt 의 AUTO_UPLOAD=1 이면 만들자마자 비공개로 자동 업로드(기본 0: 업로드.txt 신호를 기다림)
+상태는 상위 폴더의 오늘.txt 에 한국어로 기록.
+"""
+import os, sys, io, json, time, datetime, subprocess, traceback, glob, re
+
+def open_cfg(path='설정.txt'):
+    """설정.txt 열기 — 메모장이 ANSI(cp949)로 저장해도 읽히게 utf-8 → cp949 순서로 시도"""
+    import io as _io
+    for enc in ('utf-8-sig', 'cp949', 'euc-kr'):
+        try:
+            f = _io.open(path, encoding=enc); f.read(); f.seek(0); return f
+        except UnicodeDecodeError:
+            try: f.close()
+            except Exception: pass
+    return _io.open(path, encoding='utf-8-sig', errors='replace')
+
+HERE = os.path.dirname(os.path.abspath(__file__)); os.chdir(HERE)
+BASE = os.path.abspath(os.path.join(HERE, '..'))
+SIG = lambda n: os.path.join(BASE, n)
+STATUS_TXT = os.path.join(BASE, '오늘.txt')
+ARGS = sys.argv[1:]
+# 콘티 날짜 = '올리는 날'. 저녁(설정 NIGHT_HOUR, 기본 18시) 이후에 돌리면 그날 경기 결과로 '다음 날' 콘티를 만드는 것이므로 날짜를 하루 넘긴다.
+def _cfg(k, d=''):
+    try:
+        for line in open_cfg():
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line and line.split('=', 1)[0].strip() == k: return line.split('=', 1)[1].strip()
+    except Exception: pass
+    return d
+_now = datetime.datetime.now()
+NIGHT = _now.hour >= int(_cfg('NIGHT_HOUR', '18')) and '--today' not in ARGS   # --today: 저녁이라도 오늘 날짜 콘티로(낮에 못 만든 편을 저녁에 마저 만들 때)
+TODAY = (_now.date() + datetime.timedelta(days=1 if NIGHT else 0)).isoformat()
+# 시리즈: --series rank(야구순위) / issue(야구이슈). 시리즈 전용 실행이면 콘티는 episodes/날짜_순위.json 처럼 하나만 다루고,
+# 신호 파일과 오늘.txt 는 그 시리즈 폴더(야구자판기\야구순위\)에서 읽고 쓴다. 시리즈 없이 실행하면 순위·이슈 둘 다.
+SERIES_CODES = {'rank': ('야구순위', '순위'), 'issue': ('야구이슈', '이슈')}
+SERIES = [ARGS[i + 1] for i, a in enumerate(ARGS) if a == '--series' and i + 1 < len(ARGS) and ARGS[i + 1] in SERIES_CODES]
+EPS = [ARGS[i + 1] for i, a in enumerate(ARGS) if a == '--episode' and i + 1 < len(ARGS)]
+if not EPS:
+    slots = [SERIES_CODES[c][1] for c in SERIES] or ['순위', '이슈']
+    EPS = [f'episodes/{TODAY}_{k}.json' for k in slots]
+    if not SERIES:   # 옛 이름(_1, _2)으로 된 콘티만 있으면 그걸 쓴다
+        legacy = [f'episodes/{TODAY}_1.json', f'episodes/{TODAY}_2.json']
+        if not any(os.path.exists(p) for p in EPS) and any(os.path.exists(p) for p in legacy): EPS = legacy
+if len(SERIES) == 1:
+    SERIES_DIR = os.path.join(BASE, SERIES_CODES[SERIES[0]][0]); os.makedirs(SERIES_DIR, exist_ok=True)
+    SIG = lambda n: os.path.join(SERIES_DIR, n)
+    STATUS_TXT = os.path.join(SERIES_DIR, '오늘.txt')
+    # 시리즈마다 작업 폴더를 따로 써서(work\순위, work\이슈) 순위·이슈 창을 동시에 켜도 같이 만들어진다. 음성 폴더(work\voice_<편>)는 공용(편마다 다르니 안 겹침)
+    os.environ['KBO_WORK'] = os.path.join('work', SERIES_CODES[SERIES[0]][1]); os.makedirs(os.environ['KBO_WORK'], exist_ok=True)
+    os.environ.setdefault('FRAME_WORKERS', '2')   # 두 창이 같이 렌더할 수 있으니 창당 화면 2개씩(CPU 나눠 쓰기)
+    print(f'[{SERIES_CODES[SERIES[0]][0]}] 전용 실행 — 콘티 {EPS[0]}, 신호·오늘.txt 는 {SERIES_DIR}, 작업 폴더 {os.environ["KBO_WORK"]}')
+if NIGHT: print(f'저녁 실행 → 내일({TODAY}) 콘티로 만듭니다 (오늘 경기 결과 기준)')
+STATE_PATH = f'status/state_{TODAY}' + (('_' + SERIES[0]) if len(SERIES) == 1 else '') + '.json'   # 저장소에 올려서 다른 PC 에서도 오늘 상태를 이어받는다
+for d in ('data', 'episodes', 'work', 'work/voice', 'status', 'signals'): os.makedirs(d, exist_ok=True)
+import build   # 결과물 경로 계산(영상/날짜/번호_팀.mp4)
+
+def cfg():
+    c = {}
+    for line in open_cfg():
+        line = line.strip()
+        if line and not line.startswith('#') and '=' in line:
+            k, v = line.split('=', 1); c[k.strip()] = v.strip()
+    return c
+CFG = cfg()
+REPO_GIT = os.path.isdir(os.path.join(HERE, '.git')) or os.path.isdir(os.path.join(HERE, '..', '.git'))   # 깃허브 저장소로 연결돼 있으면 pull/push 사용 (9/15: 저장소 루트가 야구자판기\ 로 올라감)
+_last_push = 0.0
+
+def git(*args, timeout=90):
+    try:
+        return subprocess.run(['git'] + list(args), cwd=HERE, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=timeout)
+    except Exception:
+        return None
+
+class step_lock:
+    """두 시리즈 창을 동시에 켜도 깃허브 동기화·재료 수집이 겹치지 않게 순서를 잡는 잠금 (work\\<이름>.lock).
+       먼저 잡은 쪽이 끝날 때까지 기다린다(최대 wait 초, 10분 넘게 안 바뀐 잠금은 죽은 것으로 보고 무시)."""
+    def __init__(self, name, wait=600):
+        os.makedirs('work', exist_ok=True)
+        self.path = os.path.join('work', name + '.lock'); self.wait = wait; self.fd = None
+    @staticmethod
+    def _owner_alive(path):
+        """잠금 파일에 적힌 PID 의 창이 아직 살아 있는지 (창을 닫았으면 잠금을 바로 무시하려고)"""
+        try:
+            txt = open(path, encoding='utf-8', errors='replace').read()
+            pid = int(txt.rsplit('|', 1)[1])
+        except Exception:
+            return True   # 옛 형식(PID 없음) 이면 판단 불가 → 살아 있다고 본다
+        try:
+            if os.name == 'nt':
+                import ctypes
+                k = ctypes.windll.kernel32
+                h = k.OpenProcess(0x1000, False, pid)   # PROCESS_QUERY_LIMITED_INFORMATION
+                if not h: return k.GetLastError() == 5   # 접근 거부(5)면 살아 있는 것, 그 외(없는 PID)면 죽은 것
+                code = ctypes.c_ulong(); ok = k.GetExitCodeProcess(h, ctypes.byref(code)); k.CloseHandle(h)
+                return (not ok) or code.value == 259   # STILL_ACTIVE
+            try: os.kill(pid, 0); return True
+            except ProcessLookupError: return False
+        except Exception:
+            return True
+    def __enter__(self):
+        end = time.time() + self.wait
+        while True:
+            try:
+                self.fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY); os.write(self.fd, f'{MY_SERIES}|{os.getpid()}'.encode('utf-8')); return self
+            except FileExistsError:
+                try: stale = time.time() - os.path.getmtime(self.path) > 600
+                except Exception: stale = True
+                if not stale and not self._owner_alive(self.path):
+                    stale = True   # 잠금을 잡은 창이 닫혔다 → 기다리지 않는다
+                if stale or time.time() > end:
+                    try: os.remove(self.path)
+                    except Exception: pass
+                    continue
+                time.sleep(3)
+    def __exit__(self, *a):
+        try:
+            if self.fd is not None: os.close(self.fd)
+            os.remove(self.path)
+        except Exception: pass
+        return False
+
+def git_pull(quiet=True):
+    """깃허브와 맞춘다: 이 PC 에서 바뀐 파일(Claude 가 PC 연결로 넣은 것)은 먼저 올리고, 최신을 받아온다 (실패해도 계속 진행)"""
+    if not REPO_GIT: return False
+    try: subprocess.run([sys.executable, '-X', 'utf8', 'sync_assets.py'], cwd=HERE, capture_output=True, timeout=120)
+    except Exception: pass
+    with step_lock('git'):
+        git('add', '-A')
+        git('commit', '-q', '-m', f'pc update {now()}')
+        r = git('pull', '--rebase', '-q')
+        if r is not None and r.returncode == 0:
+            pr = git('push', '-q')
+            if pr is not None and pr.returncode != 0:   # 다른 창이 그 사이 올렸으면 한 번 더 받아서 올린다
+                r2 = git('pull', '--rebase', '-q')
+                if r2 is not None and r2.returncode == 0: git('push', '-q')
+    try:   # 사진 폴더(선수이미지, 야구이슈\재료\사진) <-> assets\ 동기화 (깃으로 받은 사진을 바깥 폴더로, 바깥 새 사진을 assets 로)
+        subprocess.run([sys.executable, '-X', 'utf8', 'sync_assets.py'], cwd=HERE, capture_output=True, timeout=120)
+    except Exception: pass
+    if r is None or r.returncode != 0:
+        if not quiet: log('깃허브 받기 실패: ' + ((r.stderr if r else '') or '')[-160:])
+        return False
+    return True
+
+def git_push_status(force=False):
+    """오늘.txt 를 저장소 status/ 에 올려서 PC 연결 없이도 상태를 볼 수 있게 (1분에 한 번)"""
+    global _last_push
+    if not REPO_GIT: return
+    if not force and time.time() - _last_push < 60: return
+    _last_push = time.time()
+    try:
+        os.makedirs('status', exist_ok=True)
+        import shutil; sname = '오늘' + (('_' + SERIES[0]) if len(SERIES) == 1 else '') + '.txt'; shutil.copyfile(STATUS_TXT, os.path.join('status', sname))
+        git('add', 'status/' + sname, STATE_PATH)
+        git('commit', '-q', '-m', f'status {TODAY} {now()}')
+        git('push', '-q')
+    except Exception: pass
+SAFETY = CFG.get('SAFETY_SHUTDOWN', '12:00')
+WAIT_EPISODE_MIN = int(CFG.get('WAIT_EPISODE_MIN', '45'))
+AUTO_UPLOAD = CFG.get('AUTO_UPLOAD', '0').strip() == '1'
+
+# ---------- 상태 ----------
+state = {'date': TODAY, 'step': '', 'videos': {}, 'built': {}, 'log': []}   # videos: 업로드된 것 {"1": {"id","privacy","title"}}, built: 만들어 둔 것 {"1": {"video","ep"}}
+if os.path.exists(STATE_PATH):
+    try: state.update(json.load(io.open(STATE_PATH, encoding='utf-8')))
+    except Exception: pass
+
+def now(): return datetime.datetime.now().strftime('%H:%M:%S')
+def log(msg, step=None):
+    line = f'[{now()}] {msg}'
+    print(line, flush=True)
+    state['log'].append(line); state['log'] = state['log'][-100:]
+    if step: state['step'] = step
+    json.dump(state, io.open(STATE_PATH, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    write_status()
+
+def write_status():
+    lines = [f'날짜: {TODAY}', f'단계: {state.get("step")}', '']
+    for k, b in sorted(state.get('built', {}).items()):
+        lines.append(f'영상 {k} 파일: {b.get("video","")}')
+    for k, v in sorted(state['videos'].items()):
+        lines.append(f'영상 {k} 유튜브: {v.get("title","")}  https://youtu.be/{v["id"]}  ({v.get("privacy")})')
+    if not state['videos'] and not state.get('built'): lines.append('영상: 아직 없음')
+    if state.get('built') and not UPLOAD_ENABLED:
+        lines.append('→ 수동 업로드 모드: 영상 폴더의 mp4 와 _유튜브.txt(제목·설명·태그)로 유튜브 스튜디오에서 직접 올리세요')
+    elif state.get('built') and not AUTO_UPLOAD:
+        lines.append('→ 영상 폴더에서 확인한 뒤 업로드.txt 신호를 주면 유튜브에 올립니다')
+    lines += ['', '기록:'] + state['log'][-30:]
+    io.open(STATUS_TXT, 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
+    git_push_status()
+
+def sh(cmd, timeout=1800):
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=timeout)
+    return r.returncode, (r.stdout or '') + (r.stderr or '')
+def py(*a, **k): return sh([sys.executable, '-X', 'utf8'] + list(a), **k)
+def key_of(ep_path):
+    stem = os.path.splitext(os.path.basename(ep_path))[0]
+    return stem.rsplit('_', 1)[-1] if '_' in stem else stem
+
+# ---------- 단계 ----------
+def step_fetch():
+    if '--no-fetch' in ARGS: log('순위 읽기 생략(--no-fetch)', '순위'); return True
+    with step_lock('fetch'):
+        return _fetch()
+
+def _fetch():
+    # 다른 시리즈 창이 방금(10분 안) 받아 둔 순위·뉴스·일정이 있으면 그대로 쓴다(동시에 켜도 두 번 안 받게)
+    fresh = [f for f in ('data/rank_latest.json', 'data/news_latest.json', 'data/schedule_latest.json') if os.path.exists(f) and time.time() - os.path.getmtime(f) < 600]
+    if len(fresh) == 3:
+        log('순위·뉴스·일정: 방금 받은 것 사용', '순위'); return True
+    for i in range(3):
+        rc, out = sh(['node', 'fetch_rank.js'], timeout=300)
+        if rc == 0 and os.path.exists('data/rank_latest.json'):
+            log('순위 읽기 완료', '순위')
+            rc2, out2 = sh(['node', 'fetch_news.js'], timeout=400)
+            log('뉴스 헤드라인 수집 완료' if rc2 == 0 else '뉴스 수집 실패(콘티는 순위만으로 진행): ' + out2.strip()[-150:])
+            rc3, out3 = sh(['node', 'fetch_schedule.js'], timeout=300)   # 오늘·내일 경기 일정 + 예고 선발투수
+            log('경기 일정·선발 수집 완료' if rc3 == 0 else '일정 수집 실패(무시): ' + out3.strip()[-150:])
+            return True
+        log(f'순위 읽기 실패({i + 1}/3): {out.strip()[-200:]}')
+        time.sleep(120)
+    return False
+
+def valid_episode(p):
+    try:
+        ep = json.load(io.open(p, encoding='utf-8-sig'))
+        ok = len(ep.get('lines', [])) >= 5 and len(ep.get('scenes', [])) >= 2 and all('narr' in l and 'sub' in l for l in ep['lines'])
+        return ok, ep
+    except Exception:
+        return False, None
+
+def latest_episodes():
+    """episodes 폴더에서 가장 최근 날짜의 콘티 파일들"""
+    cand = sorted(f for f in glob.glob(os.path.join('episodes', '*.json')) if re.match(r'\d{4}-\d{2}-\d{2}_\d+\.json$', os.path.basename(f)))
+    if not cand: return []
+    latest = os.path.basename(cand[-1])[:10]
+    return sorted(f.replace('\\', '/') for f in cand if os.path.basename(f).startswith(latest))
+
+def series_episodes():
+    """시리즈 전용 실행이면 같은 날 여러 편도 잡는다: episodes/날짜_순위.json + 날짜_순위2.json, 날짜_순위3.json ...
+       (파일이 있는 것만, 번호 순). 없으면 기본 EPS 그대로"""
+    if len(SERIES) != 1: return EPS
+    slot = SERIES_CODES[SERIES[0]][1]
+    found = []
+    for f in glob.glob(os.path.join('episodes', f'{TODAY}_{slot}*.json')):
+        stem = os.path.splitext(os.path.basename(f))[0]
+        m = re.fullmatch(re.escape(f'{TODAY}_{slot}') + r'(\d*)', stem)
+        if m: found.append((int(m.group(1) or 1), f.replace('\\', '/')))
+    return [f for _, f in sorted(found)] or EPS
+
+def step_wait_episodes():
+    global EPS
+    if len(SERIES) == 1: EPS = series_episodes()
+    if '--latest' in ARGS and not any(os.path.exists(p) for p in EPS):
+        alt = latest_episodes()
+        if alt:
+            log(f'(--latest) 오늘({TODAY}) 콘티가 없어 가장 최근 콘티 사용: {", ".join(alt)}')
+            EPS = alt
+    if not any(os.path.exists(p) for p in EPS):
+        log(f'오늘({TODAY}) 콘티가 아직 없어요. Claude 에게 "오늘 콘티 써줘" 라고 하면 episodes/{TODAY}_1.json, _2.json 이 들어옵니다')
+    wait_min = WAIT_EPISODE_MIN
+    log(f'콘티 대기: {", ".join(EPS)} (최대 {wait_min}분)', '콘티대기')
+    end = time.time() + wait_min * 60
+    while time.time() < end:
+        if len(SERIES) == 1: EPS = series_episodes()
+        ready = [p for p in EPS if os.path.exists(p) and valid_episode(p)[0]]
+        if len(ready) == len(EPS):
+            time.sleep(25)   # 같은 날 두 번째 콘티(_순위2)가 바로 뒤따라 들어오는 경우를 기다린다
+            if len(SERIES) == 1: EPS = series_episodes()
+            ready = [p for p in EPS if os.path.exists(p) and valid_episode(p)[0]]
+            if len(ready) == len(EPS): log(f'콘티 도착: {len(EPS)}편', '콘티'); return EPS
+            continue
+        if check_signals(during_build=True) == 'stop': return []
+        time.sleep(20); git_pull()
+    ready = [p for p in EPS if os.path.exists(p) and valid_episode(p)[0]]
+    if ready: log(f'콘티 {len(ready)}개만 도착, 그것만 진행', '콘티'); return ready
+    log('콘티가 제시간에 오지 않아 오늘은 건너뜀', '건너뜀'); return []
+
+def step_build(ep_path, only_lines=None):
+    k = key_of(ep_path)
+    log(f'[{k}] 음성 생성 시작' + (f' (줄 {only_lines} 만 다시)' if only_lines else ''), '음성')
+    rc, out = py('build.py', 'prep', ep_path)
+    if rc: log(f'[{k}] prep 실패: ' + out[-300:], '실패'); return None
+    # 외부(힉스필드 등)에서 만든 음성이 work\voice_import.json 에 준비돼 있으면 먼저 내려받는다 → tts.py 는 그 줄들을 건너뛴다
+    imp = os.path.join('work', 'voice_import.json')
+    if os.path.exists(imp):
+        try:
+            spec = json.load(io.open(imp, encoding='utf-8-sig'))
+            if spec.get('episode') == build.ep_key(ep_path):
+                rc, out = py('import_voice.py', imp, timeout=600)
+                tail = [l for l in out.strip().splitlines() if l.strip()][-1:] if out else []
+                log(f'[{k}] 외부 음성 가져오기({spec.get("voice", "")}): ' + (tail[0] if tail else ('실패 ' + out[-200:] if rc else '완료')))
+                if not rc: os.replace(imp, imp.replace('.json', f'_{build.ep_key(ep_path)}_done.json'))   # 다음 편에 잘못 쓰이지 않게
+        except Exception as e:
+            log(f'[{k}] 외부 음성 가져오기 오류(무시하고 TTS 로 진행): {e}')
+    if '--no-tts' in ARGS:
+        log(f'[{k}] 음성 생성 생략(--no-tts) — 자막 타이밍만 다시 맞춤')
+        rc, out = py('qa_voice.py', '--check', timeout=900)
+        if rc: log(f'[{k}] 자막 맞춤 오류(무시): ' + out[-200:])
+    else:
+        args = ['tts.py'] + ([f'--only={only_lines}'] if only_lines else [])
+        rc, out = py(*args, timeout=1200)
+        if rc:
+            keep = [l for l in out.splitlines() if l.strip() and ('계정' in l or '실패' in l or 'XX' in l)][-8:]   # 계정 전환·거부 사유가 보이게
+            log(f'[{k}] 음성 실패:\n' + '\n'.join(keep)[-900:], '실패'); return None
+        # 음성 검수: 톤·속도 이탈 줄 다시 합성, 자막 타이밍 정밀 맞춤 (qa_voice.py)
+        log(f'[{k}] 음성 검수 시작', '검수')
+        rc, out = py('qa_voice.py', timeout=1500)
+        tail = [l for l in out.strip().splitlines() if l.strip()][-3:]
+        if rc: log(f'[{k}] 음성 검수 오류(무시하고 진행): ' + out[-300:])
+        else: log(f'[{k}] 음성 검수: ' + ' | '.join(tail))
+    ok, ep = valid_episode(ep_path)
+    n = len(ep['lines'])
+    vdir = build.voice_dir(build.ep_key(ep_path))
+    missing = [i for i in range(n) if not os.path.exists(os.path.join(vdir, f'{i:02d}.mp3'))]
+    if missing: log(f'[{k}] 음성 파일 누락 {missing}', '실패'); return None
+    log(f'[{k}] 영상 렌더 시작 (3~5분)', '영상')
+    rc, out = py('build.py', 'render', ep_path, timeout=1800)
+    if rc: log(f'[{k}] 렌더 실패: ' + out[-400:], '실패'); return None
+    video, thumb, _ = build.out_paths(ep, ep_path)
+    if not os.path.exists(video): log(f'[{k}] 영상 파일이 없음', '실패'); return None
+    rc, d = sh(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', video])
+    try: dur = float(d.strip())
+    except Exception: dur = 0
+    if not (25 <= dur <= 150): log(f'[{k}] 영상 길이 이상: {dur:.1f}초', '실패'); return None   # 쇼츠는 3분까지 가능. 90초 넘으면 콘티를 줄이는 게 좋지만 실패로 치진 않는다
+    if dur > 90: log(f'[{k}] 참고: 영상이 {dur:.0f}초로 긴 편 — 다음 콘티는 문장을 줄이는 게 좋아요')
+    log(f'[{k}] 영상 완성 {dur:.1f}초 → {video}', '영상완료')
+    return video
+
+UPLOAD_ENABLED = CFG.get('UPLOAD_ENABLED', '0').strip() == '1'          # 기본 0 = 수동 업로드(API 안 씀). 설정 UPLOAD_ENABLED=1 일 때만 API 업로드
+UPLOAD_MIN_GAP_MIN = int(CFG.get('UPLOAD_MIN_GAP_MIN', '120'))               # 업로드 사이 최소 간격(분). 사람 손 속도처럼 보이게
+UPLOAD_MAX_PER_DAY = int(CFG.get('UPLOAD_MAX_PER_DAY', '2'))
+
+def upload_allowed(k):
+    """업로드해도 되는지: 이 PC 허용 여부, 하루 편수, 직전 업로드와의 간격. 안 되면 이유를 돌려준다"""
+    if not UPLOAD_ENABLED: return '수동 업로드 모드(API 안 씀). 결과물 폴더의 mp4 와 _유튜브.txt 로 유튜브 스튜디오에서 직접 올리세요'
+    if len(state['videos']) >= UPLOAD_MAX_PER_DAY and k not in state['videos']: return f'오늘 업로드 {UPLOAD_MAX_PER_DAY}편 한도'
+    last = state.get('last_upload_ts', 0)
+    gap = (time.time() - last) / 60
+    if last and gap < UPLOAD_MIN_GAP_MIN: return f'직전 업로드 후 {int(gap)}분 — {UPLOAD_MIN_GAP_MIN}분 지나면 자동으로 올립니다'
+    return ''
+
+def step_upload(ep_path, video, privacy='private'):
+    k = key_of(ep_path)
+    if '--no-upload' in ARGS: log(f'[{k}] 업로드 생략(--no-upload)', '업로드생략'); return None
+    old = state['videos'].get(k, {}).get('id')
+    if old:
+        # 절대 삭제·재업로드하지 않는다(채널 정지 원인). 이미 올라간 영상은 제목·설명만 콘티대로 갱신
+        rc, out = py('upload.py', 'update', old, ep_path)
+        log(f'[{k}] 이미 올라간 영상 https://youtu.be/{old} — 재업로드 안 함, 제목·설명만 갱신' + ('' if not rc else ' 실패: ' + out[-150:]))
+        return old
+    why = upload_allowed(k)
+    if why:
+        q = state.setdefault('upload_queue', [])
+        if not any(x['ep'] == ep_path for x in q): q.append({'ep': ep_path, 'video': video, 'privacy': privacy})
+        log(f'[{k}] 업로드 보류: {why}', '업로드대기'); return None
+    rc, out = py('upload.py', 'upload', video, ep_path, privacy, timeout=1200)
+    vid = None
+    for line in out.splitlines():
+        if line.startswith('VIDEO_ID'): vid = line.split()[1]
+    if rc or not vid: log(f'[{k}] 업로드 실패: ' + out[-300:], '실패'); return None
+    ok, ep = valid_episode(ep_path)
+    state['videos'][k] = {'id': vid, 'privacy': privacy, 'title': ep.get('youtube', {}).get('title', ''), 'ep': ep_path}
+    state['last_upload_ts'] = time.time()
+    log(f'[{k}] {"공개" if privacy == "public" else "비공개"} 업로드 완료 https://youtu.be/{vid}', '업로드완료')
+    thumb = build.out_paths(ep, ep_path)[1]
+    if os.path.exists(thumb):
+        rc, out = py('upload.py', 'thumb', vid, thumb, timeout=300)
+        log(f'[{k}] 썸네일 등록' if not rc else f'[{k}] 썸네일 등록 실패: ' + out[-200:])
+    return vid
+
+def flush_upload_queue():
+    """보류된 업로드를 간격이 지났을 때 하나씩 처리"""
+    q = state.get('upload_queue') or []
+    if not q: return
+    item = q[0]
+    if upload_allowed(key_of(item['ep'])): return
+    q.pop(0)
+    if os.path.exists(item['video']): step_upload(item['ep'], item['video'], item.get('privacy', 'private'))
+
+def after_build(ep_path, video):
+    k = key_of(ep_path)
+    state.setdefault('built', {})[k] = {'video': video, 'ep': ep_path, 'inputs': inputs_mtime(ep_path)}   # 만들 때 쓴 재료 시각 — 다음 실행에서 재료가 바뀌었는지 이걸로 비교
+    if '--no-upload' in ARGS: log(f'[{k}] 업로드 생략(--no-upload)', '영상완료'); return
+    if k in state['videos']:
+        log(f'[{k}] 이미 유튜브에 올라간 편이라 다시 올리지 않습니다(삭제·재업로드 금지). 새 영상은 폴더에만 저장', '영상완료'); return
+    if not UPLOAD_ENABLED:
+        log(f'[{k}] 영상 준비 완료 (수동 업로드 모드): 폴더의 mp4 와 _유튜브.txt 제목·설명을 유튜브 스튜디오에 직접 올리세요', '영상완료'); return
+    if AUTO_UPLOAD:
+        step_upload(ep_path, video)
+    else:
+        log(f'[{k}] 영상 준비 완료. 확인 후 업로드.txt 신호를 주면 올립니다', '업로드대기')
+
+def photo_check(ep_path):
+    """콘티가 쓰는 사진(장면 img·썸네일 img) 중 준비된 것/없는 것. [(이름, 찾은 경로 또는 None)] — 찾는 규칙은 build.find_photo 와 같다(하위 폴더·대소문자·다른 날짜 폴더 포함)"""
+    try:
+        ep = json.load(io.open(ep_path, encoding='utf-8-sig'))
+        names = sorted(build._photo_names(ep))
+    except Exception:
+        return []
+    return [(n, build.find_photo(n, ep_path)) for n in names]
+
+def wait_photos(paths):
+    """사진이 다 준비되고 Enter 를 눌러야 제작을 시작한다 (지금실행 처럼 사람이 보고 있는 --now 실행에서만).
+    설정 PHOTO_GATE=0 이면 묻지 않고 바로 만든다. 예약 실행(07:30, --now 없음)은 사람이 없으니 묻지 않는다."""
+    if '--now' not in ARGS or CFG.get('PHOTO_GATE', '1').strip() == '0': return
+    if not sys.stdin or not sys.stdin.isatty(): return
+    while True:
+        print()
+        need_any = False
+        for p in paths:
+            chk = photo_check(p)
+            if not chk: continue
+            need_any = True
+            print(f'[{key_of(p)}] 사진 준비 상태  ({os.path.basename(p)})')
+            for n, f in chk:
+                print(f'   {"O" if f else "X"}  {n}' + (f'   ← {os.path.relpath(f, os.path.join(HERE, ".."))}' if f else '   (없음 → 로고로 대체)'))
+        if not need_any: return
+        missing = sum(1 for p in paths for n, f in photo_check(p) if not f)
+        if not missing:
+            print('사진이 모두 준비됐어요 → 바로 제작 시작'); return   # 다 있으면 묻지 않고 진행
+        msg = f'사진 {missing}장이 아직 없어요(없는 채로 만들면 로고로 나옵니다). '
+        try: ans = input(msg + 'Enter 를 누르면 제작 시작 / r 입력 후 Enter 면 다시 확인: ').strip().lower()
+        except EOFError: return
+        if ans != 'r': return
+
+# ---------- 같은 작업 폴더를 쓰는 창끼리만 순서를 잡는다 ----------
+# 시리즈 창(--series)은 work\순위, work\이슈 로 작업 폴더가 달라 동시에 만들어도 안 겹친다. 루트 지금실행(두 시리즈 한 번에)이나
+# 같은 시리즈 창을 두 번 켠 경우만 work\<폴더>\busy.txt 로 한 편씩 기다린다.
+BUSY = os.path.join(os.environ.get('KBO_WORK', 'work'), 'busy.txt')
+MY_SERIES = SERIES_CODES[SERIES[0]][0] if len(SERIES) == 1 else '전체'
+def wait_busy():
+    """다른 시리즈가 지금 음성·렌더 중이면 끝날 때까지 기다린다(최대 90분). 20분 넘게 안 바뀐 표시는 죽은 것으로 보고 무시"""
+    end = time.time() + 90 * 60; said = False
+    while os.path.exists(BUSY) and time.time() - os.path.getmtime(BUSY) < 20 * 60 and time.time() < end:
+        try: who = io.open(BUSY, encoding='utf-8').read().strip()
+        except Exception: who = ''
+        if who == MY_SERIES: break   # 내 시리즈가 남긴 표시(이전 실행이 죽음) → 무시
+        if not said: log(f'{who} 편을 다른 창이 만드는 중이라 끝나면 이어서 만듭니다', '대기'); said = True
+        time.sleep(20)
+def set_busy():
+    try: io.open(BUSY, 'w', encoding='utf-8').write(MY_SERIES)
+    except Exception: pass
+def clear_busy():
+    try:
+        if os.path.exists(BUSY) and io.open(BUSY, encoding='utf-8').read().strip() == MY_SERIES: os.remove(BUSY)
+    except Exception: pass
+
+def build_one(ep_path, only_lines=None):
+    wait_busy(); set_busy()
+    try: return step_build(ep_path, only_lines)
+    finally: clear_busy()
+
+def inputs_mtime(p):
+    r"""이 편을 만드는 데 쓰인 것들의 가장 최근 수정 시각: 콘티, 그 편의 음성 파일(<시리즈>\음성\<콘티이름>.zip/mp3 ...), 프로그램(build.py·tts.py·템플릿).
+       이 중 하나라도 영상보다 새것이면 다시 만든다 — 새 음성 zip 을 넣거나 프로그램을 고친 뒤 지금실행만 눌러도 되게."""
+    ts = [os.path.getmtime(p)]
+    try:
+        import json as _j
+        ep = _j.load(io.open(p, encoding='utf-8-sig'))
+        series = str(ep.get('series') or '').strip() or SERIES_CODES.get((SERIES or ['rank'])[0], ('야구순위',))[0]
+        k = key_of(p)
+        for ext in ('.zip', '.mp3', '.wav', '.m4a'):
+            f = os.path.join(BASE, series, '음성', k + ext)
+            if os.path.exists(f): ts.append(os.path.getmtime(f))
+    except Exception: pass
+    for f in ('build.py', 'tts.py', 'qa_voice.py', 'template.html', 'template_issue.html', 'thumb.html', 'thumb_issue.html'):
+        fp = os.path.join(HERE, f)
+        if os.path.exists(fp): ts.append(os.path.getmtime(fp))
+    return max(ts)
+
+def make_all(paths):
+    wait_photos(paths)
+    for p in paths:
+        b = state.get('built', {}).get(key_of(p)) or {}
+        v = b.get('video', '')
+        cur = inputs_mtime(p)
+        # 재료(콘티·음성 zip·프로그램)가 '만들 때'보다 새것이면 다시 만든다. 영상 파일 시각은 구글 드라이브(H:)가 동기화하며 바꿀 수 있어 믿지 않는다
+        same = (cur <= b['inputs'] + 1) if b.get('inputs') is not None else (os.path.getmtime(v) >= cur if v and os.path.exists(v) else False)
+        if v and os.path.exists(v) and same and '--force' not in ARGS:
+            log(f'[{key_of(p)}] 오늘 이미 만든 영상이 있어 건너뜀 → {v} (콘티·음성 zip·프로그램을 고치면 자동으로 다시, 영상을 지워도 다시)', '영상완료'); continue
+        video = build_one(p)
+        if video: after_build(p, video)
+
+# ---------- 신호 ----------
+def take(name):
+    """신호 파일을 읽고 지운다. 상위 폴더(야구자판기\\) 와 저장소 signals\\ 둘 다 확인"""
+    for p in (SIG(name), os.path.join(HERE, 'signals', name)):
+        if not os.path.exists(p): continue
+        try: body = io.open(p, encoding='utf-8-sig').read().strip()
+        except Exception: body = ''
+        if p.startswith(os.path.join(HERE, 'signals')):
+            # 저장소 신호는 같은 내용을 두 번 처리하지 않도록 기록하고, 처리 후 저장소에서도 지운다
+            key = f'{name}:{body}'
+            if key in state.setdefault('signals_done', []): continue
+            state['signals_done'].append(key); state['signals_done'] = state['signals_done'][-50:]
+            if REPO_GIT:
+                git('rm', '-q', '--cached', p); 
+                try: os.remove(p)
+                except Exception: pass
+                git('commit', '-q', '-m', f'signal {name} done'); git('push', '-q')
+        else:
+            try: os.remove(p)
+            except Exception: pass
+        return body.split('\n')[0].strip() if body else 'all'
+    return None
+
+def targets(sel):
+    keys = sorted(state['videos'].keys())
+    if sel in ('all', ''): return keys
+    return [k for k in keys if k in sel.replace(',', ' ').split()]
+
+def check_signals(during_build=False):
+    if take('종료.txt') is not None: log('종료 신호 → PC 종료', '종료'); shutdown('shutdown'); return 'stop'
+    if take('절전.txt') is not None: log('절전 신호 → 절전', '절전'); shutdown('sleep'); return 'stop'
+    if during_build: return None
+    if not UPLOAD_ENABLED:
+        for n in ('업로드.txt', '공개.txt', '메타.txt'):
+            if take(n) is not None: log(f'{n} 신호 무시 — 수동 업로드 모드(API 안 씀)')
+    sel = take('업로드.txt') if UPLOAD_ENABLED else None
+    if sel is not None:
+        # 형식: "" | "1" | "2" | "1 2" | "공개" | "1 공개"  (공개 가 있으면 바로 공개로 올림)
+        privacy = 'public' if '공개' in sel else 'private'
+        keys = [k for k in sorted(state.get('built', {}).keys()) if sel in ('all', '') or k in sel.replace('공개', ' ').replace(',', ' ').split()]
+        if not keys: log('업로드할 영상이 없음(먼저 만들어져 있어야 해요)')
+        for k in keys:
+            b = state['built'][k]
+            if not os.path.exists(b['video']): log(f'[{k}] 영상 파일이 없음: {b["video"]}'); continue
+            log(f'[{k}] 업로드 신호 → {"공개" if privacy == "public" else "비공개"} 업로드', '업로드')
+            step_upload(b['ep'], b['video'], privacy)
+    sel = take('공개.txt') if UPLOAD_ENABLED else None
+    if sel is not None:
+        for k in targets(sel):
+            v = state['videos'][k]
+            rc, out = py('upload.py', 'publish', v['id'])
+            if rc: log(f'[{k}] 공개 전환 실패: ' + out[-200:])
+            else: v['privacy'] = 'public'; log(f'[{k}] 공개 전환 완료', '공개')
+        if not state['videos']: log('공개할 영상이 없음')
+    sel = take('메타.txt') if UPLOAD_ENABLED else None
+    if sel is not None:
+        # 이미 올린 영상의 제목·설명·태그를 콘티 파일 youtube 항목으로 교체(재업로드 없음). 비어 있으면 전부, "1"/"2" 면 그 번호만
+        for k in targets(sel):
+            v = state['videos'][k]; b = state.get('built', {}).get(k) or {}
+            ep_path = b.get('ep') or next((p for p in EPS if key_of(p) == k), None)
+            if not ep_path or not os.path.exists(ep_path): log(f'[{k}] 콘티 파일을 못 찾아 메타 갱신 불가'); continue
+            rc, out = py('upload.py', 'update', v['id'], ep_path)
+            if rc: log(f'[{k}] 제목·설명 갱신 실패: ' + out[-200:])
+            else: log(f'[{k}] 제목·설명 갱신 완료', '메타')
+        if not state['videos']: log('갱신할 영상이 없음')
+    sel = take('재생성.txt')
+    if sel is not None:
+        # 형식: "all" | "1" | "1 2" | "1 lines=3,7" (그 줄 음성만 다시 뽑고 렌더)
+        log(f'재생성 신호({sel}) → 다시 만들기', '재생성')
+        import re as _re
+        m = _re.search(r'lines=([\d,\s]+)', sel)
+        only = ','.join(_re.findall(r'\d+', m.group(1))) if m else None
+        rest = _re.sub(r'lines=[\d,\s]+', ' ', sel) if m else sel
+        toks = rest.replace(',', ' ').split() if sel != 'all' else []
+        keys = toks or [key_of(p) for p in EPS]
+        for k in keys:
+            ep_path = next((p for p in EPS if key_of(p) == k), None)
+            if not ep_path and k.isdigit() and 1 <= int(k) <= len(EPS): ep_path = EPS[int(k) - 1]; k = key_of(ep_path)   # "1"/"2" = 오늘 첫째·둘째 편
+            if not ep_path or not os.path.exists(ep_path): log(f'[{k}] 콘티 파일 없음'); continue
+            video = build_one(ep_path, only)
+            if video: after_build(ep_path, video)
+    return None
+
+def shutdown(kind):
+    if '--no-shutdown' in ARGS: log('(--no-shutdown) 종료 안 함'); sys.exit(0)
+    write_status()
+    if kind == 'sleep': subprocess.Popen(['rundll32.exe', 'powrprof.dll,SetSuspendState', '0,1,0'])
+    else: subprocess.Popen(['shutdown', '/s', '/t', '30', '/c', '야구자판기 작업 완료'])
+    sys.exit(0)
+
+def watch_loop():
+    log(f'감시 시작 (안전 종료 {SAFETY})', state.get('step'))
+    hh, mm = map(int, SAFETY.split(':'))
+    last_pull = 0
+    while True:
+        if time.time() - last_pull > 60:
+            git_pull(); last_pull = time.time()
+        if check_signals() == 'stop': return
+        flush_upload_queue()
+        n = datetime.datetime.now()
+        if (n.hour, n.minute) >= (hh, mm) and '--now' not in ARGS:
+            log('안전 종료 시각 → PC 종료', '종료'); shutdown('shutdown'); return
+        time.sleep(15)
+
+# ---------- 메인 ----------
+def main():
+    try:
+        if state['videos'] and '--now' not in ARGS:
+            log('오늘 이미 업로드됨, 감시만 진행'); watch_loop(); return
+        log('시작', '시작')
+        if git_pull(quiet=False): log('깃허브에서 최신 프로그램·콘티 받음')
+        if not step_fetch():
+            log('순위를 못 읽어 오늘은 건너뜀', '건너뜀'); watch_loop(); return
+        paths = EPS if '--episode' in ARGS else step_wait_episodes()
+        if paths: make_all(paths)
+        watch_loop()
+    except SystemExit: raise
+    except Exception:
+        log('오류: ' + traceback.format_exc()[-600:], '오류'); watch_loop()
+
+if __name__ == '__main__':
+    main()

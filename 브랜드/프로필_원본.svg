@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <clipPath id="win"><rect x="262" y="176" width="176" height="212" rx="20"/></clipPath>
+  </defs>
+  <!-- 배경 -->
+  <rect width="800" height="800" fill="#111620"/>
+  <!-- 은은한 원형 하이라이트 -->
+  <circle cx="400" cy="400" r="330" fill="#18202c"/>
+
+  <!-- 자판기 본체 -->
+  <rect x="216" y="120" width="368" height="560" rx="44" fill="#111620" stroke="#ffffff" stroke-width="28"/>
+
+  <!-- 진열창 -->
+  <rect x="262" y="176" width="176" height="212" rx="20" fill="#0b0e14" stroke="#ffffff" stroke-width="18"/>
+  <!-- 창 안의 공들 (재고) -->
+  <g clip-path="url(#win)" opacity=".92">
+    <g transform="translate(305,236)"><circle r="30" fill="#fff"/><path d="M-19,-22 q16,22 0,44 M19,-22 q-16,22 0,44" stroke="#E0453A" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g transform="translate(395,236)"><circle r="30" fill="#fff"/><path d="M-19,-22 q16,22 0,44 M19,-22 q-16,22 0,44" stroke="#E0453A" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g transform="translate(305,316)"><circle r="30" fill="#fff"/><path d="M-19,-22 q16,22 0,44 M19,-22 q-16,22 0,44" stroke="#E0453A" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+    <g transform="translate(395,316)"><circle r="30" fill="#fff"/><path d="M-19,-22 q16,22 0,44 M19,-22 q-16,22 0,44" stroke="#E0453A" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+  </g>
+
+  <!-- 버튼 3개: 맨 위만 켜짐 -->
+  <circle cx="512" cy="212" r="22" fill="#FFC24B"/>
+  <circle cx="512" cy="278" r="22" fill="#ffffff" opacity=".28"/>
+  <circle cx="512" cy="344" r="22" fill="#ffffff" opacity=".28"/>
+
+  <!-- 배출구 -->
+  <rect x="262" y="450" width="276" height="120" rx="22" fill="#0b0e14" stroke="#ffffff" stroke-width="18"/>
+  <!-- 방금 나온 공 (크게) -->
+  <g transform="translate(400,512)">
+    <circle r="44" fill="#ffffff"/>
+    <path d="M-29,-33 q24,33 0,66 M29,-33 q-24,33 0,66" stroke="#E0453A" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <g stroke="#E0453A" stroke-width="4" stroke-linecap="round">
+      <path d="M-24,-24 l-7,-3 M-21,-12 l-7,-1 M-20,0 l-7,0 M-21,12 l-7,1 M-24,24 l-7,3"/>
+      <path d="M24,-24 l7,-3 M21,-12 l7,-1 M20,0 l7,0 M21,12 l7,1 M24,24 l7,3"/>
+    </g>
+  </g>
+
+  <!-- 하단 받침 -->
+  <rect x="284" y="620" width="232" height="30" rx="10" fill="#ffffff" opacity=".22"/>
+</svg>
