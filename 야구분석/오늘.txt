@@ -1,5 +1,5 @@
 날짜: 2026-09-15
-단계: 음성
+단계: 검수
 
 영상: 아직 없음
 
@@ -35,3 +35,4 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfa in position 21: invalid
 [14:24:34] 콘티 대기: episodes/2026-09-15_분석.json (최대 45분)
 [14:24:59] 콘티 도착: 1편
 [14:24:59] [분석] 음성 생성 시작
+[14:26:01] [분석] 음성 검수 시작
