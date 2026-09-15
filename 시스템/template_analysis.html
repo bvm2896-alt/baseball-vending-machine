@@ -1,7 +1,7 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
 /* ===== 야구분석 전용 템플릿 (template_analysis.html, 9/15) =====
    이슈 템플릿(template_issue.html)과 같은 데이터 구조(window.EP)·같은 장면 이름을 쓰되 "리포트" 느낌으로:
-   · 위쪽 330px 은 주인공 팀 색(EP.focusTeam) 띠 — 흰 글씨 헤더 + 팀 로고 워터마크. 왼쪽엔 팀 색 세로 줄.
+   · 위쪽 340px 은 주인공 팀 색(EP.focusTeam) 띠 — 흰 글씨 헤더(왼쪽 세로 줄·'한화 ANALYSIS' 킥커는 9/15 사용자 요청으로 뺌).
    · 바탕은 따뜻한 종이색(#F6F4EF), 카드는 흰색에 팀 색 윗줄(border-top). 큰 숫자·강조 글씨 = 팀 색.
    · 번호 배지는 동그라미 대신 "이유 1" 같은 네모 라벨(s.num, s.numLabel — 기본 "이유"). 사용자 규칙: 글자를 붙이면 동그라미 숫자 안 씀.
    build.py 가 콘티 series 가 "야구분석" 이고 이 파일이 있으면 이 템플릿을 쓴다.
@@ -19,7 +19,6 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 #band{position:absolute;left:0;right:0;top:0;height:340px;background:var(--acc);overflow:hidden}
 #band .wm{position:absolute;right:0;top:0;width:560px;height:340px;background:repeating-linear-gradient(-55deg,rgba(255,255,255,0) 0 26px,rgba(255,255,255,.10) 26px 40px);-webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,0),#000 70%);mask-image:linear-gradient(90deg,rgba(0,0,0,0),#000 70%)}
 #band .cut{position:absolute;left:0;right:0;bottom:0;height:16px;background:rgba(0,0,0,.18)}
-#rail{position:absolute;left:0;top:340px;bottom:0;width:22px;background:var(--acc);opacity:.9}
 #hdr{position:absolute;left:90px;right:90px;top:222px;height:94px;display:flex;align-items:center;justify-content:space-between}
 #brand{display:flex;align-items:center;gap:16px;font-size:50px;font-weight:900;letter-spacing:-1px;color:#fff}
 #brand .m{width:12px;height:44px;border-radius:6px;background:#fff}
@@ -27,10 +26,8 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 #meta{text-align:right;line-height:1.15}
 #meta .t{font-size:44px;font-weight:900;letter-spacing:2px;color:#fff}
 #meta .d{font-size:36px;font-weight:600;color:rgba(255,255,255,.82);letter-spacing:1px}
-#kicker{position:absolute;left:90px;top:120px;display:flex;align-items:center;gap:14px;font-size:30px;font-weight:800;letter-spacing:4px;color:rgba(255,255,255,.85)}
-#kicker .ln{width:70px;height:4px;background:rgba(255,255,255,.7);border-radius:2px}
 /* 본문 */
-#body{position:absolute;left:100px;width:900px;top:400px;height:820px;will-change:opacity,transform;
+#body{position:absolute;left:90px;width:900px;top:400px;height:820px;will-change:opacity,transform;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 /* 자막: 밝은 바탕이라 짙은 상자에 흰 글씨 */
 #sub{position:absolute;left:70px;right:70px;top:1270px;text-align:center}
@@ -78,8 +75,6 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 </style></head><body>
 <div id="stage">
   <div id="band"><div class="wm" id="wm"></div><div class="cut"></div></div>
-  <div id="rail"></div>
-  <div id="kicker"><div class="ln"></div><div>ANALYSIS REPORT</div></div>
   <div id="hdr">
     <div id="brand"><div class="m" id="brandBar"></div><div>야구<b>자판기</b></div></div>
     <div id="meta"><div class="t" id="railTitle">KBO 분석</div><div class="d num" id="railDate"></div></div>
@@ -105,7 +100,6 @@ const _ft = T(EP.focusTeam || '');
 const GREEN = '#16A34A', RED = '#E5484D', GRAY = '#6B6F78', LINE = '#E4E0D7', TXT = '#141821';
 document.getElementById('railDate').textContent = EP.dateLabel || '';
 if (EP.railTitle) document.getElementById('railTitle').textContent = EP.railTitle;
-document.getElementById('kicker').lastElementChild.textContent = (EP.kicker || (EP.focusTeam ? `${_ft.nm} ANALYSIS` : 'ANALYSIS REPORT'));
 const WRS = D.map(t => t.wr);
 const LO = Math.min(...WRS, .4) - .03, HI = Math.max(...WRS, .6) + .02, BM = 330;
 
