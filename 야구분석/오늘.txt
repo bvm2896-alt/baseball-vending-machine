@@ -1,5 +1,5 @@
 날짜: 2026-09-15
-단계: 실패
+단계: 시작
 
 영상: 아직 없음
 
@@ -29,3 +29,4 @@
            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
 UnicodeDecodeError: 'utf-8' codec can't decode byte 0xfa in position 21: invalid start byte
 [14:22:43] 감시 시작 (안전 종료 12:00)
+[14:24:13] 시작
