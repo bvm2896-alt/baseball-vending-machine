@@ -315,6 +315,7 @@ def step_build(ep_path, only_lines=None):
         rc, out = py(*args, timeout=1200)
         if rc:
             keep = [l for l in out.splitlines() if l.strip() and ('계정' in l or '실패' in l or 'XX' in l)][-8:]   # 계정 전환·거부 사유가 보이게
+            if not keep: keep = [l for l in out.splitlines() if l.strip()][-6:] or ['(출력 없음, 종료 코드 %s)' % rc]   # 9/15: 빈 오류 대신 마지막 줄이라도 보여준다
             log(f'[{k}] 음성 실패:\n' + '\n'.join(keep)[-900:], '실패'); return None
         # 음성 검수: 톤·속도 이탈 줄 다시 합성, 자막 타이밍 정밀 맞춤 (qa_voice.py)
         log(f'[{k}] 음성 검수 시작', '검수')
