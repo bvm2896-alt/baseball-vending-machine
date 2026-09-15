@@ -45,6 +45,12 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 .card .v{font-size:118px;font-weight:900;letter-spacing:-4px;line-height:1.05;white-space:nowrap}
 .card .v.two{font-size:96px}
 .card .l{font-size:36px;font-weight:600;color:#A3ADBE;letter-spacing:-1px}
+/* 사진 틀(9/16 — 순위 편에도 선수 사진 장면 photo/people 지원) */
+.photo{position:relative;width:900px;border-radius:36px;overflow:hidden;background:#262F40;border:3px solid #34405A;box-shadow:0 18px 50px rgba(0,0,0,.35);flex:0 0 auto}
+.photo img,.pp img{width:100%;height:100%;object-fit:cover;display:block}
+.photo .cap{position:absolute;left:0;right:0;bottom:0;padding:22px 30px;background:linear-gradient(180deg,rgba(11,15,20,0),rgba(11,15,20,.78));color:#fff;font-size:34px;font-weight:700;text-align:left;letter-spacing:-1px}
+.photo .tag{position:absolute;left:26px;top:26px;background:rgba(255,255,255,.94);color:#12161F;font-size:32px;font-weight:800;padding:10px 22px;border-radius:999px;letter-spacing:-1px}
+.pane{background:#262F40;border:3px solid #34405A;box-shadow:0 14px 40px rgba(0,0,0,.3)}
 /* 연승/연패 카드: 항상 전체 폭 */
 .sk{width:900px;height:170px;background:#262F40;border-radius:32px;display:flex;align-items:center;padding:0 40px;gap:26px}
 .sk .nm{font-size:50px;font-weight:800;letter-spacing:-1.5px;width:150px;text-align:left}
@@ -78,7 +84,7 @@ const EP = window.EP || {};
 const D = (EP.standings || []).map(t => ({
   rk: t.rank, nm: t.team, code: t.code, wr: t.winRate, gb: Number(t.gameBehind).toFixed(1),
   g: t.games, st: t.streak, win: t.win, lose: t.lose, draw: t.draw }));
-const LOGO = EP.logos || {};
+const LOGO = EP.logos || {}, PHOTO = EP.photos || {}, TXT = '#F2F5F8';
 const ACC = '#FFC24B', GREEN = '#3ECF8E', RED = '#FF6B6B', GRAY = '#A3ADBE';
 const TEAMCOL = { SS: '#074CA1', KT: '#4A4A4A', LG: '#C30452', HT: '#EA0029', OB: '#2B2A5E', NC: '#315288', LT: '#1E3A6B', SK: '#CE0E2D', HH: '#FC4E00', WO: '#820024' };
 document.getElementById('railDate').textContent = EP.dateLabel || '';
@@ -112,9 +118,15 @@ function chipM(t, size = 'M', mark = '', p = 1, extra = '') {
 }
 const markOf = (s, n, i) => (s.marks && (s.marks[n] || s.marks[i] || s.marks[String(i)])) || '';
 /* 다음 상대 병기: 주인공 로고 아래에 "vs [작은 로고] LG" 를 붙인다. next 는 {팀:상대} 또는 상대 이름 하나 */
-const nextOf = (s, n, i) => (s.next && (typeof s.next === 'string' ? (i === 0 ? s.next : '') : (s.next[n] || s.next[i] || s.next[String(i)]))) || '';
+const nextOf = (s, n, i) => (s.next && (typeof s.next === 'string' || Array.isArray(s.next) ? (i === 0 ? s.next : '') : (s.next[n] || s.next[i] || s.next[String(i)]))) || '';
+/* next 가 배열이면 "vs [로고][로고][로고]" 로 상대 여러 팀을 다 붙인다(9/16 — 상대 3팀인데 로고 하나만 나오던 문제) */
 function withNext(chipHtml, opp, p = 1, note = '') {
-  if (!opp) return chipHtml;
+  if (!opp || (Array.isArray(opp) && !opp.length)) return chipHtml;
+  if (Array.isArray(opp)) {
+    const os = opp.map(T);
+    return `<div class="col" style="gap:14px">${chipHtml}
+    <div class="row" style="gap:8px;${rise(p, 24)}"><span class="label" style="font-size:30px">vs</span>${os.map(o => chip(o, 'S')).join('')}${note ? `<span class="label" style="font-size:28px">${esc(note)}</span>` : ''}</div></div>`;
+  }
   const o = T(opp);
   return `<div class="col" style="gap:14px">${chipHtml}
     <div class="row" style="gap:10px;${rise(p, 24)}"><span class="label" style="font-size:30px">vs</span>${chip(o, 'S')}<span class="label" style="font-size:32px;color:#F2F5F8">${esc(o.nm)}</span>${note ? `<span class="label" style="font-size:28px">${esc(note)}</span>` : ''}</div></div>`;
@@ -149,8 +161,57 @@ SCENE.hook = (lt, s) => {
 };
 
 /* 번호 배지(❶): big/matchup 장면에서 num 또는 text 앞의 ①/1./첫째 */
-function numBadge(lt, num) {
-  return num ? `<div class="row" style="margin:30px 0;${pop(seg(lt, .1, .5))}"><div class="num" style="width:104px;height:104px;border-radius:50%;background:${ACC};color:#0B0F14;font-size:66px;font-weight:900;letter-spacing:0;display:flex;align-items:center;justify-content:center">${num}</div></div>` : '';
+function numBadge(lt, num, label) {
+  if (!num) return '';
+  // 글자를 붙이면("변수 1") 동그라미 숫자 대신 알약 배지(9/16 사용자 규칙: 동그라미 안에 1만 따로 두지 않는다)
+  if (label) return `<div class="row" style="margin:30px 0;${pop(seg(lt, .1, .5))}"><div class="num" style="height:96px;padding:0 40px;border-radius:20px;background:${ACC};color:#0B0F14;font-size:56px;font-weight:900;letter-spacing:-1px;display:flex;align-items:center;justify-content:center;gap:16px"><span style="font-size:46px;font-weight:800;opacity:.9">${esc(label)}</span><span>${num}</span></div></div>`;
+  return `<div class="row" style="margin:30px 0;${pop(seg(lt, .1, .5))}"><div class="num" style="width:104px;height:104px;border-radius:50%;background:${ACC};color:#0B0F14;font-size:66px;font-weight:900;letter-spacing:0;display:flex;align-items:center;justify-content:center">${num}</div></div>`;
+}
+
+function photoSrc(name) {
+  if (!name) return '';
+  if (PHOTO[name]) return PHOTO[name];
+  const base = String(name).replace(/\.[a-z0-9]+$/i, '');
+  const k = Object.keys(PHOTO).find(x => x === base || x.replace(/\.[a-z0-9]+$/i, '') === base);
+  return k ? PHOTO[k] : '';
+}
+/* 사진 틀: 사진이 있으면 사진, 없으면 팀 로고가 든 연한 상자(렌더가 멈추지 않게). h=높이, focus=object-position(top/center) */
+const PSIZE = EP.photoSizes || {};
+function photoSize(name) {
+  if (!name) return null;
+  const base = String(name).replace(/\.[a-z0-9]+$/i, '');
+  const k = Object.keys(PSIZE).find(x => x === name || x === base || x.replace(/\.[a-z0-9]+$/i, '') === base);
+  return k ? PSIZE[k] : null;
+}
+/* 사진을 틀(w×h)에 어떻게 넣을지 — 얼굴이 잘리지 않게:
+   · 잘라 채우기(cover)는 사진이 틀보다 크고(1.15배 넘게 늘릴 필요 없음) 비율도 비슷할 때만. 자를 땐 위쪽(얼굴) 기준.
+   · 그 외(작은 사진, 세로 사진을 가로 틀에, 투명 배경 png)는 늘리지 않고 통째로 보이게(contain) 놓고,
+     뒤는 같은 사진을 흐리게 깔거나(투명 png 는 단색) 채운다.  s.fit = 'cover' | 'contain' 으로 강제 가능 */
+function photoImg(s, src, w, h, focus) {
+  const sz = photoSize(s.img), alpha = sz && sz[2];
+  let fit = s.fit;
+  if (!fit) {
+    if (!sz) fit = 'cover';
+    else {
+      const coverScale = Math.max(w / sz[0], h / sz[1]), ratio = (sz[0] / sz[1]) / (w / h);
+      fit = (!alpha && coverScale <= 1.15 && ratio > 0.72 && ratio < 1.4) ? 'cover' : 'contain';
+    }
+  }
+  if (fit === 'cover') return `<img src="${src}" style="object-position:${esc(s.focus || focus || '50% 12%')}">`;
+  const scale = sz ? Math.min(1.25, w / sz[0], h / sz[1]) : 1, iw = sz ? Math.round(sz[0] * scale) : 'auto', ih = sz ? Math.round(sz[1] * scale) : 'auto';
+  const back = alpha
+    ? `<div style="position:absolute;inset:0;background:linear-gradient(160deg,#2C3548,#1E2533)"></div>`
+    : `<img src="${src}" style="position:absolute;inset:-40px;width:calc(100% + 80px);height:calc(100% + 80px);object-fit:cover;filter:blur(28px) saturate(1.1);opacity:.85"><div style="position:absolute;inset:0;background:rgba(18,22,31,.12)"></div>`;
+  return `${back}<img src="${src}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${iw}${sz ? 'px' : ''};height:${ih}${sz ? 'px' : ''};object-fit:contain;${alpha ? '' : 'border-radius:18px;box-shadow:0 14px 40px rgba(0,0,0,.35)'}">`;
+}
+function photoBox(s, h = 560, p = 1, extra = '') {
+  const src = photoSrc(s.img), team = s.team || (s.teams || [])[0];
+  const inner = src
+    ? photoImg(s, src, 900, h)
+    : `<div class="col" style="width:100%;height:100%;background:linear-gradient(160deg,#2C3548,#1E2533)">${team ? chip(T(team), 'L') : ''}</div>`;
+  const tag = s.tag ? `<div class="tag">${esc(s.tag)}</div>` : '';
+  const cap = s.caption ? `<div class="cap">${br(s.caption)}</div>` : '';
+  return `<div class="photo" style="height:${h}px;${rise(p, 40)};${extra}">${inner}${tag}${cap}</div>`;
 }
 
 /* big: 큰 문구 하나 (로고 선택). 서브텍스트 없음 */
@@ -159,7 +220,7 @@ SCENE.big = (lt, s) => {
   let text = s.text || '', num = s.num || '';
   const m = text.match(/^\s*(?:([①②③④⑤])|([1-5])[.)]|(첫째|둘째|셋째|넷째|다섯째))\s*/);
   if (!num && m) { num = m[1] ? '①②③④⑤'.indexOf(m[1]) + 1 : m[2] ? m[2] : ['첫째', '둘째', '셋째', '넷째', '다섯째'].indexOf(m[3]) + 1; text = text.slice(m[0].length); }
-  const badge = numBadge(lt, num);
+  const badge = numBadge(lt, num, s.numLabel);
   B(`${s.team ? `<div style="${pop(seg(lt, 0, .5))}">${chipM(T(s.team), num ? 'M' : 'L', s.mark || markOf(s, s.team, 0), seg(lt, .8, .4))}</div>` : ''}${badge}
   <div class="mega ${s.gold === false ? '' : 'gold'}" style="margin-top:${s.team && !num ? 44 : 0}px;font-size:${s.size || 168}px;${pop(seg(lt, .25, .6))}">${br(text)}</div>`);
 };
@@ -215,6 +276,39 @@ SCENE.streaks = (lt, s) => {
   B(h + '</div>');
 };
 
+/* photo: 사진이 주인공인 장면. {img, team, text, caption, tag, focus, size} — 사진 크게(640) + 아래 큰 문구 */
+SCENE.photo = (lt, s) => {
+  if (!photoSrc(s.img) && !(s.team || (s.teams || [])[0])) {   // 사진도 로고도 없으면 빈 카드를 띄우지 않고 글씨만(9/15)
+    const t = (s.tag && s.text && !String(s.text).includes(s.tag)) ? `${s.tag}\n${s.text}` : (s.text || s.tag || '');
+    return SCENE.big(lt, { text: t, size: Math.min(s.size || 130, 120) });
+  }
+  B(`${photoBox(s, s.h || 640, seg(lt, 0, .6))}
+  ${s.text ? `<div class="mega gold" style="margin-top:36px;font-size:${s.size || 130}px;${pop(seg(lt, .35, .6))}">${br(s.text)}</div>` : ''}`);
+};
+
+/* people: 인물 카드 1~3장. {title, items:[{img, name, team, note, bad:true|false}], text}
+   사진(없으면 로고) + 이름 + 상태 한 줄. bad 면 상태 글자가 빨강, 아니면 초록 */
+SCENE.people = (lt, s) => {
+  const items = s.items || [], n = items.length || 1;
+  const w = n === 1 ? 520 : n === 2 ? 430 : 280, ph = n === 3 ? 300 : 380;
+  let h = s.title ? `<div class="title gold" style="font-size:56px;font-weight:900;margin-bottom:26px;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div class="row" style="gap:${n === 3 ? 30 : 40}px;align-items:stretch">`;
+  items.forEach((it, i) => {
+    const src = photoSrc(it.img), t = it.team ? T(it.team) : null, p = seg(lt, .25 + i * .3, .5);
+    const pic = src ? `<div style="position:relative;width:100%;height:${ph}px;overflow:hidden;background:#262F40"><div class="pp" style="position:absolute;inset:0">${photoImg(it, src, w, ph, it.focus || '50% 10%')}</div></div>`
+      : `<div class="col" style="width:100%;height:${ph}px;background:linear-gradient(160deg,#2C3548,#1E2533)">${t ? chip(t, n === 3 ? 'M' : 'L') : ''}</div>`;
+    const col = it.bad === true ? RED : it.bad === false ? GREEN : TXT;
+    h += `<div class="pane" style="width:${w}px;border-radius:32px;overflow:hidden;display:flex;flex-direction:column;${rise(p, 50)}">
+      <div style="position:relative">${pic}${t && src ? `<div style="position:absolute;left:14px;top:14px">${chip(t, 'S')}</div>` : ''}</div>
+      <div class="col" style="padding:22px 16px 26px;gap:10px">
+        <div class="title" style="font-size:${n === 3 ? 44 : 52}px;font-weight:900">${esc(it.name || '')}</div>
+        ${it.note ? `<div class="label" style="font-size:${n === 3 ? 30 : 34}px;font-weight:800;color:${col}">${br(it.note)}</div>` : ''}</div></div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:34px;font-size:${s.size || 96}px;${pop(seg(lt, .4 + n * .3, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+
 /* 공통: 스탯 카드 두 장 (left/right: {team, value|win/lose, label}) */
 function cards(lt, L, R, opts = {}) {
   const side = (x, i, p) => {
@@ -227,8 +321,8 @@ function cards(lt, L, R, opts = {}) {
   };
   return `<div class="row" style="gap:40px">${side(L, 0, seg(lt, .3, .9))}${side(R, 1, seg(lt, .65, .9))}</div>`;
 }
-SCENE.versus = (lt, s) => B(numBadge(lt, s.num) + cards(lt, s.left, s.right));
-SCENE.need = (lt, s) => B(numBadge(lt, s.num) + cards(lt, s.left, s.right));
+SCENE.versus = (lt, s) => B(numBadge(lt, s.num, s.numLabel) + cards(lt, s.left, s.right));
+SCENE.need = (lt, s) => B(numBadge(lt, s.num, s.numLabel) + cards(lt, s.left, s.right));
 
 /* wins: 남은 경기 수와 필요 승수를 칸으로 보여준다 ("반타작이면 몇 승인지"가 한눈에).
    {rows:[{team:'삼성', total:21, need:11, label:'반타작'}, {team:'KT', total:23, need:13, label:'13승 필요'}], text:'…'(선택, 아래 문구)} */
@@ -324,6 +418,7 @@ const MOTION = {
   shift: () => 1.4, rival: () => 1.5, verdict: s => (s.left && s.right ? 2.1 : 1.0), question: () => 0.7,
   wins: s => { const rows = s.rows || []; const last = rows.length ? Math.min(Number(rows[rows.length - 1].need) || 0, Number(rows[rows.length - 1].total) || 0) : 0; return .35 + (rows.length - 1) * 1.1 + .2 + last * .045 + .5 + (s.text ? .5 : 0); },
   schedule: s => .3 + ((s.items || []).length) * .22 + .5 + (s.text ? .5 : 0),
+  photo: () => 1.0, people: s => .25 + ((s.items || []).length) * .3 + .5 + (s.text ? .5 : 0),
   streaks: s => { const ts = s.teams || []; const last = ts.length ? Math.min(stN(ts[ts.length - 1].streak || (T(ts[ts.length - 1].team) || {}).st || ''), 10) : 0; return .5 + (ts.length - 1) * 1.0 + last * .12 + .45; },
 };
 function render(t) {
