@@ -46,11 +46,11 @@ NIGHT = _now.hour >= int(_cfg('NIGHT_HOUR', '18')) and '--today' not in ARGS   #
 TODAY = (_now.date() + datetime.timedelta(days=1 if NIGHT else 0)).isoformat()
 # 시리즈: --series rank(야구순위) / issue(야구이슈). 시리즈 전용 실행이면 콘티는 episodes/날짜_순위.json 처럼 하나만 다루고,
 # 신호 파일과 오늘.txt 는 그 시리즈 폴더(야구자판기\야구순위\)에서 읽고 쓴다. 시리즈 없이 실행하면 순위·이슈 둘 다.
-SERIES_CODES = {'rank': ('야구순위', '순위'), 'issue': ('야구이슈', '이슈')}
+SERIES_CODES = {'rank': ('야구순위', '순위'), 'issue': ('야구이슈', '이슈'), 'analysis': ('야구분석', '분석')}   # 9/15 야구분석(원인 분석형) 추가
 SERIES = [ARGS[i + 1] for i, a in enumerate(ARGS) if a == '--series' and i + 1 < len(ARGS) and ARGS[i + 1] in SERIES_CODES]
 EPS = [ARGS[i + 1] for i, a in enumerate(ARGS) if a == '--episode' and i + 1 < len(ARGS)]
 if not EPS:
-    slots = [SERIES_CODES[c][1] for c in SERIES] or ['순위', '이슈']
+    slots = [SERIES_CODES[c][1] for c in SERIES] or ['순위', '이슈', '분석']
     EPS = [f'episodes/{TODAY}_{k}.json' for k in slots]
     if not SERIES:   # 옛 이름(_1, _2)으로 된 콘티만 있으면 그걸 쓴다
         legacy = [f'episodes/{TODAY}_1.json', f'episodes/{TODAY}_2.json']

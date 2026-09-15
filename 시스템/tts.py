@@ -5,7 +5,7 @@
   python tts.py                 → work/narration.txt 각 줄 → work/voice/00.mp3, 01.mp3 ...
 설정은 같은 폴더의 설정.txt 에서 읽는다 (TYPECAST_API_KEY, TYPECAST_VOICE_ID)
 """
-import os, sys, json, time, subprocess, io
+import shutil, os, sys, json, time, subprocess, io
 import requests
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -454,7 +454,7 @@ def drop_paths():
     r"""사람이 타입캐스트 웹에서 받아 넣는 통 음성 파일 후보: <야구자판기>\<시리즈>\음성\<콘티이름>.mp3|wav|m4a, 또는 work\voice_<편>\full.mp3"""
     key = os.path.basename(VDIR).replace('voice_', '')
     slot = key.rsplit('_', 1)[-1] if '_' in key else ''
-    series = '야구이슈' if slot.startswith('이슈') or slot == '2' else '야구순위'
+    series = '야구이슈' if slot.startswith('이슈') or slot == '2' else '야구분석' if slot.startswith('분석') else '야구순위'
     base = os.path.join(HERE, '..', series, '음성')
     out = [os.path.join(base, key + ext) for ext in ('.zip', '.mp3', '.wav', '.m4a')]
     out += [os.path.join(VDIR, 'full' + ext) for ext in ('.zip', '.mp3', '.wav', '.m4a')]
@@ -467,15 +467,23 @@ def split_zip(zip_path, lines):
     """타입캐스트 '문장 별로 나누기' zip: 파일 수가 줄 수와 같으면 이름 순서대로 NN.mp3 로. 다르면 이어 붙여 통 음성으로 취급해 무음으로 자른다."""
     import zipfile, tempfile
     tmp = os.path.join(VDIR, 'zip_tmp'); shutil_rm(tmp); os.makedirs(tmp, exist_ok=True)
+    # zip 안 파일 이름(한글·긴 이름·인코딩 플래그 없는 zip)은 윈도우에서 풀다 실패할 수 있어, 순서만 취해 짧은 영문 이름으로 꺼낸다(9/15)
     with zipfile.ZipFile(zip_path) as z:
-        names = [n for n in z.namelist() if n.lower().endswith(('.mp3', '.wav', '.m4a')) and not n.endswith('/')]
-        for n in names: z.extract(n, tmp)
-    files = sorted([os.path.join(tmp, n) for n in names], key=lambda p_: _natkey(os.path.basename(p_)))
+        infos = [zi for zi in z.infolist() if zi.filename.lower().endswith(('.mp3', '.wav', '.m4a')) and not zi.filename.endswith('/') and zi.file_size > 0]
+        infos.sort(key=lambda zi: _natkey(os.path.basename(zi.filename)))
+        files = []
+        for k, zi in enumerate(infos):
+            dst = os.path.join(tmp, f'src{k:02d}' + os.path.splitext(zi.filename)[1].lower())
+            with z.open(zi) as fi, open(dst, 'wb') as fo: shutil.copyfileobj(fi, fo)
+            files.append(dst)
     af = 'silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse'
     if len(files) == len(lines):
         for i, f in enumerate(files):
             mp3 = os.path.join(VDIR, f'{i:02d}.mp3')
-            subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', f, '-af', af, '-b:a', '192k', mp3], check=True)
+            r = subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', f, '-af', af, '-b:a', '192k', mp3], capture_output=True, text=True, encoding='utf-8', errors='replace')
+            if r.returncode != 0 or not os.path.exists(mp3):   # 앞뒤 무음 자르기가 실패하면 원본 그대로 쓴다
+                print(f'  {i:02d} 무음 다듬기 실패 → 원본 그대로 사용: {(r.stderr or "")[-120:]}')
+                shutil.copyfile(f, mp3)
             io.open(mp3.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])
             for suf in ('.segs.json', '.src'):
                 if os.path.exists(mp3.replace('.mp3', suf)): os.remove(mp3.replace('.mp3', suf))
@@ -532,7 +540,10 @@ if __name__ == '__main__':
         if got and manual:
             print(f'완료 (통 음성에서 {got}줄 잘라 씀)'); sys.exit(0)
     except SystemExit: raise
-    except Exception as e: print(f'  통 음성 파일 처리 실패: {e}')
+    except Exception as e:
+        import traceback; print(f'  통 음성 파일 처리 실패: {e!r}'); traceback.print_exc()
+        if any(p.lower().endswith('.zip') and os.path.exists(p) for p in drop_paths()):
+            sys.exit('음성 zip 은 있는데 자르지 못했습니다 — 위 오류를 Claude 에게 보여 주세요 (API 로 대신 만들지 않음)')
     disabled = drop_external(lines)
     try:
         if not disabled: fetch_full(lines)
