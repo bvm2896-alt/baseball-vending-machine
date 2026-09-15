@@ -25,7 +25,7 @@ CHECK_ONLY = '--check' in sys.argv
 
 def cfg(k, d=''):
     try:
-        for line in io.open('설정.txt', encoding='utf-8-sig'):
+        for line in __import__('build').open_cfg('설정.txt'):
             line = line.strip()
             if line and not line.startswith('#') and '=' in line:
                 kk, v = line.split('=', 1)
