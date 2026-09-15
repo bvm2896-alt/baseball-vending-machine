@@ -111,7 +111,10 @@ def photo_dirs(ep_key_name=''):
 
 def template_for(ep):
     """시리즈별 템플릿: 야구이슈 이고 template_issue.html 이 있으면 그것(화이트), 아니면 template.html(순위 편, 다크)"""
-    if str(ep.get('series', '')).strip() in ('야구이슈', '야구분석') and os.path.exists('template_issue.html'):   # 분석 편도 화이트 템플릿
+    ser = str(ep.get('series', '')).strip()
+    if ser == '야구분석' and os.path.exists('template_analysis.html'):   # 9/15: 분석 전용(팀 색 띠 리포트형)
+        return 'template_analysis.html'
+    if ser in ('야구이슈', '야구분석') and os.path.exists('template_issue.html'):
         return 'template_issue.html'
     return 'template.html'
 
@@ -601,7 +604,9 @@ def make_thumb(EP, out):
     """thumb.html 에 데이터 주입 → out (jpg, 2MB 이하)"""
     if not EP.get('thumb'): return None
     # 야구이슈 편은 화이트 사진형 썸네일(thumb_issue.html), 순위 편은 기존 thumb.html
-    tpl = 'thumb_issue.html' if (str(EP.get('series', '')).strip() in ('야구이슈', '야구분석') and os.path.exists('thumb_issue.html')) else 'thumb.html'
+    ser = str(EP.get('series', '')).strip()
+    if ser == '야구분석' and os.path.exists('thumb_analysis.html'): tpl = 'thumb_analysis.html'   # 9/15: 분석은 구단 색 바탕 + 구단 로고 화면 가득
+    else: tpl = 'thumb_issue.html' if (ser in ('야구이슈', '야구분석') and os.path.exists('thumb_issue.html')) else 'thumb.html'
     if 'photos' not in EP:
         EP['photos'] = photos_data_uri(EP, EP.get('_path')); EP['photoSizes'] = PHOTO_SIZES
     m = re.search(r'_(?:순위|이슈|분석)(\d*)\.json$', str(EP.get('_path') or ''))   # 그날 몇 번째 편인지(이슈=0, 이슈2=1 …) → 썸네일 큰 글씨 색을 편마다 바꾼다(9/15)

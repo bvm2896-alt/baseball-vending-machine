@@ -83,19 +83,20 @@
    "left": {
     "team": "한화",
     "value": "2위",
-    "label": "2025 · 19년 만의 한국시리즈"
+    "label": "2025\n19년 만의 한국시리즈"
    },
    "right": {
     "team": "한화",
     "value": "7위",
-    "label": "2026 · 54승 68패"
+    "label": "2026\n54승 68패"
    }
   },
   {
    "type": "big",
    "startLine": 2,
-   "text": "이유 ①\n투수 4명이\n한꺼번에 떠났다",
-   "size": 100
+   "text": "투수 4명이\n한꺼번에 떠났다",
+   "size": 100,
+   "num": 1
   },
   {
    "type": "people",
@@ -151,7 +152,7 @@
   {
    "type": "people",
    "startLine": 6,
-   "title": "이유 ② 남은 투수도 흔들",
+   "title": "남은 투수도 흔들렸다",
    "items": [
     {
      "img": "문동주",
@@ -167,7 +168,8 @@
      "note": "팔꿈치 · 시즌 아웃",
      "bad": true
     }
-   ]
+   ],
+   "num": 2
   },
   {
    "type": "photo",
@@ -183,9 +185,10 @@
    "startLine": 8,
    "img": "김서현",
    "team": "한화",
-   "tag": "이유 ③ 불펜 붕괴 · 마무리",
+   "tag": "불펜 붕괴 · 마무리",
    "text": "33세이브\n→ ERA 12.38",
-   "size": 100
+   "size": 100,
+   "num": 3
   },
   {
    "type": "versus",
