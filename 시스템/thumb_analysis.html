@@ -56,6 +56,7 @@ for(const sel of ['.top','.bigw']){
   const sps=[...e.querySelectorAll('span')];
   let fs=parseFloat(getComputedStyle(e).fontSize);
   const w=()=>Math.max(...sps.map(sp=>sp.getBoundingClientRect().width));
-  while(w()>920&&fs>60){fs-=8;e.style.fontSize=fs+'px';}
+  const lim=sel==='.top'?840:920, minfs=sel==='.top'?44:60;   // .top 은 알약 여백(72px) 때문에 840 까지만(9/16 키움 편 글자 이탈)
+  while(w()>lim&&fs>minfs){fs-=4;e.style.fontSize=fs+'px';}
 }
 </script></body></html>

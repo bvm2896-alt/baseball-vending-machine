@@ -139,25 +139,33 @@
    "size": 100
   },
   {
-   "type": "big",
+   "type": "matchup",
    "startLine": 2,
-   "team": "한화",
-   "text": "4이닝 5실점\n한화 3 : 13 KT",
+   "left": "한화",
+   "right": "KT",
+   "text": "4이닝 5실점\n3 : 13",
    "size": 120
   },
   {
-   "type": "versus",
+   "type": "people",
    "startLine": 3,
-   "left": {
-    "name": "1회",
-    "value": "볼넷 2\n사구 1",
-    "label": "1사 만루 자초"
-   },
-   "right": {
-    "name": "김현수 · 허경민",
-    "value": "연속\n적시타",
-    "label": "2실점"
-   }
+   "title": "1회 1사 만루 → 연속 적시타",
+   "items": [
+    {
+     "img": "김현수",
+     "name": "김현수",
+     "team": "KT",
+     "note": "1회 적시타",
+     "bad": true
+    },
+    {
+     "img": "허경민",
+     "name": "허경민",
+     "team": "KT",
+     "note": "1회 적시타 · 5회 투런",
+     "bad": true
+    }
+   ]
   },
   {
    "type": "photo",
@@ -169,10 +177,12 @@
    "size": 110
   },
   {
-   "type": "big",
+   "type": "photo",
    "startLine": 5,
-   "text": "21일\n한국 vs 대만\n왕옌청 선발?",
-   "size": 110
+   "img": "국가대표프로필/류지현",
+   "tag": "한국 대표팀 류지현 감독",
+   "text": "21일 한국 vs 대만\n왕옌청 선발?",
+   "size": 100
   },
   {
    "type": "steps",
@@ -205,14 +215,16 @@
    "type": "versus",
    "startLine": 8,
    "left": {
-    "name": "안현민",
+    "img": "안현민",
+    "team": "KT",
     "value": "익숙하다",
-    "label": "시즌 내내 상대 · 전력 분석"
+    "label": "안현민 · 시즌 내내 상대"
    },
    "right": {
-    "name": "왕옌청",
+    "img": "왕옌청",
+    "team": "한화",
     "value": "컨디션\n안 좋아 보여",
-    "label": "15일 경기 뒤 인터뷰"
+    "label": "왕옌청 · 경기 뒤 인터뷰"
    }
   },
   {
@@ -224,14 +236,14 @@
      "img": "국가대표프로필/김도영",
      "name": "김도영",
      "team": "기아",
-     "note": "공이 똑바로 안 온다",
+     "note": "공이 똑바로\n안 온다",
      "bad": true
     },
     {
      "img": "곽빈",
      "name": "곽빈",
      "team": "두산",
-     "note": "올해 맞대결 2패 · 21일 선발 유력",
+     "note": "올해 맞대결 2패\n21일 선발 유력",
      "bad": true
     }
    ]
@@ -266,7 +278,8 @@
      "name": "왕옌청",
      "team": "한화",
      "note": "한화 11승",
-     "bad": false
+     "bad": false,
+     "img": "왕옌청"
     }
    ]
   },
@@ -274,14 +287,16 @@
    "type": "versus",
    "startLine": 12,
    "left": {
-    "name": "9월 9일 LG전",
+    "team": "한화",
+    "next": "LG",
     "value": "6이닝\n1실점",
-    "label": "폐렴 뒤 회복"
+    "label": "9월 9일\n폐렴 뒤 회복"
    },
    "right": {
-    "name": "9월 15일 KT전",
+    "team": "한화",
+    "next": "KT",
     "value": "4이닝\n5실점",
-    "label": "한 경기로 단정은 일러요"
+    "label": "9월 15일\n한 경기로 단정은 일러요"
    }
   },
   {
