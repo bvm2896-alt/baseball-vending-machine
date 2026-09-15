@@ -329,6 +329,7 @@ def main():
         rep[i]['flags'] = b
         print(f'{i:02d} {rep[i]["f0"]:>4.0f}Hz {rep[i]["rate"]:.1f}음/초 {rep[i]["dur"]:.1f}s' + (f'  ← {", ".join(b)}' if b else ''))
         if b: redo.append(i)
+    if redo and getattr(tts, 'NO_API', False): print(f'주의 줄 {redo} — API 키가 없어 다시 합성하지 않음(웹 zip 그대로)'); redo = []
     if redo and not CHECK_ONLY and RETRY > 0:
         print(f'다시 합성 시도: {redo}')
         for i in redo:

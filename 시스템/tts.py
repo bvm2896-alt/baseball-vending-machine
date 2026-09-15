@@ -30,8 +30,8 @@ ACCOUNTS = []
 for n in ('', '2', '3', '4', '5'):
     k = CFG.get('TYPECAST_API_KEY' + n, '').strip()
     if k: ACCOUNTS.append({'key': k, 'voice': CFG.get('TYPECAST_VOICE_ID' + n, '').strip() or CFG.get('TYPECAST_VOICE_ID', '').strip(), 'name': '계정' + (n or '1')})
-if not ACCOUNTS or not ACCOUNTS[0]['voice']:
-    sys.exit('설정.txt 에 TYPECAST_API_KEY 와 TYPECAST_VOICE_ID 를 채워주세요.')
+NO_API = not ACCOUNTS or not ACCOUNTS[0]['voice']   # 9/15: API 키가 없어도 웹에서 받은 zip 은 자를 수 있어야 한다(회사 PC 는 키 없음) → 여기서 멈추지 않는다
+if NO_API: ACCOUNTS = [{'key': '', 'voice': '', 'name': '없음'}]
 ACC = 0   # 지금 쓰는 계정 번호 (크레딧 소진·인증 오류 시 다음으로)
 API_KEY, VOICE = ACCOUNTS[0]['key'], ACCOUNTS[0]['voice']
 
@@ -553,6 +553,12 @@ if __name__ == '__main__':
     only = None
     for a in sys.argv:
         if a.startswith('--only='): only = {int(x) for x in a.split('=',1)[1].replace(',', ' ').split()}
+    if NO_API:
+        need = [i for i, line in enumerate(lines) if only is None or i in only]
+        need = [i for i in need if not (os.path.exists(os.path.join(VDIR, f'{i:02d}.mp3')) and os.path.exists(os.path.join(VDIR, f'{i:02d}.txt')) and io.open(os.path.join(VDIR, f'{i:02d}.txt'), encoding='utf-8').read().strip() == lines[i].strip())]
+        if need:
+            sys.exit(f'음성 실패: 줄 {need} 의 음성이 없고 API 키도 없습니다 — 타입캐스트 웹 zip 을 ' + os.path.abspath(drop_paths()[0]) + ' 에 넣어 주세요 (zip 파일 수 = 줄 수)')
+        print('완료 (웹 zip 음성 그대로 사용, API 없음)'); sys.exit(0)
     print(f'{len(lines)}줄 합성 시작' + (f' (줄 {sorted(only)} 만)' if only else ''))
     fail = 0
     reuse = 0
