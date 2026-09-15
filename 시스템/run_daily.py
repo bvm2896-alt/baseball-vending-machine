@@ -478,7 +478,7 @@ def inputs_mtime(p):
             f = os.path.join(BASE, series, '음성', k + ext)
             if os.path.exists(f): ts.append(os.path.getmtime(f))
     except Exception: pass
-    for f in ('build.py', 'tts.py', 'qa_voice.py', 'template.html', 'template_issue.html', 'thumb.html', 'thumb_issue.html'):
+    for f in ('build.py', 'tts.py', 'qa_voice.py', 'template.html', 'template_issue.html', 'template_analysis.html', 'thumb.html', 'thumb_issue.html', 'thumb_analysis.html'):
         fp = os.path.join(HERE, f)
         if os.path.exists(fp): ts.append(os.path.getmtime(fp))
     return max(ts)

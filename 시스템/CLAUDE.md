@@ -4,7 +4,7 @@
 설명은 한국어로, 짧고 구체적으로. 코드 변경은 반드시 이 파일의 규칙을 지킨다.
 
 ## 폴더
-- `episodes\YYYY-MM-DD_순위.json`(야구순위 시리즈) / `YYYY-MM-DD_이슈.json`(야구이슈 시리즈) / `YYYY-MM-DD_분석.json`(야구분석 시리즈, 9/15 신설 — 한 팀·한 현상의 원인 분석, `--series analysis`, 폴더 `야구분석\`, 화이트 템플릿, 썸네일·키컬러 = focusTeam 구단색, railTitle "KBO 분석", #야구분석. 수치가 많으니 모든 숫자에 출처 두 곳 + 반대 근거 확인). 옛 이름 `_1`·`_2` 도 읽힌다. `{"draft": true}` 만 있으면 아직 미완성 → run_daily 는 계속 기다린다. 콘티 `series` 항목("야구순위"/"야구이슈")이 결과물 폴더를 정한다.
+- `episodes\YYYY-MM-DD_순위.json`(야구순위 시리즈) / `YYYY-MM-DD_이슈.json`(야구이슈 시리즈) / `YYYY-MM-DD_분석.json`(야구분석 시리즈, 9/15 신설 — 한 팀·한 현상의 원인 분석, `--series analysis`, 폴더 `야구분석\`, 전용 템플릿 `template_analysis.html`(위 340px 팀 색 띠 + 종이색 바탕 + 팀 색 윗줄 카드, 번호 배지는 동그라미 대신 "이유 N" 라벨 — 장면 `num`·`numLabel`), 썸네일은 `thumb_analysis.html` — 바탕 전체 구단 색 + **구단 로고 화면 가득**(항상, img 안 씀) + 흰 큰 글씨, 키컬러 = focusTeam 구단색, railTitle "KBO 분석", #야구분석. 수치가 많으니 모든 숫자에 출처 두 곳 + 반대 근거 확인). 옛 이름 `_1`·`_2` 도 읽힌다. `{"draft": true}` 만 있으면 아직 미완성 → run_daily 는 계속 기다린다. 콘티 `series` 항목("야구순위"/"야구이슈")이 결과물 폴더를 정한다.
 - `work\voice_<콘티이름>\NN.mp3 / NN.segs.json / NN.txt / qa.json` 편별 음성·검수 결과. `work\current.txt` = 지금 쓰는 편.
 - `data\rank_latest.json`(네이버 순위) · `news_latest.json`(구글 뉴스) · `schedule_latest.json`(네이버 일정·선발)
 - 결과물: `설정.txt` 의 `OUTPUT_DIR`(집 PC: `H:\내 드라이브\야구자판기_영상확인`) 아래 `YYYY-MM-DD\번호_팀.mp4 + _썸네일.jpg + _유튜브.txt`. 날짜 폴더 = **경기 날짜**(밤 제작이면 그날, 아침 제작이면 어제).
