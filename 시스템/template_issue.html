@@ -127,6 +127,9 @@ function withNext(chipHtml, opp, p = 1, note = '') {
 }
 function B(h) {
   const body = document.getElementById('body'); body.innerHTML = h;
+  // 카드 안 큰 숫자·글자(.card .v)도 카드 폭(430)을 넘으면 줄인다(9/16 — "익숙하다" 가 카드 밖으로 나감)
+  [...body.querySelectorAll('.card .v')].forEach(el => { el.style.whiteSpace = 'pre'; let fs = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > 380 && fs > 44) { fs -= 4; el.style.fontSize = fs + 'px'; } });
   const els = [...body.querySelectorAll('.mega,.big')];
   els.forEach(el => { el.style.whiteSpace = 'nowrap'; let fs = parseFloat(getComputedStyle(el).fontSize);
     while (el.scrollWidth > 900 && fs > 56) { fs -= 4; el.style.fontSize = fs + 'px'; } });
