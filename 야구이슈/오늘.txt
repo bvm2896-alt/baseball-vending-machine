@@ -35,3 +35,4 @@
 [08:48:39] 깃허브 받기 실패: error: cannot pull with rebase: You have unstaged changes.
 error: Please commit or stash them.
 
+[08:48:56] 시작
