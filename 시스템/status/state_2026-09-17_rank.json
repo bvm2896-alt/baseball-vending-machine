@@ -24,6 +24,7 @@
   "[05:02:23] [순위] 영상 완성 82.2초 → H:\\내 드라이브\\야구자판기_영상확인\\야구순위\\2026-09-16\\순위_KT_삼성.mp4",
   "[05:02:25] [순위] 영상 준비 완료 (수동 업로드 모드): 폴더의 mp4 와 _유튜브.txt 제목·설명을 유튜브 스튜디오에 직접 올리세요",
   "[05:02:25] 감시 시작 (안전 종료 12:00)",
-  "[08:48:22] 시작"
+  "[08:48:22] 시작",
+  "[08:48:34] 깃허브 받기 실패: ng your working tree from\ncommit fc3857583a2fd79f2255dc186c885b1308f4d94f.\nerror: cannot rebase: You have unstaged changes.\nerror: Please commit or stash them.\n"
  ]
 }
