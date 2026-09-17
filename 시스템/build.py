@@ -212,8 +212,9 @@ def load_episode(path):
     if not ep.get('standings'):
         rk = json.load(io.open('data/rank_latest.json', encoding='utf-8-sig'))
         ep['standings'] = rk['standings']
-    # 화면 오른쪽 위 날짜·썸네일·폴더 모두 '경기 날짜' 기준
-    ep['dateLabel'] = game_date(ep).replace('-', '.')
+    # 화면 오른쪽 위 날짜 = '올리는 날짜'(콘티 date, 제목 해시태그와 같은 날) — 2026-09-17 사용자 지시
+    # 썸네일 날짜 배지·결과물 폴더는 그대로 '경기 날짜' 기준
+    ep['dateLabel'] = (ep.get('date') or game_date(ep)).replace('-', '.')
     return ep
 
 def font_dir_url():
