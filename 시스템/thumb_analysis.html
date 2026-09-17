@@ -32,8 +32,8 @@ const c1=COLOR[teams[0]]||'#E5484D';
 const hex2=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`};
 const dark=(h,k)=>{const n=parseInt(h.slice(1),16);const f=x=>Math.round(x*k);return `rgb(${f(n>>16&255)},${f(n>>8&255)},${f(n&255)})`};
 const cBig=TH.color||'#fff';
-const dateText=(()=>{ if(TH.date) return TH.date; let d=new Date((EP.gameDate||EP.date||'')+'T00:00:00'); if(isNaN(d)) return EP.dateLabel||'';
-  if(!EP.gameDate && d.getDay()!==2) d.setDate(d.getDate()-1);
+// 날짜 배지 = '올리는 날짜'(콘티 date) — 레일 날짜·제목 첫 해시태그와 같은 날. 2026-09-17 사용자 지시로 '경기 날짜'에서 바꿈
+const dateText=(()=>{ if(TH.date) return TH.date; let d=new Date((EP.date||EP.gameDate||'')+'T00:00:00'); if(isNaN(d)) return EP.dateLabel||'';
   return `${d.getMonth()+1}월 ${d.getDate()}일 (${'일월화수목금토'[d.getDay()]})`; })();
 const bigLines=String(TH.big||'').split('\n').length;
 const BIG_H = 230*bigLines, TOP_H = 92*String(TH.top||'').split('\n').length + 20;

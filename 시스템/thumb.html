@@ -33,10 +33,9 @@ const bigStyle=`color:${cBig};text-shadow:0 0 40px ${glow(cBig)},0 16px 0 ${dark
 const BIGW=['#fff','#FFC24B','#22D3EE','#A3E635','#FB923C'], cBigW=TH.color||BIGW[(EP.epIndex||0)%BIGW.length];   // 두 팀 맞대결(clash) 틀은 첫 편 흰색, 다음 편부터 노랑·하늘…
 const bigStyleW=cBigW==='#fff'?'':`color:${cBigW};text-shadow:0 0 40px ${glow(cBigW)},0 16px 0 ${dark(cBigW)},0 24px 50px rgba(0,0,0,.9)`;
 // 날짜 배지: "9월 10일 (목)" — 콘티 date 에서 요일 계산 (thumb.date 로 직접 지정하면 그대로)
-// 날짜 배지는 "경기가 치러진 날" — 콘티 gameDate(없으면 콘티 날짜 하루 전. 월요일 아침 영상 = 일요일 경기)
-// 화요일은 전날(월) 경기가 없으므로 순위 리뷰 대신 다른 주제 영상 → gameDate 없으면 영상 날짜 그대로
-const dateText=(()=>{ if(TH.date) return TH.date; let d=new Date((EP.gameDate||EP.date||'')+'T00:00:00'); if(isNaN(d)) return EP.dateLabel||'';
-  if(!EP.gameDate && d.getDay()!==2) d.setDate(d.getDate()-1);
+// 날짜 배지 = '올리는 날짜'(콘티 date) — 화면 오른쪽 위 레일 날짜·제목 첫 해시태그와 같은 날. 2026-09-17 사용자 지시로 '경기 날짜'에서 바꿈
+// (결과물 폴더 이름과 나레이션의 "N월 N일 기준" 은 그대로 경기 날짜 gameDate)
+const dateText=(()=>{ if(TH.date) return TH.date; let d=new Date((EP.date||EP.gameDate||'')+'T00:00:00'); if(isNaN(d)) return EP.dateLabel||'';
   return `${d.getMonth()+1}월 ${d.getDate()}일 (${'일월화수목금토'[d.getDay()]})`; })();
 // 레이아웃 자동 선택: 두 팀 → clash, 숫자/짧은 단어 → stat, 그 외 default
 const layout=TH.layout||(teams.length>1?'clash':(/^\d|^[가-힣]{1,2}[?!]?$/.test(TH.big||'')?'stat':'default'));
