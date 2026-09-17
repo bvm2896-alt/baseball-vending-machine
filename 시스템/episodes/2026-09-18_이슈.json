@@ -133,7 +133,8 @@
    "type": "big",
    "startLine": 1,
    "text": "고교 통산 타율 3할 3푼\n홈런 8개\n올해 3할 8푼",
-   "size": 96
+   "size": 96,
+   "img": "고등학교/하현승"
   },
   {
    "type": "photo",
@@ -154,19 +155,22 @@
    "type": "big",
    "startLine": 4,
    "text": "이번 대회\n타석 0번",
-   "size": 130
+   "size": 130,
+   "img": "상황별/하현승_대표투구"
   },
   {
    "type": "big",
    "startLine": 5,
    "text": "3경기 3승\n15이닝 넘게 무실점\n탈삼진 25개",
-   "size": 100
+   "size": 100,
+   "img": "상황별/하현승_MVP"
   },
   {
    "type": "big",
    "startLine": 6,
    "text": "MVP · 평균자책점 · 승률\n3관왕",
-   "size": 104
+   "size": 104,
+   "img": "상황별/하현승_대표팀2"
   },
   {
    "type": "photo",
@@ -232,7 +236,8 @@
    "type": "big",
    "startLine": 13,
    "text": "내일\n하현승이 갈 팀",
-   "size": 104
+   "size": 104,
+   "img": "상황별/하현승_투구2"
   },
   {
    "type": "question",

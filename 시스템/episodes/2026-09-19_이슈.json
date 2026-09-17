@@ -134,7 +134,8 @@
    "type": "big",
    "startLine": 1,
    "text": "9월 21일\n전체 1순위 = 키움",
-   "size": 98
+   "size": 98,
+   "img": "상황별/하현승_대표투구"
   },
   {
    "type": "big",
@@ -235,7 +236,8 @@
    "text": "전체 1순위",
    "num": 3,
    "numLabel": "년 연속",
-   "size": 110
+   "size": 110,
+   "img": "상황별/하현승_타격"
   },
   {
    "type": "photo",
@@ -250,7 +252,8 @@
    "type": "big",
    "startLine": 13,
    "text": "내일\n역대 1순위들",
-   "size": 104
+   "size": 104,
+   "img": "김서현"
   },
   {
    "type": "question",

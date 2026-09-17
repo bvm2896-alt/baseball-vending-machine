@@ -133,7 +133,8 @@
    "type": "big",
    "startLine": 1,
    "text": "내일 전체 1순위\n하현승",
-   "size": 104
+   "size": 104,
+   "img": "상황별/하현승_대표투구"
   },
   {
    "type": "photo",
@@ -150,7 +151,8 @@
    "text": "평균자책점 3.14",
    "num": 33,
    "numLabel": "세이브",
-   "size": 100
+   "size": 100,
+   "img": "김서현"
   },
   {
    "type": "big",
@@ -162,7 +164,8 @@
    "type": "big",
    "startLine": 5,
    "text": "올해 1군 12경기\n평균자책점 12.38",
-   "size": 92
+   "size": 92,
+   "img": "김서현"
   },
   {
    "type": "big",
@@ -183,7 +186,8 @@
    "type": "big",
    "startLine": 8,
    "text": "데뷔 18경기\n3승 7패 · 5.86",
-   "size": 98
+   "size": 98,
+   "img": "정현우"
   },
   {
    "type": "big",
@@ -195,7 +199,8 @@
    "type": "big",
    "startLine": 10,
    "text": "고교 최고 투수도\n첫 시즌은 어렵다",
-   "size": 92
+   "size": 92,
+   "img": "고등학교/하현승"
   },
   {
    "type": "photo",
@@ -219,7 +224,8 @@
    "type": "big",
    "startLine": 13,
    "text": "내일\n신인 드래프트",
-   "size": 110
+   "size": 110,
+   "img": "상황별/하현승_MVP"
   },
   {
    "type": "question",
