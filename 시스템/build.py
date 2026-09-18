@@ -67,7 +67,7 @@ def game_date(ep):
         return dt.isoformat()
     except Exception: return d
 
-SERIES_BY_SLOT = {'순위': '야구순위', '이슈': '야구이슈', '분석': '야구분석', '1': '야구순위', '2': '야구이슈'}   # 하루 콘티 슬롯 → 시리즈 폴더 (콘티에 "series" 를 적으면 그게 우선)
+SERIES_BY_SLOT = {'순위': '야구순위', '이슈': '야구이슈', '분석': '야구분석', '롱폼': '야구롱폼', '1': '야구순위', '2': '야구이슈'}   # 하루 콘티 슬롯 → 시리즈 폴더 (콘티에 "series" 를 적으면 그게 우선)
 
 def series_of(ep, ep_path):
     """결과물을 나눠 담을 시리즈 폴더 이름: 콘티의 series → 없으면 슬롯 번호(1=야구순위, 2=야구이슈)"""
@@ -109,9 +109,18 @@ def photo_dirs(ep_key_name=''):
     return [os.path.join(PHOTO_ROOT, ep_key_name) if ep_key_name else '', os.path.join(PHOTO_ROOT2, ep_key_name) if ep_key_name else '', PLAYER_IMG_DIR, os.path.join(PHOTO_ROOT, '공용'), PHOTO_ROOT, PHOTO_ROOT2,
             os.path.join(ASSETS, '이슈사진', ep_key_name) if ep_key_name else '', os.path.join(ASSETS, '선수이미지'), os.path.join(HERE, 'photos')]
 
+def is_long(ep):
+    """롱폼 편인가 — series 가 '야구롱폼' 이면 가로(1920x1080)로 그린다(9/18)"""
+    return str(ep.get('series', '')).strip() == '야구롱폼'
+
+def canvas_of(ep):
+    return (1920, 1080) if is_long(ep) else (1080, 1920)
+
 def template_for(ep):
     """시리즈별 템플릿: 야구이슈 이고 template_issue.html 이 있으면 그것(화이트), 아니면 template.html(순위 편, 다크)"""
     ser = str(ep.get('series', '')).strip()
+    if ser == '야구롱폼' and os.path.exists('template_long.html'):       # 9/18: 롱폼 전용(가로 1920x1080)
+        return 'template_long.html'
     if ser == '야구분석' and os.path.exists('template_analysis.html'):   # 9/15: 분석 전용(팀 색 띠 리포트형)
         return 'template_analysis.html'
     if ser in ('야구이슈', '야구분석') and os.path.exists('template_issue.html'):
@@ -509,7 +518,9 @@ def render(ep, ep_path):
     fps = int(cfg_get('VIDEO_FPS', '60')); scale = cfg_get('VIDEO_SCALE', '1.3333')
     shutil.rmtree(W('frames'), ignore_errors=True)
     print(f'프레임 렌더 {fps}fps x{scale} ({round(total)}초) …')
-    r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale], capture_output=True, text=True, encoding='utf-8', errors='replace')
+    cw, ch = canvas_of(ep)
+    fenv = dict(os.environ); fenv['FRAME_W'], fenv['FRAME_H'] = str(cw), str(ch)
+    r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale], capture_output=True, text=True, encoding='utf-8', errors='replace', env=fenv)
     if r.returncode != 0: print('프레임 렌더 1차 실패 → 동시작업 1 로 다시:\n' + ((r.stderr or '') + '\n' + (r.stdout or ''))[-1200:])
     elif r.stdout: print((r.stdout or '').strip().splitlines()[-1])
     vd = dur_of(W('silent.mp4')) if os.path.exists(W('silent.mp4')) else 0.0
@@ -518,7 +529,7 @@ def render(ep, ep_path):
         print(f'경고: 무음 영상이 깨졌거나 짧음({vd:.1f}s / {total:.1f}s) → 한 번 더 그립니다(동시작업 1)')
         try: os.remove(W('silent.mp4'))
         except Exception: pass
-        r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale, '1'], capture_output=True, text=True, encoding='utf-8', errors='replace')
+        r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale, '1'], capture_output=True, text=True, encoding='utf-8', errors='replace', env=fenv)
         if r.returncode != 0 or not os.path.exists(W('silent.mp4')): raise SystemExit('프레임 렌더 실패(재시도):\n' + ((r.stderr or '') + '\n' + (r.stdout or ''))[-1500:])
         vd = dur_of(W('silent.mp4'))
         if vd < total * 0.95: raise SystemExit(f'영상 길이 부족: {vd:.1f}s / {total:.1f}s (재시도 후에도)')
@@ -543,9 +554,82 @@ def render(ep, ep_path):
     thumb = make_thumb(EP, thumb_path)
     write_youtube_txt(ep, yt_path, d)
     srt_path = yt_path.replace('_유튜브.txt', '_자막.srt')
+    if ep.get('chapters'): write_chapters(ep, st, yt_path)   # 9/18 롱폼: 설명란 챕터 타임스탬프
     write_srt(subs, srt_path)   # 9/15 SEO: 유튜브 업로드 때 자막 파일로 첨부 → 자동 자막보다 정확하게 검색 색인
     print(f'완료: {out} {d:.2f}초 (자막 {len(subs)}개, 장면 {len(ep["scenes"])}개) 썸네일 {thumb}')
     return out
+
+def write_chapters(ep, st, yt_path):
+    """롱폼 설명란에 붙일 챕터 목록을 유튜브 txt 끝에 덧붙인다.
+       유튜브 챕터 규칙: 첫 줄이 반드시 0:00, 챕터 3개 이상, 각 10초 이상."""
+    ch = ep.get('chapters') or []
+    if len(ch) < 3: return None
+    def ts(t):
+        t = max(0.0, float(t)); m = int(t // 60); s_ = int(t % 60)
+        return f'{m}:{s_:02d}'
+    rows, prev = [], -99.0
+    for i, c in enumerate(ch):
+        k = int(c.get('from', 0))
+        t = 0.0 if i == 0 else float(st[k]) if k < len(st) else prev + 10
+        if i and t < prev + 10: t = prev + 10
+        prev = t
+        rows.append(f'{ts(t)} {c.get("title", "")}'.rstrip())
+    try: cur = io.open(yt_path, encoding='utf-8').read()
+    except Exception: cur = ''
+    io.open(yt_path, 'w', encoding='utf-8').write(cur.rstrip() + '\n\n[챕터 — 설명란 맨 아래에 그대로 붙여넣기]\n' + '\n'.join(rows) + '\n')
+    print('챕터', len(rows), '개')
+    return rows
+
+def cut_chapter(ep, ep_path, which):
+    """롱폼 콘티의 챕터 하나를 쇼츠 콘티로 떼어낸다(9/18).
+       - lines/scenes 를 그 구간만 잘라 startLine 을 0 부터 다시 매긴다
+       - 챕터의 short 블록(thumb/youtube/date/slot)을 쇼츠 콘티에 얹는다
+       - 롱폼에서 이미 만든 음성 mp3 를 쇼츠 음성 폴더로 번호를 다시 매겨 복사한다(타입캐스트 재사용)
+       결과: episodes/<날짜>_<슬롯>.json  → 그대로 build.py prep/render 하면 된다"""
+    ch = ep.get('chapters') or []
+    if not ch: raise SystemExit('이 콘티에는 chapters 가 없습니다')
+    idx = None
+    for i, c in enumerate(ch):
+        if str(which) == str(i + 1) or str(which) == str(c.get('key', '')): idx = i; break
+    if idx is None: raise SystemExit(f'챕터를 못 찾음: {which} (1~{len(ch)} 또는 key)')
+    c = ch[idx]
+    a = int(c.get('from', 0)); b = int(c.get('to', len(ep['lines']) - 1))
+    if not (0 <= a <= b < len(ep['lines'])): raise SystemExit(f'챕터 구간이 이상합니다: {a}~{b}')
+    sh = c.get('short') or {}
+    out = {
+        'date': sh.get('date') or ep.get('date'), 'gameDate': ep.get('gameDate'),
+        'series': sh.get('series') or '야구이슈', 'railTitle': sh.get('railTitle') or 'KBO 이슈',
+        'focusTeam': sh.get('focusTeam') or ep.get('focusTeam'),
+        'source': f'롱폼 {os.path.basename(ep_path)} 챕터 {idx + 1}({c.get("title", "")}) 에서 잘라냄. ' + str(ep.get('source', '')),
+        'thumb': sh.get('thumb') or ep.get('thumb'),
+        'youtube': sh.get('youtube') or ep.get('youtube'),
+        'lines': [dict(x) for x in ep['lines'][a:b + 1]],
+        'scenes': [],
+    }
+    for sc in ep.get('scenes', []):
+        k = int(sc.get('startLine', 0))
+        if a <= k <= b:
+            d = dict(sc); d['startLine'] = k - a
+            if d.get('type') == 'chapter': d['type'] = 'hook'          # 챕터 표지는 쇼츠에서 훅으로
+            out['scenes'].append(d)
+    if not out['scenes'] or out['scenes'][0]['startLine'] != 0:
+        out['scenes'].insert(0, {'type': 'hook', 'startLine': 0, 'text': (c.get('title') or '')})
+    slot = sh.get('slot') or f'이슈{idx + 1}'
+    dst = os.path.join('episodes', f'{out["date"]}_{slot}.json')
+    os.makedirs('episodes', exist_ok=True)
+    json.dump(out, io.open(dst, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    # 음성 복사 (롱폼 → 쇼츠)
+    src_dir, dst_dir = voice_dir(ep_key(ep_path)), voice_dir(ep_key(dst))
+    moved = 0
+    for i in range(a, b + 1):
+        for ext in ('.mp3', '.txt'):
+            f = os.path.join(src_dir, f'{i:02d}{ext}')
+            if os.path.exists(f):
+                shutil.copyfile(f, os.path.join(dst_dir, f'{i - a:02d}{ext}'))
+                if ext == '.mp3': moved += 1
+    print(f'잘라냄: {dst}  ({b - a + 1}줄, 장면 {len(out["scenes"])}개, 음성 {moved}개 복사)')
+    print(f'  다음: python -X utf8 build.py prep {dst}  →  python -X utf8 build.py render {dst}')
+    return dst
 
 def write_srt(subs, path):
     """영상 자막(subs: [시작초, 끝초, 글])을 SRT 로. 유튜브 업로드 화면 → 자막 → 파일 업로드에 쓴다(검색 색인용, 화면엔 이미 자막이 있으니 '자막 표시'는 꺼도 됨)"""
@@ -621,7 +705,8 @@ def make_thumb(EP, out):
     if not EP.get('thumb'): return None
     # 야구이슈 편은 화이트 사진형 썸네일(thumb_issue.html), 순위 편은 기존 thumb.html
     ser = str(EP.get('series', '')).strip()
-    if ser == '야구분석' and os.path.exists('thumb_analysis.html'): tpl = 'thumb_analysis.html'   # 9/15: 분석은 구단 색 바탕 + 구단 로고 화면 가득
+    if ser == '야구롱폼' and os.path.exists('thumb_long.html'): tpl = 'thumb_long.html'           # 9/18: 롱폼은 가로 1280x720
+    elif ser == '야구분석' and os.path.exists('thumb_analysis.html'): tpl = 'thumb_analysis.html'   # 9/15: 분석은 구단 색 바탕 + 구단 로고 화면 가득
     else: tpl = 'thumb_issue.html' if (ser in ('야구이슈', '야구분석') and os.path.exists('thumb_issue.html')) else 'thumb.html'
     if 'photos' not in EP:
         EP['photos'] = photos_data_uri(EP, EP.get('_path')); EP['photoSizes'] = PHOTO_SIZES
@@ -631,7 +716,9 @@ def make_thumb(EP, out):
     html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)
     io.open(W('render_thumb.html'), 'w', encoding='utf-8').write(html)
     os.makedirs(os.path.dirname(out), exist_ok=True)
-    r = subprocess.run(['node', 'thumb.js', W('render_thumb.html'), out], capture_output=True, text=True, encoding='utf-8', errors='replace')
+    env = dict(os.environ)
+    if ser == '야구롱폼': env['THUMB_W'], env['THUMB_H'] = '1280', '720'     # 유튜브 롱폼 썸네일은 16:9
+    r = subprocess.run(['node', 'thumb.js', W('render_thumb.html'), out], capture_output=True, text=True, encoding='utf-8', errors='replace', env=env)
     if r.returncode != 0: print('썸네일 실패:', (r.stderr or r.stdout)[-300:]); return None
     if os.path.getsize(out) > 2 * 1024 * 1024:
         run(['ffmpeg', '-y', '-i', out, '-q:v', '5', out])
@@ -646,4 +733,9 @@ if __name__ == '__main__':
     elif mode == 'thumb':
         EP = dict(ep); EP['logos'] = logos_data_uri(); EP['_path'] = path
         print(make_thumb(EP, out_paths(ep, path)[1]))
+    elif mode == 'cut':      # 9/18: 롱폼 콘티의 챕터 하나 → 쇼츠 콘티 + 음성.  build.py cut episodes/X_롱폼.json 2
+        if len(sys.argv) < 4: raise SystemExit('사용: build.py cut <롱폼 콘티> <챕터 번호 또는 key>')
+        cut_chapter(ep, path, sys.argv[3])
+    elif mode == 'cutall':   # 챕터 전부 한 번에
+        for i in range(len(ep.get('chapters') or [])): cut_chapter(ep, path, i + 1)
     else: raise SystemExit(__doc__)

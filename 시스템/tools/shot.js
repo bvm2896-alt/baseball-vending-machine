@@ -5,7 +5,7 @@ const { chromium } = require(path.join(__dirname, '..', 'node_modules', 'playwri
 (async () => {
   const [src, linesArg, prefix] = process.argv.slice(2);
   const lines = (linesArg || '0').split(',').map(Number);
-  const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
+  const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: +(process.env.SHOT_W||1080), height: +(process.env.SHOT_H||1920) } });
   p.on('pageerror', e => console.log('ERR', e.message));
   await p.goto('file://' + path.resolve(src)); await p.waitForTimeout(800);
   for (const n of lines) {

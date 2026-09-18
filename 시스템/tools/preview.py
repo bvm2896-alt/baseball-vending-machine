@@ -14,7 +14,10 @@ out = sys.argv[3] if len(sys.argv) > 3 else 'work/preview.html'
 N = len(ep['lines'])
 EP = build.load_episode(epp); EP['_path'] = epp
 EP['bounds'] = [float(i + 1) for i in range(N)]
-EP['subs'] = [[i, i + 1, ep['lines'][i]['sub'].split('|')[0]] for i in range(N)]
+def _sub(x):
+    t = x['sub'] if isinstance(x, dict) else str(x)
+    return t.split('|')[0]
+EP['subs'] = [[i, i + 1, _sub(ep['lines'][i])] for i in range(N)]
 EP['logos'] = build.logos_data_uri(); EP['photos'] = build.photos_data_uri(ep, epp); EP['photoSizes'] = build.PHOTO_SIZES; EP['total'] = float(N)
 html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', build.font_dir_url())
 html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)

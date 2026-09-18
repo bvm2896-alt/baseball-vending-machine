@@ -3,6 +3,7 @@
 //   여러 페이지가 구간을 나눠 동시에 찍고(기본 CPU 수-1, 최대 4) 각자 ffmpeg 로 조각 mp4 를 만든 뒤 이어 붙인다.
 const path = require('path'); const fs = require('fs'); const os = require('os'); const { spawn } = require('child_process');
 const { chromium } = require('playwright');
+const CW = parseInt(process.env.FRAME_W || '1080', 10), CH = parseInt(process.env.FRAME_H || '1920', 10);   // 롱폼은 1920x1080 (build.py 가 환경변수로 준다, 9/18)
 const WORK = process.env.KBO_WORK ? path.resolve(__dirname, process.env.KBO_WORK) : path.join(__dirname, 'work');   // 시리즈 창마다 다른 작업 폴더(동시 제작용)
 
 function ffArgs(fps, W, H, out) {
@@ -12,7 +13,7 @@ function ffArgs(fps, W, H, out) {
 }
 
 async function worker(browser, idx, from, to, fps, scale, W, H, out, quality, onProgress) {
-  const p = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: scale });
+  const p = await browser.newPage({ viewport: { width: CW, height: CH }, deviceScaleFactor: scale });
   await p.goto('file://' + path.join(WORK, 'render.html')); await p.waitForTimeout(900);
   const ff = spawn('ffmpeg', ffArgs(fps, W, H, out), { stdio: ['pipe', 'ignore', 'pipe'] });
   let err = null, errText = ''; ff.on('error', e => { err = e; }); ff.stdin.on('error', e => { err = err || e; });
@@ -40,7 +41,7 @@ async function worker(browser, idx, from, to, fps, scale, W, H, out, quality, on
   const FPS = parseInt(process.argv[4] || '60', 10), SCALE = parseFloat(process.argv[5] || '1.3333');
   const NW = Math.max(1, Math.min(4, parseInt(process.argv[6] || process.env.FRAME_WORKERS || String(os.cpus().length - 1), 10) || 1));
   const QUALITY = parseInt(process.env.FRAME_JPEG_Q || '95', 10);
-  const W = Math.round(1080 * SCALE / 2) * 2, H = Math.round(1920 * SCALE / 2) * 2;
+  const W = Math.round(CW * SCALE / 2) * 2, H = Math.round(CH * SCALE / 2) * 2;
   const n = Math.ceil(FPS * DUR);
   if (!(n > 0)) throw new Error(`총 길이·fps 가 이상해요 (길이 ${process.argv[2]}, fps ${process.argv[4]})`);
   const opts = {}; if (process.env.CHROME_PATH) opts.executablePath = process.env.CHROME_PATH;
