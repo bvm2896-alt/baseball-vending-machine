@@ -1,0 +1,507 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
+/* ===== 야구자판기 롱폼 전용 가로 템플릿 (template_long.html) — 2026-09-18 신설 =====
+   캔버스 1920x1080 (16:9). 쇼츠 세로 템플릿(template_issue.html)과 같은 window.EP 구조·같은 장면 이름을 쓰되
+   가로 화면에 맞춰 '왼쪽 비주얼 / 오른쪽 큰 글씨' 2단으로 다시 짰다.
+   build.py 가 콘티 series 가 "야구롱폼" 이면 이 템플릿을 쓴다.
+   영역: 레일 y40~126 / 본문 y176~886(좌우 96 여백, 폭 1728) / 자막 y930 / 아래 60px 은 플레이어 UI 여백.
+   챕터: EP.chapters = [{key,title,from,to}] 이면 레일 오른쪽에 "2/5 대만 반응" 과 진행 바를 그린다. */
+@font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_bold.ttf') format('truetype');font-weight:700 900}
+@font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_medium.ttf') format('truetype');font-weight:400 600}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#F4F6FA}
+body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-weight:700;-webkit-font-smoothing:antialiased;color:#12161F}
+#stage{position:relative;width:1920px;height:1080px;background:#F4F6FA}
+.num{font-variant-numeric:tabular-nums;letter-spacing:-2px}
+/* 레일 */
+#hdr{position:absolute;left:96px;right:96px;top:40px;height:80px;display:flex;align-items:center;justify-content:space-between}
+#brand{display:flex;align-items:center;gap:14px;font-size:42px;font-weight:900;letter-spacing:-1px;color:#12161F}
+#brand .m{width:10px;height:38px;border-radius:5px;background:#EA0029}
+#meta{display:flex;align-items:center;gap:20px}
+#chap{display:flex;align-items:center;gap:14px;background:#12161F;color:#fff;font-size:32px;font-weight:800;letter-spacing:-1px;padding:10px 24px;border-radius:999px}
+#chap .n{font-size:26px;font-weight:900;opacity:.72;letter-spacing:1px}
+#meta .d{font-size:32px;font-weight:600;color:#6A7382;letter-spacing:1px}
+#prog{position:absolute;left:96px;right:96px;top:126px;height:5px;border-radius:3px;background:#E3E7EE;overflow:hidden}
+#prog i{display:block;height:5px;border-radius:3px;background:var(--acc);width:0}
+/* 본문 */
+#body{position:absolute;left:96px;width:1728px;top:172px;height:676px;will-change:opacity,transform;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+/* 2단: 왼쪽 비주얼 / 오른쪽 글씨 */
+.lr{display:flex;align-items:center;justify-content:center;gap:76px;width:100%;height:100%}
+.lr>.v{flex:0 0 880px;max-width:880px;display:flex;align-items:center;justify-content:center}
+.lr>.t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;gap:26px}
+.lr>.t.mid{align-items:center;text-align:center}
+/* 자막 */
+#sub{position:absolute;left:180px;right:180px;bottom:44px;text-align:center}
+#sub span{display:inline;background:rgba(18,22,31,.96);color:#FFFFFF;font-size:52px;font-weight:700;
+  letter-spacing:-1px;line-height:1.55;padding:9px 20px;border-radius:14px;word-break:keep-all;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone}
+/* 타이포 */
+.mega{font-size:152px;font-weight:900;letter-spacing:-5px;line-height:1.06;color:#12161F}
+.big{font-size:112px;font-weight:900;letter-spacing:-4px;line-height:1.08;color:#12161F}
+.title{font-size:46px;font-weight:700;letter-spacing:-1.5px;color:#12161F}
+.label{font-size:34px;font-weight:600;color:#6A7382;letter-spacing:-1px}
+.gold{color:var(--acc)}.green{color:#16A34A}.red{color:#E5484D}.gray{color:#6A7382}
+.row{display:flex;align-items:center;justify-content:center}
+.col{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.chip{background:#fff;border:3px solid #E3E7EE;overflow:hidden;display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 8px 24px rgba(18,22,31,.08)}
+.chip img{width:84%;height:84%;object-fit:contain;display:block}
+.card{width:420px;height:470px;background:#FFFFFF;border:3px solid #E3E7EE;border-radius:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;box-shadow:0 14px 40px rgba(18,22,31,.08)}
+.card .v{font-size:104px;font-weight:900;letter-spacing:-4px;line-height:1.05;white-space:nowrap;color:#12161F}
+.card .l{font-size:34px;font-weight:600;color:#6A7382;letter-spacing:-1px}
+.pane{background:#FFFFFF;border:3px solid #E3E7EE;box-shadow:0 14px 40px rgba(18,22,31,.08)}
+/* 사진 틀 — 폭은 부모가 정한다(가로에서는 칸마다 다름) */
+.photo{position:relative;width:100%;border-radius:32px;overflow:hidden;background:#E9EDF3;border:3px solid #E3E7EE;box-shadow:0 18px 50px rgba(18,22,31,.14);flex:0 0 auto}
+.photo img,.pp img{width:100%;height:100%;object-fit:cover;display:block}
+.photo .cap{position:absolute;left:0;right:0;bottom:0;padding:20px 28px;background:linear-gradient(180deg,rgba(18,22,31,0),rgba(18,22,31,.72));color:#fff;font-size:32px;font-weight:700;text-align:left;letter-spacing:-1px}
+.photo .tag{position:absolute;left:24px;top:24px;background:rgba(255,255,255,.92);color:#12161F;font-size:30px;font-weight:800;padding:9px 20px;border-radius:999px;letter-spacing:-1px}
+/* 챕터 타이틀 카드 */
+.chaptitle{display:flex;flex-direction:column;align-items:center;gap:30px}
+.chaptitle .kk{font-size:40px;font-weight:900;letter-spacing:6px;color:var(--acc)}
+.chaptitle .tt{font-size:132px;font-weight:900;letter-spacing:-5px;line-height:1.08;color:#12161F;text-align:center}
+.dots{display:flex;gap:16px}
+.dots i{width:18px;height:18px;border-radius:9px;background:#D8DEE8;display:block}
+.dots i.on{background:var(--acc);width:52px}
+/* 표 */
+#table{width:1400px}
+#table .hd{display:flex;align-items:center;gap:18px;padding-bottom:10px;border-bottom:2px solid #12161F;font-size:24px;font-weight:700;color:#6A7382;letter-spacing:1px}
+.tr{display:flex;align-items:center;gap:18px;height:62px;border-bottom:1px solid #E3E7EE}
+.tr .rk{width:52px;font-size:32px;font-weight:800;text-align:center}
+.tr .tm{width:200px;display:flex;align-items:center;gap:14px}
+.tr .nm{font-size:36px;font-weight:800;letter-spacing:-1.5px;white-space:nowrap}
+.tr .bw{flex:1;height:26px;position:relative}
+.tr .bar{position:absolute;left:0;top:0;height:26px;border-radius:0 13px 13px 0}
+.tr .gp{width:110px;font-size:30px;font-weight:600;text-align:right;color:#6A7382}
+.tr .wr{width:130px;font-size:36px;font-weight:800;text-align:right;letter-spacing:-1.5px}
+/* ===== 롱폼 정보형 장면 (2026-09-18 추가) — 한 화면에 요소를 많이 담기 위한 것 ===== */
+/* h2h: 맞대결 기록판 */
+.h2h{width:100%;display:flex;flex-direction:column;gap:13px}
+.h2h .r{display:flex;align-items:center;gap:24px;background:#fff;border:3px solid #E3E7EE;border-radius:22px;padding:14px 30px;box-shadow:0 8px 24px rgba(18,22,31,.06)}
+.h2h .w{flex:1;text-align:left;font-size:40px;font-weight:800;letter-spacing:-1.5px;line-height:1.2}
+.h2h .w small{display:block;font-size:27px;font-weight:600;color:#6A7382;letter-spacing:-1px;margin-top:3px}
+.h2h .s{font-size:54px;font-weight:900;letter-spacing:-2px;width:210px;text-align:center}
+.h2h .b{width:92px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:#fff;flex:0 0 auto}
+/* roster: 두 팀 명단 비교 */
+.rst{display:flex;gap:36px;width:100%;align-items:stretch}
+.rst .p{flex:1;min-width:0;background:#fff;border:3px solid #E3E7EE;border-radius:30px;padding:24px 28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 14px 40px rgba(18,22,31,.08)}
+.rst .hh{display:flex;align-items:center;gap:16px;border-bottom:2px solid #E3E7EE;padding-bottom:12px}
+.rst .hh b{font-size:46px;font-weight:900;letter-spacing:-2px;white-space:nowrap}
+.rst .hh span{font-size:28px;font-weight:800;color:#fff;background:#12161F;padding:6px 16px;border-radius:999px;letter-spacing:-1px;white-space:nowrap}
+.rst .g{display:flex;align-items:flex-start;gap:14px;text-align:left}
+.rst .g i{font-style:normal;flex:0 0 96px;font-size:29px;font-weight:700;color:#6A7382;padding-top:5px;letter-spacing:-1px}
+.rst .g u{text-decoration:none;flex:1;min-width:0;font-size:33px;font-weight:800;letter-spacing:-1.5px;line-height:1.4;word-break:keep-all}
+/* statbars: 항목별 좌우 비교 막대 */
+.sb{width:100%;display:flex;flex-direction:column;gap:16px}
+.sb .r{display:flex;align-items:center;gap:18px}
+.sb .k{width:320px;flex:0 0 320px;font-size:33px;font-weight:700;color:#6A7382;letter-spacing:-1px;text-align:center;line-height:1.25}
+.sb .h{flex:1;min-width:0;display:flex;align-items:center;gap:14px}
+.sb .h.l{justify-content:flex-end}
+.sb .bar{height:38px;border-radius:10px;flex:0 0 auto}
+.sb .n{font-size:40px;font-weight:900;letter-spacing:-1.5px;min-width:140px;flex:0 0 auto}
+/* 스탯 칩 */
+.st{display:flex;gap:14px;flex-wrap:wrap}
+.st>div{background:#fff;border:3px solid #E3E7EE;border-radius:20px;padding:11px 22px;display:flex;flex-direction:column;align-items:flex-start;gap:0;box-shadow:0 8px 24px rgba(18,22,31,.06)}
+.st>div b{font-size:46px;font-weight:900;letter-spacing:-2px;line-height:1.1}
+.st>div i{font-style:normal;font-size:26px;font-weight:600;color:#6A7382;letter-spacing:-1px}
+.badge{display:inline-flex;align-items:center;gap:10px;color:#fff;font-size:32px;font-weight:800;padding:8px 22px;border-radius:999px;letter-spacing:-1px}
+</style></head><body>
+<div id="stage">
+  <div id="hdr">
+    <div id="brand"><div class="m" id="brandBar"></div><div>야구<b>자판기</b></div></div>
+    <div id="meta"><div class="d" id="railTitle" style="font-size:32px;font-weight:800;color:#12161F;letter-spacing:1px"></div><div id="chap" style="display:none"><span class="n" id="chapN"></span><span id="chapT"></span></div><div class="d num" id="railDate"></div></div>
+  </div>
+  <div id="prog"><i id="progBar"></i></div>
+  <div id="body"></div>
+  <div id="sub"><span></span></div>
+</div>
+
+<script>
+const EP = window.EP || {};
+const D = (EP.standings || []).map(t => ({
+  rk: t.rank, nm: t.team, code: t.code, wr: t.winRate, gb: Number(t.gameBehind).toFixed(1),
+  g: t.games, st: t.streak, win: t.win, lose: t.lose, draw: t.draw }));
+const LOGO = EP.logos || {}, PHOTO = EP.photos || {};
+const TEAMCOL = { SS: '#074CA1', KT: '#4A4A4A', LG: '#C30452', HT: '#EA0029', OB: '#2B2A5E', NC: '#315288', LT: '#1E3A6B', SK: '#CE0E2D', HH: '#FC4E00', WO: '#820024' };
+const ALIAS = { '기아': 'HT', 'KIA': 'HT', '엘지': 'LG', '케이티': 'KT', '엔씨': 'NC', '에스에스지': 'SK', 'SSG': 'SK', '두산': 'OB', '삼성': 'SS', '롯데': 'LT', '한화': 'HH', '키움': 'WO' };
+const T = n => D.find(t => t.nm === n || t.code === n || t.code === ALIAS[n]) || { nm: n, code: ALIAS[n] || n };
+/* 강조색 = 주인공 팀 색 (KT 회색은 화면에서 죽어서 파란색으로) */
+let ACC = TEAMCOL[(T(EP.focusTeam || '') || {}).code] || '#1E5EFF'; if (ACC === '#4A4A4A') ACC = '#1E5EFF';
+document.documentElement.style.setProperty('--acc', ACC);
+document.getElementById('brandBar').style.background = ACC;
+const GREEN = '#16A34A', RED = '#E5484D', GRAY = '#6A7382', LINE = '#E3E7EE', TXT = '#12161F';
+document.getElementById('railDate').textContent = EP.dateLabel || '';
+if (EP.railTitle) document.getElementById('railTitle').textContent = EP.railTitle;
+const WRS = D.map(t => t.wr);
+const LO = Math.min(...WRS, .4) - .03, HI = Math.max(...WRS, .6) + .02, BM = 330;
+
+const c01 = x => x < 0 ? 0 : x > 1 ? 1 : x;
+const eo = t => 1 - Math.pow(1 - c01(t), 3);
+const eb = t => { t = c01(t); const c = 1.70158; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+const seg = (lt, a, d) => c01((lt - a) / d);
+const fmt = w => w.toFixed(3).replace(/^0/, '');
+const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const br = s => esc(s).split('\n').join('<br>');
+const SZ = { L: [300, 64], M: [190, 42], S: [62, 14] };
+function chip(t, size = 'M', extra = '') {
+  const [s, r] = SZ[size];
+  return `<div class="chip" style="width:${s}px;height:${s}px;border-radius:${r}px;${extra}"><img src="${LOGO[t.code] || ''}"></div>`;
+}
+const EMOJI = "font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji','KBO',sans-serif";
+function chipM(t, size = 'M', mark = '', p = 1, extra = '') {
+  if (!mark) return chip(t, size, extra);
+  const isText = !/\p{Extended_Pictographic}/u.test(mark);
+  const fs = (size === 'L' ? 104 : 80) * (isText ? 1.1 : 1);
+  const style = isText ? `font-family:'KBO';font-weight:900;color:${TXT};text-shadow:0 4px 18px rgba(255,255,255,.9)` : EMOJI + ';filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))';
+  return `<div style="position:relative;display:inline-block;flex:0 0 auto">${chip(t, size, extra)}
+    <div style="position:absolute;right:-${fs * .45}px;top:-${fs * .35}px;font-size:${fs}px;line-height:1;${style};opacity:${c01(p * 1.5)};transform:scale(${0.4 + 0.6 * eb(p)}) rotate(${(1 - eb(p)) * -25 + 8}deg)">${esc(mark)}</div></div>`;
+}
+const markOf = (s, n, i) => (s.marks && (s.marks[n] || s.marks[i] || s.marks[String(i)])) || '';
+const nextOf = (s, n, i) => (s.next && (typeof s.next === 'string' ? (i === 0 ? s.next : '') : (s.next[n] || s.next[i] || s.next[String(i)]))) || '';
+function withNext(chipHtml, opp, p = 1, note = '') {
+  if (!opp) return chipHtml;
+  const o = T(opp);
+  return `<div class="col" style="gap:14px">${chipHtml}
+    <div class="row" style="gap:10px;${rise(p, 24)}"><span class="label" style="font-size:30px">vs</span>${chip(o, 'S')}<span class="label" style="font-size:32px;color:${TXT}">${esc(o.nm)}</span>${note ? `<span class="label" style="font-size:28px">${esc(note)}</span>` : ''}</div></div>`;
+}
+/* B(): 가로 본문에 넣고, 폭/높이에 맞게 큰 글씨를 줄인다.
+   - 2단(.lr)이면 글씨 칸(.lr>.t) 폭에 맞춘다. 한 단이면 본문 폭(1728)에 맞춘다.
+   - 세로는 676px 안에. */
+function B(h) {
+  const body = document.getElementById('body'); body.innerHTML = h;
+  [...body.querySelectorAll('.card .v')].forEach(el => { el.style.whiteSpace = 'pre'; let fs = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > 372 && fs > 40) { fs -= 4; el.style.fontSize = fs + 'px'; } });
+  const els = [...body.querySelectorAll('.mega,.big,.chaptitle .tt')];
+  els.forEach(el => {
+    const box = el.closest('.lr > .t') || el.closest('.lr > .v') || body;
+    const lim = Math.max(320, box.clientWidth - 8);
+    el.style.whiteSpace = 'nowrap'; let fs = parseFloat(getComputedStyle(el).fontSize);
+    while (el.scrollWidth > lim && fs > 46) { fs -= 4; el.style.fontSize = fs + 'px'; }
+  });
+  const tall = () => { const lr = body.querySelector('.lr'); const kids = lr ? [...lr.children] : [...body.children];
+    return Math.max(0, ...kids.map(c => c.scrollHeight)); };
+  for (let k = 0; k < 40 && els.length && tall() > 676; k++)
+    els.forEach(el => { const fs = parseFloat(getComputedStyle(el).fontSize); if (fs > 46) el.style.fontSize = (fs - 4) + 'px'; });
+}
+/* 2단 배치: 왼쪽 비주얼 / 오른쪽 글씨. 비주얼이 없으면 글씨를 가운데로 크게. */
+function LR(visual, text, mid, vw) {
+  const hasT = String(text || '').replace(/<[^>]*>/g, '').trim().length > 0 || /<img|photo|card|chip/.test(String(text || ''));
+  if (!visual) return `<div class="lr"><div class="t mid" style="flex:1 1 auto;align-items:center;text-align:center">${text}</div></div>`;
+  if (!hasT) { const w = Math.min(1180, vw || 880);
+    return `<div class="lr" style="justify-content:center"><div class="v" style="flex:0 0 ${w}px;max-width:${w}px">${visual}</div></div>`; }
+  const w2 = Math.min(880, vw || 880);
+  return `<div class="lr"><div class="v" style="flex:0 0 ${w2}px;max-width:${w2}px">${visual}</div><div class="t${mid ? ' mid' : ''}">${text}</div></div>`;
+}
+const pop = p => `opacity:${c01(p * 1.4)};transform:scale(${0.6 + 0.4 * eb(p)})`;
+const rise = (p, px = 60) => `opacity:${c01(p * 1.4)};transform:translateY(${(1 - eo(p)) * px}px)`;
+const slideX = (p, px) => `opacity:${c01(p * 1.4)};transform:translateX(${(1 - eo(p)) * px}px)`;
+const cnt = (p, v, dec = 0) => (v * eo(p)).toFixed(dec);
+const stColor = st => /승/.test(st) ? GREEN : /패/.test(st) ? RED : GRAY;
+const stN = st => parseInt(st) || 0;
+const stLabel = st => /^\d+(승|패)$/.test(st) && parseInt(st) >= 2 ? st.replace(/(승|패)$/, '연$1') : st;
+const winLose = (w, l) => `${w}승<br>${l}패`;
+
+/* ---- 사진 ---- 파일명(확장자 있어도 없어도)으로 찾는다 */
+function photoSrc(name) {
+  if (!name) return '';
+  if (PHOTO[name]) return PHOTO[name];
+  const base = String(name).replace(/\.[a-z0-9]+$/i, '');
+  const k = Object.keys(PHOTO).find(x => x === base || x.replace(/\.[a-z0-9]+$/i, '') === base);
+  return k ? PHOTO[k] : '';
+}
+/* 사진 틀: 사진이 있으면 사진, 없으면 팀 로고가 든 연한 상자(렌더가 멈추지 않게). h=높이, focus=object-position(top/center) */
+const PSIZE = EP.photoSizes || {};
+function photoSize(name) {
+  if (!name) return null;
+  const base = String(name).replace(/\.[a-z0-9]+$/i, '');
+  const k = Object.keys(PSIZE).find(x => x === name || x === base || x.replace(/\.[a-z0-9]+$/i, '') === base);
+  return k ? PSIZE[k] : null;
+}
+/* 사진을 틀(w×h)에 어떻게 넣을지 — 얼굴이 잘리지 않게:
+   · 잘라 채우기(cover)는 사진이 틀보다 크고(1.15배 넘게 늘릴 필요 없음) 비율도 비슷할 때만. 자를 땐 위쪽(얼굴) 기준.
+   · 그 외(작은 사진, 세로 사진을 가로 틀에, 투명 배경 png)는 늘리지 않고 통째로 보이게(contain) 놓고,
+     뒤는 같은 사진을 흐리게 깔거나(투명 png 는 단색) 채운다.  s.fit = 'cover' | 'contain' 으로 강제 가능 */
+function photoImg(s, src, w, h, focus) {
+  const sz = photoSize(s.img), alpha = sz && sz[2];
+  let fit = s.fit;
+  if (!fit) {
+    if (!sz) fit = 'cover';
+    else {
+      const coverScale = Math.max(w / sz[0], h / sz[1]), ratio = (sz[0] / sz[1]) / (w / h);
+      fit = (!alpha && coverScale <= 1.15 && ratio > 0.72 && ratio < 1.4) ? 'cover' : 'contain';
+    }
+  }
+  if (fit === 'cover') return `<img src="${src}" style="object-position:${esc(s.focus || focus || '50% 12%')}">`;
+  const scale = sz ? Math.min(1.25, w / sz[0], h / sz[1]) : 1, iw = sz ? Math.round(sz[0] * scale) : 'auto', ih = sz ? Math.round(sz[1] * scale) : 'auto';
+  const back = alpha
+    ? `<div style="position:absolute;inset:0;background:linear-gradient(160deg,#F7F8FB,#E4E9F1)"></div>`
+    : `<img src="${src}" style="position:absolute;inset:-40px;width:calc(100% + 80px);height:calc(100% + 80px);object-fit:cover;filter:blur(28px) saturate(1.1);opacity:.85"><div style="position:absolute;inset:0;background:rgba(18,22,31,.12)"></div>`;
+  return `${back}<img src="${src}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${iw}${sz ? 'px' : ''};height:${ih}${sz ? 'px' : ''};object-fit:contain;${alpha ? '' : 'border-radius:18px;box-shadow:0 14px 40px rgba(0,0,0,.35)'}">`;
+}
+function photoBox(s, h = 560, p = 1, extra = '') {
+  const src = photoSrc(s.img), team = s.team || (s.teams || [])[0];
+  const inner = src
+    ? photoImg(s, src, 900, h)
+    : `<div class="col" style="width:100%;height:100%;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${team ? chip(T(team), 'L') : ''}</div>`;
+  const tag = s.tag ? `<div class="tag">${esc(s.tag)}</div>` : '';
+  const cap = s.caption ? `<div class="cap">${br(s.caption)}</div>` : '';
+  return `<div class="photo" style="height:${h}px;${rise(p, 40)};${extra}">${inner}${tag}${cap}</div>`;
+}
+
+
+const SCENE = {};
+const PHMAX = 648;   // 본문(676) 안에 들어오게 — 쇼츠 콘티의 h(880 등)를 그대로 쓰면 아래가 잘린다(9/18)
+const PH = (s, h, p) => (photoSrc(s.img) || s.team || (s.teams || [])[0]) ? photoBox(s, Math.min(h, PHMAX), p) : '';
+/* 사진 칸 폭을 이미지 비율에 맞춘다 — 가로 화면에서 세로 사진을 넓은 칸에 넣으면 양옆이 흐린 여백으로 남는다(9/18) */
+function phW(s, h) {
+  const sz = photoSize(s.img); if (!sz) return 880;
+  return Math.max(360, Math.min(1180, Math.round(Math.min(h, PHMAX) * (sz[0] / sz[1])) + 12));
+}
+
+/* chapter: 챕터 표지 — 번호 + 제목 + 진행 점 */
+SCENE.chapter = (lt, s) => {
+  const CH = EP.chapters || [], i = Math.max(0, CH.findIndex(c => c.title === s.text || c.key === s.key));
+  const dots = CH.length ? `<div class="dots" style="${rise(seg(lt, .45, .5), 20)}">${CH.map((c, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('')}</div>` : '';
+  B(`<div class="chaptitle">
+      <div class="kk" style="${rise(seg(lt, 0, .4), 24)}">${esc(s.label || ((i + 1) + ' / ' + (CH.length || 1)))}</div>
+      <div class="tt" style="${pop(seg(lt, .15, .6))}">${br(s.text || '')}</div>
+      ${(s.items || []).length ? `<div class="row" style="gap:18px;margin-top:8px">${s.items.map((x, j) => `<div style="background:#fff;border:3px solid #E3E7EE;border-radius:999px;padding:11px 26px;font-size:34px;font-weight:800;letter-spacing:-1px;${rise(seg(lt, .35 + j * .12, .45), 18)}">${esc(x)}</div>`).join('')}</div>` : ''}
+      ${dots}</div>`);
+};
+
+/* hook: 사진 왼쪽 + 초대형 문구 오른쪽 */
+SCENE.hook = (lt, s) => {
+  const pulse = 1 + 0.02 * Math.sin(lt * 4), p = seg(lt, .3, .7);
+  const H0 = 660, vis = PH(s, H0, seg(lt, 0, .5));
+  B(LR(vis, `<div class="mega gold" style="font-size:${s.size || 150}px;opacity:${c01(p * 1.4)};transform:scale(${(0.66 + 0.34 * eb(p)) * (lt > 1.1 ? pulse : 1)});transform-origin:left center">${br(s.text)}</div>`, false, phW(s, H0)));
+};
+
+
+/* 보조 요소 — 글자만 있는 화면을 없애기 위한 공통 조각 (2026-09-18) */
+function statRow(lt, sts, t0) {
+  if (!sts || !sts.length) return '';
+  return `<div class="st">` + sts.map((x, i) => `<div style="${rise(seg(lt, (t0 == null ? .45 : t0) + i * .12, .45), 18)}"><b class="num" style="color:${x.hi ? ACC : TXT}">${esc(x.v)}</b><i>${esc(x.k)}</i></div>`).join('') + `</div>`;
+}
+function noteLine(lt, n, t0) {
+  if (!n) return '';
+  return `<div class="label" style="font-size:38px;line-height:1.35;${rise(seg(lt, (t0 == null ? .55 : t0), .45), 16)}">${br(n)}</div>`;
+}
+
+/* big: 사진(있으면) + 큰 문구 (+ 번호 배지 + 스탯 칩 + 보조 문구) */
+SCENE.big = (lt, s) => {
+  const num = s.num || '', badge = numBadge(lt, num, s.numLabel);
+  const H0 = 620, vis = PH(s, H0, seg(lt, 0, .5));
+  const txt = `${badge}<div class="mega gold" style="font-size:${s.size ? Math.round(s.size * .95) : 120}px;${pop(seg(lt, .25, .6))};transform-origin:left center">${br(s.text || '')}</div>`
+    + noteLine(lt, s.note, .5) + statRow(lt, s.stats, .5);
+  B(LR(vis, txt, false, phW(s, H0)));
+};
+
+/* photo: 사진이 주인공 — 사진 크게, 글씨는 옆에 */
+SCENE.photo = (lt, s) => {
+  const H0 = s.h || 680, vis = PH(s, H0, seg(lt, 0, .5));
+  if (!vis) return SCENE.big(lt, { text: (s.tag ? s.tag + '\n' : '') + (s.text || ''), size: Math.min(s.size || 120, 112) });
+  B(LR(vis, s.text ? `<div class="mega gold" style="font-size:${s.size ? Math.round(s.size * .95) : 112}px;${pop(seg(lt, .3, .6))};transform-origin:left center">${br(s.text)}</div>` : '', false, phW(s, H0)));
+};
+
+/* question: 가운데 큰 질문 */
+SCENE.question = (lt, s) => {
+  const vis = PH(s, 560, seg(lt, 0, .5));
+  const ex = noteLine(lt, s.note, .45) + statRow(lt, s.stats, .45);
+  B(LR(vis, `<div class="mega" style="font-size:${s.size || 126}px;${pop(seg(lt, 0, .6))}">${br(s.text || '여러분 생각은?')}</div>${ex}`, !vis));
+};
+
+/* 번호 배지 — 글자가 붙거나 세 자리 이상이면 알약 */
+function numBadge(lt, num, label) {
+  if (!num) return '';
+  const wide = label || String(num).length >= 3;
+  const st = `${pop(seg(lt, .05, .45))};background:${ACC};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;letter-spacing:-1px`;
+  if (wide) return `<div class="num" style="height:88px;padding:0 36px;border-radius:18px;font-size:52px;gap:14px;${st}">${label ? `<span style="font-size:42px;font-weight:800;opacity:.9">${esc(label)}</span>` : ''}<span>${num}</span></div>`;
+  return `<div class="num" style="width:96px;height:96px;border-radius:50%;font-size:60px;${st}"></div>`.replace('></div>', `>${num}</div>`);
+}
+
+/* 카드 두 장 (versus / need / matchup) */
+function cardOf(x, p) {
+  if (!x) return '';
+  const t = x.team ? T(x.team) : null;
+  const head = photoSrc(x.img)
+    ? `<div style="width:340px;height:200px;border-radius:24px;overflow:hidden;position:relative;background:#E9EDF3"><div class="pp" style="position:absolute;inset:0">${photoImg(x, photoSrc(x.img), 340, 200, x.focus || '50% 12%')}</div></div>`
+    : (t ? chip(t, 'M') : '');
+  return `<div class="card" style="${rise(p, 40)}">${head}
+    <div class="v">${esc(x.value != null ? x.value : (t ? t.nm : (x.name || '')))}</div>
+    ${x.name && x.value != null ? `<div class="l">${br(x.name)}</div>` : ''}
+    ${x.label ? `<div class="l">${br(x.label)}</div>` : ''}</div>`;
+}
+SCENE.versus = (lt, s) => B(LR('', `${numBadge(lt, s.num, s.numLabel)}<div class="row" style="gap:70px;justify-content:center;width:100%">
+  ${cardOf(s.left, seg(lt, .15, .5))}<div class="label" style="font-size:44px;${pop(seg(lt, .35, .4))}">VS</div>${cardOf(s.right, seg(lt, .45, .5))}</div>`));
+SCENE.need = SCENE.versus;
+SCENE.matchup = (lt, s) => {
+  const L = T(s.left || ''), R = T(s.right || '');
+  B(LR(PH(s, 560, seg(lt, 0, .5)), `<div class="row" style="gap:54px;${pop(seg(lt, .1, .5))}">${chip(L, 'M')}<span class="big">${esc(s.score || 'vs')}</span>${chip(R, 'M')}</div>
+    ${s.text ? `<div class="big gold" style="margin-top:26px;font-size:${s.size || 92}px;${pop(seg(lt, .45, .5))}">${br(s.text)}</div>` : ''}`, true));
+};
+
+/* people: 인물 카드 2~4장 (가로라 4장까지 들어간다) */
+SCENE.people = (lt, s) => {
+  const items = s.items || [], n = Math.max(1, items.length);
+  const w = n <= 2 ? 460 : n === 3 ? 400 : 330, ph = n <= 2 ? 400 : 330;
+  let h = s.title ? `<div class="title gold" style="font-size:52px;margin-bottom:26px;${rise(seg(lt, 0, .4), 20)}">${br(s.title)}</div>` : '';
+  h += `<div class="row" style="gap:36px;align-items:flex-start;justify-content:center;width:100%">` + items.map((it, i) => {
+    const p = seg(lt, .2 + i * .25, .5), src = photoSrc(it.img), t = it.team ? T(it.team) : null;
+    const pic = src ? `<div style="width:100%;height:${ph}px;overflow:hidden;background:#E9EDF3;position:relative"><div class="pp" style="position:absolute;inset:0">${photoImg(it, src, w, ph, it.focus || '50% 10%')}</div></div>`
+      : `<div class="col" style="width:100%;height:${ph}px;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${t ? chip(t, 'M') : ''}</div>`;
+    return `<div class="pane" style="width:${w}px;border-radius:28px;overflow:hidden;${rise(p, 40)}">${pic}
+      <div class="col" style="padding:20px 14px;gap:8px"><div style="font-size:${n >= 4 ? 40 : 46}px;font-weight:900;letter-spacing:-1.5px">${esc(it.name || '')}</div>
+      ${it.note ? `<div class="label" style="font-size:${n >= 4 ? 28 : 32}px;color:${it.bad === true ? RED : it.bad === false ? GREEN : GRAY};text-align:center">${br(it.note)}</div>` : ''}</div></div>`;
+  }).join('') + `</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:28px;font-size:${s.size || 80}px;${pop(seg(lt, .3 + n * .25, .5))}">${br(s.text)}</div>`;
+  B(LR('', h));
+};
+
+/* teamgrid: 구단별 숫자 한 줄 */
+SCENE.teamgrid = (lt, s) => {
+  const items = s.items || [];
+  let h = `<div class="row" style="gap:40px;justify-content:center;width:100%">` + items.map((it, i) => {
+    const p = seg(lt, .15 + i * .12, .45), t = T(it.team || '');
+    return `<div class="col" style="gap:16px;${rise(p, 30)}">${chip(t, 'M')}<div class="big" style="font-size:78px">${esc(it.value)}</div>${it.label ? `<div class="label">${br(it.label)}</div>` : ''}</div>`;
+  }).join('') + `</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:30px;font-size:${s.size || 84}px;${pop(seg(lt, .3 + items.length * .12, .5))}">${br(s.text)}</div>`;
+  B(LR('', h));
+};
+
+/* steps: 가로 타임라인 — 가로 화면에서 제일 잘 맞는다 */
+SCENE.steps = (lt, s) => {
+  const items = s.items || [];
+  let h = `<div class="row" style="gap:0;justify-content:center;width:100%;align-items:flex-start">` + items.map((it, i) => {
+    const p = seg(lt, .15 + i * .22, .45);
+    return `${i ? `<div style="flex:0 0 60px;height:4px;background:#D8DEE8;margin-top:56px;opacity:${c01(p * 1.5)}"></div>` : ''}
+      <div class="col" style="gap:14px;max-width:320px;${rise(p, 34)}">
+        <div class="num" style="width:${it.hi ? 116 : 100}px;height:${it.hi ? 116 : 100}px;border-radius:50%;background:${it.hi ? ACC : '#fff'};border:3px solid ${it.hi ? ACC : LINE};color:${it.hi ? '#fff' : TXT};display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900">${esc(it.date || (i + 1))}</div>
+        <div style="font-size:42px;font-weight:800;letter-spacing:-1.5px;text-align:center">${br(it.text || '')}</div>
+        ${it.sub ? `<div class="label" style="font-size:30px;text-align:center">${br(it.sub)}</div>` : ''}</div>`;
+  }).join('') + `</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:32px;font-size:${s.size || 84}px;${pop(seg(lt, .3 + items.length * .22, .5))}">${br(s.text)}</div>`;
+  B(LR('', h));
+};
+
+/* table: 순위표 — 가로에서 제일 잘 읽힌다 */
+SCENE.table = (lt, s) => {
+  const hi = s.highlight || [];
+  const rows = D.slice(0, s.top || 10).map((t, i) => {
+    const p = seg(lt, .1 + i * .12, .5), on = hi.includes(t.nm) || hi.includes(t.code);
+    const w = c01((t.wr - LO) / (HI - LO)) * 640 * eo(p);
+    return `<div class="tr" style="opacity:${c01(p * 1.6)};background:${on ? ACC + '14' : 'transparent'}">
+      <div class="rk">${t.rk}</div><div class="tm">${chip(t, 'S')}<span class="nm">${esc(t.nm)}</span></div>
+      <div class="bw"><div class="bar" style="width:${w}px;background:${on ? ACC : '#C7CEDA'}"></div></div>
+      <div class="gp num">${t.win}승 ${t.lose}패</div><div class="wr num">${fmt(t.wr)}</div></div>`;
+  }).join('');
+  B(LR('', `<div id="table"><div class="hd"><div class="rk">순위</div><div class="tm">팀</div><div class="bw"></div><div class="gp">전적</div><div class="wr">승률</div></div>${rows}</div>
+    ${s.text ? `<div class="big gold" style="margin-top:26px;font-size:${s.size || 80}px;${pop(seg(lt, 1.5, .5))}">${br(s.text)}</div>` : ''}`));
+};
+
+
+/* ===== 정보형 장면 (2026-09-18) — 롱폼은 한 화면에 볼 게 많아야 한다 ===== */
+
+/* h2h: 맞대결 기록판 — 대회 / 스코어 / 승패 배지 */
+SCENE.h2h = (lt, s) => {
+  const rows = s.rows || [];
+  let h = s.title ? `<div class="title gold" style="font-size:52px;margin-bottom:18px;${rise(seg(lt, 0, .4), 20)}">${br(s.title)}</div>` : '';
+  h += `<div class="h2h">` + rows.map((r, i) => {
+    const p = seg(lt, .15 + i * .18, .45), win = /승/.test(r.res || ''), col = win ? GREEN : RED;
+    return `<div class="r" style="${rise(p, 26)};border-color:${r.hi ? ACC : '#E3E7EE'}">
+      <div class="w">${esc(r.when || '')}${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</div>
+      <div class="s num" style="color:${col}">${esc(r.score || '')}</div>
+      <div class="b" style="background:${col}">${esc(r.res || '')}</div></div>`;
+  }).join('') + `</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 80}px;${pop(seg(lt, .25 + rows.length * .18, .5))}">${br(s.text)}</div>`;
+  B(LR('', h));
+};
+
+/* roster: 두 팀 명단을 나란히 — 한 화면에 정보가 제일 많이 들어간다 */
+function rosterPane(x, p) {
+  const t = x.team ? T(x.team) : null;
+  return `<div class="p" style="${rise(p, 34)}">
+    <div class="hh">${t ? chip(t, 'S') : ''}<b>${esc(x.name || (t ? t.nm : ''))}</b>${x.label ? `<span style="background:${x.hi ? ACC : '#12161F'}">${esc(x.label)}</span>` : ''}</div>
+    ${(x.groups || []).map(g => `<div class="g"><i>${esc(g.k || '')}</i><u>${br(g.v || '')}</u></div>`).join('')}</div>`;
+}
+SCENE.roster = (lt, s) => {
+  let h = s.title ? `<div class="title gold" style="font-size:52px;margin-bottom:20px;${rise(seg(lt, 0, .4), 20)}">${br(s.title)}</div>` : '';
+  h += `<div class="rst">${rosterPane(s.left || {}, seg(lt, .15, .5))}${rosterPane(s.right || {}, seg(lt, .35, .5))}</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 76}px;${pop(seg(lt, .8, .5))}">${br(s.text)}</div>`;
+  B(LR('', h));
+};
+
+/* statbars: 항목별 좌우 비교 막대 */
+SCENE.statbars = (lt, s) => {
+  const rows = s.rows || [], L = s.left ? T(s.left) : null, R = s.right ? T(s.right) : null;
+  const mx = Math.max(1, ...rows.map(r => Math.max(Number(r.lv) || 0, Number(r.rv) || 0)));
+  const CL = s.leftColor || '#12161F', CR = s.rightColor || ACC, BW = 420;
+  let h = `<div class="row" style="width:100%;justify-content:space-between;margin-bottom:16px;${rise(seg(lt, 0, .4), 18)}">
+    <div class="row" style="gap:16px">${L ? chip(L, 'S') : ''}<b style="font-size:46px;font-weight:900;letter-spacing:-2px;color:${CL}">${esc(s.leftName || (L ? L.nm : ''))}</b></div>
+    ${s.title ? `<div class="title gold" style="font-size:46px">${br(s.title)}</div>` : ''}
+    <div class="row" style="gap:16px"><b style="font-size:46px;font-weight:900;letter-spacing:-2px;color:${CR}">${esc(s.rightName || (R ? R.nm : ''))}</b>${R ? chip(R, 'S') : ''}</div></div>`;
+  h += `<div class="sb">` + rows.map((r, i) => {
+    const q = seg(lt, .15 + i * .16, .5), p = eo(q);
+    const lw = (Number(r.lv) || 0) / mx * BW * p, rw = (Number(r.rv) || 0) / mx * BW * p;
+    return `<div class="r" style="opacity:${c01(q * 1.6)}">
+      <div class="h l"><span class="n num" style="text-align:right;color:${CL}">${esc(r.l || '')}</span><div class="bar" style="width:${lw}px;background:${CL}"></div></div>
+      <div class="k">${br(r.k || '')}</div>
+      <div class="h"><div class="bar" style="width:${rw}px;background:${CR}"></div><span class="n num" style="color:${CR}">${esc(r.r || '')}</span></div></div>`;
+  }).join('') + `</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:24px;font-size:${s.size || 76}px;${pop(seg(lt, .3 + rows.length * .16, .5))}">${br(s.text)}</div>`;
+  B(LR('', h));
+};
+
+/* profile: 선수 한 명 — 사진 + 이름 + 소속 배지 + 스탯 칩 + 한 줄 */
+SCENE.profile = (lt, s) => {
+  const H0 = s.h || 620, vis = PH(s, H0, seg(lt, 0, .5)), sts = s.stats || [];
+  const st = sts.map((x, i) => `<div style="${rise(seg(lt, .3 + i * .12, .45), 18)}"><b class="num" style="color:${x.hi ? ACC : TXT}">${esc(x.v)}</b><i>${esc(x.k)}</i></div>`).join('');
+  const txt = `<div style="${rise(seg(lt, .1, .5), 22)}">
+      <div class="mega" style="font-size:${s.size || 116}px">${br(s.name || '')}</div>
+      ${s.sub ? `<div class="badge" style="margin-top:14px;background:${ACC}">${esc(s.sub)}</div>` : ''}</div>
+    ${st ? `<div class="st">${st}</div>` : ''}
+    ${s.text ? `<div class="big gold" style="font-size:${s.textSize || 70}px;${pop(seg(lt, .3 + sts.length * .12, .5))}">${br(s.text)}</div>` : ''}`;
+  B(LR(vis, txt, false, phW(s, H0)));
+};
+
+const MOTION = {
+  chapter: s => 1.0 + ((s.items || []).length ? .35 : 0), hook: () => 1.1,
+  big: s => .9 + ((s.stats || []).length) * .12 + (s.note ? .35 : 0), photo: () => 1.0, question: s => .7 + ((s.stats || []).length) * .12 + (s.note ? .35 : 0),
+  versus: () => 1.6, need: () => 1.6, matchup: () => 1.4, table: () => 2.3,
+  people: s => .25 + ((s.items || []).length) * .25 + .5 + (s.text ? .5 : 0),
+  teamgrid: s => .25 + ((s.items || []).length) * .12 + .45 + (s.text ? .5 : 0),
+  steps: s => .25 + ((s.items || []).length) * .22 + .45 + (s.text ? .5 : 0),
+  h2h: s => .3 + ((s.rows || []).length) * .18 + .5 + (s.text ? .5 : 0),
+  roster: s => 1.35 + (s.text ? .5 : 0),
+  statbars: s => .3 + ((s.rows || []).length) * .16 + .5 + (s.text ? .5 : 0),
+  profile: s => .4 + ((s.stats || []).length) * .12 + .5 + (s.text ? .5 : 0),
+};
+
+const SUBS = EP.subs || [], BD = EP.bounds || [], SC = (EP.scenes || []), CH = EP.chapters || [];
+function drawSub(t) {
+  const h = SUBS.find(s => t >= s[0] && t < s[1]);
+  const sp = document.querySelector('#sub span');
+  sp.innerHTML = h ? br(h[2]) : ''; sp.style.visibility = h ? 'visible' : 'hidden';
+}
+function drawRail(k, t) {
+  const total = EP.total || (BD.length ? BD[BD.length - 1] : 1);
+  document.getElementById('progBar').style.width = (100 * c01(t / total)) + '%';
+  if (!CH.length) return;
+  const rt = document.getElementById('railTitle'); if (rt) rt.style.display = 'none';   // 챕터가 있으면 railTitle 대신 챕터를 보여준다
+  let i = 0; for (let j = 0; j < CH.length; j++) if (k >= (CH[j].from || 0)) i = j;
+  const box = document.getElementById('chap');
+  box.style.display = 'flex';
+  document.getElementById('chapN').textContent = (i + 1) + '/' + CH.length;
+  document.getElementById('chapT').textContent = CH[i].title || '';
+}
+function render(t) {
+  let k = 0; while (k < BD.length && t >= BD[k]) k++;
+  const start = k === 0 ? 0 : BD[k - 1], end = k < BD.length ? BD[k] : (EP.total || start + 3);
+  const s = SC[Math.min(k, SC.length - 1)] || { type: 'big', text: '' };
+  const need = (MOTION[s.type] || MOTION.big)(s), fit = Math.max(0.6, (end - start) * 0.75);
+  const lt = (t - start) * (need > fit ? need / fit : 1);
+  (SCENE[s.type] || SCENE.big)(lt, s);
+  document.getElementById('body').style.opacity = String(c01((t - start) / 0.28));
+  const gx = 50 + 4 * Math.sin(t * .5), gy = 22 + 2 * Math.cos(t * .37);
+  document.getElementById('stage').style.background = `radial-gradient(60% 50% at ${gx}% ${gy}%, ${ACC}22 0%, rgba(244,246,250,0) 70%),#F4F6FA`;
+  drawRail(k, t); drawSub(t);
+}
+window.render = render; render(0);
+</script></body></html>

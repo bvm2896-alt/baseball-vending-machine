@@ -1,0 +1,67 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>
+/* 롱폼 전용 가로 썸네일 (thumb_long.html) — 1280x720. 2026-09-18 신설.
+   영상은 세로가 아니라 가로(template_long.html)이고, 유튜브 목록·검색은 16:9 썸네일을 쓴다.
+   데이터 계약은 쇼츠 썸네일과 같다: thumb {img, teams|team, top(작은 윗줄), big(큰 글씨), color, focus, fit, date, logos}
+   검색 목록에서는 360x200 로 줄어 보인다 → big 은 두 줄, 한 줄 7자 안쪽이 안전하다. */
+@font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_bold.ttf') format('truetype');font-weight:700 900}
+@font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_medium.ttf') format('truetype');font-weight:400 600}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#F4F6FA}
+body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic',sans-serif;font-weight:900;color:#12161F;-webkit-font-smoothing:antialiased}
+#st{position:relative;width:1280px;height:720px;overflow:hidden;background:#F4F6FA}
+.ph{position:absolute;left:0;top:0;width:720px;height:720px;overflow:hidden;background:#E9EDF3}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.fade{position:absolute;left:470px;top:0;width:290px;height:720px;background:linear-gradient(90deg,rgba(244,246,250,0),#F4F6FA 82%)}
+.chip{position:absolute;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 12px 32px rgba(0,0,0,.3);border:6px solid #fff;border-radius:28px;width:118px;height:118px}
+.chip img{width:80%;height:80%;object-fit:contain}
+.pill{position:absolute;display:inline-flex;align-items:center;height:60px;padding:0 26px;border-radius:30px;font-size:30px;letter-spacing:-1px;white-space:nowrap}
+.top{position:absolute;left:700px;right:56px;top:196px;font-size:44px;letter-spacing:-2px;line-height:1.14;color:#12161F}
+.bigw{position:absolute;left:700px;right:56px;top:262px;font-size:112px;letter-spacing:-5px;line-height:1.02;font-weight:900}
+.bar{position:absolute;left:700px;width:130px;height:14px;border-radius:7px;top:158px}
+.brand{position:absolute;right:56px;bottom:40px;font-size:28px;letter-spacing:3px;color:#6A7382}
+.brand b{color:#12161F}
+</style></head><body><div id="st"></div>
+<script>
+const EP=window.EP||{}, TH=EP.thumb||{};
+const COLOR={SS:'#074CA1',KT:'#1E5EFF',LG:'#C30452',HT:'#EA0029',OB:'#2B2A5E',NC:'#315288',LT:'#1E3A6B',SK:'#CE0E2D',HH:'#FC4E00',WO:'#820024'};
+const ALIAS={'기아':'HT','KIA':'HT','엘지':'LG','케이티':'KT','엔씨':'NC','SSG':'SK','두산':'OB','삼성':'SS','롯데':'LT','한화':'HH','키움':'WO'};
+const codeOf=n=>{const t=(EP.standings||[]).find(t=>t.team===n||t.code===n||t.code===ALIAS[n]);return t?t.code:(ALIAS[n]||n)};
+const logo=c=>(EP.logos||{})[c]||'';
+const teams=(TH.teams||(TH.team?[TH.team]:[EP.focusTeam||''])).map(codeOf).filter(Boolean);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const nl=t=>esc(String(t||'').replace(/["“”'‘’]/g,'')).split('\n').join('<br>');
+let c1=COLOR[teams[0]]||'#1E5EFF'; if(c1==='#4A4A4A') c1='#1E5EFF';
+const cBig=TH.color||c1;
+const dateText=(()=>{ if(TH.date) return TH.date; let d=new Date((EP.date||EP.gameDate||'')+'T00:00:00'); if(isNaN(d)) return EP.dateLabel||'';
+  return `${d.getMonth()+1}월 ${d.getDate()}일 (${'일월화수목금토'[d.getDay()]})`; })();
+const PH=EP.photos||{}, PS=EP.photoSizes||{};
+const find=(o,n)=>{ if(!n) return ''; if(o[n]) return o[n]; const b=String(n).replace(/\.[a-z0-9]+$/i,'');
+  const k=Object.keys(o).find(x=>x===b||x.replace(/\.[a-z0-9]+$/i,'')===b); return k?o[k]:''; };
+const src=find(PH,TH.img), sz=find(PS,TH.img);
+function img(){
+  if(!src) return `<div style="width:100%;height:100%;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)"></div>`;
+  let fit=TH.fit;
+  if(!fit&&sz){ const ratio=(sz[0]/sz[1])/(720/720); fit=(!sz[2]&&ratio>0.7&&ratio<1.5)?'cover':'contain'; }
+  if(fit==='contain') return `<img src="${src}" style="position:absolute;inset:-30px;width:calc(100% + 60px);height:calc(100% + 60px);object-fit:cover;filter:blur(24px) saturate(1.1);opacity:.85">
+    <img src="${src}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:auto;height:auto;max-width:96%;max-height:96%;object-fit:contain;border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.35)">`;
+  return `<img src="${src}" style="object-position:${esc(TH.focus||'50% 14%')}">`;
+}
+document.getElementById('st').innerHTML=`
+  <div class="ph">${img()}</div>
+  <div class="fade"></div>
+  ${teams[0]&&TH.logos!==false?`<div class="chip" style="left:30px;top:30px"><img src="${logo(teams[0])}"></div>`:''}
+  ${teams[1]&&TH.logos!==false?`<div class="chip" style="left:170px;top:30px"><img src="${logo(teams[1])}"></div>`:''}
+  <div class="pill" style="left:30px;bottom:30px;background:#12161F;color:#fff;font-size:28px">${esc(dateText)}</div>
+  <div class="bar" style="background:${c1}"></div>
+  <div class="top">${nl(TH.top)}</div>
+  <div class="bigw" style="color:${cBig}">${nl(TH.big)}</div>
+  <div class="brand">야구<b>자판기</b></div>`;
+/* 큰 글씨가 오른쪽 칸(524px)을 넘으면 줄인다 */
+(function(){ const el=document.querySelector('.bigw'); let fs=parseFloat(getComputedStyle(el).fontSize);
+  const lim=1280-700-56;
+  while(el.scrollWidth>lim && fs>46){ fs-=4; el.style.fontSize=fs+'px'; }
+  const t=document.querySelector('.top'); let ts=parseFloat(getComputedStyle(t).fontSize);
+  while(t.scrollWidth>lim && ts>24){ ts-=2; t.style.fontSize=ts+'px'; }
+  el.style.top=(262+Math.max(0,44-parseFloat(getComputedStyle(t).fontSize)))+'px';
+})();
+</script></body></html>
