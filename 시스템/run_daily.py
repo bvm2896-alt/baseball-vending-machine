@@ -493,6 +493,11 @@ def make_all(paths):
         same = (cur <= b['inputs'] + 1) if b.get('inputs') is not None else (os.path.getmtime(v) >= cur if v and os.path.exists(v) else False)
         if v and os.path.exists(v) and same and '--force' not in ARGS:
             log(f'[{key_of(p)}] 오늘 이미 만든 영상이 있어 건너뜀 → {v} (콘티·음성 zip·프로그램을 고치면 자동으로 다시, 영상을 지워도 다시)', '영상완료'); continue
+        # 9/21: 콘티에 "done": true 가 있으면(이미 올린 편) 프로그램·템플릿이 바뀌어도 다시 만들지 않는다 — 영상이 있을 때만
+        try: done_flag = bool(json.load(io.open(p, encoding='utf-8-sig')).get('done'))
+        except Exception: done_flag = False
+        if done_flag and v and os.path.exists(v) and '--force' not in ARGS:
+            log(f'[{key_of(p)}] 콘티에 done 표시가 있어 건너뜀 → {v}', '영상완료'); continue
         video = build_one(p)
         if video: after_build(p, video)
 
