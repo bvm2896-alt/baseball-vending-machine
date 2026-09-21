@@ -464,7 +464,9 @@ def drop_paths():
     r"""사람이 타입캐스트 웹에서 받아 넣는 통 음성 파일 후보: <야구자판기>\<시리즈>\음성\<콘티이름>.mp3|wav|m4a, 또는 work\voice_<편>\full.mp3"""
     key = os.path.basename(VDIR).replace('voice_', '')
     slot = key.rsplit('_', 1)[-1] if '_' in key else ''
-    series = '야구이슈' if slot.startswith('이슈') or slot == '2' else '야구분석' if slot.startswith('분석') else '야구순위'
+    # 9/18: 롱폼(<콘티이름>_롱폼)이 빠져 있어 야구순위\음성\ 을 뒤지다 zip 을 못 찾았다 → 슬롯 이름 그대로 시리즈를 고른다
+    series = ('야구이슈' if slot.startswith('이슈') or slot == '2' else '야구분석' if slot.startswith('분석')
+              else '야구롱폼' if slot.startswith('롱폼') else '야구순위')
     base = os.path.join(HERE, '..', series, '음성')
     out = [os.path.join(base, key + ext) for ext in ('.zip', '.mp3', '.wav', '.m4a')]
     out += [os.path.join(VDIR, 'full' + ext) for ext in ('.zip', '.mp3', '.wav', '.m4a')]

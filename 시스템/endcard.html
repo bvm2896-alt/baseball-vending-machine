@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset="utf-8">
+<!-- 롱폼 엔딩 카드(9/20): 유튜브 '최종 화면'(구독 버튼·다음 영상)이 올라갈 자리. 영상을 가리지 않게 마지막 12초를 어두운 화면으로 둔다.
+     가운데는 비워 둔다(유튜브가 거기에 요소를 얹는다). 2560x1440 으로 그린다. 데이터: EP.endTop(위 문구, 없으면 마무리 질문) -->
+<style>
+@font-face{font-family:P;src:url('__FONT_DIR__/Pretendard-Black.otf')}@font-face{font-family:P;font-weight:700;src:url('__FONT_DIR__/Pretendard-Bold.otf')}
+body{margin:0;width:2560px;height:1440px;background:#0A0F1A;font-family:P,'Pretendard','Noto Sans KR',sans-serif;color:#fff;position:relative;overflow:hidden}
+#glow{position:absolute;left:50%;top:50%;width:1870px;height:930px;transform:translate(-50%,-50%);background:radial-gradient(50% 50% at 50% 50%,rgba(229,72,77,.16) 0%,rgba(10,15,26,0) 70%)}
+#top{position:absolute;left:0;right:0;top:86px;text-align:center;font-size:54px;font-weight:700;color:#8E96A6;letter-spacing:-1px}
+#brand{position:absolute;left:0;right:0;bottom:86px;text-align:center;font-size:62px;font-weight:900;letter-spacing:-2px;color:#fff}
+#brand b{color:#FFD400}
+#line{position:absolute;left:50%;bottom:176px;width:160px;height:7px;background:#E5484D;transform:translateX(-50%);border-radius:4px}
+</style></head><body><div id="glow"></div><div id="top"></div><div id="line"></div><div id="brand">야구<b>자판기</b></div>
+<script>
+const EP=window.EP||{};
+const q=(EP.lines||[]).slice(-1)[0]; const last=q?(typeof q==='string'?q:(q.sub||q.narr||'')):'';
+document.getElementById('top').textContent=EP.endTop||(last?last.replace(/\|/g,', ').replace(/\n/g,' ').replace(' / ',', ')+' — 댓글로 남겨 주세요':'');
+</script></body></html>
