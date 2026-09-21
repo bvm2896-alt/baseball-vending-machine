@@ -545,6 +545,25 @@ SCENE.steps = (lt, s) => {
   B(h);
 };
 
+/* cards: 이름 카드 2~4장 (9/21 드래프트 구단별 편). {title, items:[{badge, name, sub, hi}], text}
+   steps 보다 크게 — 4장은 2×2, 3장 이하는 한 줄. 사진 없는 선수를 전부 같은 카드로 통일하는 용도 */
+SCENE.cards = (lt, s) => {
+  const items = s.items || [], n = items.length || 1;
+  const grid = n >= 4, w = grid ? 470 : (n === 3 ? 330 : 440), gap = 15;
+  let h = s.title ? `<div class="title gold" style="font-size:56px;font-weight:900;margin-bottom:28px;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += grid ? `<div style="display:grid;grid-template-columns:repeat(2,${w}px);gap:${gap}px;justify-content:center">` : `<div class="row" style="gap:${gap}px;align-items:stretch">`;
+  items.forEach((it, i) => {
+    const p = seg(lt, .2 + i * .18, .45), hi = it.hi === true;
+    h += `<div class="pane col" style="width:${w}px;border-radius:30px;padding:${grid ? 40 : 30}px 12px ${grid ? 44 : 32}px;gap:${grid ? 20 : 14}px;justify-content:flex-start;${hi ? 'border-color:var(--acc);box-shadow:0 14px 40px rgba(232,120,40,.22);' : ''}${rise(p, 40)}">
+      <div class="num" style="height:54px;padding:0 22px;border-radius:14px;background:${hi ? 'var(--acc)' : '#12161F'};color:#fff;font-size:${grid ? 38 : 34}px;font-weight:900;display:flex;align-items:center">${esc(it.badge || '')}</div>
+      <div class="title" style="font-size:${n === 3 ? 66 : 78}px;font-weight:900;line-height:1.1;text-align:center">${esc(it.name || '')}</div>
+      ${it.sub ? `<div class="label" style="font-size:${n === 3 ? 30 : 38}px;color:${GRAY};line-height:1.3;text-align:center">${br(it.sub)}</div>` : ''}</div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:34px;font-size:${s.size || 96}px;${pop(seg(lt, .3 + n * .18, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+
 /* question: 시청자 질문 (+ 사진) */
 SCENE.question = (lt, s) => {
   B(`${s.img ? photoBox(s, 480, seg(lt, 0, .6), 'margin-bottom:30px') : ''}<div class="mega" style="font-size:${s.size || 120}px;${pop(seg(lt, 0, .6))}">${br(s.text || '여러분 생각은?')}</div>`);
@@ -560,7 +579,7 @@ const MOTION = {
   hook: () => 1.1, big: s => .9 + ((s.stats || []).length) * .12 + (s.note ? .3 : 0), profile: s => .8 + ((s.stats || []).length) * .12 + (s.text ? .3 : 0), roster: s => 1.3 + (s.text ? .5 : 0), matchup: () => 1.4, table: () => 2.3, versus: () => 1.6, need: () => 1.6,
   shift: () => 1.4, rival: () => 1.5, verdict: s => (s.left && s.right ? 2.1 : 1.0), question: () => 0.7,
   photo: () => 1.0, people: s => .25 + ((s.items || []).length) * .3 + .5 + (s.text ? .5 : 0),
-  teamgrid: s => .25 + ((s.items || []).length) * .12 + .45 + (s.text ? .5 : 0), steps: s => .25 + ((s.items || []).length) * .22 + .45 + (s.text ? .5 : 0),
+  teamgrid: s => .25 + ((s.items || []).length) * .12 + .45 + (s.text ? .5 : 0), steps: s => .25 + ((s.items || []).length) * .22 + .45 + (s.text ? .5 : 0), cards: s => .2 + ((s.items || []).length) * .18 + .45 + (s.text ? .5 : 0),
   wins: s => { const rows = s.rows || []; const last = rows.length ? Math.min(Number(rows[rows.length - 1].need) || 0, Number(rows[rows.length - 1].total) || 0) : 0; return .35 + (rows.length - 1) * 1.1 + .2 + last * .045 + .5 + (s.text ? .5 : 0); },
   schedule: s => .3 + ((s.items || []).length) * .22 + .5 + (s.text ? .5 : 0),
   streaks: s => { const ts = s.teams || []; const last = ts.length ? Math.min(stN(ts[ts.length - 1].streak || (T(ts[ts.length - 1].team) || {}).st || ''), 10) : 0; return .5 + (ts.length - 1) * 1.0 + last * .12 + .45; },
