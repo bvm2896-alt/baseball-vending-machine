@@ -13,41 +13,41 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 #stage{position:relative;width:1920px;height:1080px;background:#F4F6FA}
 .num{font-variant-numeric:tabular-nums;letter-spacing:-2px}
 /* 레일 */
-#hdr{position:absolute;left:96px;right:96px;top:40px;height:80px;display:flex;align-items:center;justify-content:space-between}
+#hdr{position:absolute;left:56px;right:56px;top:36px;height:80px;display:flex;align-items:center;justify-content:space-between}
 #brand{display:flex;align-items:center;gap:14px;font-size:42px;font-weight:900;letter-spacing:-1px;color:#12161F}
 #brand .m{width:10px;height:38px;border-radius:5px;background:#EA0029}
 #meta{display:flex;align-items:center;gap:20px}
 #chap{display:flex;align-items:center;gap:14px;background:#12161F;color:#fff;font-size:32px;font-weight:800;letter-spacing:-1px;padding:10px 24px;border-radius:999px}
 #chap .n{font-size:26px;font-weight:900;opacity:.72;letter-spacing:1px}
 #meta .d{font-size:32px;font-weight:600;color:#6A7382;letter-spacing:1px}
-#prog{position:absolute;left:96px;right:96px;top:126px;height:5px;border-radius:3px;background:#E3E7EE;overflow:hidden}
+#prog{position:absolute;left:56px;right:56px;top:122px;height:5px;border-radius:3px;background:#E3E7EE;overflow:hidden}
 #prog i{display:block;height:5px;border-radius:3px;background:var(--acc);width:0}
 /* 본문 */
-#body{position:absolute;left:96px;width:1728px;top:172px;height:676px;will-change:opacity,transform;
+#body{position:absolute;left:56px;width:1808px;top:146px;height:714px;will-change:opacity,transform;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 /* 2단: 왼쪽 비주얼 / 오른쪽 글씨 */
-.lr{display:flex;align-items:center;justify-content:center;gap:76px;width:100%;height:100%}
-.lr>.v{flex:0 0 880px;max-width:880px;display:flex;align-items:center;justify-content:center}
-.lr>.t{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;gap:26px}
+.lr{display:flex;align-items:center;justify-content:center;gap:64px;width:100%;height:100%}
+.lr>.v{flex:0 0 940px;max-width:940px;display:flex;align-items:center;justify-content:center}
+.lr>.t{flex:0 1 auto;min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;text-align:left;gap:32px}  /* 9/18: flex:1 이면 글 칸이 남는 폭을 다 먹어 내용이 왼쪽에만 몰렸다 → 내용 폭만 쓰고 사진과 함께 가운데로 */
 .lr>.t.mid{align-items:center;text-align:center}
 /* 자막 */
-#sub{position:absolute;left:180px;right:180px;bottom:44px;text-align:center}
+#sub{position:absolute;left:120px;right:120px;bottom:40px;text-align:center}
 #sub span{display:inline;background:rgba(18,22,31,.96);color:#FFFFFF;font-size:52px;font-weight:700;
   letter-spacing:-1px;line-height:1.55;padding:9px 20px;border-radius:14px;word-break:keep-all;
   -webkit-box-decoration-break:clone;box-decoration-break:clone}
 /* 타이포 */
-.mega{font-size:152px;font-weight:900;letter-spacing:-5px;line-height:1.06;color:#12161F}
-.big{font-size:112px;font-weight:900;letter-spacing:-4px;line-height:1.08;color:#12161F}
-.title{font-size:46px;font-weight:700;letter-spacing:-1.5px;color:#12161F}
-.label{font-size:34px;font-weight:600;color:#6A7382;letter-spacing:-1px}
+.mega{font-size:168px;font-weight:900;letter-spacing:-5px;line-height:1.06;color:#12161F}
+.big{font-size:130px;font-weight:900;letter-spacing:-4px;line-height:1.08;color:#12161F}
+.title{font-size:60px;font-weight:700;letter-spacing:-1.5px;color:#12161F}
+.label{font-size:40px;font-weight:600;color:#6A7382;letter-spacing:-1px}
 .gold{color:var(--acc)}.green{color:#16A34A}.red{color:#E5484D}.gray{color:#6A7382}
 .row{display:flex;align-items:center;justify-content:center}
 .col{display:flex;flex-direction:column;align-items:center;justify-content:center}
 .chip{background:#fff;border:3px solid #E3E7EE;overflow:hidden;display:flex;align-items:center;justify-content:center;flex:0 0 auto;box-shadow:0 8px 24px rgba(18,22,31,.08)}
 .chip img{width:84%;height:84%;object-fit:contain;display:block}
-.card{width:420px;height:470px;background:#FFFFFF;border:3px solid #E3E7EE;border-radius:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;box-shadow:0 14px 40px rgba(18,22,31,.08)}
-.card .v{font-size:104px;font-weight:900;letter-spacing:-4px;line-height:1.05;white-space:nowrap;color:#12161F}
-.card .l{font-size:34px;font-weight:600;color:#6A7382;letter-spacing:-1px}
+.card{width:470px;min-height:560px;background:#FFFFFF;border:4px solid #E3E7EE;border-radius:38px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:38px 30px;box-shadow:0 18px 48px rgba(18,22,31,.10)}
+.card .v{font-size:110px;font-weight:900;letter-spacing:-4px;line-height:1.05;white-space:nowrap;color:#12161F}
+.card .l{font-size:36px;line-height:1.35;font-weight:600;color:#6A7382;letter-spacing:-1px}
 .pane{background:#FFFFFF;border:3px solid #E3E7EE;box-shadow:0 14px 40px rgba(18,22,31,.08)}
 /* 사진 틀 — 폭은 부모가 정한다(가로에서는 칸마다 다름) */
 .photo{position:relative;width:100%;border-radius:32px;overflow:hidden;background:#E9EDF3;border:3px solid #E3E7EE;box-shadow:0 18px 50px rgba(18,22,31,.14);flex:0 0 auto}
@@ -62,7 +62,7 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 .dots i{width:18px;height:18px;border-radius:9px;background:#D8DEE8;display:block}
 .dots i.on{background:var(--acc);width:52px}
 /* 표 */
-#table{width:1400px}
+#table{width:1600px}
 #table .hd{display:flex;align-items:center;gap:18px;padding-bottom:10px;border-bottom:2px solid #12161F;font-size:24px;font-weight:700;color:#6A7382;letter-spacing:1px}
 .tr{display:flex;align-items:center;gap:18px;height:62px;border-bottom:1px solid #E3E7EE}
 .tr .rk{width:52px;font-size:32px;font-weight:800;text-align:center}
@@ -76,32 +76,35 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 /* h2h: 맞대결 기록판 */
 .h2h{width:100%;display:flex;flex-direction:column;gap:13px}
 .h2h .r{display:flex;align-items:center;gap:24px;background:#fff;border:3px solid #E3E7EE;border-radius:22px;padding:14px 30px;box-shadow:0 8px 24px rgba(18,22,31,.06)}
-.h2h .w{flex:1;text-align:left;font-size:40px;font-weight:800;letter-spacing:-1.5px;line-height:1.2}
+.h2h .w{flex:1;text-align:left;font-size:44px;font-weight:800;letter-spacing:-1.5px;line-height:1.2}
 .h2h .w small{display:block;font-size:27px;font-weight:600;color:#6A7382;letter-spacing:-1px;margin-top:3px}
-.h2h .s{font-size:54px;font-weight:900;letter-spacing:-2px;width:210px;text-align:center}
+.h2h .s{font-size:58px;font-weight:900;letter-spacing:-2px;width:230px;text-align:center}
 .h2h .b{width:92px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:#fff;flex:0 0 auto}
 /* roster: 두 팀 명단 비교 */
 .rst{display:flex;gap:36px;width:100%;align-items:stretch}
-.rst .p{flex:1;min-width:0;background:#fff;border:3px solid #E3E7EE;border-radius:30px;padding:24px 28px;display:flex;flex-direction:column;gap:14px;box-shadow:0 14px 40px rgba(18,22,31,.08)}
+.rst .p{flex:1;min-width:0;background:#fff;border:4px solid #E3E7EE;border-radius:32px;padding:30px 34px;display:flex;flex-direction:column;gap:20px;box-shadow:0 14px 40px rgba(18,22,31,.08)}
 .rst .hh{display:flex;align-items:center;gap:16px;border-bottom:2px solid #E3E7EE;padding-bottom:12px}
-.rst .hh b{font-size:46px;font-weight:900;letter-spacing:-2px;white-space:nowrap}
-.rst .hh span{font-size:28px;font-weight:800;color:#fff;background:#12161F;padding:6px 16px;border-radius:999px;letter-spacing:-1px;white-space:nowrap}
+.rst .hh b{font-size:60px;font-weight:900;letter-spacing:-2px;white-space:nowrap}
+.rst .hh span{font-size:32px;font-weight:800;color:#fff;background:#12161F;padding:6px 16px;border-radius:999px;letter-spacing:-1px;white-space:nowrap}
 .rst .g{display:flex;align-items:flex-start;gap:14px;text-align:left}
-.rst .g i{font-style:normal;flex:0 0 96px;font-size:29px;font-weight:700;color:#6A7382;padding-top:5px;letter-spacing:-1px}
-.rst .g u{text-decoration:none;flex:1;min-width:0;font-size:33px;font-weight:800;letter-spacing:-1.5px;line-height:1.4;word-break:keep-all}
+.rst .g i{font-style:normal;flex:0 0 152px;font-size:32px;font-weight:700;color:#6A7382;padding-top:8px;letter-spacing:-1px;white-space:nowrap}
+.rst .g u{text-decoration:none;flex:1;min-width:0;font-size:46px;font-weight:800;letter-spacing:-1.5px;line-height:1.36;word-break:keep-all}
 /* statbars: 항목별 좌우 비교 막대 */
 .sb{width:100%;display:flex;flex-direction:column;gap:16px}
 .sb .r{display:flex;align-items:center;gap:18px}
-.sb .k{width:320px;flex:0 0 320px;font-size:33px;font-weight:700;color:#6A7382;letter-spacing:-1px;text-align:center;line-height:1.25}
+.sb .k{width:340px;flex:0 0 340px;font-size:38px;font-weight:700;color:#6A7382;letter-spacing:-1px;text-align:center;line-height:1.25}
 .sb .h{flex:1;min-width:0;display:flex;align-items:center;gap:14px}
 .sb .h.l{justify-content:flex-end}
-.sb .bar{height:38px;border-radius:10px;flex:0 0 auto}
-.sb .n{font-size:40px;font-weight:900;letter-spacing:-1.5px;min-width:140px;flex:0 0 auto}
+.sb .bar{height:46px;border-radius:10px;flex:0 0 auto}
+.sb .n{font-size:46px;font-weight:900;letter-spacing:-1.5px;min-width:140px;flex:0 0 auto}
 /* 스탯 칩 */
-.st{display:flex;gap:14px;flex-wrap:wrap}
-.st>div{background:#fff;border:3px solid #E3E7EE;border-radius:20px;padding:11px 22px;display:flex;flex-direction:column;align-items:flex-start;gap:0;box-shadow:0 8px 24px rgba(18,22,31,.06)}
-.st>div b{font-size:46px;font-weight:900;letter-spacing:-2px;line-height:1.1}
-.st>div i{font-style:normal;font-size:26px;font-weight:600;color:#6A7382;letter-spacing:-1px}
+.st{display:flex;gap:20px;flex-wrap:wrap}
+.st>div{background:#fff;border:4px solid #E3E7EE;border-radius:26px;padding:20px 34px;min-width:184px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;box-shadow:0 14px 34px rgba(18,22,31,.10)}
+.st>div b{font-size:78px;font-weight:900;letter-spacing:-3px;line-height:1.05}
+.st>div i{font-style:normal;font-size:36px;font-weight:700;color:#6A7382;letter-spacing:-1px}
+/* 칩이 넷 이상이면 한 줄에 들어가게 조금 줄인다 — 줄이 넘어가면 둘째 줄 오른쪽이 휑하게 빈다(9/18) */
+.st.n4>div{padding:16px 26px;min-width:152px}.st.n4>div b{font-size:60px}.st.n4>div i{font-size:31px}
+.st.n5>div{padding:13px 20px;min-width:132px}.st.n5>div b{font-size:50px}.st.n5>div i{font-size:27px}
 .badge{display:inline-flex;align-items:center;gap:10px;color:#fff;font-size:32px;font-weight:800;padding:8px 22px;border-radius:999px;letter-spacing:-1px}
 </style></head><body>
 <div id="stage">
@@ -144,6 +147,41 @@ const SZ = { L: [300, 64], M: [190, 42], S: [62, 14] };
 function chip(t, size = 'M', extra = '') {
   const [s, r] = SZ[size];
   return `<div class="chip" style="width:${s}px;height:${s}px;border-radius:${r}px;${extra}"><img src="${LOGO[t.code] || ''}"></div>`;
+}
+
+/* 나라는 로고가 없다 → 국기를 그린다(9/18 사용자 지시). 국기는 SVG 로 직접 그려서 폰트·이모지에 의존하지 않는다 */
+function trig(x, y, rot, bars) {
+  const W = 15, H = 2.4, G = 2.0, half = (W - 2.0) / 2;
+  let o = '';
+  bars.forEach((b, i) => {
+    const yy = -(H * 3 + G * 2) / 2 + i * (H + G);
+    o += b ? `<rect x="${-W / 2}" y="${yy}" width="${W}" height="${H}"/>`
+           : `<rect x="${-W / 2}" y="${yy}" width="${half}" height="${H}"/><rect x="${W / 2 - half}" y="${yy}" width="${half}" height="${H}"/>`;
+  });
+  return `<g transform="translate(${x},${y}) rotate(${rot})" fill="#12161F">${o}</g>`;
+}
+const FLAG = {
+  '한국': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="60" fill="#fff"/>
+    <g transform="translate(45,30) rotate(-33.69)">
+      <circle r="12" fill="#CD2E3A"/>
+      <path d="M-12,0 A6,6 0 0,1 0,0 A6,6 0 0,0 12,0 A12,12 0 0,1 -12,0 Z" fill="#0047A0"/>
+    </g>
+    ${trig(18, 12, -56.3, [1, 1, 1])}${trig(72, 12, 56.3, [0, 1, 0])}${trig(18, 48, 56.3, [1, 0, 1])}${trig(72, 48, -56.3, [0, 0, 0])}</svg>`,
+  '대만': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="60" fill="#FE0000"/><rect width="45" height="30" fill="#000095"/>
+    <g transform="translate(22.5,15)"><g fill="#fff">${Array.from({length:12},(_,i)=>`<rect x="-1.5" y="-11.5" width="3" height="11.5" transform="rotate(${i*30})"/>`).join('')}</g>
+    <circle r="6.4" fill="#000095"/><circle r="5.4" fill="#fff"/></g></svg>`,
+  '일본': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="60" fill="#fff"/><circle cx="45" cy="30" r="18" fill="#BC002D"/></svg>`,
+};
+function sideChip(name, size = 'M') {
+  const n = String(name || '').trim();
+  const [w, r] = SZ[size];
+  if (FLAG[n]) return `<div class="chip" style="width:${Math.round(w * 1.18)}px;height:${Math.round(w * .79)}px;border-radius:${Math.round(r * .5)}px;padding:0;overflow:hidden">${FLAG[n]()}</div>`;
+  const t = T(n);
+  if (t && LOGO[t.code]) return chip(t, size);   // T() 는 못 찾아도 빈 객체를 돌려주니 로고 파일 유무로 판단한다
+  return `<div class="chip" style="width:${w}px;height:${w}px;border-radius:${r}px;font-size:${Math.round(w * .30)}px;font-weight:900;letter-spacing:-3px;color:${TXT}">${esc(n)}</div>`;
 }
 const EMOJI = "font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji','KBO',sans-serif";
 function chipM(t, size = 'M', mark = '', p = 1, extra = '') {
@@ -190,7 +228,7 @@ function LR(visual, text, mid, vw) {
   const w2 = Math.min(880, vw || 880);
   return `<div class="lr"><div class="v" style="flex:0 0 ${w2}px;max-width:${w2}px">${visual}</div><div class="t${mid ? ' mid' : ''}">${text}</div></div>`;
 }
-const pop = p => `opacity:${c01(p * 1.4)};transform:scale(${0.6 + 0.4 * eb(p)})`;
+const pop = p => `opacity:${c01(p * 1.4)};transform:scale(${0.82 + 0.18 * eo(p)})`;   /* 9/19: 뒤로 튕기는(eb) 확대는 국기·큰 글자에서 화면이 흔들려 보인다 → 넘침 없는 ease-out */
 const rise = (p, px = 60) => `opacity:${c01(p * 1.4)};transform:translateY(${(1 - eo(p)) * px}px)`;
 const slideX = (p, px) => `opacity:${c01(p * 1.4)};transform:translateX(${(1 - eo(p)) * px}px)`;
 const cnt = (p, v, dec = 0) => (v * eo(p)).toFixed(dec);
@@ -240,7 +278,9 @@ function photoBox(s, h = 560, p = 1, extra = '') {
   const src = photoSrc(s.img), team = s.team || (s.teams || [])[0];
   const inner = src
     ? photoImg(s, src, 900, h)
-    : `<div class="col" style="width:100%;height:100%;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${team ? chip(T(team), 'L') : ''}</div>`;
+    : FLAG[String(team || '').trim()]
+      ? `<div class="col" style="width:100%;height:100%;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)"><div style="width:${Math.round(h * .9)}px;height:${Math.round(h * .6)}px;border-radius:26px;overflow:hidden;box-shadow:0 18px 48px rgba(18,22,31,.14);border:3px solid #E3E7EE">${FLAG[String(team).trim()]()}</div></div>`   /* 9/19: 나라면 국기를 크게 */
+      : `<div class="col" style="width:100%;height:100%;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${team ? chip(T(team), 'L') : ''}</div>`;
   const tag = s.tag ? `<div class="tag">${esc(s.tag)}</div>` : '';
   const cap = s.caption ? `<div class="cap">${br(s.caption)}</div>` : '';
   return `<div class="photo" style="height:${h}px;${rise(p, 40)};${extra}">${inner}${tag}${cap}</div>`;
@@ -248,17 +288,22 @@ function photoBox(s, h = 560, p = 1, extra = '') {
 
 
 const SCENE = {};
-const PHMAX = 648;   // 본문(676) 안에 들어오게 — 쇼츠 콘티의 h(880 등)를 그대로 쓰면 아래가 잘린다(9/18)
-const PH = (s, h, p) => (photoSrc(s.img) || s.team || (s.teams || [])[0]) ? photoBox(s, Math.min(h, PHMAX), p) : '';
+const PHMAX = 700;   // 본문(676) 안에 들어오게 — 쇼츠 콘티의 h(880 등)를 그대로 쓰면 아래가 잘린다(9/18)
+const PH = (s, h, p) => (photoSrc(s.img) || s.team || (s.teams || [])[0]) ? photoBox(s, Math.min(h, PHMAX), s._keep ? 1 : p) : '';
 /* 사진 칸 폭을 이미지 비율에 맞춘다 — 가로 화면에서 세로 사진을 넓은 칸에 넣으면 양옆이 흐린 여백으로 남는다(9/18) */
 function phW(s, h) {
-  const sz = photoSize(s.img); if (!sz) return 880;
-  return Math.max(360, Math.min(1180, Math.round(Math.min(h, PHMAX) * (sz[0] / sz[1])) + 12));
+  const sz = photoSize(s.img);
+  if (!sz && !photoSrc(s.img) && FLAG[String(s.team || (s.teams || [])[0] || '').trim()]) return Math.round(Math.min(h, PHMAX) * 1.5);   /* 9/19: 국기 칸 */
+  if (!sz) return 880;
+  return Math.max(380, Math.min(1240, Math.round(Math.min(h, PHMAX) * (sz[0] / sz[1])) + 12));
 }
 
 /* chapter: 챕터 표지 — 번호 + 제목 + 진행 점 */
 SCENE.chapter = (lt, s) => {
-  const CH = EP.chapters || [], i = Math.max(0, CH.findIndex(c => c.title === s.text || c.key === s.key));
+  const CH = EP.chapters || [];
+  let i = CH.findIndex(c => c.title === s.text || c.key === s.key);
+  if (i < 0 && s.startLine != null) { i = 0; for (let j = 0; j < CH.length; j++) if (s.startLine >= (CH[j].from || 0)) i = j; }
+  if (i < 0) i = 0;
   const dots = CH.length ? `<div class="dots" style="${rise(seg(lt, .45, .5), 20)}">${CH.map((c, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('')}</div>` : '';
   B(`<div class="chaptitle">
       <div class="kk" style="${rise(seg(lt, 0, .4), 24)}">${esc(s.label || ((i + 1) + ' / ' + (CH.length || 1)))}</div>
@@ -269,16 +314,20 @@ SCENE.chapter = (lt, s) => {
 
 /* hook: 사진 왼쪽 + 초대형 문구 오른쪽 */
 SCENE.hook = (lt, s) => {
-  const pulse = 1 + 0.02 * Math.sin(lt * 4), p = seg(lt, .3, .7);
+  const p = seg(lt, .3, .7);   /* 9/19: 계속 커졌다 작아지는 pulse 는 흔들려 보여 뺐다 */
   const H0 = 660, vis = PH(s, H0, seg(lt, 0, .5));
-  B(LR(vis, `<div class="mega gold" style="font-size:${s.size || 150}px;opacity:${c01(p * 1.4)};transform:scale(${(0.66 + 0.34 * eb(p)) * (lt > 1.1 ? pulse : 1)});transform-origin:left center">${br(s.text)}</div>`, false, phW(s, H0)));
+  B(LR(vis, `<div class="mega gold" style="font-size:${s.size || 150}px;opacity:${c01(p * 1.4)};transform:scale(${0.8 + 0.2 * eo(p)});transform-origin:left center">${br(s.text)}</div>`, false, phW(s, H0)));
 };
 
 
 /* 보조 요소 — 글자만 있는 화면을 없애기 위한 공통 조각 (2026-09-18) */
-function statRow(lt, sts, t0) {
+function statRow(lt, sts, t0, from) {
   if (!sts || !sts.length) return '';
-  return `<div class="st">` + sts.map((x, i) => `<div style="${rise(seg(lt, (t0 == null ? .45 : t0) + i * .12, .45), 18)}"><b class="num" style="color:${x.hi ? ACC : TXT}">${esc(x.v)}</b><i>${esc(x.k)}</i></div>`).join('') + `</div>`;
+  const f = from || 0;   // 앞 장면에서 이미 보여준 칩은 그대로 두고, 새 칩만 나타나게 한다
+  return `<div class="st${sts.length >= 5 ? ' n5' : sts.length === 4 ? ' n4' : ''}">` + sts.map((x, i) => {
+    const st = i < f ? '' : rise(seg(lt, (t0 == null ? .45 : t0) + (i - f) * .12, .45), 18);
+    return `<div style="${st}"><b class="num" style="color:${x.hi ? ACC : TXT}">${esc(x.v)}</b><i>${esc(x.k)}</i></div>`;
+  }).join('') + `</div>`;
 }
 function noteLine(lt, n, t0) {
   if (!n) return '';
@@ -289,8 +338,8 @@ function noteLine(lt, n, t0) {
 SCENE.big = (lt, s) => {
   const num = s.num || '', badge = numBadge(lt, num, s.numLabel);
   const H0 = 620, vis = PH(s, H0, seg(lt, 0, .5));
-  const txt = `${badge}<div class="mega gold" style="font-size:${s.size ? Math.round(s.size * .95) : 120}px;${pop(seg(lt, .25, .6))};transform-origin:left center">${br(s.text || '')}</div>`
-    + noteLine(lt, s.note, .5) + statRow(lt, s.stats, .5);
+  const txt = `${badge}<div class="mega gold" style="font-size:${s.size ? Math.round(s.size * .95) : 120}px;${pop(seg(lt, .06, .5))};transform-origin:left center">${br(s.text || '')}</div>`
+    + noteLine(lt, s.note, .3) + statRow(lt, s.stats, .3, s.showFrom);   /* 9/19: 글이 사진보다 한참 늦게 떠서 오른쪽이 비어 보였다 → 거의 동시에 */
   B(LR(vis, txt, false, phW(s, H0)));
 };
 
@@ -298,13 +347,13 @@ SCENE.big = (lt, s) => {
 SCENE.photo = (lt, s) => {
   const H0 = s.h || 680, vis = PH(s, H0, seg(lt, 0, .5));
   if (!vis) return SCENE.big(lt, { text: (s.tag ? s.tag + '\n' : '') + (s.text || ''), size: Math.min(s.size || 120, 112) });
-  B(LR(vis, s.text ? `<div class="mega gold" style="font-size:${s.size ? Math.round(s.size * .95) : 112}px;${pop(seg(lt, .3, .6))};transform-origin:left center">${br(s.text)}</div>` : '', false, phW(s, H0)));
+  B(LR(vis, s.text ? `<div class="mega gold" style="font-size:${s.size ? Math.round(s.size * .95) : 112}px;${pop(seg(lt, .08, .5))};transform-origin:left center">${br(s.text)}</div>` : '', false, phW(s, H0)));
 };
 
 /* question: 가운데 큰 질문 */
 SCENE.question = (lt, s) => {
   const vis = PH(s, 560, seg(lt, 0, .5));
-  const ex = noteLine(lt, s.note, .45) + statRow(lt, s.stats, .45);
+  const ex = noteLine(lt, s.note, .3) + statRow(lt, s.stats, .3);
   B(LR(vis, `<div class="mega" style="font-size:${s.size || 126}px;${pop(seg(lt, 0, .6))}">${br(s.text || '여러분 생각은?')}</div>${ex}`, !vis));
 };
 
@@ -318,24 +367,35 @@ function numBadge(lt, num, label) {
 }
 
 /* 카드 두 장 (versus / need / matchup) */
-function cardOf(x, p) {
+function cardOf(x, p, compact) {
   if (!x) return '';
   const t = x.team ? T(x.team) : null;
+  /* 세로 사진을 가로 칸에 넣으면 양옆이 빈다 → 사진 비율에 맞춰 칸 모양을 고른다(9/18) */
+  const sz = photoSize(x.img), tall = sz && sz[1] > sz[0] * 1.05;
+  const bw = tall ? 260 : 340, bh = compact ? (tall ? 250 : 170) : (tall ? 300 : 200);
+  const cs = compact ? 'min-height:0;padding:28px 30px;gap:16px;' : '';   /* 9/19: 사진 카드 두 장 + 배지가 본문(714px)을 넘어 배지가 구석으로 밀렸다 */
   const head = photoSrc(x.img)
-    ? `<div style="width:340px;height:200px;border-radius:24px;overflow:hidden;position:relative;background:#E9EDF3"><div class="pp" style="position:absolute;inset:0">${photoImg(x, photoSrc(x.img), 340, 200, x.focus || '50% 12%')}</div></div>`
-    : (t ? chip(t, 'M') : '');
-  return `<div class="card" style="${rise(p, 40)}">${head}
-    <div class="v">${esc(x.value != null ? x.value : (t ? t.nm : (x.name || '')))}</div>
+    ? `<div style="width:${bw}px;height:${bh}px;border-radius:24px;overflow:hidden;position:relative;background:#E9EDF3"><div class="pp" style="position:absolute;inset:0">${photoImg(x, photoSrc(x.img), bw, bh, x.focus || '50% 12%')}</div></div>`
+    : sideChip(x.team || x.name || '', 'M');   /* 사진이 없으면 로고, 나라면 국기(9/18) */
+  return `<div class="card" style="${cs}${rise(p, 40)}">${head}
+    <div class="v" style="${compact ? 'font-size:84px;' : ''}">${esc(x.value != null ? x.value : (t ? t.nm : (x.name || '')))}</div>
     ${x.name && x.value != null ? `<div class="l">${br(x.name)}</div>` : ''}
     ${x.label ? `<div class="l">${br(x.label)}</div>` : ''}</div>`;
 }
-SCENE.versus = (lt, s) => B(LR('', `${numBadge(lt, s.num, s.numLabel)}<div class="row" style="gap:70px;justify-content:center;width:100%">
-  ${cardOf(s.left, seg(lt, .15, .5))}<div class="label" style="font-size:44px;${pop(seg(lt, .35, .4))}">VS</div>${cardOf(s.right, seg(lt, .45, .5))}</div>`));
+SCENE.versus = (lt, s) => {
+  const cp = !!(photoSrc((s.left || {}).img) || photoSrc((s.right || {}).img));
+  B(LR('', `${numBadge(lt, s.num, s.numLabel)}<div class="row" style="gap:70px;justify-content:center;width:100%">
+  ${cardOf(s.left, seg(lt, .08, .45), cp)}<div class="label" style="font-size:44px;${pop(seg(lt, .25, .4))}">VS</div>${cardOf(s.right, seg(lt, .3, .45), cp)}</div>`));
+};
 SCENE.need = SCENE.versus;
 SCENE.matchup = (lt, s) => {
-  const L = T(s.left || ''), R = T(s.right || '');
-  B(LR(PH(s, 560, seg(lt, 0, .5)), `<div class="row" style="gap:54px;${pop(seg(lt, .1, .5))}">${chip(L, 'M')}<span class="big">${esc(s.score || 'vs')}</span>${chip(R, 'M')}</div>
-    ${s.text ? `<div class="big gold" style="margin-top:26px;font-size:${s.size || 92}px;${pop(seg(lt, .45, .5))}">${br(s.text)}</div>` : ''}`, true));
+  /* 9/18: 가운데 칩 두 개만 있으면 화면이 허전하다 → 대회 배지·스탯 칩까지 얹는다 */
+  const S_ = s._same;   /* 9/19: 앞 장면도 같은 두 팀 matchup 이면 국기·배지는 그대로 두고 점수와 문구만 바꾼다 */
+  const tag = s.tag ? `<div class="badge" style="background:#12161F;margin-bottom:22px;${S_ && s._prev.tag === s.tag ? '' : rise(seg(lt, 0, .4), 16)}">${esc(s.tag)}</div>` : '';
+  const sts = statRow(lt, s.stats, .35, s.showFrom);
+  B(LR(PH(s, 560, seg(lt, 0, .5)), `${tag}<div class="row" style="gap:54px;${S_ ? '' : pop(seg(lt, .05, .5))}">${sideChip(s.left, 'M')}<span class="big" style="font-size:150px;${S_ ? pop(seg(lt, .02, .4)) : ''}">${esc(s.score || 'vs')}</span>${sideChip(s.right, 'M')}</div>
+    ${s.text ? `<div class="big gold" style="margin-top:24px;font-size:${s.size || 92}px;${pop(seg(lt, S_ ? .1 : .3, .5))}">${br(s.text)}</div>` : ''}
+    ${sts ? `<div style="margin-top:22px">${sts}</div>` : ''}`, true));
 };
 
 /* people: 인물 카드 2~4장 (가로라 4장까지 들어간다) */
@@ -348,8 +408,8 @@ SCENE.people = (lt, s) => {
     const pic = src ? `<div style="width:100%;height:${ph}px;overflow:hidden;background:#E9EDF3;position:relative"><div class="pp" style="position:absolute;inset:0">${photoImg(it, src, w, ph, it.focus || '50% 10%')}</div></div>`
       : `<div class="col" style="width:100%;height:${ph}px;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${t ? chip(t, 'M') : ''}</div>`;
     return `<div class="pane" style="width:${w}px;border-radius:28px;overflow:hidden;${rise(p, 40)}">${pic}
-      <div class="col" style="padding:20px 14px;gap:8px"><div style="font-size:${n >= 4 ? 40 : 46}px;font-weight:900;letter-spacing:-1.5px">${esc(it.name || '')}</div>
-      ${it.note ? `<div class="label" style="font-size:${n >= 4 ? 28 : 32}px;color:${it.bad === true ? RED : it.bad === false ? GREEN : GRAY};text-align:center">${br(it.note)}</div>` : ''}</div></div>`;
+      <div class="col" style="padding:20px 14px;gap:8px"><div style="font-size:${n >= 4 ? 46 : 54}px;font-weight:900;letter-spacing:-1.5px">${esc(it.name || '')}</div>
+      ${it.note ? `<div class="label" style="font-size:${n >= 4 ? 32 : 36}px;color:${it.bad === true ? RED : it.bad === false ? GREEN : GRAY};text-align:center">${br(it.note)}</div>` : ''}</div></div>`;
   }).join('') + `</div>`;
   if (s.text) h += `<div class="big gold" style="margin-top:28px;font-size:${s.size || 80}px;${pop(seg(lt, .3 + n * .25, .5))}">${br(s.text)}</div>`;
   B(LR('', h));
@@ -373,9 +433,9 @@ SCENE.steps = (lt, s) => {
     const p = seg(lt, .15 + i * .22, .45);
     return `${i ? `<div style="flex:0 0 60px;height:4px;background:#D8DEE8;margin-top:56px;opacity:${c01(p * 1.5)}"></div>` : ''}
       <div class="col" style="gap:14px;max-width:320px;${rise(p, 34)}">
-        <div class="num" style="width:${it.hi ? 116 : 100}px;height:${it.hi ? 116 : 100}px;border-radius:50%;background:${it.hi ? ACC : '#fff'};border:3px solid ${it.hi ? ACC : LINE};color:${it.hi ? '#fff' : TXT};display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900">${esc(it.date || (i + 1))}</div>
-        <div style="font-size:42px;font-weight:800;letter-spacing:-1.5px;text-align:center">${br(it.text || '')}</div>
-        ${it.sub ? `<div class="label" style="font-size:30px;text-align:center">${br(it.sub)}</div>` : ''}</div>`;
+        <div class="num" style="width:108px;height:108px;border-radius:50%;background:${it.hi ? ACC : '#fff'};border:3px solid ${it.hi ? ACC : LINE};color:${it.hi ? '#fff' : TXT};display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900">${esc(it.date || (i + 1))}</div>
+        <div style="font-size:50px;font-weight:800;letter-spacing:-1.5px;text-align:center">${br(it.text || '')}</div>
+        ${it.sub ? `<div class="label" style="font-size:34px;text-align:center">${br(it.sub)}</div>` : ''}</div>`;
   }).join('') + `</div>`;
   if (s.text) h += `<div class="big gold" style="margin-top:32px;font-size:${s.size || 84}px;${pop(seg(lt, .3 + items.length * .22, .5))}">${br(s.text)}</div>`;
   B(LR('', h));
@@ -401,16 +461,19 @@ SCENE.table = (lt, s) => {
 
 /* h2h: 맞대결 기록판 — 대회 / 스코어 / 승패 배지 */
 SCENE.h2h = (lt, s) => {
-  const rows = s.rows || [];
-  let h = s.title ? `<div class="title gold" style="font-size:52px;margin-bottom:18px;${rise(seg(lt, 0, .4), 20)}">${br(s.title)}</div>` : '';
-  h += `<div class="h2h">` + rows.map((r, i) => {
-    const p = seg(lt, .15 + i * .18, .45), win = /승/.test(r.res || ''), col = win ? GREEN : RED;
-    return `<div class="r" style="${rise(p, 26)};border-color:${r.hi ? ACC : '#E3E7EE'}">
-      <div class="w">${esc(r.when || '')}${r.sub ? `<small>${esc(r.sub)}</small>` : ''}</div>
-      <div class="s num" style="color:${col}">${esc(r.score || '')}</div>
-      <div class="b" style="background:${col}">${esc(r.res || '')}</div></div>`;
+  const rows = s.rows || [], S_ = s._same;   /* 9/19: 앞 장면과 같은 표면 줄들은 다시 안 올라오고 문구만 얹는다 */
+  /* 줄이 많으면 본문(676px) 을 넘는다 → 줄 수에 맞춰 크기를 줄인다(9/18) */
+  const k = s.k || (rows.length <= 5 ? 1 : rows.length === 6 ? .8 : .68);   /* 9/19: 콘티 k 로 직접 지정(표 + 문구가 같이 들어갈 때) */
+  const R = n => Math.round(n * k);
+  let h = s.title ? `<div class="title gold" style="font-size:${R(52)}px;margin-bottom:${R(18)}px;${S_ ? '' : rise(seg(lt, 0, .4), 20)}">${br(s.title)}</div>` : '';
+  h += `<div class="h2h" style="gap:${R(13)}px">` + rows.map((r, i) => {
+    const p = S_ ? 1 : seg(lt, .15 + i * .18, .45), win = /승/.test(r.res || ''), col = win ? GREEN : RED;
+    return `<div class="r" style="${rise(p, 26)};border-color:${r.hi ? ACC : '#E3E7EE'};padding:${R(14)}px 30px">
+      <div class="w" style="font-size:${R(40)}px">${esc(r.when || '')}${r.sub ? `<small style="font-size:${R(27)}px">${esc(r.sub)}</small>` : ''}</div>
+      <div class="s num" style="color:${col};font-size:${R(54)}px">${esc(r.score || '')}</div>
+      <div class="b" style="background:${col};height:${R(54)}px;font-size:${R(34)}px">${esc(r.res || '')}</div></div>`;
   }).join('') + `</div>`;
-  if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 80}px;${pop(seg(lt, .25 + rows.length * .18, .5))}">${br(s.text)}</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 80}px;${pop(seg(lt, S_ ? .05 : .25 + rows.length * .18, .5))}">${br(s.text)}</div>`;
   B(LR('', h));
 };
 
@@ -431,7 +494,6 @@ SCENE.roster = (lt, s) => {
 /* statbars: 항목별 좌우 비교 막대 */
 SCENE.statbars = (lt, s) => {
   const rows = s.rows || [], L = s.left ? T(s.left) : null, R = s.right ? T(s.right) : null;
-  const mx = Math.max(1, ...rows.map(r => Math.max(Number(r.lv) || 0, Number(r.rv) || 0)));
   const CL = s.leftColor || '#12161F', CR = s.rightColor || ACC, BW = 420;
   let h = `<div class="row" style="width:100%;justify-content:space-between;margin-bottom:16px;${rise(seg(lt, 0, .4), 18)}">
     <div class="row" style="gap:16px">${L ? chip(L, 'S') : ''}<b style="font-size:46px;font-weight:900;letter-spacing:-2px;color:${CL}">${esc(s.leftName || (L ? L.nm : ''))}</b></div>
@@ -439,7 +501,8 @@ SCENE.statbars = (lt, s) => {
     <div class="row" style="gap:16px"><b style="font-size:46px;font-weight:900;letter-spacing:-2px;color:${CR}">${esc(s.rightName || (R ? R.nm : ''))}</b>${R ? chip(R, 'S') : ''}</div></div>`;
   h += `<div class="sb">` + rows.map((r, i) => {
     const q = seg(lt, .15 + i * .16, .5), p = eo(q);
-    const lw = (Number(r.lv) || 0) / mx * BW * p, rw = (Number(r.rv) || 0) / mx * BW * p;
+    const m = Math.max(1e-9, Number(r.lv) || 0, Number(r.rv) || 0);   // 줄마다 그 줄의 최대값을 100% 로
+    const lw = (Number(r.lv) || 0) / m * BW * p, rw = (Number(r.rv) || 0) / m * BW * p;
     return `<div class="r" style="opacity:${c01(q * 1.6)}">
       <div class="h l"><span class="n num" style="text-align:right;color:${CL}">${esc(r.l || '')}</span><div class="bar" style="width:${lw}px;background:${CL}"></div></div>
       <div class="k">${br(r.k || '')}</div>
@@ -451,20 +514,25 @@ SCENE.statbars = (lt, s) => {
 
 /* profile: 선수 한 명 — 사진 + 이름 + 소속 배지 + 스탯 칩 + 한 줄 */
 SCENE.profile = (lt, s) => {
-  const H0 = s.h || 620, vis = PH(s, H0, seg(lt, 0, .5)), sts = s.stats || [];
-  const st = sts.map((x, i) => `<div style="${rise(seg(lt, .3 + i * .12, .45), 18)}"><b class="num" style="color:${x.hi ? ACC : TXT}">${esc(x.v)}</b><i>${esc(x.k)}</i></div>`).join('');
-  const txt = `<div style="${rise(seg(lt, .1, .5), 22)}">
+  const H0 = s.h || 620, vis = PH(s, H0, seg(lt, 0, .5)), sts = s.stats || [], K = s._keep;
+  const f = s.showFrom || 0;
+  const st = sts.map((x, i) => `<div style="${i < f ? '' : rise(seg(lt, (K ? .1 : .2) + (i - f) * .12, .45), 18)}"><b class="num" style="color:${x.hi ? ACC : TXT}">${esc(x.v)}</b><i>${esc(x.k)}</i></div>`).join('');
+  const txt = `<div style="${K ? '' : rise(seg(lt, .04, .45), 22)}">
       <div class="mega" style="font-size:${s.size || 116}px">${br(s.name || '')}</div>
       ${s.sub ? `<div class="badge" style="margin-top:14px;background:${ACC}">${esc(s.sub)}</div>` : ''}</div>
-    ${st ? `<div class="st">${st}</div>` : ''}
-    ${s.text ? `<div class="big gold" style="font-size:${s.textSize || 70}px;${pop(seg(lt, .3 + sts.length * .12, .5))}">${br(s.text)}</div>` : ''}`;
+    ${s.text ? (() => {
+      const same = K && s._prev && s._prev.text === s.text, sz = s.textSize || 104, nl = s.text.split('\n').length;
+      const grow = (K && !same) ? `max-height:${(eo(seg(lt, .02, .45)) * (nl * sz * 1.25 + 16)).toFixed(1)}px;overflow:hidden;` : '';   /* 9/19: 사진은 그대로, 문구 칸이 자라나며 이름·칩이 자연스럽게 밀린다 */
+      return `<div style="${grow}"><div class="big gold" data-fit="${1808 - (vis ? phW(s, H0) : 0) - 64}" style="font-size:${sz}px;white-space:${nl > 1 ? 'normal' : 'nowrap'};${same ? '' : pop(seg(lt, K ? .08 : .12, .5))}">${br(s.text)}</div></div>`; })() : ''}
+    ${st ? `<div class="st${(s._nmax || sts.length) >= 5 ? ' n5' : (s._nmax || sts.length) === 4 ? ' n4' : ''}">${st}</div>` : ''}`;   /* 9/19: 같은 사진이 이어지면 이미 보인 문구는 그대로 */ /* 9/18: 강조 문구가 칩 아래로 밀려 맨 밑에 쳐박혔다 → 이름 바로 아래로 */
   B(LR(vis, txt, false, phW(s, H0)));
 };
 
 const MOTION = {
   chapter: s => 1.0 + ((s.items || []).length ? .35 : 0), hook: () => 1.1,
   big: s => .9 + ((s.stats || []).length) * .12 + (s.note ? .35 : 0), photo: () => 1.0, question: s => .7 + ((s.stats || []).length) * .12 + (s.note ? .35 : 0),
-  versus: () => 1.6, need: () => 1.6, matchup: () => 1.4, table: () => 2.3,
+  versus: () => 1.6, need: () => 1.6,
+  matchup: s => 1.4 + ((s.stats || []).length) * .12, table: () => 2.3,
   people: s => .25 + ((s.items || []).length) * .25 + .5 + (s.text ? .5 : 0),
   teamgrid: s => .25 + ((s.items || []).length) * .12 + .45 + (s.text ? .5 : 0),
   steps: s => .25 + ((s.items || []).length) * .22 + .45 + (s.text ? .5 : 0),
@@ -491,16 +559,48 @@ function drawRail(k, t) {
   document.getElementById('chapN').textContent = (i + 1) + '/' + CH.length;
   document.getElementById('chapT').textContent = CH[i].title || '';
 }
+/* 같은 사진이 이어지는 장면에서 카드가 늘면 묶음이 넓어지며 사진이 왼쪽으로 간다.
+   그 이동을 0.6초 동안 밀어서 보여 준다(9/18). 앞 장면 폭은 직전 프레임에서 재 둔다.
+   9/19: 부호가 뒤집혀 사진이 왼쪽에서 오른쪽으로 '들어오듯' 보였다 → 옛 자리(오른쪽)에서 새 자리로 미끄러지게 고침 */
+let PK = -1, PW = 0, SLIDE = 0, SAT = 0;
+function slide(k, t, s, start) {
+  const lr = document.querySelector('.lr'), body = document.getElementById('body');
+  let w = 0;
+  if (lr) { const v = lr.querySelector('.v'), tt = lr.querySelector('.t');
+    w = (v ? v.getBoundingClientRect().width : 0) + (tt ? tt.getBoundingClientRect().width : 0) + (v && tt ? 64 : 0); }
+  if (k !== PK) { SLIDE = (s._keep && PW && w) ? (w - PW) / 2 : 0; SAT = start; PK = k; }
+  PW = w;
+  const p = c01((t - SAT) / 0.6), dx = SLIDE * (1 - eo(p));
+  body.style.transform = Math.abs(dx) > 0.5 ? `translateX(${dx.toFixed(1)}px)` : '';
+}
 function render(t) {
   let k = 0; while (k < BD.length && t >= BD[k]) k++;
   const start = k === 0 ? 0 : BD[k - 1], end = k < BD.length ? BD[k] : (EP.total || start + 3);
   const s = SC[Math.min(k, SC.length - 1)] || { type: 'big', text: '' };
+  const prev = k > 0 ? SC[k - 1] : null;                       // 9/18: 같은 사진이면 사진은 그대로 두고 글/칩만 바뀌게
+  s._keep = !!(prev && photoSrc(prev.img) && photoSrc(prev.img) === photoSrc(s.img)); s._prev = prev;
+  const J = x => JSON.stringify(x == null ? null : x);   // 9/19: 앞 장면과 같은 뼈대(표·국기 줄)면 그 부분은 다시 안 그린다
+  s._same = !!(prev && prev.type === s.type && (
+    (s.type === 'h2h' && J(prev.rows) === J(s.rows) && (prev.title || '') === (s.title || '')) ||
+    (s.type === 'matchup' && prev.left === s.left && prev.right === s.right && !photoSrc(s.img))));
+  if (s._nmax == null) {   // 9/19: 같은 사진이 이어지는 profile 묶음의 최대 칩 수 (칩 크기를 처음부터 맞춰 둔다)
+    let a = k, b = k; const same = (x, y) => x && y && x.type === 'profile' && y.type === 'profile' && photoSrc(x.img) && photoSrc(x.img) === photoSrc(y.img);
+    while (a > 0 && same(SC[a - 1], SC[a])) a--;
+    while (b + 1 < SC.length && same(SC[b], SC[b + 1])) b++;
+    let m = 0; for (let j = a; j <= b; j++) m = Math.max(m, (SC[j].stats || []).length);
+    for (let j = a; j <= b; j++) SC[j]._nmax = m;
+  }
   const need = (MOTION[s.type] || MOTION.big)(s), fit = Math.max(0.6, (end - start) * 0.75);
   const lt = (t - start) * (need > fit ? need / fit : 1);
   (SCENE[s.type] || SCENE.big)(lt, s);
-  document.getElementById('body').style.opacity = String(c01((t - start) / 0.28));
+  document.querySelectorAll('[data-fit]').forEach(el => {        // 한 줄짜리 강조 문구를 칸 폭에 맞춰 줄인다
+    const lim = +el.dataset.fit; let fs = parseFloat(el.style.fontSize || getComputedStyle(el).fontSize), g = 0;
+    while (el.scrollWidth > lim && fs > 46 && g++ < 60) { fs -= 3; el.style.fontSize = fs + 'px'; }
+  });
+  document.getElementById('body').style.opacity = (s._keep || s._same) ? '1' : String(c01((t - start) / 0.28));
   const gx = 50 + 4 * Math.sin(t * .5), gy = 22 + 2 * Math.cos(t * .37);
   document.getElementById('stage').style.background = `radial-gradient(60% 50% at ${gx}% ${gy}%, ${ACC}22 0%, rgba(244,246,250,0) 70%),#F4F6FA`;
+  slide(k, t, s, start);
   drawRail(k, t); drawSub(t);
 }
 window.render = render; render(0);

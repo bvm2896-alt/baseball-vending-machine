@@ -390,8 +390,14 @@ def silence(name, sec):
     run(['ffmpeg', '-y', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{sec:.3f}', name])
 
 def render(ep, ep_path):
+    # 9/21: 음성 폴더는 콘티 이름으로 정한다 — current.txt(마지막 prep) 를 따르면 다른 편 음성이 붙는다(하현승⑥에 드래프트 편 음성이 들어간 사고)
+    io.open(W('current.txt'), 'w', encoding='utf-8').write(ep_key(ep_path))
     lines = ep['lines']; N = len(lines)
     spd = float(cfg_get('SPEED', '1.12'))   # 말 자체 배속(9/14 "말은 빠르되 문단 사이 텀은 적절히" → 기본 1.12). 타입캐스트는 1.0x 로 뽑고 여기서 올린다. 설정.txt SPEED 로 조절
+    # 9/18: 편마다 다르게 하고 싶을 때는 콘티에 "speed": 1.30 (설정.txt 는 건드리지 않는다).
+    # 줄 사이 쉼(gap_after)은 이 배속과 무관하게 따로 넣으므로, 이 값만 올리면 '텀은 그대로, 말만 빨라진다'
+    if ep.get('speed'):
+        spd = float(ep['speed']); print(f'말 속도: 콘티 지정 {spd:.2f}배')
     # 1) 음성 확인 + 트리밍 (자르기는 atrim 필터로, 속도 조절은 그 다음에 → -to 가 느려진 소리 끝을 잘라먹지 않는다)
     clips, warns, seg_start, seg_rate = [], [], [], []
     retried = set()
@@ -417,6 +423,11 @@ def render(ep, ep_path):
         gain = static_gain(src, ss, to)
         def cut(ss, to):
             af = f'atrim=start={ss:.3f}:end={to:.3f},asetpts=PTS-STARTPTS'
+            # 9/18: 콘티에 "tight": true 인 줄은 문장 안의 긴 쉼("한국 야구가 .. 대만한테 ..")을 잘라 붙인다.
+            # tightMs 로 남길 쉼 길이를 바꿀 수 있다(기본 0.12초). 줄과 줄 사이 쉼(gap_after)은 건드리지 않는다.
+            if lines[i].get('tight'):
+                keep = float(lines[i].get('tightMs', 120)) / 1000.0
+                af += f',silenceremove=stop_periods=-1:stop_duration={keep:.3f}:stop_threshold=-36dB:detection=peak'
             if abs(rate - 1.0) > 0.01: af += f',atempo={rate:.3f}'
             # 음량은 줄마다 '고정 이득'으로만 맞춘다(loudnorm 같은 동적 정규화는 짧은 클립의 앞뒤 음량을 출렁이게 해 기계음처럼 들림)
             # + 앞뒤 12ms 페이드(딱 끊기는 소리 방지)
@@ -550,6 +561,7 @@ def render(ep, ep_path):
         print('배경음악:', os.path.basename(bgm))
     else:
         run(['ffmpeg', '-y', '-i', W('silent.mp4'), '-i', W('narration.wav'), '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], check=True)
+    if is_long(ep): append_endcard(EP, out)   # 9/20: 롱폼은 끝에 어두운 엔딩 카드(유튜브 최종 화면 자리)
     d = dur_of(out)
     thumb = make_thumb(EP, thumb_path)
     write_youtube_txt(ep, yt_path, d)
@@ -557,6 +569,38 @@ def render(ep, ep_path):
     if ep.get('chapters'): write_chapters(ep, st, yt_path)   # 9/18 롱폼: 설명란 챕터 타임스탬프
     write_srt(subs, srt_path)   # 9/15 SEO: 유튜브 업로드 때 자막 파일로 첨부 → 자동 자막보다 정확하게 검색 색인
     print(f'완료: {out} {d:.2f}초 (자막 {len(subs)}개, 장면 {len(ep["scenes"])}개) 썸네일 {thumb}')
+    return out
+
+def append_endcard(EP, out):
+    """롱폼 mp4 끝에 어두운 엔딩 카드(설정 ENDCARD_SEC, 기본 12초)를 붙인다(9/20 사용자 지시).
+       유튜브 '최종 화면'(구독·다음 영상)은 마지막 5~20초에 얹히는데, 본편 위에 얹히면 화면을 가린다 → 본편 뒤에 빈 화면을 둔다.
+       endcard.html → png → 본편과 같은 코덱(h264 High/Level/픽셀형식/60fps, aac 44.1k mono)으로 12초를 만들고 concat 으로 재인코딩 없이 이어 붙인다."""
+    sec = float(cfg_get('ENDCARD_SEC', '12'))
+    if sec <= 0 or not os.path.exists('endcard.html'): return out
+    html = io.open('endcard.html', encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
+    html = html.replace('<script>', '<script>window.EP=' + json.dumps({'lines': EP.get('lines', []), 'endTop': EP.get('endTop')}, ensure_ascii=False) + ';</script><script>', 1)
+    io.open(W('render_endcard.html'), 'w', encoding='utf-8').write(html)
+    png = W('endcard.png')
+    env = dict(os.environ); env['THUMB_W'], env['THUMB_H'] = '2560', '1440'
+    r = subprocess.run(['node', 'thumb.js', W('render_endcard.html'), png], capture_output=True, text=True, encoding='utf-8', errors='replace', env=env)
+    if r.returncode != 0 or not os.path.exists(png): print('엔딩 카드 그리기 실패(엔딩 없이 진행):', (r.stderr or r.stdout)[-200:]); return out
+    # 본편 코덱 파라미터를 읽어 똑같이 맞춘다(안 맞으면 concat 복사가 깨진다)
+    pr = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v', '-show_entries', 'stream=width,height,profile,level,pix_fmt,r_frame_rate', '-of', 'default=nw=1', out], capture_output=True, text=True).stdout
+    kv = dict(l.split('=', 1) for l in pr.strip().splitlines() if '=' in l)
+    w_, h_ = kv.get('width', '2560'), kv.get('height', '1440'); pix = kv.get('pix_fmt', 'yuvj420p'); lvl = kv.get('level', '51'); prof = (kv.get('profile') or 'High').lower()
+    fps = kv.get('r_frame_rate', '60/1').split('/'); fps = str(int(round(float(fps[0]) / float(fps[1] or 1))))
+    lvl = f'{int(lvl) // 10}.{int(lvl) % 10}' if lvl.isdigit() else lvl
+    tail = W('endcard.mp4')
+    r = subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-loop', '1', '-framerate', fps, '-i', png, '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{sec:.2f}',
+                        '-vf', f'scale={w_}:{h_},fade=t=in:st=0:d=0.6,format={pix}', '-c:v', 'libx264', '-profile:v', prof, '-level', lvl, '-pix_fmt', pix, '-r', fps, '-g', str(int(fps) * 2),
+                        '-preset', 'medium', '-crf', '20', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-ac', '1', '-shortest', tail], capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode != 0: print('엔딩 카드 인코딩 실패(엔딩 없이 진행):', r.stderr[-200:]); return out
+    lst = W('endcard_list.txt'); joined = W('with_endcard.mp4')
+    io.open(lst, 'w', encoding='utf-8').write("file '" + os.path.abspath(out).replace("'", "'\\''") + "'\nfile '" + os.path.abspath(tail).replace("'", "'\\''") + "'\n")
+    r = subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-c', 'copy', '-movflags', '+faststart', joined], capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode != 0 or not os.path.exists(joined) or dur_of(joined) < dur_of(out) + sec * 0.9:
+        print('엔딩 카드 붙이기 실패(엔딩 없이 진행):', (r.stderr or '')[-200:]); return out
+    shutil.move(joined, out); print(f'엔딩 카드 {sec:.0f}초 붙임')
     return out
 
 def write_chapters(ep, st, yt_path):
@@ -596,6 +640,20 @@ def cut_chapter(ep, ep_path, which):
     a = int(c.get('from', 0)); b = int(c.get('to', len(ep['lines']) - 1))
     if not (0 <= a <= b < len(ep['lines'])): raise SystemExit(f'챕터 구간이 이상합니다: {a}~{b}')
     sh = c.get('short') or {}
+    # 9/20: 챕터를 그대로 자르면 첫마디가 "그 대만에서…" 처럼 앞 얘기를 받는 말이라 혼자서는 뜻이 안 통한다.
+    #   short.intro / short.outro : 롱폼의 다른 줄(번호)을 앞/뒤에 붙인다 — 음성·자막·장면을 그대로 가져오므로 재녹음 없음.
+    #   short.drop               : 챕터 안에서 뺄 줄 번호("그럼 마운드 말고 나머지는" 같은 연결용 문장)
+    #   항목은 숫자 또는 {"line": 0, "scene": {...덮어쓸 값}} — 훅 사진을 편마다 바꿀 때 scene 으로 덮는다.
+    def _norm(v):
+        return [(int(x), {}) if not isinstance(x, dict) else (int(x['line']), dict(x.get('scene') or {})) for x in (v or [])]
+    drop = set(int(x) for x in (sh.get('drop') or []))
+    seq = _norm(sh.get('intro')) + [(i, {}) for i in range(a, b + 1) if i not in drop] + _norm(sh.get('outro'))
+    n = len(ep['lines'])
+    for i, _ in seq:
+        if not (0 <= i < n): raise SystemExit(f'intro/outro 줄 번호가 범위 밖: {i}')
+    by_line = {}
+    for sc in ep.get('scenes', []):
+        by_line.setdefault(int(sc.get('startLine', 0)), sc)   # 줄마다 첫 장면 하나
     out = {
         'date': sh.get('date') or ep.get('date'), 'gameDate': ep.get('gameDate'),
         'series': sh.get('series') or '야구이슈', 'railTitle': sh.get('railTitle') or 'KBO 이슈',
@@ -603,31 +661,46 @@ def cut_chapter(ep, ep_path, which):
         'source': f'롱폼 {os.path.basename(ep_path)} 챕터 {idx + 1}({c.get("title", "")}) 에서 잘라냄. ' + str(ep.get('source', '')),
         'thumb': sh.get('thumb') or ep.get('thumb'),
         'youtube': sh.get('youtube') or ep.get('youtube'),
-        'lines': [dict(x) for x in ep['lines'][a:b + 1]],
+        'lines': [dict(ep['lines'][i]) for i, _ in seq],
         'scenes': [],
     }
-    for sc in ep.get('scenes', []):
-        k = int(sc.get('startLine', 0))
-        if a <= k <= b:
-            d = dict(sc); d['startLine'] = k - a
-            if d.get('type') == 'chapter': d['type'] = 'hook'          # 챕터 표지는 쇼츠에서 훅으로
-            out['scenes'].append(d)
+    if ep.get('speed') is not None: out['speed'] = ep['speed']   # 9/20: 롱폼 음성이 타입캐스트 1.2x 원음이면 쇼츠도 atempo 안 태운다(설정 SPEED 무시)
+    for j, (i, ov) in enumerate(seq):
+        sc = by_line.get(i)
+        if sc is None: continue
+        d = dict(sc); d.update(ov); d['startLine'] = j
+        if d.get('type') == 'chapter': d['type'] = 'hook'          # 챕터 표지는 쇼츠에서 훅으로
+        out['scenes'].append(d)
     if not out['scenes'] or out['scenes'][0]['startLine'] != 0:
         out['scenes'].insert(0, {'type': 'hook', 'startLine': 0, 'text': (c.get('title') or '')})
     slot = sh.get('slot') or f'이슈{idx + 1}'
     dst = os.path.join('episodes', f'{out["date"]}_{slot}.json')
     os.makedirs('episodes', exist_ok=True)
+    # 9/18 사고: 롱폼 챕터의 date+slot 이 이미 있는 편과 같아 그 콘티와 음성을 통째로 덮어썼다.
+    # 남의 편을 지우지 않게, 이미 있으면 여기서 멈춘다(챕터 short.slot 을 바꿔서 다시 실행).
+    if os.path.exists(dst):
+        import json as _j
+        try: cur = _j.load(io.open(dst, encoding='utf-8-sig'))
+        except Exception: cur = {}
+        if cur.get('_fromLong') != os.path.basename(ep_path):
+            raise SystemExit(f'이미 있는 콘티라 덮어쓰지 않았습니다: {dst}\n'
+                             f'  → 롱폼 콘티의 chapters[].short.slot 을 다른 이름(이슈3 등)으로 바꾸고 다시 실행하세요.')
+    out['_fromLong'] = os.path.basename(ep_path)
     json.dump(out, io.open(dst, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     # 음성 복사 (롱폼 → 쇼츠)
     src_dir, dst_dir = voice_dir(ep_key(ep_path)), voice_dir(ep_key(dst))
     moved = 0
-    for i in range(a, b + 1):
-        for ext in ('.mp3', '.txt'):
+    for j, (i, _) in enumerate(seq):
+        for ext in ('.mp3', '.txt', '.segs.json'):   # 9/20: 호흡 경계(segs)도 같이 — 없으면 자막이 한 덩어리로 나온다
             f = os.path.join(src_dir, f'{i:02d}{ext}')
             if os.path.exists(f):
-                shutil.copyfile(f, os.path.join(dst_dir, f'{i - a:02d}{ext}'))
+                shutil.copyfile(f, os.path.join(dst_dir, f'{j:02d}{ext}'))
                 if ext == '.mp3': moved += 1
-    print(f'잘라냄: {dst}  ({b - a + 1}줄, 장면 {len(out["scenes"])}개, 음성 {moved}개 복사)')
+    # 줄 수가 줄었으면 남은 옛 번호 파일이 자막에 섞이지 않게 치운다
+    for f in os.listdir(dst_dir) if os.path.isdir(dst_dir) else []:
+        m = re.match(r'^(\d{2})\.(mp3|txt|segs\.json)$', f)
+        if m and int(m.group(1)) >= len(seq): os.remove(os.path.join(dst_dir, f))
+    print(f'잘라냄: {dst}  ({len(seq)}줄 = 도입 {len(sh.get("intro") or [])} + 본문 {b - a + 1 - len(drop)} + 마무리 {len(sh.get("outro") or [])}, 장면 {len(out["scenes"])}개, 음성 {moved}개 복사)')
     print(f'  다음: python -X utf8 build.py prep {dst}  →  python -X utf8 build.py render {dst}')
     return dst
 
