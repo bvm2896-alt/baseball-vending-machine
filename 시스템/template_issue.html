@@ -148,6 +148,19 @@ const FLAG = {
     <circle r="6.4" fill="#000095"/><circle r="5.4" fill="#fff"/></g></svg>`,
   '일본': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
     <rect width="90" height="60" fill="#fff"/><circle cx="45" cy="30" r="18" fill="#BC002D"/></svg>`,
+  '태국': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="60" fill="#A51931"/><rect y="10" width="90" height="40" fill="#F4F5F8"/><rect y="20" width="90" height="20" fill="#2D2A4A"/></svg>`,
+  '홍콩': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="60" fill="#DE2910"/>
+    <g transform="translate(45,30)">${Array.from({length:5},(_,i)=>`<path d="M0,0 C-7,-6 -7,-17 0,-19 C7,-17 7,-6 0,0 Z" fill="#fff" transform="rotate(${i*72})"/>`).join('')}<circle r="2.2" fill="#DE2910"/></g></svg>`,
+  /* 9/22: A조 세 나라 */
+  '중국': () => { const st = (x, y, r, rot) => `<polygon points="${Array.from({length:10},(_,i)=>{const a=-Math.PI/2+i*Math.PI/5+rot, rr=i%2?r*.382:r; return (x+rr*Math.cos(a)).toFixed(2)+','+(y+rr*Math.sin(a)).toFixed(2);}).join(' ')}" fill="#FFDE00"/>`;
+    return `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><rect width="90" height="60" fill="#DE2910"/>${st(15,15,9,0)}${st(30,6,3,.6)}${st(36,12,3,.3)}${st(36,21,3,0)}${st(30,27,3,.6)}</svg>`; },
+  '필리핀': () => { const st = (x, y, r) => `<polygon points="${Array.from({length:10},(_,i)=>{const a=-Math.PI/2+i*Math.PI/5, rr=i%2?r*.382:r; return (x+rr*Math.cos(a)).toFixed(2)+','+(y+rr*Math.sin(a)).toFixed(2);}).join(' ')}" fill="#FCD116"/>`;
+    return `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><rect width="90" height="30" fill="#0038A8"/><rect y="30" width="90" height="30" fill="#CE1126"/><polygon points="0,0 52,30 0,60" fill="#fff"/>
+    <g transform="translate(17,30)"><circle r="6" fill="#FCD116"/>${Array.from({length:8},(_,i)=>`<rect x="-1" y="-11" width="2" height="5" fill="#FCD116" transform="rotate(${i*45})"/>`).join('')}</g>${st(6,6,3.2)}${st(6,54,3.2)}${st(41,30,3.2)}</svg>`; },
+  '팔레스타인': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="20" fill="#000"/><rect y="20" width="90" height="20" fill="#fff"/><rect y="40" width="90" height="20" fill="#009736"/><polygon points="0,0 30,30 0,60" fill="#EE2A35"/></svg>`,
 };
 function sideChip(name, size = 'M') {
   const n = String(name || '').trim();
