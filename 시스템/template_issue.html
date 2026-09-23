@@ -82,6 +82,10 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 .tr .bar{position:absolute;left:0;top:0;height:30px;border-radius:0 15px 15px 0}
 .tr .gp{width:100px;font-size:32px;font-weight:600;text-align:right;color:#6A7382}
 .tr .wr{width:120px;font-size:38px;font-weight:800;text-align:right;letter-spacing:-1.5px}
+/* 9/22 구독 유도: 마지막 자막("채널 구독하고…")이 뜨는 동안 유튜브 쇼츠 '구독' 버튼(아이폰·안드로이드 모두 화면 왼쪽 아래, 채널 이름 오른쪽, 세로 79~80% 지점) 바로 위를 화살표로 가리킨다. 자막(1270~1420)과 유튜브 UI 띠(1490~)를 안 가리는 1400~1485 사이에만 그린다 */
+#subhint{position:absolute;left:0;top:0;width:1080px;height:1920px;pointer-events:none;visibility:hidden}
+#subhint .arrow{position:absolute;left:478px;top:1382px;width:90px;height:90px;animation:sh-bounce .7s ease-in-out infinite}
+@keyframes sh-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-22px)}}
 </style></head><body>
 <div id="stage">
   <div id="hdr">
@@ -90,6 +94,7 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
   </div>
   <div id="body"></div>
   <div id="sub"><span></span></div>
+  <div id="subhint"><svg class="arrow" viewBox="0 0 80 80"><path d="M40 4 L40 56 M16 36 L40 62 L64 36" fill="none" stroke="#FF0000" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
 </div>
 
 <script>
@@ -587,6 +592,8 @@ function drawSub(t) {
   const h = SUBS.find(s => t >= s[0] && t < s[1]);
   const sp = document.querySelector('#sub span');
   sp.innerHTML = h ? br(h[2]) : ''; sp.style.visibility = h ? 'visible' : 'hidden';
+  const hint = document.getElementById('subhint'), on = !!(h && /구독/.test(h[2])); if (hint) hint.style.visibility = on ? 'visible' : 'hidden';   /* 9/22 구독 화살표: 마지막 자막은 위로 올려 화살표 자리를 비운다 */
+  document.getElementById('sub').style.top = on ? '1190px' : '';
 }
 const MOTION = {
   hook: () => 1.1, big: s => .9 + ((s.stats || []).length) * .12 + (s.note ? .3 : 0), profile: s => .8 + ((s.stats || []).length) * .12 + (s.text ? .3 : 0), roster: s => 1.3 + (s.text ? .5 : 0), matchup: () => 1.4, table: () => 2.3, versus: () => 1.6, need: () => 1.6,
