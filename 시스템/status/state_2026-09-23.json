@@ -1,12 +1,9 @@
 {
  "date": "2026-09-23",
- "step": "음성",
+ "step": "시작",
  "videos": {},
  "built": {},
  "log": [
-  "[11:15:54] 시작",
-  "[11:16:30] 깃허브 받기 실패: ng your working tree from\ncommit 0dc61584f1a048b360bcc3e2447f9628012c77bb.\nerror: cannot rebase: You have unstaged changes.\nerror: Please commit or stash them.\n",
-  "[11:16:30] 순위 읽기 생략(--no-fetch)",
-  "[11:16:30] [순위] 음성 생성 시작"
+  "[11:16:42] 시작"
  ]
 }
