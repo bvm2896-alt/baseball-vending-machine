@@ -74,7 +74,7 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 .tr .wr{width:120px;font-size:38px;font-weight:800;text-align:right;letter-spacing:-1.5px}
 /* 9/22 구독 유도: 마지막 자막("채널 구독하고…")이 뜨는 동안 유튜브 쇼츠 '구독' 버튼(아이폰·안드로이드 모두 화면 왼쪽 아래, 채널 이름 오른쪽, 세로 79~80% 지점) 바로 위를 화살표로 가리킨다. 자막(1270~1420)과 유튜브 UI 띠(1490~)를 안 가리는 1400~1485 사이에만 그린다 */
 #subhint{position:absolute;left:0;top:0;width:1080px;height:1920px;pointer-events:none;visibility:hidden}
-#subhint .arrow{position:absolute;left:468px;top:1518px;width:110px;height:132px;transform-origin:50% 100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45))}
+#subhint .arrow{position:absolute;left:475px;top:1430px;width:96px;height:116px;transform-origin:50% 100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45))}
 </style></head><body>
 <div id="stage">
   <div id="band"><div class="wm" id="wm"></div><div class="cut"></div></div>
@@ -466,14 +466,14 @@ function drawSub(t) {
   const hs = (SUBS.find(s => /구독/.test(s[2])) || [])[0];
   const on = hs !== undefined && t >= hs, hint = document.getElementById('subhint');
   if (hint) {
-    hint.style.visibility = on ? 'visible' : 'hidden';
+    hint.style.visibility = on ? 'visible' : 'hidden'; document.getElementById('sub').style.top = on ? '1220px' : '';
     if (on) {
       const a = hint.querySelector('.arrow'), d = t - hs, pin = Math.min(1, d / 0.35), e = 1 - Math.pow(1 - pin, 3);
       const nudge = 12 * (0.5 - 0.5 * Math.cos(2 * Math.PI * Math.max(0, d - 0.35) / 1.6));
       a.style.opacity = String(e); a.style.transform = `translateY(${-(1 - e) * 40 + nudge}px) scale(${0.85 + 0.15 * e})`;
     }
   }
-  /* 9/23 오후: 기종마다 버튼 위치가 달라서 화살표를 버튼 위(중심 x523, 끝 y1645)에서 아래로 가리키게 — 가로가 어긋나도 덜 티남. 자막은 1270 그대로 */
+  /* 9/23 저녁: 화살표는 버튼 위에서 아래로(중심 x523, 끝 y1542~1554, 사용자 '너무 올렸다 살짝만 내려줘' 반영) — 긴 화면(버튼 y≈1626)에서 간격을 두고 짧은 화면도 고려. 그동안 자막은 1220 으로 올림 */
 }
 const MOTION = {
   hook: () => 1.1, big: () => 0.9, matchup: () => 1.4, table: () => 2.3, versus: () => 1.6, need: () => 1.6,
