@@ -6,3 +6,22 @@
 기록:
 [11:16:42] 시작
 [11:23:53] 시작
+[11:24:12] 깃허브 받기 실패: error: cannot rebase: You have unstaged changes.
+error: additionally, your index contains uncommitted changes.
+error: Please commit or stash them.
+
+[11:24:12] 순위 읽기 생략(--no-fetch)
+[11:24:12] 오류: Traceback (most recent call last):
+  File "D:\★희수\야구자판기\시스템\run_daily.py", line 618, in main
+    if paths: make_all(paths)
+              ~~~~~~~~^^^^^^^
+  File "D:\★희수\야구자판기\시스템\run_daily.py", line 491, in make_all
+    cur = inputs_mtime(p)
+  File "D:\★희수\야구자판기\시스템\run_daily.py", line 471, in inputs_mtime
+    ts = [os.path.getmtime(p)]
+          ~~~~~~~~~~~~~~~~^^^
+  File "<frozen genericpath>", line 91, in getmtime
+FileNotFoundError: [WinError 2] 지정된 파일을 찾을 수 없습니다: 'episodes/2026-09-23_이쉴9.json'
+
+[11:24:12] 감시 시작 (안전 종료 12:00)
+[11:25:21] 시작
