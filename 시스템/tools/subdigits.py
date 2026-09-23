@@ -58,6 +58,9 @@ def to_digits(t):
         if m.group(2) == '일' and nxt and '가' <= nxt <= '힣' and nxt not in '에까부이': return m.group(0)  # '이 일본' 보호
         return f'{n}{m.group(2)}'
     t = re.sub(rf'(?<![가-힣])({SINO_RE}) ({SINO_UNITS})', sn, t)
+    # 3-2) 매직넘버 뒤 한자어 수 (9/23 사용자 지시: 매직넘버는 '십일'로 읽는다) — 십일이에요 → 11이에요, 구예요 → 9예요
+    t = re.sub(r'(매직넘버(?:는|가|도)? )([영일이삼사오육칠팔구십]+?)(이에요|예요|이면|면)(?![가-힣])',
+               lambda m: m.group(1) + (str(sino(m.group(2))) if sino(m.group(2)) is not None else m.group(2)) + m.group(3), t)
     # 4) 달 이름 (구월 → 9월, 시월 → 10월)
     MONTH = {'일월': 1, '이월': 2, '삼월': 3, '사월': 4, '오월': 5, '유월': 6, '칠월': 7, '팔월': 8, '구월': 9, '시월': 10, '십일월': 11, '십이월': 12}
     t = re.sub(r'(?<![가-힣])(십일월|십이월|일월|이월|삼월|사월|오월|유월|칠월|팔월|구월|시월)(?![가-힣])', lambda m: f'{MONTH[m.group(1)]}월', t)
