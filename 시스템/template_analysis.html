@@ -74,7 +74,7 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 .tr .wr{width:120px;font-size:38px;font-weight:800;text-align:right;letter-spacing:-1.5px}
 /* 9/22 구독 유도: 마지막 자막("채널 구독하고…")이 뜨는 동안 유튜브 쇼츠 '구독' 버튼(아이폰·안드로이드 모두 화면 왼쪽 아래, 채널 이름 오른쪽, 세로 79~80% 지점) 바로 위를 화살표로 가리킨다. 자막(1270~1420)과 유튜브 UI 띠(1490~)를 안 가리는 1400~1485 사이에만 그린다 */
 #subhint{position:absolute;left:0;top:0;width:1080px;height:1920px;pointer-events:none;visibility:hidden}
-#subhint .arrow{position:absolute;left:602px;top:1656px;width:132px;height:90px;transform-origin:0 50%;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45))}
+#subhint .arrow{position:absolute;left:468px;top:1518px;width:110px;height:132px;transform-origin:50% 100%;filter:drop-shadow(0 8px 14px rgba(0,0,0,.45))}
 </style></head><body>
 <div id="stage">
   <div id="band"><div class="wm" id="wm"></div><div class="cut"></div></div>
@@ -84,7 +84,7 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
   </div>
   <div id="body"></div>
   <div id="sub"><span></span></div>
-  <div id="subhint"><svg class="arrow" viewBox="0 0 132 90"><defs><linearGradient id="shg" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6EE7F9"/><stop offset="1" stop-color="#3B6BFF"/></linearGradient></defs><path d="M8 45 L60 8 L60 29 L112 29 Q124 29 124 45 Q124 61 112 61 L60 61 L60 82 Z" fill="url(#shg)" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round"/></svg></div>
+  <div id="subhint"><svg class="arrow" viewBox="0 0 110 132"><defs><linearGradient id="shg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6EE7F9"/><stop offset="1" stop-color="#3B6BFF"/></linearGradient></defs><path d="M55 124 L8 70 L36 70 L36 20 Q36 8 55 8 Q74 8 74 20 L74 70 L102 70 Z" fill="url(#shg)" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="round"/></svg></div>
 </div>
 
 <script>
@@ -469,11 +469,11 @@ function drawSub(t) {
     hint.style.visibility = on ? 'visible' : 'hidden';
     if (on) {
       const a = hint.querySelector('.arrow'), d = t - hs, pin = Math.min(1, d / 0.35), e = 1 - Math.pow(1 - pin, 3);
-      const nudge = -12 * (0.5 - 0.5 * Math.cos(2 * Math.PI * Math.max(0, d - 0.35) / 1.6));
-      a.style.opacity = String(e); a.style.transform = `translateX(${(1 - e) * 40 + nudge}px) scale(${0.85 + 0.15 * e})`;
+      const nudge = 12 * (0.5 - 0.5 * Math.cos(2 * Math.PI * Math.max(0, d - 0.35) / 1.6));
+      a.style.opacity = String(e); a.style.transform = `translateY(${-(1 - e) * 40 + nudge}px) scale(${0.85 + 0.15 * e})`;
     }
   }
-  /* 9/23 오후: 실제 아이폰 캡처로 보정 — 구독 버튼은 영상 좌표 x462~585, y1660~1745. 화살표가 그 오른쪽이라 자막은 원래 자리(1270) 그대로 */
+  /* 9/23 오후: 기종마다 버튼 위치가 달라서 화살표를 버튼 위(중심 x523, 끝 y1645)에서 아래로 가리키게 — 가로가 어긋나도 덜 티남. 자막은 1270 그대로 */
 }
 const MOTION = {
   hook: () => 1.1, big: () => 0.9, matchup: () => 1.4, table: () => 2.3, versus: () => 1.6, need: () => 1.6,
