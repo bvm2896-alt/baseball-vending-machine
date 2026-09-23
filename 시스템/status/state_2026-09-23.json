@@ -1,6 +1,6 @@
 {
  "date": "2026-09-23",
- "step": "시작",
+ "step": "검수",
  "videos": {},
  "built": {},
  "log": [
@@ -27,6 +27,11 @@
   "[14:25:56] [순위] 영상 렌더 시작 (3~5분)",
   "[14:55:56] 오류: standard\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\subprocess.py\", line 1220, in communicate\n    stdout, stderr = self._communicate(input, endtime, timeout)\n                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\standard\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\subprocess.py\", line 1663, in _communicate\n    raise TimeoutExpired(self.args, orig_timeout)\nsubprocess.TimeoutExpired: Command '['C:\\\\Users\\\\standard\\\\AppData\\\\Local\\\\Python\\\\pythoncore-3.14-64\\\\python.exe', '-X', 'utf8', 'build.py', 'render', 'episodes\\\\2026-09-23_순위.json']' timed out after 1800 seconds\n",
   "[14:56:04] 감시 시작 (안전 종료 12:00)",
-  "[15:01:33] 시작"
+  "[15:01:33] 시작",
+  "[15:01:58] 깃허브에서 최신 프로그램·콘티 받음",
+  "[15:01:58] 순위 읽기 생략(--no-fetch)",
+  "[15:01:58] [순위] 음성 생성 시작",
+  "[15:02:00] [순위] 음성 검수 시작",
+  "[15:04:06] [순위] 음성 검수:   14 쉼 2/2 +whisper 0.69 3.67 |   15 쉼 2/2 +whisper 1.15 3.83 | 남은 주의 줄: [0, 1, 6, 8, 9, 10, 11, 13] (00: 긴 무음 [0.69]; 01: 끝부분 깨짐(음높이 떨림 0.14); 06: 긴 무음 [0.77]; 08: 긴 무음 [0.9]; 09: 긴 무음 [0.63]; 10: 긴 무음 [0.61]; 11: 긴 무음 [0.63]; 13: 긴 무음 [0.65])"
  ]
 }
