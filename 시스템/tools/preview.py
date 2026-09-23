@@ -3,7 +3,7 @@
 사용: python3 tools/preview.py episodes/2026-09-16_순위.json [template.html] [out.html]
 템플릿을 안 주면 시리즈에 맞춰 고른다(순위 template.html / 이슈 template_issue.html / 분석 template_analysis.html).
 그 다음 node tools/shot.js out.html 0,1,3 prefix 로 장면별 png 를 찍는다."""
-import json, io, sys, os
+import os, json, io, sys, os
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 os.chdir(HERE); sys.path.insert(0, HERE); sys.argv = ['build.py'] + sys.argv[1:]
 import build
@@ -16,7 +16,7 @@ EP = build.load_episode(epp); EP['_path'] = epp
 EP['bounds'] = [float(i + 1) for i in range(N)]
 def _sub(x):
     t = x['sub'] if isinstance(x, dict) else str(x)
-    return t.split('|')[0]
+    return t.split('|')[-1] if os.environ.get('PV_LAST') else t.split('|')[0]
 EP['subs'] = [[i, i + 1, _sub(ep['lines'][i])] for i in range(N)]
 EP['logos'] = build.logos_data_uri(); EP['photos'] = build.photos_data_uri(ep, epp); EP['photoSizes'] = build.PHOTO_SIZES; EP['total'] = float(N)
 html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', build.font_dir_url())
