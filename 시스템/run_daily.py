@@ -6,6 +6,10 @@
 
 옵션:  --series rank|issue (야구순위/야구이슈 전용 — 그 시리즈 콘티만, 신호·오늘.txt 는 시리즈 폴더)  --now (시간과 상관없이 바로)  --today (18시 넘어도 오늘 날짜 콘티)  --latest (오늘 콘티 없으면 최근 콘티로)  --no-upload  --no-shutdown  --no-fetch  --no-tts
         --episode 파일경로 (콘티 대기 생략, 여러 개 가능)
+  ★ 9/23 저녁부터: 지금실행(--now)은 '안 만든 콘티 전부' 모드다 — episodes 폴더에서 그 시리즈의 오늘~7일 뒤 날짜 콘티 중
+    아직 안 만든 것(또는 콘티·음성 zip 이 바뀐 것)만 골라 차례로 만들고 끝낸다. 날짜·편 번호·저녁 여부와 상관없다.
+    그래서 편마다 cmd 를 따로 만들 필요가 없다. 만든 기록은 status/built.json(깃으로 두 PC 공유).
+    템플릿·프로그램만 바뀐 건 다시 만들지 않는다(이미 올린 편이 또 렌더링되지 않게) → 다시 뽑으려면 영상만다시.cmd.
 신호 파일(상위 폴더 야구자판기\\):
   업로드.txt  만들어 둔 영상을 유튜브에 올림. 비어 있으면 전부(비공개), "1"/"2" 면 그 번호만, "공개" 가 들어 있으면 바로 공개로
   공개.txt    올라간 영상을 공개로 전환. 비어 있으면 전부, "1" 또는 "2" 면 그 번호만
@@ -15,7 +19,7 @@
 설정.txt 의 AUTO_UPLOAD=1 이면 만들자마자 비공개로 자동 업로드(기본 0: 업로드.txt 신호를 기다림)
 상태는 상위 폴더의 오늘.txt 에 한국어로 기록.
 """
-import os, sys, io, json, time, datetime, subprocess, traceback, glob, re
+import os, sys, io, json, time, datetime, subprocess, traceback, glob, re, hashlib, platform
 
 def open_cfg(path='설정.txt'):
     """설정.txt 열기 — 메모장이 ANSI(cp949)로 저장해도 읽히게 utf-8 → cp949 순서로 시도"""
@@ -49,6 +53,8 @@ TODAY = (_now.date() + datetime.timedelta(days=1 if NIGHT else 0)).isoformat()
 SERIES_CODES = {'rank': ('야구순위', '순위'), 'issue': ('야구이슈', '이슈'), 'analysis': ('야구분석', '분석')}   # 9/15 야구분석(원인 분석형) 추가
 SERIES = [ARGS[i + 1] for i, a in enumerate(ARGS) if a == '--series' and i + 1 < len(ARGS) and ARGS[i + 1] in SERIES_CODES]
 EPS = [ARGS[i + 1] for i, a in enumerate(ARGS) if a == '--episode' and i + 1 < len(ARGS)]
+# 9/23 저녁: 사람이 누르는 지금실행(--now)은 '안 만든 콘티 전부' 모드. 예약 실행(07:30, --now 없음)과 --episode, --old 는 예전 방식
+PENDING = '--now' in ARGS and not EPS and '--old' not in ARGS
 if not EPS:
     slots = [SERIES_CODES[c][1] for c in SERIES] or ['순위', '이슈', '분석']
     EPS = [f'episodes/{TODAY}_{k}.json' for k in slots]
@@ -62,8 +68,8 @@ if len(SERIES) == 1:
     # 시리즈마다 작업 폴더를 따로 써서(work\순위, work\이슈) 순위·이슈 창을 동시에 켜도 같이 만들어진다. 음성 폴더(work\voice_<편>)는 공용(편마다 다르니 안 겹침)
     os.environ['KBO_WORK'] = os.path.join('work', SERIES_CODES[SERIES[0]][1]); os.makedirs(os.environ['KBO_WORK'], exist_ok=True)
     os.environ.setdefault('FRAME_WORKERS', '2')   # 두 창이 같이 렌더할 수 있으니 창당 화면 2개씩(CPU 나눠 쓰기)
-    print(f'[{SERIES_CODES[SERIES[0]][0]}] 전용 실행 — 콘티 {EPS[0]}, 신호·오늘.txt 는 {SERIES_DIR}, 작업 폴더 {os.environ["KBO_WORK"]}')
-if NIGHT: print(f'저녁 실행 → 내일({TODAY}) 콘티로 만듭니다 (오늘 경기 결과 기준)')
+    print(f'[{SERIES_CODES[SERIES[0]][0]}] 전용 실행 — ' + ('안 만든 콘티 전부' if PENDING else f'콘티 {EPS[0]}') + f', 작업 폴더 {os.environ["KBO_WORK"]}')
+if NIGHT and not PENDING: print(f'저녁 실행 → 내일({TODAY}) 콘티로 만듭니다 (오늘 경기 결과 기준)')
 STATE_PATH = f'status/state_{TODAY}' + (('_' + SERIES[0]) if len(SERIES) == 1 else '') + '.json'   # 저장소에 올려서 다른 PC 에서도 오늘 상태를 이어받는다
 for d in ('data', 'episodes', 'work', 'work/voice', 'status', 'signals'): os.makedirs(d, exist_ok=True)
 import build   # 결과물 경로 계산(영상/날짜/번호_팀.mp4)
@@ -605,9 +611,97 @@ def watch_loop():
             log('안전 종료 시각 → PC 종료', '종료'); shutdown('shutdown'); return
         time.sleep(15)
 
+# ---------- 안 만든 콘티 전부 (9/23 저녁) ----------
+REG_PATH = os.path.join('status', 'built.json')   # 만든 기록: {콘티이름: {hash, video, pc, at}} — 깃으로 두 PC 가 공유
+SLOT_SERIES = {v[1]: v[0] for v in SERIES_CODES.values()}   # '이슈' → '야구이슈'
+PENDING_DAYS = int(CFG.get('PENDING_DAYS', '7'))
+
+def reg_load():
+    try: return json.load(io.open(REG_PATH, encoding='utf-8'))
+    except Exception: return {}
+
+def reg_save(reg):
+    os.makedirs('status', exist_ok=True)
+    json.dump(reg, io.open(REG_PATH, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+
+def voice_files(stem, series):
+    return [f for f in (os.path.join(BASE, series, '음성', stem + e) for e in ('.zip', '.mp3', '.wav', '.m4a')) if os.path.exists(f)]
+
+def ep_hash(p, ep, series):
+    """콘티 내용 + 음성 zip 내용의 지문. 줄바꿈·시각이 PC 마다 달라도 같은 값이 나오게 콘티는 JSON 을 다시 써서 잰다"""
+    stem = os.path.splitext(os.path.basename(p))[0]
+    h = hashlib.sha1(json.dumps(ep, ensure_ascii=False, sort_keys=True).encode('utf-8'))
+    for f in voice_files(stem, series):
+        with open(f, 'rb') as fh: h.update(fh.read())
+    return h.hexdigest()
+
+def pending_episodes():
+    """그 시리즈(없으면 순위·이슈·분석 전부)의 오늘~PENDING_DAYS 일 뒤 콘티 중 아직 안 만든 것. [(경로, 지문)]"""
+    slots = [SERIES_CODES[c][1] for c in SERIES] or ['순위', '이슈', '분석']
+    today = datetime.date.today(); reg = reg_load(); out = []; changed = False
+    found = []
+    for f in glob.glob(os.path.join('episodes', '*.json')):
+        stem = os.path.splitext(os.path.basename(f))[0]
+        m = re.fullmatch(r'(\d{4}-\d{2}-\d{2})_(순위|이슈|분석)(\d*)', stem)
+        if not m or m.group(2) not in slots: continue
+        try: d = datetime.date.fromisoformat(m.group(1))
+        except ValueError: continue
+        if not (today <= d <= today + datetime.timedelta(days=PENDING_DAYS)): continue
+        found.append((m.group(1), m.group(2), int(m.group(3) or 1), f.replace('\\', '/'), stem))
+    for _, slot, _, f, stem in sorted(found):
+        ok, ep = valid_episode(f)
+        if not ok: log(f'[{stem}] 콘티 형식이 이상해서 건너뜀'); continue
+        series = str(ep.get('series') or '').strip() or SLOT_SERIES[slot]
+        try: video = build.out_paths(ep, f)[0]
+        except Exception: video = ''
+        if ep.get('done'):
+            log(f'[{stem}] done 표시(올린 편) → 건너뜀'); continue
+        hv = ep_hash(f, ep, series); r = reg.get(stem) or {}
+        force = '--no-tts' in ARGS or '--force' in ARGS   # 영상만다시: 있는 편도 다시 렌더
+        if not force and r.get('hash') == hv:
+            where = '' if (video and os.path.exists(video)) else f' (다른 PC {r.get("pc", "")} 에서)'
+            log(f'[{stem}] 이미 만든 편{where} → 건너뜀'); continue
+        if not force and not r and video and os.path.exists(video):
+            srcs = [f] + voice_files(stem, series)
+            if os.path.getmtime(video) >= max(os.path.getmtime(x) for x in srcs):
+                reg[stem] = {'hash': hv, 'video': video, 'pc': platform.node(), 'at': 'before-registry'}; changed = True
+                log(f'[{stem}] 영상이 이미 있음 → 건너뜀'); continue
+        vd = os.path.join(build.VOICE_ROOT, 'voice_' + stem)
+        if not voice_files(stem, series) and not os.path.exists(os.path.join(vd, '00.mp3')):
+            log(f'[{stem}] 음성 zip 이 아직 없어요 ({series}\\음성\\{stem}.zip) → 건너뜀'); continue
+        out.append((f, hv))
+    if changed: reg_save(reg)
+    return out
+
+def run_pending():
+    log('시작 — 안 만든 콘티 찾기', '시작')
+    if git_pull(quiet=False): log('깃허브에서 최신 프로그램·콘티 받음')
+    todo = pending_episodes()
+    if not todo:
+        log('새로 만들 콘티가 없어요. (이미 만든 편·done 편·음성 zip 없는 편은 건너뜀. 다시 뽑으려면 영상만다시.cmd)', '완료'); return
+    log(f'만들 콘티 {len(todo)}편: ' + ', '.join(os.path.basename(p) for p, _ in todo), '콘티')
+    # 순위 편 콘티엔 순위표가 들어 있어서 새로 받을 필요가 없다. 파일이 아예 없을 때만 받는다(느린 수집 단계 생략)
+    if not os.path.exists('data/rank_latest.json') and not step_fetch():
+        log('순위 파일(data/rank_latest.json)이 없어 만들 수 없어요 — 인터넷 연결 확인 후 다시', '실패'); return
+    wait_photos([p for p, _ in todo])
+    done_list, fail_list = [], []
+    for p, hv in todo:
+        video = build_one(p)
+        if not video: fail_list.append(os.path.basename(p)); continue
+        after_build(p, video)
+        reg = reg_load(); reg[os.path.splitext(os.path.basename(p))[0]] = {'hash': hv, 'video': video, 'pc': platform.node(), 'at': datetime.datetime.now().isoformat(timespec='minutes')}
+        reg_save(reg); done_list.append(video)
+    if REPO_GIT:
+        git('add', REG_PATH); git('commit', '-q', '-m', f'built {now()}'); git('push', '-q')
+    log(f'끝 — 완성 {len(done_list)}편' + (f', 실패 {len(fail_list)}편: {", ".join(fail_list)}' if fail_list else ''), '완료')
+    for v in done_list: print('   ' + v)
+    print('\n이 창은 닫아도 됩니다.')
+
 # ---------- 메인 ----------
 def main():
     try:
+        if PENDING:
+            run_pending(); return
         if state['videos'] and '--now' not in ARGS:
             log('오늘 이미 업로드됨, 감시만 진행'); watch_loop(); return
         log('시작', '시작')
