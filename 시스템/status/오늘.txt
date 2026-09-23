@@ -1,21 +1,13 @@
 날짜: 2026-09-23
-단계: 영상완료
+단계: 시작
 
 영상 순위 파일: D:\★희수\야구자판기\야구순위\영상\2026-09-22\순위_KT_삼성.mp4
 영상 순위2 파일: D:\★희수\야구자판기\야구순위\영상\2026-09-22\순위2_삼성_LG.mp4
 영상 순위3 파일: D:\★희수\야구자판기\야구순위\영상\2026-09-22\순위3_KIA_LG.mp4
+영상 순위4 파일: D:\★희수\야구자판기\야구순위\영상\2026-09-22\순위4_두산_NC.mp4
 → 수동 업로드 모드: 영상 폴더의 mp4 와 _유튜브.txt(제목·설명·태그)로 유튜브 스튜디오에서 직접 올리세요
 
 기록:
-[14:25:56] [순위] 영상 렌더 시작 (3~5분)
-[14:55:56] 오류: standard\AppData\Local\Python\pythoncore-3.14-64\Lib\subprocess.py", line 1220, in communicate
-    stdout, stderr = self._communicate(input, endtime, timeout)
-                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\standard\AppData\Local\Python\pythoncore-3.14-64\Lib\subprocess.py", line 1663, in _communicate
-    raise TimeoutExpired(self.args, orig_timeout)
-subprocess.TimeoutExpired: Command '['C:\\Users\\standard\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe', '-X', 'utf8', 'build.py', 'render', 'episodes\\2026-09-23_순위.json']' timed out after 1800 seconds
-
-[14:56:04] 감시 시작 (안전 종료 12:00)
 [15:01:33] 시작
 [15:01:58] 깃허브에서 최신 프로그램·콘티 받음
 [15:01:58] 순위 읽기 생략(--no-fetch)
@@ -43,3 +35,6 @@ subprocess.TimeoutExpired: Command '['C:\\Users\\standard\\AppData\\Local\\Pytho
 [15:42:20] [순위4] 음성 검수:   13 쉼 1/2 +whisper +비율 0.18 3.86 |   14 쉼 2/2 +whisper 1.79 3.87 | 남은 주의 줄: [3, 5, 7, 11, 13] (03: 긴 무음 [0.67]; 05: 긴 무음 [0.72]; 07: 톤 이탈 +2.7반음; 11: 긴 무음 [0.71]; 13: 톤 이탈 +4.5반음, 긴 무음 [0.64])
 [15:42:29] [순위4] 영상 렌더 시작 (3~5분)
 [15:52:36] [순위4] 영상 완성 88.7초 → D:\★희수\야구자판기\야구순위\영상\2026-09-22\순위4_두산_NC.mp4
+[15:52:45] [순위4] 영상 준비 완료 (수동 업로드 모드): 폴더의 mp4 와 _유튜브.txt 제목·설명을 유튜브 스튜디오에 직접 올리세요
+[15:52:45] 감시 시작 (안전 종료 12:00)
+[16:01:47] 시작
