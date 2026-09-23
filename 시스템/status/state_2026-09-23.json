@@ -13,6 +13,11 @@
   "[13:50:09] [순위] 영상 렌더 시작 (3~5분)",
   "[14:20:09] 오류: standard\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\subprocess.py\", line 1220, in communicate\n    stdout, stderr = self._communicate(input, endtime, timeout)\n                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\standard\\AppData\\Local\\Python\\pythoncore-3.14-64\\Lib\\subprocess.py\", line 1663, in _communicate\n    raise TimeoutExpired(self.args, orig_timeout)\nsubprocess.TimeoutExpired: Command '['C:\\\\Users\\\\standard\\\\AppData\\\\Local\\\\Python\\\\pythoncore-3.14-64\\\\python.exe', '-X', 'utf8', 'build.py', 'render', 'episodes\\\\2026-09-23_순위.json']' timed out after 1800 seconds\n",
   "[14:20:18] 감시 시작 (안전 종료 12:00)",
-  "[14:22:40] 시작"
+  "[14:22:40] 시작",
+  "[14:23:07] 깃허브에서 최신 프로그램·콘티 받음",
+  "[14:23:07] 순위 읽기 생략(--no-fetch)",
+  "[14:23:07] [이슈9] 음성 생성 시작",
+  "[14:23:08] [이슈9] 음성 검수 시작",
+  "[14:23:17] 시작"
  ]
 }
