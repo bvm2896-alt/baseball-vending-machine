@@ -1,14 +1,7 @@
 날짜: 2026-09-23
-단계: 음성
+단계: 시작
 
 영상: 아직 없음
 
 기록:
-[11:15:54] 시작
-[11:16:30] 깃허브 받기 실패: ng your working tree from
-commit 0dc61584f1a048b360bcc3e2447f9628012c77bb.
-error: cannot rebase: You have unstaged changes.
-error: Please commit or stash them.
-
-[11:16:30] 순위 읽기 생략(--no-fetch)
-[11:16:30] [순위] 음성 생성 시작
+[11:16:42] 시작
