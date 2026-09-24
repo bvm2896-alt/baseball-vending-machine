@@ -44,6 +44,15 @@ const el=(html)=>{st.insertAdjacentHTML('beforeend',html)};
 const hex2=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`};
 const short=!/\n/.test(TH.big||'')&&String(TH.big||'').length<=4, bigFs=short?320:250;
 const c1=COLOR[teams[0]]||'#E0453A', c2=COLOR[teams[1]]||'#FFC24B';
+/* 9/24: 순위 편 썸네일에도 사진(thumb.img) — 로고 대신 인물 사진을 크게, 로고는 작은 칩으로. 누끼 png 는 그대로, 사각 사진은 둥근 카드 */
+const PH=EP.photos||{}, PS=EP.photoSizes||{};
+const findP=(o,n)=>{ if(!n) return null; const b=String(n).replace(/\.[a-z0-9]+$/i,''); const k=Object.keys(o).find(x=>x===n||x===b||x.replace(/\.[a-z0-9]+$/i,'')===b); return k?o[k]:null; };
+const psrc=findP(PH,TH.img), pcut=/^data:image\/png/.test(psrc||'');
+/* 사진형 큰 글씨(9/24): 주황 배경 위 빨간 글씨는 번져 보여서 → 흰색·노랑 + 검은 테두리(선명). thumb.bigStyle: 'box'(윗줄 흰·마지막 줄 노란 띠, 기본 — 9/24 사용자 선택) | 'wy'(1줄 흰·2줄 노랑) | 'y'(전부 노랑) */
+const photoBig=()=>{ const L=String(TH.big||'').replace(/["“”'‘’]/g,'').split('\n'); const m=TH.bigStyle||'box';
+  const st=c=>`color:${c};-webkit-text-stroke:14px #10141c;paint-order:stroke fill;text-shadow:0 12px 0 #10141c,0 20px 40px rgba(0,0,0,.7)`;
+  return L.map((t,i)=>{ if(m==='box'&&i===L.length-1&&L.length>1) return `<span style="display:inline-block;background:#FFC24B;color:#10141c;padding:0 34px;border-radius:24px;margin-top:22px;box-shadow:0 14px 0 #10141c">${t}</span>`;
+    const c=m==='y'?'#FFC24B':(i===0?'#fff':'#FFC24B'); return `<span style="${st(c)}">${t}</span>`; }).join('<br>'); };
 
 if(layout==='clash'){
   // 두 팀 색으로 대각선 분할, 로고 좌우, 가운데 큰 글씨
@@ -55,6 +64,17 @@ if(layout==='clash'){
       <div style="position:absolute;left:50%;top:660px;transform:translate(-50%,-50%);width:200px;height:200px;border-radius:50%;background:#161c28;border:10px solid #fff;display:flex;align-items:center;justify-content:center;font-size:96px;color:#fff;box-shadow:0 20px 50px rgba(0,0,0,.6)">VS</div>
       <div class="top" style="top:920px">${nl(TH.top)}</div>
       <div class="bigw white" style="${bigStyleW};top:1060px;font-size:${bigFs}px">${nl(TH.big)}</div>
+      <div class="brand">야구<b>자판기</b></div>`);
+} else if(psrc){
+  // 사진형(9/24): 팀 색 배경 + 인물 사진 크게 + 작은 로고 칩 + 문구 두 단
+  el(`<div class="bg" style="background:linear-gradient(180deg,${c1} 0%,#161c28 72%)"></div>
+      <div class="bg" style="background:radial-gradient(60% 35% at 50% 40%,rgba(255,255,255,.18),rgba(0,0,0,0) 70%)"></div>
+      <div class="date">${dateText}</div>
+      ${pcut?`<img src="${psrc}" style="position:absolute;left:50%;top:430px;transform:translateX(-50%);height:720px;width:auto;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 14%,#000 86%,transparent 100%),linear-gradient(180deg,#000 72%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect;filter:drop-shadow(0 30px 60px rgba(0,0,0,.55))">`
+            :`<div style="position:absolute;left:50%;top:390px;transform:translateX(-50%);width:760px;height:600px;border-radius:40px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6)"><img src="${psrc}" style="width:100%;height:100%;object-fit:cover;object-position:${TH.focus||'50% 20%'}"></div>`}
+      ${TH.logos===false?'':`<div class="chip" style="position:absolute;left:80px;top:470px;width:190px;height:190px;border-radius:44px;transform:rotate(-6deg)"><img src="${logo(teams[0])}"></div>`}
+      <div class="top" style="top:1150px;font-size:100px">${nl(TH.top)}</div>
+      <div class="bigw" style="color:#fff;text-shadow:none;transform:rotate(-2deg);top:1280px;font-size:190px;letter-spacing:-10px">${photoBig()}</div>
       <div class="brand">야구<b>자판기</b></div>`);
 } else if(layout==='stat'){
   // 팀 색 배경 + 아주 큰 숫자/단어

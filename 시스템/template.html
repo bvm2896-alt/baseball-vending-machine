@@ -7,7 +7,7 @@
    색: 배경 #1B2230, 카드 #262F40, 선 #3A4560, 글 #F2F5F8, 보조 #A3ADBE, 강조 #FFC24B, 승 #3ECF8E, 패 #FF6B6B */
 @font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_bold.ttf') format('truetype');font-weight:700 900}
 @font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_medium.ttf') format('truetype');font-weight:400 600}
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;word-break:keep-all}   /* 9/24: 한글 낱말 가운데서 줄이 끊기지 않게(대만 vs 중/국 사고) — 모든 글씨 */
 html,body{width:1080px;height:1920px;overflow:hidden;background:#1B2230}
 body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-weight:700;-webkit-font-smoothing:antialiased;color:#F2F5F8}
 #stage{position:relative;width:1080px;height:1920px;
