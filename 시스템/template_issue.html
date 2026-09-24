@@ -7,7 +7,7 @@
    사진: EP.photos = {파일명: dataURI}. 장면의 img(파일명)로 지정. 사진이 없으면 로고로 대신 그린다(렌더가 멈추지 않게). */
 @font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_bold.ttf') format('truetype');font-weight:700 900}
 @font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_medium.ttf') format('truetype');font-weight:400 600}
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;word-break:keep-all}   /* 9/24: 한글 낱말 가운데서 줄이 끊기지 않게(대만 vs 중/국 사고) — 모든 글씨 */
 html,body{width:1080px;height:1920px;overflow:hidden;background:#F4F6FA}
 body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-weight:700;-webkit-font-smoothing:antialiased;color:#12161F}
 #stage{position:relative;width:1080px;height:1920px;background:#F4F6FA}
@@ -564,6 +564,8 @@ SCENE.steps = (lt, s) => {
 
 /* cards: 이름 카드 2~4장 (9/21 드래프트 구단별 편). {title, items:[{badge, name, sub, hi}], text}
    steps 보다 크게 — 4장은 2×2, 3장 이하는 한 줄. 사진 없는 선수를 전부 같은 카드로 통일하는 용도 */
+/* 카드 이름에 'A vs B' 가 있으면 A / vs / B 세 줄로(9/24 사용자 지시). 직접 \n 을 넣은 이름은 그대로 */
+const cardName = t => { t = String(t || ''); return /\n/.test(t) ? t : t.replace(/\s*\bvs\b\s*/i, '\nvs\n'); };
 SCENE.cards = (lt, s) => {
   const items = s.items || [], n = items.length || 1;
   const grid = n >= 4, w = grid ? 470 : (n === 3 ? 330 : 440), gap = 15;
@@ -573,7 +575,7 @@ SCENE.cards = (lt, s) => {
     const p = seg(lt, .2 + i * .18, .45), hi = it.hi === true;
     h += `<div class="pane col" style="width:${w}px;border-radius:30px;padding:${grid ? 40 : 30}px 12px ${grid ? 44 : 32}px;gap:${grid ? 20 : 14}px;justify-content:flex-start;${hi ? 'border-color:var(--acc);box-shadow:0 14px 40px rgba(232,120,40,.22);' : ''}${rise(p, 40)}">
       <div class="num" style="height:54px;padding:0 22px;border-radius:14px;background:${hi ? 'var(--acc)' : '#12161F'};color:#fff;font-size:${grid ? 38 : 34}px;font-weight:900;display:flex;align-items:center">${esc(it.badge || '')}</div>
-      <div class="title" style="font-size:${n === 3 ? 66 : 78}px;font-weight:900;line-height:1.1;text-align:center">${br(it.name || '')}</div>
+      <div class="title" style="font-size:${n === 3 ? 66 : 78}px;font-weight:900;line-height:1.1;text-align:center">${br(cardName(it.name))}</div>
       ${it.sub ? `<div class="label" style="font-size:${n === 3 ? 30 : 38}px;color:${GRAY};line-height:1.3;text-align:center">${br(it.sub)}</div>` : ''}</div>`;
   });
   h += '</div>';
