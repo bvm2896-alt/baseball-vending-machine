@@ -55,6 +55,16 @@ def team_label(ep):
     lab = '_'.join(re.sub(r'[^0-9A-Za-z가-힣]', '', str(t)) for t in teams if t)
     return lab or 'KBO'
 
+def topic_label(ep):
+    """파일 이름용 주제(9/24 사용자 지시: 이슈5_KT 가 아니라 이슈5_한일전미리보기 처럼 주제로).
+    콘티 "topic" → 없으면 썸네일 큰 글씨 첫 줄 → 그것도 없으면 예전처럼 팀 이름"""
+    clean = lambda t: re.sub(r'[^0-9A-Za-z가-힣]', '', str(t or ''))[:24]
+    t = clean(ep.get('topic'))
+    if not t:
+        big = str((ep.get('thumb') or {}).get('big') or '').split('\n')[0]
+        t = clean(big)
+    return t or team_label(ep)
+
 def game_date(ep):
     """영상이 다루는 '경기 날짜'(YYYY-MM-DD). 콘티 gameDate 가 있으면 그것, 없으면 콘티 날짜 하루 전
     (월요일 아침 영상 = 일요일 경기). 화요일 콘티는 전날 경기가 없으니 콘티 날짜 그대로."""
@@ -87,7 +97,7 @@ def out_paths(ep, ep_path):
         d = os.path.abspath(os.path.join(HERE, '..', series, '영상', date))       # 드라이브 없을 때: 야구자판기\<시리즈>\영상\날짜
     else:
         d = os.path.abspath(os.path.join(OUT_ROOT, series, date))                # 드라이브: 야구자판기_영상확인\<시리즈>\날짜
-    base = os.path.join(d, f'{key}_{team_label(ep)}')
+    base = os.path.join(d, f'{key}_{topic_label(ep)}')
     return base + '.mp4', base + '_썸네일.jpg', base + '_유튜브.txt'
 
 # 구단 코드 → KBO_logos 폴더의 파일 이름
@@ -335,8 +345,10 @@ def end_level(f, ms=30):
 CONNECT_END = re.compile(r'(는데|고요|지만|면|니까|서|고|도|은|는|이|가)$')   # 말이 이어지는 어미
 TURN_START = ('그래서', '근데', '그런데', '그러니까', '변수는', '결론', '제 예측', '문제는', '이유는', '단 ', '그럼', '만약')
 
+GAP_OVERRIDE = None   # 9/24: 콘티 "gapScale" 가 있으면 그 편만 이 배율(설정.txt 보다 우선) — 사용자 "말 사이 텀이 너무 길다"
 def gap_scale():
-    """줄 사이 쉼 배율 (9/13 1.5배는 "텀이 너무 길어 지루" → 9/14 기본 1.25배). 설정.txt GAP_SCALE 로 조절"""
+    """줄 사이 쉼 배율 (9/13 1.5배는 "텀이 너무 길어 지루" → 9/14 기본 1.25배). 설정.txt GAP_SCALE 로 조절, 콘티 gapScale 이 우선"""
+    if GAP_OVERRIDE is not None: return max(0.3, float(GAP_OVERRIDE))
     try: return max(0.5, float(cfg_get('GAP_SCALE', '1.25')))
     except Exception: return 1.25
 MAX_GAP = 0.6   # 어떤 쉼도 이보다 길지 않게(답답함 방지)
@@ -392,6 +404,7 @@ def silence(name, sec):
 def render(ep, ep_path):
     # 9/21: 음성 폴더는 콘티 이름으로 정한다 — current.txt(마지막 prep) 를 따르면 다른 편 음성이 붙는다(하현승⑥에 드래프트 편 음성이 들어간 사고)
     io.open(W('current.txt'), 'w', encoding='utf-8').write(ep_key(ep_path))
+    global GAP_OVERRIDE; GAP_OVERRIDE = ep.get('gapScale')
     lines = ep['lines']; N = len(lines)
     spd = float(cfg_get('SPEED', '1.12'))   # 말 자체 배속(9/14 "말은 빠르되 문단 사이 텀은 적절히" → 기본 1.12). 타입캐스트는 1.0x 로 뽑고 여기서 올린다. 설정.txt SPEED 로 조절
     # 9/18: 편마다 다르게 하고 싶을 때는 콘티에 "speed": 1.30 (설정.txt 는 건드리지 않는다).
