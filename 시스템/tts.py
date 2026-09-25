@@ -92,9 +92,9 @@ def prompt_variants(prev, nxt):
     """설정.txt 의 TTS_EMOTION 에 따라 prompt 후보를 순서대로 (400 이면 다음 후보로)"""
     if EMOTION == 'smart':
         return [{'emotion_type': 'smart', 'previous_text': prev, 'next_text': nxt}]
+    # 9/26: 설정한 감정이 거부돼도 스마트 이모션으로 몰래 바꾸지 않는다(사용자가 스마트를 끔) → 두 형식 다 거부면 실패
     return [{'emotion_type': 'preset', 'emotion_preset': EMOTION, 'emotion_intensity': INTENSITY},
-            {'emotion_preset': EMOTION, 'emotion_intensity': INTENSITY},
-            {'emotion_type': 'smart', 'previous_text': prev, 'next_text': nxt}]
+            {'emotion_preset': EMOTION, 'emotion_intensity': INTENSITY}]
 
 def synth(text, prev='', nxt='', out_path=None):
     out_path = out_path or os.path.join(VDIR, 'out.mp3')

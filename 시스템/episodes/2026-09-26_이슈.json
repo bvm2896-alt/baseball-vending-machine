@@ -234,6 +234,5 @@
  },
  "ttsTempo": 1.2,
  "ttsApi": true,
- "ttsWhole": true,
- "rev": "api-whole-normal-1.2x"
+ "rev": "api-line-normal-1.2x"
 }

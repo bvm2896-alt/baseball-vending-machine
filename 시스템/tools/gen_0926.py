@@ -327,9 +327,8 @@ def api_mode(e):
     last['sub'] = '|'.join(last['sub'].split('|')[:-1])
     last['gapAfter'] = 0.5
     e['lines'] = e['lines'][:-1] + [last, dict(CTA_LINE)]
-    e['speed'] = 1.0; e['ttsTempo'] = 1.2; e['ttsApi'] = True; e['ttsWhole'] = True; e['rev'] = 'api-whole-normal-1.2x'
-    # 9/26: 통 합성 시험 — 1편만 먼저 만들고 나머지는 보류(확인 뒤 hold 를 뺀다)
-    if e.get('_name') != '2026-09-26_이슈': e['hold'] = True
+    # 9/26: 통 합성(ttsWhole)은 줄 자르기가 엉망이라 폐기 → 원래대로 줄마다 합성(감정 normal, 스마트 이모션 끔)
+    e['speed'] = 1.0; e['ttsTempo'] = 1.2; e['ttsApi'] = True; e['rev'] = 'api-line-normal-1.2x'
 
 if __name__ == '__main__':
     for name, e in EPS.items():
