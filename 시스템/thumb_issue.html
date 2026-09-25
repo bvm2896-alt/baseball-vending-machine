@@ -53,17 +53,92 @@ function photoHtml(w,h){
     :`<img src="${src}" style="position:absolute;inset:-60px;width:calc(100% + 120px);height:calc(100% + 120px);object-fit:cover;filter:blur(34px) saturate(1.1);opacity:.9"><div style="position:absolute;inset:0;background:rgba(18,22,31,.15)"></div>`;
   return `${back}<img src="${src}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${iw}${sz?'px':''};height:${ih}${sz?'px':''};object-fit:contain;${sz&&sz[2]?'':'border-radius:28px;box-shadow:0 20px 60px rgba(0,0,0,.4)'}">`;
 }
+/* ── 9/26 그래픽 썸네일 (사용자: "썸네일에 선수 사진만 들어가서 지루하고 뻔하다") ──
+   thumb.graphic: 'score' | 'faces' | 'versus' | 'podium' | 'branch' — 사진 카드 자리에 그림을 그린다 */
+function trig(x, y, rot, bars) {
+  const W = 15, H = 2.4, G = 2.0, half = (W - 2.0) / 2;
+  let o = '';
+  bars.forEach((b, i) => {
+    const yy = -(H * 3 + G * 2) / 2 + i * (H + G);
+    o += b ? `<rect x="${-W / 2}" y="${yy}" width="${W}" height="${H}"/>`
+           : `<rect x="${-W / 2}" y="${yy}" width="${half}" height="${H}"/><rect x="${W / 2 - half}" y="${yy}" width="${half}" height="${H}"/>`;
+  });
+  return `<g transform="translate(${x},${y}) rotate(${rot})" fill="#12161F">${o}</g>`;
+}
+const FLAG = {
+  '한국': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="60" fill="#fff"/>
+    <g transform="translate(45,30) rotate(-33.69)">
+      <circle r="12" fill="#CD2E3A"/>
+      <path d="M-12,0 A6,6 0 0,1 0,0 A6,6 0 0,0 12,0 A12,12 0 0,1 -12,0 Z" fill="#0047A0"/>
+    </g>
+    ${trig(18, 12, -56.3, [1, 1, 1])}${trig(72, 12, 56.3, [0, 1, 0])}${trig(18, 48, 56.3, [1, 0, 1])}${trig(72, 48, -56.3, [0, 0, 0])}</svg>`,
+  '대만': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="60" fill="#FE0000"/><rect width="45" height="30" fill="#000095"/>
+    <g transform="translate(22.5,15)"><g fill="#fff">${Array.from({length:12},(_,i)=>`<rect x="-1.5" y="-11.5" width="3" height="11.5" transform="rotate(${i*30})"/>`).join('')}</g>
+    <circle r="6.4" fill="#000095"/><circle r="5.4" fill="#fff"/></g></svg>`,
+  '일본': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="60" fill="#fff"/><circle cx="45" cy="30" r="18" fill="#BC002D"/></svg>`,
+  '태국': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="60" fill="#A51931"/><rect y="10" width="90" height="40" fill="#F4F5F8"/><rect y="20" width="90" height="20" fill="#2D2A4A"/></svg>`,
+  '홍콩': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="60" fill="#DE2910"/>
+    <g transform="translate(45,30)">${Array.from({length:5},(_,i)=>`<path d="M0,0 C-7,-6 -7,-17 0,-19 C7,-17 7,-6 0,0 Z" fill="#fff" transform="rotate(${i*72})"/>`).join('')}<circle r="2.2" fill="#DE2910"/></g></svg>`,
+  /* 9/22: A조 세 나라 */
+  '중국': () => { const st = (x, y, r, rot) => `<polygon points="${Array.from({length:10},(_,i)=>{const a=-Math.PI/2+i*Math.PI/5+rot, rr=i%2?r*.382:r; return (x+rr*Math.cos(a)).toFixed(2)+','+(y+rr*Math.sin(a)).toFixed(2);}).join(' ')}" fill="#FFDE00"/>`;
+    return `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><rect width="90" height="60" fill="#DE2910"/>${st(15,15,9,0)}${st(30,6,3,.6)}${st(36,12,3,.3)}${st(36,21,3,0)}${st(30,27,3,.6)}</svg>`; },
+  '필리핀': () => { const st = (x, y, r) => `<polygon points="${Array.from({length:10},(_,i)=>{const a=-Math.PI/2+i*Math.PI/5, rr=i%2?r*.382:r; return (x+rr*Math.cos(a)).toFixed(2)+','+(y+rr*Math.sin(a)).toFixed(2);}).join(' ')}" fill="#FCD116"/>`;
+    return `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><rect width="90" height="30" fill="#0038A8"/><rect y="30" width="90" height="30" fill="#CE1126"/><polygon points="0,0 52,30 0,60" fill="#fff"/>
+    <g transform="translate(17,30)"><circle r="6" fill="#FCD116"/>${Array.from({length:8},(_,i)=>`<rect x="-1" y="-11" width="2" height="5" fill="#FCD116" transform="rotate(${i*45})"/>`).join('')}</g>${st(6,6,3.2)}${st(6,54,3.2)}${st(41,30,3.2)}</svg>`; },
+  '팔레스타인': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <rect width="90" height="20" fill="#000"/><rect y="20" width="90" height="20" fill="#fff"/><rect y="40" width="90" height="20" fill="#009736"/><polygon points="0,0 30,30 0,60" fill="#EE2A35"/></svg>`,
+};
+
+const flag=(n,w)=>FLAG[String(n||'').trim()]?`<div style="width:${w}px;height:${Math.round(w*.667)}px;border-radius:${Math.round(w*.1)}px;overflow:hidden;box-shadow:0 14px 34px rgba(18,22,31,.2);border:4px solid #E3E7EE;background:#fff;flex:0 0 auto">${FLAG[String(n).trim()]()}</div>`:(logo(codeOf(n))?`<div style="width:${w*.8}px;height:${w*.8}px;border-radius:${w*.18}px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 34px rgba(18,22,31,.2)"><img src="${logo(codeOf(n))}" style="width:80%;height:80%;object-fit:contain"></div>`:'');
+const face=(img,d,extra='')=>{ const s2=find(PH,img); return `<div style="width:${d}px;height:${d}px;border-radius:50%;overflow:hidden;border:8px solid #fff;box-shadow:0 14px 34px rgba(18,22,31,.25);background:#E9EDF3;flex:0 0 auto;${extra}">${s2?`<img src="${s2}" style="width:100%;height:100%;object-fit:cover;object-position:${esc(TH.focus||'50% 18%')}">`:''}</div>`; };
+function graphicHtml(){
+  const g=TH.graphic, W='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#FFFFFF,#EEF1F6)';
+  if(g==='score'){
+    const L=TH.left||'한국', R=TH.right||'일본', sc=String(TH.score||'').split('-');
+    const line=TH.line?`<div style="display:flex;gap:10px;margin-top:40px">${TH.line.map((v,k)=>`<div style="width:72px;height:92px;border-radius:14px;background:${(TH.lineHi||[]).includes(k+1)?c1:'#12161F'};color:#fff;font-size:52px;display:flex;align-items:center;justify-content:center">${esc(v)}</div>`).join('')}</div>`:'';
+    return `<div style="${W}"><div style="display:flex;align-items:center;gap:30px">${flag(L,200)}<div style="font-size:200px;letter-spacing:-8px;line-height:1">${esc(sc[0]||'')}<span style="color:#AAB2BF">-</span>${esc(sc[1]||'')}</div>${flag(R,200)}</div>${line}</div>`;
+  }
+  if(g==='faces'){
+    const fs=TH.faces||[], cols=TH.cols||Math.ceil(Math.sqrt(fs.length)), rows=Math.ceil(fs.length/cols), d=Math.min(Math.floor(860/cols)-16, Math.floor((PH_H-50)/rows)-12);
+    return `<div style="${W}"><div style="display:grid;grid-template-columns:repeat(${cols},${d+12}px);gap:10px;justify-content:center">${fs.map(f=>face(f.img||f,d)).join('')}</div></div>`;
+  }
+  if(g==='versus'){
+    const side=(x)=>x.img?face(x.img,380):flag(x.team,380);
+    const lab=x=>x.label?`<div style="margin-top:22px;font-size:64px;letter-spacing:-2px">${esc(x.label)}</div>`:'';
+    const A=TH.left||{}, B=TH.right||{};
+    return `<div style="${W};flex-direction:row;gap:0"><div style="display:flex;flex-direction:column;align-items:center;width:420px">${side(A)}${lab(A)}</div>
+      <div style="width:150px;height:150px;border-radius:50%;background:${c1};color:#fff;font-size:72px;display:flex;align-items:center;justify-content:center;margin:0 -30px;z-index:2;box-shadow:0 14px 34px rgba(0,0,0,.25)">VS</div>
+      <div style="display:flex;flex-direction:column;align-items:center;width:420px">${side(B)}${lab(B)}</div></div>`;
+  }
+  if(g==='podium'){
+    const by=m=>(TH.items||[]).find(x=>x.medal===m)||{};
+    const col=(m,ht,c)=>{ const it=by(m); return `<div style="display:flex;flex-direction:column;align-items:center;width:270px;gap:16px">${flag(it.team,m==='금'?200:170)}<div style="font-size:56px;${it.hi?`color:${c1}`:''}">${esc(it.team||'')}</div><div style="width:100%;height:${ht}px;border-radius:24px 24px 0 0;background:${c};display:flex;justify-content:center;padding-top:20px;${it.hi?`box-shadow:0 0 0 10px ${c1} inset`:''}"><div style="width:110px;height:110px;border-radius:50%;background:#fff;color:${c};font-size:64px;display:flex;align-items:center;justify-content:center">${m}</div></div></div>`; };
+    return `<div style="${W};justify-content:flex-end"><div style="display:flex;align-items:flex-end;gap:18px">${col('은',230,'#B8C0CC')}${col('금',320,'#F2B705')}${col('동',170,'#C97B3A')}</div></div>`;
+  }
+  if(g==='branch'){
+    const rt=TH.root||['일본','대만'], rs=TH.results||[];
+    return `<div style="${W};gap:22px"><div style="display:flex;align-items:center;gap:22px">${flag(rt[0],170)}<div style="font-size:70px;color:#8A93A3">vs</div>${flag(rt[1],170)}</div>
+      ${rs.map(r=>`<div style="display:flex;align-items:center;gap:20px;background:#fff;border-radius:28px;padding:14px 26px;box-shadow:0 10px 26px rgba(18,22,31,.12)"><div style="width:380px;font-size:46px;letter-spacing:-2px;text-align:center;white-space:nowrap">${esc(r.cond)}</div><div style="font-size:64px;color:#16A34A">→</div>${flag(r.final[0],120)}<div style="font-size:44px;color:#8A93A3">vs</div>${flag(r.final[1],120)}</div>`).join('')}</div>`;
+  }
+  return '';
+}
+const GR=!!TH.graphic;
 const bigLines=String(TH.big||'').split('\n').length, PH_MAX=Math.min(980, 1100-250*bigLines);   // 큰 글씨가 1660px(안전 영역) 안에 끝나도록 사진 높이 상한(1줄 850, 2줄 600)
-const PH_H = (()=>{ if(!src||!sz) return PH_MAX; const h=Math.round(940*sz[1]/sz[0]); return Math.max(520, Math.min(PH_MAX, h)); })();   // 사진 카드 높이: 사진 비율대로
+const PH_H = (()=>{ if(GR) return Math.min(PH_MAX, TH.gh||900); if(!src||!sz) return PH_MAX; const h=Math.round(940*sz[1]/sz[0]); return Math.max(520, Math.min(PH_MAX, h)); })();   // 사진 카드 높이: 사진 비율대로
 const Y0 = 340 + PH_H;   // 사진 아래 글 시작 기준
 const st=document.getElementById('st');
 st.insertAdjacentHTML('beforeend',`
   <div class="bg" style="background:radial-gradient(70% 36% at 50% 18%,${hex2(c1,.16)} 0%,rgba(244,246,250,0) 70%),#F4F6FA"></div>
   <div class="pill" style="left:70px;top:200px;background:#12161F;color:#fff"><span style="width:18px;height:18px;border-radius:9px;background:${c1};display:inline-block"></span>${esc(EP.railTitle||"KBO 이슈")}</div>
   <div class="pill" style="right:70px;top:200px;background:#fff;color:#12161F;border:6px solid #12161F;font-size:56px">${esc(dateText)}</div>
-  <div id="blk" style="position:absolute;inset:0"><div class="photo" style="height:${PH_H}px">${photoHtml(940,PH_H)}
-    ${src&&teams[0]&&TH.logos!==false?`<div class="chip" style="left:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[0])}"></div>`:''}
-    ${src&&teams[1]&&TH.logos!==false?`<div class="chip" style="right:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[1])}"></div>`:''}
+  <div id="blk" style="position:absolute;inset:0"><div class="photo" style="height:${PH_H}px">${GR?graphicHtml():photoHtml(940,PH_H)}
+    ${!GR&&src&&teams[0]&&TH.logos!==false?`<div class="chip" style="left:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[0])}"></div>`:''}
+    ${!GR&&src&&teams[1]&&TH.logos!==false?`<div class="chip" style="right:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[1])}"></div>`:''}
   </div>
   <div class="bar" style="background:${c1};top:${Y0+50}px"></div>
   <div class="top" style="top:${Y0+90}px">${nl(TH.top)}</div>
