@@ -79,10 +79,34 @@
    "vsText": "26일 18:30"
   },
   {
-   "type": "big",
+   "type": "league",
    "startLine": 1,
-   "text": "지면 1승 2패\n결승 사실상 탈락",
-   "size": 92
+   "title": "한국이 중국에 지면",
+   "cut": 2,
+   "cutLabel": "결승권",
+   "rows": [
+    {
+     "team": "일본",
+     "rec": "2승 0패",
+     "sub": "대만전 남음"
+    },
+    {
+     "team": "대만",
+     "rec": "1승 1패",
+     "sub": "일본전 남음"
+    },
+    {
+     "team": "한국",
+     "rec": "1승 2패",
+     "hi": true,
+     "tag": "탈락 위기"
+    },
+    {
+     "team": "중국",
+     "rec": "1승 2패",
+     "out": true
+    }
+   ]
   },
   {
    "type": "photo",
@@ -94,11 +118,26 @@
    "tag": "두산 최민석"
   },
   {
-   "type": "big",
+   "type": "bars",
    "startLine": 3,
-   "text": "20살\n평균자책점 2.73",
-   "size": 104,
-   "note": "14승 4패"
+   "title": "스무 살 최민석",
+   "items": [
+    {
+     "label": "다승",
+     "sub": "리그 1위",
+     "value": 14,
+     "unit": "승",
+     "max": 16,
+     "hi": true
+    },
+    {
+     "label": "평균자책점",
+     "sub": "14승 4패",
+     "value": 2.73,
+     "dec": 2,
+     "max": 5
+    }
+   ]
   },
   {
    "type": "photo",
@@ -110,48 +149,121 @@
    "tag": "대표팀 데뷔전"
   },
   {
-   "type": "big",
+   "type": "icons",
    "startLine": 5,
-   "text": "홍콩 타자 21명\n전부 아웃",
-   "size": 100,
-   "note": "13-0 7회 콜드"
+   "title": "홍콩 타자 21명",
+   "n": 21,
+   "cols": 7,
+   "mark": "x",
+   "label": "전부 아웃 · 13-0 7회 콜드"
   },
   {
-   "type": "big",
+   "type": "steps",
    "startLine": 6,
-   "text": "같은 곳\n도요하시 구장",
-   "size": 110
+   "title": "같은 도요하시 구장",
+   "items": [
+    {
+     "date": "22일",
+     "text": "홍콩전",
+     "sub": "13-0 콜드"
+    },
+    {
+     "date": "26일",
+     "text": "중국전",
+     "hi": true
+    }
+   ]
+  },
+  {
+   "type": "league",
+   "startLine": 7,
+   "title": "중국은 2패",
+   "cut": 0,
+   "cutLabel": "지금 결승권",
+   "rows": [
+    {
+     "team": "일본",
+     "rec": "2승 0패",
+     "sub": "한국 5-0 · 중국 11-3"
+    },
+    {
+     "team": "한국",
+     "rec": "1승 1패",
+     "sub": "대만 5-0 · 일본 0-5"
+    },
+    {
+     "team": "대만",
+     "rec": "1승 1패",
+     "sub": "한국 0-5 · 중국 9-1"
+    },
+    {
+     "team": "중국",
+     "rec": "0승 2패",
+     "sub": "일본 3-11 · 대만 1-9",
+     "hi": true
+    }
+   ]
   },
   {
    "type": "cards",
-   "startLine": 7,
+   "startLine": 8,
+   "title": "26일 선발 맞대결",
    "items": [
     {
-     "badge": "슈퍼라운드",
-     "name": "일본전",
-     "sub": "3-11 패"
+     "badge": "한국",
+     "name": "최민석",
+     "sub": "14승 · 2.73",
+     "hi": true
     },
     {
-     "badge": "슈퍼라운드",
-     "name": "대만전",
-     "sub": "1-9 패"
+     "badge": "중국",
+     "name": "우안쥔",
+     "sub": "26일 예고"
     }
    ],
-   "text": "중국 2패",
+   "text": "",
    "size": 76
   },
   {
-   "type": "big",
-   "startLine": 8,
-   "text": "중국 선발\n우안쥔",
-   "size": 110,
-   "note": "26일 예고"
-  },
-  {
-   "type": "big",
+   "type": "scoreboard",
    "startLine": 9,
-   "text": "일본전\n4안타 무득점",
-   "size": 110
+   "title": "25일 일본전",
+   "rows": [
+    {
+     "team": "한국",
+     "runs": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+     ],
+     "r": 0
+    },
+    {
+     "team": "일본",
+     "runs": [
+      0,
+      0,
+      3,
+      0,
+      0,
+      2,
+      0,
+      0,
+      "X"
+     ],
+     "r": 5
+    }
+   ],
+   "hi": [],
+   "marks": [],
+   "text": "4안타 무득점",
+   "size": 64
   },
   {
    "type": "people",
@@ -186,17 +298,35 @@
   {
    "type": "question",
    "startLine": 12,
-   "text": "타선 부활 vs\n또 막힌다?"
+   "text": "중국전 한국 타선",
+   "choices": [
+    {
+     "img": "국가대표프로필/김도영",
+     "label": "다시 깨어난다"
+    },
+    {
+     "img": "KBO프로필/노시환",
+     "label": "또 막힌다"
+    }
+   ]
   }
  ],
  "thumb": {
+  "graphic": "versus",
+  "left": {
+   "img": "KBO프로필/최민석",
+   "label": "최민석"
+  },
+  "right": {
+   "team": "중국",
+   "label": "중국"
+  },
+  "gh": 700,
+  "top": "지면 끝 중국전",
+  "big": "최민석\n다승 1위 출격",
   "teams": [
    "OB"
   ],
-  "img": "KBO프로필/최민석",
-  "top": "지면 끝 중국전",
-  "big": "최민석\n다승 1위 출격",
-  "logos": false,
   "color": "#1E5EFF"
  },
  "youtube": {

@@ -42,8 +42,8 @@
    "sub": "그때는 TQB로 가려요|세 나라끼리 경기에서|이닝당 득점과 실점을 따져요"
   },
   {
-   "narr": "한국은 대만에 오 대 영, / 일본에 영 대 오 / 넣은 점수와 준 점수가 같아요",
-   "sub": "한국은 대만에 5-0|일본에 0-5|넣은 점수와 준 점수가 같아요"
+   "narr": "한국은 대만을 오 대 영으로 이기고 / 일본엔 영 대 오로 졌어요 / 득점도 오 점, 실점도 오 점이라 / 빼면 영이에요",
+   "sub": "한국은 대만을\n5-0으로 이기고|일본엔 0-5로 졌어요|득점도 5점 실점도 5점이라|빼면 0이에요"
   },
   {
    "narr": "그래서 대만이 일본을 / 오 점 차보다 적게 이기면 / 일본과 한국이 결승에 가요",
@@ -72,11 +72,11 @@
   {
    "type": "matchup",
    "startLine": 0,
-   "left": "한국",
-   "right": "일본",
-   "text": "일본을 응원해야 한다?",
-   "size": 84,
-   "vsText": "결승 계산"
+   "left": "일본",
+   "right": "대만",
+   "text": "이 경기가 한국 결승을 정한다?",
+   "size": 72,
+   "vsText": "26일"
   },
   {
    "type": "cards",
@@ -104,33 +104,35 @@
    "size": 76
   },
   {
-   "type": "cards",
+   "type": "league",
    "startLine": 2,
-   "items": [
+   "title": "25일까지 슈퍼라운드",
+   "cut": 2,
+   "cutLabel": "지금 결승권",
+   "rows": [
     {
-     "badge": "일본",
-     "name": "2승",
+     "team": "일본",
+     "rec": "2승 0패",
      "sub": "한국 5-0 · 중국 11-3"
     },
     {
-     "badge": "한국",
-     "name": "1승 1패",
+     "team": "한국",
+     "rec": "1승 1패",
      "sub": "대만 5-0 · 일본 0-5",
      "hi": true
     },
     {
-     "badge": "대만",
-     "name": "1승 1패",
+     "team": "대만",
+     "rec": "1승 1패",
      "sub": "한국 0-5 · 중국 9-1"
     },
     {
-     "badge": "중국",
-     "name": "2패",
-     "sub": "일본 3-11 · 대만 1-9"
+     "team": "중국",
+     "rec": "0승 2패",
+     "sub": "일본 3-11 · 대만 1-9",
+     "out": true
     }
-   ],
-   "text": "슈퍼라운드 성적",
-   "size": 72
+   ]
   },
   {
    "type": "cards",
@@ -150,90 +152,290 @@
    "size": 76
   },
   {
-   "type": "big",
+   "type": "league",
    "startLine": 4,
-   "text": "전제\n한국이 중국을 이긴다",
-   "size": 96,
-   "note": "지면 결승은 어렵다"
-  },
-  {
-   "type": "matchup",
-   "startLine": 5,
-   "left": "한국",
-   "right": "일본",
-   "text": "일본이 대만을 이기면",
-   "size": 84,
-   "vsText": "27일 결승"
-  },
-  {
-   "type": "big",
-   "startLine": 6,
-   "text": "대만이 이기면\n세 나라 2승 1패",
-   "size": 96,
-   "note": "한국 · 일본 · 대만"
-  },
-  {
-   "type": "big",
-   "startLine": 7,
-   "text": "TQB\n이닝당 득점 − 실점",
-   "size": 96,
-   "note": "세 나라끼리 경기만"
-  },
-  {
-   "type": "cards",
-   "startLine": 8,
-   "items": [
+   "title": "한국이 중국을 이기면",
+   "text": "남은 변수는 일본 vs 대만",
+   "size": 60,
+   "rows": [
     {
-     "badge": "대만전",
-     "name": "5-0 승",
-     "sub": "5점 넣음"
+     "team": "한국",
+     "rec": "2승 1패",
+     "tag": "+1승",
+     "hi": true
     },
     {
-     "badge": "일본전",
-     "name": "0-5 패",
-     "sub": "5점 줌"
+     "team": "일본",
+     "rec": "2승 0패",
+     "sub": "대만전 남음"
+    },
+    {
+     "team": "대만",
+     "rec": "1승 1패",
+     "sub": "일본전 남음"
+    },
+    {
+     "team": "중국",
+     "rec": "0승 3패",
+     "out": true
     }
+   ]
+  },
+  {
+   "type": "league",
+   "startLine": 5,
+   "title": "일본이 대만을 이기면",
+   "cut": 2,
+   "cutLabel": "결승 한국 vs 일본",
+   "rows": [
+    {
+     "team": "일본",
+     "rec": "3승 0패",
+     "tag": "+1승"
+    },
+    {
+     "team": "한국",
+     "rec": "2승 1패",
+     "hi": true
+    },
+    {
+     "team": "대만",
+     "rec": "1승 2패",
+     "out": true
+    },
+    {
+     "team": "중국",
+     "rec": "0승 3패",
+     "out": true
+    }
+   ]
+  },
+  {
+   "type": "league",
+   "startLine": 6,
+   "title": "대만이 일본을 이기면",
+   "text": "세 나라 동률 → TQB",
+   "size": 64,
+   "rows": [
+    {
+     "team": "한국",
+     "rec": "2승 1패",
+     "tag": "동률",
+     "hi": true
+    },
+    {
+     "team": "일본",
+     "rec": "2승 1패",
+     "tag": "동률"
+    },
+    {
+     "team": "대만",
+     "rec": "2승 1패",
+     "tag": "동률"
+    },
+    {
+     "team": "중국",
+     "rec": "0승 3패",
+     "out": true
+    }
+   ]
+  },
+  {
+   "type": "formula",
+   "startLine": 7,
+   "title": "TQB",
+   "left": [
+    "득점",
+    "공격 이닝"
    ],
-   "text": "한국은 득실이 같다",
-   "size": 76
+   "right": [
+    "실점",
+    "수비 이닝"
+   ],
+   "note": "세 나라끼리 경기만 계산",
+   "noteSize": 54
   },
   {
-   "type": "big",
+   "type": "league",
+   "startLine": 8,
+   "title": "세 나라끼리 경기 득점 − 실점",
+   "barMax": 5,
+   "rows": [
+    {
+     "team": "한국",
+     "sub": "대만 5-0 승 · 일본 0-5 패",
+     "val": "5 − 5 = 0",
+     "bar": 0,
+     "hi": true
+    },
+    {
+     "team": "일본",
+     "sub": "한국 5-0 승 · 대만전 ?",
+     "val": "?"
+    },
+    {
+     "team": "대만",
+     "sub": "한국 0-5 패 · 일본전 ?",
+     "val": "?"
+    }
+   ]
+  },
+  {
+   "type": "ruler",
    "startLine": 9,
-   "text": "대만이 5점 차 미만 승\n→ 일본 · 한국 결승",
-   "size": 84,
-   "note": "계산상"
+   "title": "대만이 일본을 몇 점 차로 이기면?",
+   "from": 1,
+   "to": 9,
+   "focus": 0,
+   "zones": [
+    {
+     "a": 1,
+     "b": 4,
+     "label": "결승\n한국 vs 일본",
+     "team": [
+      "한국",
+      "일본"
+     ]
+    },
+    {
+     "a": 5,
+     "b": 5,
+     "label": "다음\n기준",
+     "color": "#8A93A3"
+    },
+    {
+     "a": 6,
+     "b": 9,
+     "label": "결승\n한국 vs 대만",
+     "team": [
+      "한국",
+      "대만"
+     ],
+     "color": "#E5484D"
+    }
+   ]
   },
   {
-   "type": "big",
+   "type": "ruler",
    "startLine": 10,
-   "text": "대만이 6점 차 이상 승\n→ 대만 · 한국 결승",
-   "size": 84,
-   "note": "OSEN 계산과 같음"
+   "title": "대만이 일본을 몇 점 차로 이기면?",
+   "from": 1,
+   "to": 9,
+   "focus": 2,
+   "zones": [
+    {
+     "a": 1,
+     "b": 4,
+     "label": "결승\n한국 vs 일본",
+     "team": [
+      "한국",
+      "일본"
+     ]
+    },
+    {
+     "a": 5,
+     "b": 5,
+     "label": "다음\n기준",
+     "color": "#8A93A3"
+    },
+    {
+     "a": 6,
+     "b": 9,
+     "label": "결승\n한국 vs 대만",
+     "team": [
+      "한국",
+      "대만"
+     ],
+     "color": "#E5484D"
+    }
+   ]
   },
   {
-   "type": "matchup",
+   "type": "branch",
    "startLine": 11,
-   "left": "한국",
-   "right": "일본",
-   "text": "27일 결승 재대결",
-   "size": 84,
-   "vsText": "제 예상"
+   "root": {
+    "left": "일본",
+    "right": "대만",
+    "label": "26일 18:30 오카자키"
+   },
+   "text": "제 예상은 한일전 결승",
+   "size": 64,
+   "items": [
+    {
+     "cond": "일본 승",
+     "final": [
+      "한국",
+      "일본"
+     ],
+     "hi": true
+    },
+    {
+     "cond": "대만 1~4점 차 승",
+     "final": [
+      "한국",
+      "일본"
+     ]
+    },
+    {
+     "cond": "대만 6점 차 이상 승",
+     "final": [
+      "한국",
+      "대만"
+     ]
+    }
+   ]
   },
   {
    "type": "question",
    "startLine": 12,
-   "text": "결승 상대 일본 vs\n대만?"
+   "text": "결승 상대는",
+   "choices": [
+    {
+     "team": "일본",
+     "label": "일본"
+    },
+    {
+     "team": "대만",
+     "label": "대만"
+    }
+   ]
   }
  ],
  "thumb": {
+  "graphic": "branch",
+  "root": [
+   "일본",
+   "대만"
+  ],
+  "results": [
+   {
+    "cond": "일본 승",
+    "final": [
+     "한국",
+     "일본"
+    ]
+   },
+   {
+    "cond": "대만 1~4점 차",
+    "final": [
+     "한국",
+     "일본"
+    ]
+   },
+   {
+    "cond": "대만 6점 차 이상",
+    "final": [
+     "한국",
+     "대만"
+    ]
+   }
+  ],
+  "gh": 860,
+  "top": "중국만 이기면",
+  "big": "한국 결승\n경우의 수",
   "teams": [
    "KT"
   ],
-  "img": "국가대표프로필/류지현",
-  "top": "중국만 이기면",
-  "big": "한국 결승\n경우의 수",
-  "logos": false,
   "color": "#1E5EFF"
  },
  "youtube": {

@@ -88,11 +88,26 @@
    "tag": "21일 조별리그"
   },
   {
-   "type": "big",
+   "type": "cards",
    "startLine": 2,
-   "text": "예상은\n2-1이나 3-2",
-   "size": 110,
-   "note": "린위민"
+   "title": "린위민의 한일전 예상",
+   "items": [
+    {
+     "badge": "예상",
+     "name": "2-1"
+    },
+    {
+     "badge": "예상",
+     "name": "3-2"
+    },
+    {
+     "badge": "실제",
+     "name": "0-5",
+     "hi": true
+    }
+   ],
+   "text": "",
+   "size": 76
   },
   {
    "type": "photo",
@@ -124,42 +139,104 @@
    "tag": "대만 왕옌청 · 한화"
   },
   {
-   "type": "matchup",
+   "type": "league",
    "startLine": 6,
-   "left": "대만",
-   "right": "일본",
-   "text": "크게 이겨야 결승",
-   "size": 84,
-   "vsText": "26일 18:30"
+   "title": "대만은 1승 1패",
+   "cut": 2,
+   "cutLabel": "지금 결승권",
+   "rows": [
+    {
+     "team": "일본",
+     "rec": "2승 0패",
+     "sub": "한국 5-0 · 중국 11-3"
+    },
+    {
+     "team": "한국",
+     "rec": "1승 1패",
+     "sub": "대만 5-0 · 일본 0-5"
+    },
+    {
+     "team": "대만",
+     "rec": "1승 1패",
+     "sub": "한국 0-5 · 중국 9-1",
+     "hi": true
+    },
+    {
+     "team": "중국",
+     "rec": "0승 2패",
+     "sub": "일본 3-11 · 대만 1-9",
+     "out": true
+    }
+   ]
   },
   {
-   "type": "big",
+   "type": "ruler",
    "startLine": 7,
-   "text": "6점 차 이상 승리\n→ 대만 결승 가능",
-   "size": 88,
-   "note": "TQB 계산"
+   "title": "대만이 일본을 몇 점 차로 이기면?",
+   "from": 1,
+   "to": 9,
+   "focus": 2,
+   "zones": [
+    {
+     "a": 1,
+     "b": 4,
+     "label": "결승\n한국 vs 일본",
+     "team": [
+      "한국",
+      "일본"
+     ]
+    },
+    {
+     "a": 5,
+     "b": 5,
+     "label": "다음\n기준",
+     "color": "#8A93A3"
+    },
+    {
+     "a": 6,
+     "b": 9,
+     "label": "결승\n한국 vs 대만",
+     "team": [
+      "한국",
+      "대만"
+     ],
+     "color": "#E5484D"
+    }
+   ]
   },
   {
-   "type": "big",
+   "type": "steps",
    "startLine": 8,
-   "text": "일본전 선발\n다시 고민",
-   "size": 104,
-   "note": "대만 이티투데이"
+   "title": "대만의 일본전 선발",
+   "items": [
+    {
+     "date": "원래",
+     "text": "린위민"
+    },
+    {
+     "date": "지금",
+     "text": "다시 고민",
+     "hi": true
+    }
+   ]
   },
   {
    "type": "photo",
    "startLine": 9,
-   "img": "상황별/린위민",
-   "text": "원래는 내일이었는데\n이제는 모르겠다",
-   "size": 84,
-   "tag": "린위민 · 25일"
+   "img": "상황별/ETtoday_린위민_보도",
+   "text": "",
+   "size": 96,
+   "fit": "contain",
+   "h": 880,
+   "tag": "린위민 · 대만 이티투데이 25일"
   },
   {
-   "type": "big",
+   "type": "photo",
    "startLine": 10,
+   "img": "상황별/린위민",
    "text": "언제든\n준비는 됐다",
-   "size": 110,
-   "note": "린위민 · 대만 이티투데이"
+   "size": 100,
+   "tag": "린위민 · 대만 이티투데이"
   },
   {
    "type": "matchup",
@@ -173,17 +250,35 @@
   {
    "type": "question",
    "startLine": 12,
-   "text": "대만이 일본 대파 vs\n일본이 막는다?"
+   "text": "26일 대만 vs 일본",
+   "choices": [
+    {
+     "team": "대만",
+     "label": "대만이 대파"
+    },
+    {
+     "team": "일본",
+     "label": "일본이 막는다"
+    }
+   ]
   }
  ],
  "thumb": {
+  "graphic": "versus",
+  "left": {
+   "img": "상황별/린위민",
+   "label": "린위민"
+  },
+  "right": {
+   "team": "일본",
+   "label": "26일 일본"
+  },
+  "gh": 700,
+  "top": "대만 반응",
+  "big": "린위민\n0-5 믿기 어렵다",
   "teams": [
    "HH"
   ],
-  "img": "상황별/린위민",
-  "top": "대만 반응",
-  "big": "린위민\n0-5 믿기 어렵다",
-  "logos": false,
   "color": "#1E5EFF"
  },
  "youtube": {

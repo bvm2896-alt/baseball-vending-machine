@@ -22,8 +22,8 @@
    "sub": "데일리스포츠는|프로 군단 한국이|망연자실했다고 썼어요"
   },
   {
-   "narr": "월드베이스볼클래식 대표가 즐비한데 / 사회인에게 / 사 안타 완봉패를 당했다고요",
-   "sub": "WBC\n대표가 즐비한데|사회인에게|4안타 완봉패를 당했다고요"
+   "narr": "월드베이스볼클래식 대표가 즐비한데 / 사회인에게 / 사 안타 영봉패를 당했다고요",
+   "sub": "WBC\n대표가 즐비한데|사회인에게|4안타 영봉패를 당했다고요"
   },
   {
    "narr": "스포츠닛폰은 / 사회인 사무라이가 / 한국 프로 군단을 격파했다고 했어요",
@@ -80,11 +80,21 @@
    "tag": "9월 25일 슈퍼라운드"
   },
   {
-   "type": "big",
+   "type": "upset",
    "startLine": 1,
-   "text": "금성\n약자가 강자를 잡다",
-   "size": 96,
-   "note": "스모에서 온 말"
+   "title": "金星 금성",
+   "sub": "스모에서 온 말",
+   "small": {
+    "team": "일본",
+    "label": "약한 쪽",
+    "sub": "사회인"
+   },
+   "big": {
+    "team": "한국",
+    "label": "강한 쪽",
+    "sub": "프로"
+   },
+   "text": "약자가 강자를 잡았다"
   },
   {
    "type": "photo",
@@ -97,11 +107,26 @@
    "tag": "데일리스포츠 9월 25일"
   },
   {
-   "type": "big",
+   "type": "bars",
    "startLine": 3,
-   "text": "WBC 대표 즐비\n4안타 완봉패",
-   "size": 100,
-   "note": "데일리스포츠"
+   "title": "WBC 대표가 즐비한데",
+   "items": [
+    {
+     "label": "한국 안타",
+     "team": "한국",
+     "value": 4,
+     "unit": "개",
+     "hi": true
+    },
+    {
+     "label": "일본 안타",
+     "team": "일본",
+     "value": 9,
+     "unit": "개"
+    }
+   ],
+   "text": "4안타 영봉패",
+   "size": 72
   },
   {
    "type": "photo",
@@ -128,7 +153,7 @@
      "img": "KBO프로필/문보경",
      "name": "문보경",
      "team": "LG",
-     "note": "WBC 만루홈런"
+     "note": "WBC 대표"
     }
    ],
    "text": "",
@@ -143,60 +168,133 @@
    "tag": "일본 선발 히구치 신"
   },
   {
-   "type": "big",
+   "type": "icons",
    "startLine": 7,
-   "text": "경기 중반부터\n한국 벤치 전원 기립",
-   "size": 88,
-   "note": "데일리스포츠"
+   "title": "한국 더그아웃",
+   "n": 12,
+   "cols": 6,
+   "label": "경기 중반부터\n전원 기립",
+   "icon": "person"
   },
   {
-   "type": "big",
+   "type": "steps",
    "startLine": 8,
-   "text": "일본 4연승\n4경기 무패",
-   "size": 100,
-   "note": "조별리그 3승 + 한국전"
+   "title": "일본 4전 4승",
+   "items": [
+    {
+     "date": "11-3",
+     "text": "중국"
+    },
+    {
+     "date": "15-0",
+     "text": "팔레스타인"
+    },
+    {
+     "date": "7-0",
+     "text": "필리핀"
+    },
+    {
+     "date": "5-0",
+     "text": "한국",
+     "hi": true
+    }
+   ]
   },
   {
-   "type": "matchup",
+   "type": "steps",
    "startLine": 9,
-   "left": "한국",
-   "right": "일본",
-   "text": "도요하시 참사",
-   "size": 84,
-   "score": "0-5",
-   "tag": "2026 · 20년 만"
+   "title": "또 사회인에게 진 참사",
+   "items": [
+    {
+     "date": "2006",
+     "text": "도하 참사",
+     "sub": "일본에 7-10"
+    },
+    {
+     "date": "2026",
+     "text": "도요하시 참사",
+     "sub": "일본에 0-5",
+     "hi": true
+    }
+   ]
   },
   {
-   "type": "matchup",
+   "type": "league",
    "startLine": 10,
-   "left": "일본",
-   "right": "대만",
-   "text": "이기면 결승",
-   "size": 84,
-   "vsText": "26일 18:30"
+   "title": "일본은 대만만 이기면 결승",
+   "cut": 2,
+   "cutLabel": "지금 결승권",
+   "rows": [
+    {
+     "team": "일본",
+     "rec": "2승 0패",
+     "sub": "한국 5-0 · 중국 11-3",
+     "hi": true
+    },
+    {
+     "team": "한국",
+     "rec": "1승 1패",
+     "sub": "대만 5-0 · 일본 0-5"
+    },
+    {
+     "team": "대만",
+     "rec": "1승 1패",
+     "sub": "한국 0-5 · 중국 9-1"
+    },
+    {
+     "team": "중국",
+     "rec": "0승 2패",
+     "sub": "일본 3-11 · 대만 1-9",
+     "out": true
+    }
+   ]
   },
   {
-   "type": "matchup",
+   "type": "steps",
    "startLine": 11,
-   "left": "한국",
-   "right": "일본",
-   "text": "27일 결승 재대결",
-   "size": 84,
-   "vsText": "제 예상"
+   "title": "제 예상",
+   "items": [
+    {
+     "date": "26일",
+     "text": "한국 vs 중국",
+     "sub": "한국 승"
+    },
+    {
+     "date": "26일",
+     "text": "일본 vs 대만",
+     "sub": "일본 승"
+    },
+    {
+     "date": "27일",
+     "text": "결승\n한국 vs 일본",
+     "hi": true
+    }
+   ]
   },
   {
    "type": "question",
    "startLine": 12,
-   "text": "결승에서 복수 vs\n일본이 또 웃는다?"
+   "text": "결승에서",
+   "choices": [
+    {
+     "team": "한국",
+     "label": "한국이 되갚는다"
+    },
+    {
+     "team": "일본",
+     "label": "일본이 또 웃는다"
+    }
+   ]
   }
  ],
  "thumb": {
+  "img": "상황별/데일리_한국전_보도",
+  "fit": "contain",
+  "top": "일본 언론 반응",
+  "big": "프로가\n회사원에 졌다",
   "teams": [
    "KT"
   ],
-  "img": "상황별/히구치",
-  "top": "일본 언론 반응",
-  "big": "프로가\n회사원에 졌다",
   "logos": false,
   "color": "#E5484D"
  },

@@ -78,34 +78,44 @@
    "tag": "아시안게임 야구 대표팀"
   },
   {
-   "type": "big",
+   "type": "facegrid",
    "startLine": 1,
-   "text": "24명 중 16명\n군 미필",
-   "size": 110,
-   "note": "66.7%"
-  },
-  {
-   "type": "big",
-   "startLine": 2,
-   "text": "금메달만\n병역 혜택",
-   "size": 110,
-   "note": "은메달은 해당 없음"
-  },
-  {
-   "type": "big",
-   "startLine": 3,
-   "text": "체육요원 편입\n훈련 + 봉사활동",
-   "size": 96
-  },
-  {
-   "type": "people",
-   "startLine": 4,
-   "title": "금메달이 필요한 선수들",
+   "title": "대표팀 24명 중 미필 16명",
    "items": [
+    {
+     "img": "KBO프로필/성영탁",
+     "name": "성영탁",
+     "team": "KIA"
+    },
     {
      "img": "국가대표프로필/김도영",
      "name": "김도영",
      "team": "KIA"
+    },
+    {
+     "img": "국가대표프로필/박재현",
+     "name": "박재현",
+     "team": "KIA"
+    },
+    {
+     "img": "KBO프로필/조형우",
+     "name": "조형우",
+     "team": "SSG"
+    },
+    {
+     "img": "KBO프로필/정준재",
+     "name": "정준재",
+     "team": "SSG"
+    },
+    {
+     "img": "KBO프로필/배찬승",
+     "name": "배찬승",
+     "team": "삼성"
+    },
+    {
+     "img": "KBO프로필/이재현",
+     "name": "이재현",
+     "team": "삼성"
     },
     {
      "img": "KBO프로필/소형준",
@@ -113,13 +123,126 @@
      "team": "KT"
     },
     {
+     "img": "KBO프로필/오원석",
+     "name": "오원석",
+     "team": "KT"
+    },
+    {
+     "img": "KBO프로필/최준용",
+     "name": "최준용",
+     "team": "롯데"
+    },
+    {
+     "img": "KBO프로필/김진욱",
+     "name": "김진욱",
+     "team": "롯데"
+    },
+    {
+     "img": "KBO프로필/최민석",
+     "name": "최민석",
+     "team": "두산"
+    },
+    {
+     "img": "KBO프로필/박준순",
+     "name": "박준순",
+     "team": "두산"
+    },
+    {
+     "img": "KBO프로필/김영우",
+     "name": "김영우",
+     "team": "LG"
+    },
+    {
      "img": "KBO프로필/문현빈",
      "name": "문현빈",
      "team": "한화"
+    },
+    {
+     "img": "KBO프로필/김건희",
+     "name": "김건희",
+     "team": "키움"
     }
    ],
-   "text": "",
-   "size": 80
+   "cols": 4
+  },
+  {
+   "type": "steps",
+   "startLine": 2,
+   "title": "병역 혜택은 금메달만",
+   "items": [
+    {
+     "date": "금",
+     "text": "병역 혜택",
+     "hi": true
+    },
+    {
+     "date": "은",
+     "text": "없음"
+    },
+    {
+     "date": "동",
+     "text": "없음"
+    }
+   ]
+  },
+  {
+   "type": "steps",
+   "startLine": 3,
+   "title": "금메달을 따면",
+   "items": [
+    {
+     "date": "편입",
+     "text": "예술체육요원"
+    },
+    {
+     "date": "훈련",
+     "text": "기초군사훈련"
+    },
+    {
+     "date": "544시간",
+     "text": "봉사활동",
+     "sub": "2년 10개월 동안",
+     "hi": true
+    }
+   ]
+  },
+  {
+   "type": "facegrid",
+   "startLine": 4,
+   "title": "금메달이 필요한 선수들",
+   "items": [
+    {
+     "img": "국가대표프로필/김도영",
+     "name": "김도영",
+     "team": "KIA",
+     "hi": true
+    },
+    {
+     "img": "KBO프로필/소형준",
+     "name": "소형준",
+     "team": "KT",
+     "hi": true
+    },
+    {
+     "img": "KBO프로필/문현빈",
+     "name": "문현빈",
+     "team": "한화",
+     "hi": true
+    },
+    {
+     "img": "KBO프로필/김영우",
+     "name": "김영우",
+     "team": "LG",
+     "hi": true
+    },
+    {
+     "img": "KBO프로필/조형우",
+     "name": "조형우",
+     "team": "SSG",
+     "hi": true
+    }
+   ],
+   "cols": 3
   },
   {
    "type": "photo",
@@ -131,36 +254,76 @@
    "tag": "두산 최민석"
   },
   {
-   "type": "big",
+   "type": "photo",
    "startLine": 6,
-   "text": "김진욱\n한일전 2이닝 4K 무실점",
-   "size": 88,
-   "note": "롯데 · 미필"
+   "img": "KBO프로필/김진욱",
+   "text": "한일전 2이닝\n4K 무실점",
+   "size": 96,
+   "team": "롯데",
+   "tag": "롯데 김진욱 · 미필"
   },
   {
-   "type": "big",
+   "type": "league",
    "startLine": 7,
-   "text": "중국만 잡으면\n결승 유력",
-   "size": 110,
-   "note": "계산상"
-  },
-  {
-   "type": "cards",
-   "startLine": 8,
-   "items": [
+   "title": "한국이 중국을 이기면",
+   "rows": [
     {
-     "badge": "결승 상대",
-     "name": "일본",
-     "sub": "25일 0-5 패"
+     "team": "한국",
+     "rec": "2승 1패",
+     "tag": "+1승",
+     "hi": true
     },
     {
-     "badge": "결승 상대",
-     "name": "대만",
-     "sub": "21일 5-0 승"
+     "team": "일본",
+     "rec": "2승 0패",
+     "sub": "대만전 남음"
+    },
+    {
+     "team": "대만",
+     "rec": "1승 1패",
+     "sub": "일본전 남음"
+    },
+    {
+     "team": "중국",
+     "rec": "0승 3패",
+     "out": true
     }
    ],
-   "text": "둘 중 하나",
-   "size": 76
+   "text": "계산상 결승 유력",
+   "size": 60
+  },
+  {
+   "type": "branch",
+   "startLine": 8,
+   "root": {
+    "left": "일본",
+    "right": "대만",
+    "label": "26일 18:30 오카자키"
+   },
+   "items": [
+    {
+     "cond": "일본 승",
+     "final": [
+      "한국",
+      "일본"
+     ],
+     "hi": true
+    },
+    {
+     "cond": "대만 1~4점 차 승",
+     "final": [
+      "한국",
+      "일본"
+     ]
+    },
+    {
+     "cond": "대만 6점 차 이상 승",
+     "final": [
+      "한국",
+      "대만"
+     ]
+    }
+   ]
   },
   {
    "type": "matchup",
@@ -181,26 +344,100 @@
    "tag": "류지현 감독 · 25일"
   },
   {
-   "type": "big",
+   "type": "steps",
    "startLine": 11,
-   "text": "금메달\n한 번 진 게 약",
-   "size": 104,
-   "note": "제 예상"
+   "title": "제 예상은 금메달",
+   "items": [
+    {
+     "date": "25일",
+     "text": "일본에 0-5"
+    },
+    {
+     "date": "26일",
+     "text": "중국전"
+    },
+    {
+     "date": "27일",
+     "text": "결승\n금메달",
+     "hi": true
+    }
+   ]
   },
   {
    "type": "question",
    "startLine": 12,
-   "text": "16명 금메달 vs\n눈물?"
+   "text": "미필 16명",
+   "choices": [
+    {
+     "team": "한국",
+     "label": "금메달로 웃는다"
+    },
+    {
+     "img": "국가대표프로필/류지현",
+     "label": "눈물을 흘린다"
+    }
+   ]
   }
  ],
  "thumb": {
+  "graphic": "faces",
+  "faces": [
+   {
+    "img": "KBO프로필/성영탁"
+   },
+   {
+    "img": "국가대표프로필/김도영"
+   },
+   {
+    "img": "국가대표프로필/박재현"
+   },
+   {
+    "img": "KBO프로필/조형우"
+   },
+   {
+    "img": "KBO프로필/정준재"
+   },
+   {
+    "img": "KBO프로필/배찬승"
+   },
+   {
+    "img": "KBO프로필/이재현"
+   },
+   {
+    "img": "KBO프로필/소형준"
+   },
+   {
+    "img": "KBO프로필/오원석"
+   },
+   {
+    "img": "KBO프로필/최준용"
+   },
+   {
+    "img": "KBO프로필/김진욱"
+   },
+   {
+    "img": "KBO프로필/최민석"
+   },
+   {
+    "img": "KBO프로필/박준순"
+   },
+   {
+    "img": "KBO프로필/김영우"
+   },
+   {
+    "img": "KBO프로필/문현빈"
+   },
+   {
+    "img": "KBO프로필/김건희"
+   }
+  ],
+  "cols": 4,
+  "gh": 900,
+  "top": "한일전 패배 여파",
+  "big": "병역 16명\n금메달 흔들",
   "teams": [
    "HT"
   ],
-  "img": "국가대표프로필/김도영",
-  "top": "한일전 패배 여파",
-  "big": "병역 16명\n금메달 흔들",
-  "logos": false,
   "color": "#E5484D"
  },
  "youtube": {
