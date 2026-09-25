@@ -654,6 +654,8 @@ def pending_episodes():
         series = str(ep.get('series') or '').strip() or SLOT_SERIES[slot]
         try: video = build.out_paths(ep, f)[0]
         except Exception: video = ''
+        if ep.get('hold'):
+            log(f'[{stem}] hold 표시(잠시 보류) → 건너뜀'); continue
         if ep.get('done'):
             log(f'[{stem}] done 표시(올린 편) → 건너뜀'); continue
         hv = ep_hash(f, ep, series); r = reg.get(stem) or {}

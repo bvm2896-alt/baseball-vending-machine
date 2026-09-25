@@ -49,6 +49,10 @@ EMOTION = CFG.get('TTS_EMOTION', 'smart')      # smart | normal | happy | sad | 
 INTENSITY = float(CFG.get('TTS_INTENSITY', '1.0'))
 TEMPO = float(CFG.get('TTS_TEMPO', '1.0'))      # 타입캐스트 자체 배속. 줄별 속도 조절은 build.py 가 하므로 보통 1.0
 URL = 'https://api.typecast.ai/v1/text-to-speech'
+try:   # 9/26: 콘티 ttsTempo(build prep 이 work\tts_tempo.txt 에 적음)가 설정.txt TTS_TEMPO 보다 우선
+    _tt = io.open(os.path.join(os.environ.get('KBO_WORK', 'work'), 'tts_tempo.txt'), encoding='utf-8').read().strip()
+    if _tt: TEMPO = float(_tt)
+except Exception: pass
 def head(): return {'X-API-KEY': ACCOUNTS[ACC]['key'], 'Content-Type': 'application/json'}
 
 FAILS = {}   # 계정 이름 → 왜 못 썼는지 (마지막에 한 줄로 정리해서 보여준다)
@@ -79,7 +83,7 @@ def check_audio(path, text):
         syl = len(re.findall(r'[가-힣]', text)) or 1
         rate = syl / max(d, 0.1)
         if mx > -0.05: return False, f'클리핑 {mx}dB'   # 음량 정리는 build.py 가 하므로 진짜 클리핑만 재시도
-        if rate > 8.5 or rate < 2.5: return False, f'길이 이상 {d:.1f}s/{syl}음절'
+        if rate > 8.5 * max(1.0, TEMPO) or rate < 2.5: return False, f'길이 이상 {d:.1f}s/{syl}음절'   # 9/26: 타입캐스트 배속만큼 기준도 올림
         return True, ''
     except Exception as e:
         return True, ''
@@ -135,7 +139,8 @@ def synth(text, prev='', nxt='', out_path=None):
             if pi + 1 < len(prompts):
                 pi += 1; payload['prompt'] = prompts[pi]; print(f'  감정 형식 재시도({pi})'); continue
             if 'audio_tempo' in payload.get('output', {}):
-                payload['output'] = {'audio_format': 'mp3'}; print('  배속 옵션 없이 재시도'); continue
+                # 9/26: 배속 없이 1.0배로 몰래 만들면 영상이 느려진다 → 멈추고 알린다
+                print(f'  실패 400: 타입캐스트가 배속 {TEMPO} 옵션을 거부했어요 — 1.0배로 대신 만들지 않음: {r.text[:200]}'); return False
             if 'output' in payload:
                 payload.pop('output'); continue
         if r.status_code in (429, 500, 502, 503):
@@ -306,6 +311,111 @@ def synth_index(lines, i, out=None):
     if ok:
         io.open(out.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])   # 어떤 대사로 만든 음성인지 기록(대사 바뀌면 build 가 그 줄만 다시)
     return ok
+
+# ---------- 9/26: 한 편 통째 합성 (콘티 "ttsWhole": true) ----------
+# 줄마다 따로 만들면 1줄·2줄 억양이 따로 논다 → 구독 멘트(NN.keep) 뺀 줄 전부를 API 한 번으로 이어 읽게 하고 줄 경계에서 자른다.
+def whole_mode():
+    try: return io.open(os.path.join(WORK, 'tts_whole.txt'), encoding='utf-8').read().strip() == '1'
+    except Exception: return False
+
+def whole_bounds(path, texts):
+    """통 음성에서 줄 경계 N-1 개 → (무음 구간 목록, 전체 길이, 방법)
+       1) 줄 사이(대본의 빈 줄)에서 확실히 길게 쉬었으면: 가장 긴 무음 N-1 개 (N번째보다 뚜렷이 길 때만)
+       2) 아니면 whisper 단어 시각으로 줄 끝 위치를 잡고 가장 가까운 무음에 붙인다(PC 에 faster-whisper 가 있을 때)
+       3) 둘 다 안 되면 글자 수 위치 + 긴 무음 우선(정확도 낮음 → 경고)"""
+    d, sil = probe_silences(path, thr='-36dB', mind=0.06)
+    lead = sil[0][1] if sil and sil[0][0] < 0.02 else 0.0
+    tail = sil[-1][0] if sil and sil[-1][1] >= d - 0.03 else d
+    inner = [(a, b) for a, b in sil if a > lead + 0.05 and b < tail - 0.05]
+    N = len(texts); need = N - 1
+    if need == 0: return [], d, '한 줄'
+    if len(inner) < need: return None, d, '무음 부족'
+    def norm(t): return re.sub(r'[^가-힣A-Za-z0-9]', '', t)
+    chars = [max(1, len(norm(t))) for t in texts]; sc = sum(chars)
+    def plausible(cuts):
+        b = [lead] + [(x + y) / 2 for x, y in cuts] + [tail]
+        return all(0.6 <= (b[k + 1] - b[k]) / max((tail - lead) * chars[k] / sc, 0.1) <= 1.7 for k in range(N))
+    # 1) 뚜렷한 문단 쉼
+    by_len = sorted(inner, key=lambda iv: iv[1] - iv[0], reverse=True)
+    top = sorted(by_len[:need])
+    nth = (by_len[need][1] - by_len[need][0]) if len(by_len) > need else 0.0
+    shortest_top = min(y - x for x, y in top)
+    if shortest_top >= 1.35 * nth and plausible(top): return top, d, f'문단 쉼(최소 {shortest_top:.2f}s > 다음 {nth:.2f}s)'
+    # 2) whisper
+    try:
+        from faster_whisper import WhisperModel
+        m = WhisperModel(CFG.get('QA_WHISPER', 'small'), device='cpu', compute_type='int8')
+        segs, _ = m.transcribe(path, language='ko', word_timestamps=True, beam_size=3, vad_filter=False,
+                               initial_prompt=' '.join(norm(t)[:40] for t in texts)[:200])
+        words = [w for sg in segs for w in (sg.words or [])]
+        if not words: raise RuntimeError('단어 시각 없음')
+        wl = [max(1, len(norm(w.word))) for w in words]; ws = sum(wl)
+        cuts, acc, k, used = [], 0, 0, set()
+        targets = []; t_ = 0
+        for c in chars[:-1]: t_ += c; targets.append(t_ / sc)
+        est = []
+        for i, w in enumerate(words):
+            acc += wl[i]
+            while k < need and acc / ws >= targets[k] - 1e-9:
+                nxt = words[i + 1].start if i + 1 < len(words) else tail
+                est.append((w.end + nxt) / 2); k += 1
+        while len(est) < need: est.append(tail)
+        prev = lead
+        for e in est:
+            near = [iv for iv in inner if iv[0] > prev + 0.2 and abs((iv[0] + iv[1]) / 2 - e) <= 0.7]
+            iv = max(near, key=lambda v: (v[1] - v[0]) - 0.3 * abs((v[0] + v[1]) / 2 - e)) if near else (e, e)
+            cuts.append(iv); prev = (iv[0] + iv[1]) / 2
+        return cuts, d, 'whisper'
+    except Exception as ex:
+        print(f'  whisper 로 줄 경계 못 잡음({ex})')
+    # 3) 글자 수 위치 + 긴 무음 우선
+    exp = []; acc = 0
+    for k in range(need): acc += chars[k]; exp.append(lead + (tail - lead) * acc / sc)
+    per_line = (tail - lead) / N
+    cuts, prev = [], lead
+    for k, e in enumerate(exp):
+        near = [iv for iv in inner if iv[0] > prev + 0.2 and abs((iv[0] + iv[1]) / 2 - e) <= 0.6 * per_line]
+        iv = max(near, key=lambda v: (v[1] - v[0]) - 0.3 * abs((v[0] + v[1]) / 2 - e) / per_line) if near else (e, e)
+        cuts.append(iv); prev = (iv[0] + iv[1]) / 2
+    return cuts, d, '글자 수 추정(부정확할 수 있음 — 영상에서 자막·장면 타이밍 확인)'
+
+def whole_split(full, idx, lines):
+    """통 음성 full 을 idx 줄들로 잘라 NN.mp3 + NN.txt + 호흡 경계(segs.json)"""
+    texts = [lines[i] for i in idx]
+    cuts, d, how = whole_bounds(full, texts)
+    if cuts is None: raise RuntimeError(f'통 음성을 줄로 못 자름({how})')
+    print(f'  줄 경계 찾기: {how}')
+    io.open(os.path.join(VDIR, 'whole_split.txt'), 'w', encoding='utf-8').write(how + '\n' + ' '.join(f'{(a + c) / 2:.2f}' for a, c in cuts))
+    b = [0.0] + [round((a + c) / 2, 3) for a, c in cuts] + [d]
+    af = 'silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse'
+    for k, i in enumerate(idx):
+        mp3 = os.path.join(VDIR, f'{i:02d}.mp3')
+        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{b[k]:.3f}', '-to', f'{b[k + 1]:.3f}', '-i', full, '-af', af, '-b:a', '192k', mp3], check=True)
+        io.open(mp3.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])
+        for suf in ('.segs.json', '.src'):
+            if os.path.exists(mp3.replace('.mp3', suf)): os.remove(mp3.replace('.mp3', suf))
+        mark_breaths(mp3, lines[i], first=(i == 0))
+        print(f'{i:02d} 통 음성에서 잘라냄 {b[k]:.2f}~{b[k + 1]:.2f}s')
+    return len(idx)
+
+def synth_whole(lines):
+    """구독 멘트(NN.keep) 뺀 줄을 한 번에 합성해 자른다. 이미 이번 기준(fresh.flag 이후)으로 다 만들어져 있으면 건너뜀"""
+    idx = [i for i in range(len(lines)) if not os.path.exists(os.path.join(VDIR, f'{i:02d}.keep'))]
+    ff = os.path.join(VDIR, 'fresh.flag')
+    def fresh(i):
+        mp3 = os.path.join(VDIR, f'{i:02d}.mp3'); txt = mp3.replace('.mp3', '.txt')
+        if not (os.path.exists(mp3) and os.path.exists(txt)): return False
+        if io.open(txt, encoding='utf-8').read().strip() != lines[i].strip(): return False
+        return not (os.path.exists(ff) and os.path.getmtime(txt) < os.path.getmtime(ff))
+    if all(fresh(i) for i in idx):
+        print('통 합성: 이미 만든 음성 재사용'); return True
+    text = '\n\n'.join(tts_text([x.strip() for x in lines[i].split('/') if x.strip()]) for i in idx)
+    full = os.path.join(VDIR, 'whole.mp3')
+    print(f'통 합성: {len(idx)}줄 {len(text)}자 한 번에 (배속 {TEMPO}, 감정 {EMOTION})')
+    if not synth(text, out_path=full): return False
+    io.open(os.path.join(VDIR, 'whole.txt'), 'w', encoding='utf-8').write(text)
+    whole_split(full, idx, lines)
+    return True
 
 def drop_external(lines):
     """external.json 에 {"disabled": true} 가 있으면 외부(힉스필드)에서 받았던 음성(NN.src / full.src 표시가 있는 것)을 지워서
@@ -571,13 +681,21 @@ if __name__ == '__main__':
         if need:
             sys.exit(f'음성 실패: 줄 {need} 의 음성이 없고 API 키도 없습니다 — 타입캐스트 웹 zip 을 ' + os.path.abspath(drop_paths()[0]) + ' 에 넣어 주세요 (zip 파일 수 = 줄 수)')
         print('완료 (웹 zip 음성 그대로 사용, API 없음)'); sys.exit(0)
+    if only is None and whole_mode():
+        if not synth_whole(lines):
+            if FAILS: print('계정별 결과: ' + ' / '.join(f'{k}: {v}' for k, v in FAILS.items()))
+            sys.exit('통 합성 실패 — 줄별로 대신 만들지 않음(억양이 따로 놀아서)')
     print(f'{len(lines)}줄 합성 시작' + (f' (줄 {sorted(only)} 만)' if only else ''))
     fail = 0
     reuse = 0
     for i, line in enumerate(lines):
         if only is not None and i not in only: continue
         mp3 = os.path.join(VDIR, f'{i:02d}.mp3'); txt = mp3.replace('.mp3', '.txt'); segs = mp3.replace('.mp3', '.segs.json')
-        if '--fresh' not in sys.argv and only is None and os.path.exists(mp3) and os.path.exists(txt) \
+        # 9/26: 음성 폴더에 fresh.flag 가 있으면 그보다 먼저 만든 줄은 다시 만든다(NN.keep 줄은 그대로). 중간에 멈춰도 새로 만든 줄은 재사용
+        _ff = os.path.join(VDIR, 'fresh.flag')
+        if os.path.exists(_ff) and not os.path.exists(mp3.replace('.mp3', '.keep')) and os.path.exists(txt) and os.path.getmtime(txt) < os.path.getmtime(_ff):
+            print(f'{i:02d} fresh.flag 이전 음성 → 다시 만듦')
+        elif '--fresh' not in sys.argv and only is None and os.path.exists(mp3) and os.path.exists(txt) \
                 and io.open(txt, encoding='utf-8').read().strip() == line.strip():
             reuse += 1; print(f'{i:02d} 재사용 {line}'); continue   # 같은 대사로 이미 만든 음성이 있으면 크레딧 안 씀 (--fresh 면 전부 새로)
         ok = synth_index(lines, i)
