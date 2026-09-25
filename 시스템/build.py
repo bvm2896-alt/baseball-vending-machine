@@ -298,6 +298,10 @@ def prep(ep, ep_path=None):
         voice_dir(ep_key(ep_path))
     for w_ in narr_check(lines): print('숫자 읽기 경고:', w_)
     io.open(W('narration.txt'), 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
+    # 9/26: 콘티 "ttsTempo": 1.2 → 타입캐스트 API 가 직접 1.2배로 말하게(tts.py 가 읽음). 없으면 설정.txt TTS_TEMPO
+    io.open(W('tts_tempo.txt'), 'w', encoding='utf-8').write(str(ep.get('ttsTempo') or ''))
+    # 9/26: 콘티 "ttsWhole": true → 한 편(구독 멘트 뺀 줄)을 API 한 번으로 이어 읽고 줄별로 자른다(줄마다 억양이 따로 놀지 않게)
+    io.open(W('tts_whole.txt'), 'w', encoding='utf-8').write('1' if ep.get('ttsWhole') else '')
     print(f'work/narration.txt {len(lines)}줄')
     if ep_path:
         # 타입캐스트 웹(구독)에 붙여 넣을 대본: 줄 사이 빈 줄(문단 쉼) → 통째로 내려받아 <시리즈>\음성\<콘티이름>.mp3 로 두면 tts.py 가 줄별로 자른다

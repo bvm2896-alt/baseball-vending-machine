@@ -3,7 +3,7 @@
  "gameDate": "2026-09-25",
  "series": "야구이슈",
  "railTitle": "KBO 이슈",
- "speed": 1.2,
+ "speed": 1.0,
  "gapScale": 0.75,
  "focusTeam": "KT",
  "topic": "히구치",
@@ -232,5 +232,9 @@
    "#히구치"
   ]
  },
- "ttsApi": true
+ "ttsTempo": 1.2,
+ "ttsApi": true,
+ "ttsWhole": true,
+ "rev": "api-whole-normal-1.2x",
+ "hold": true
 }

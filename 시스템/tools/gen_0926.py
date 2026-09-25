@@ -316,9 +316,9 @@ ep('2026-09-26_이슈8', "HH", [
   "hashtags": HASH_AG + ["#도하참사"]},
  "2006 도하: 3월 WBC 4강, 12월 대만 2-4(선발 궈홍즈, 박재홍·장성호 병살), 이틀 뒤 일본(사회인+대학) 7-10, 9회말 7-7 오승환 55구 끝내기 3점 홈런, 동메달, 김재박 감독(연합 20140918064208697). 류현진·오승환·이대호·손민한·이병규 출전(20260924112250238). 20년 만 사회인 패배(스포츠투데이·엑스포츠).", "도하참사20년")
 
-# 9/26: 1~6편은 타입캐스트 API(설정.txt 키)로 줄마다 합성 — 웹 무료 계정은 장운 다운로드가 막혀 있음.
-#   본문은 build 가 1.2배(atempo, 음높이 유지), 구독 멘트는 따로 녹음한 1.0배·기쁨 파일을 마지막 줄(rate 1.0)로 넣고 그 앞 0.5초 쉼.
-API_EPS = ['2026-09-26_이슈' + n for n in ('', '2', '3', '4', '5', '6')]
+# 9/26: 1~8편 모두 타입캐스트 API(설정.txt 키)로 줄마다 합성 — 웹 무료 계정은 장운 다운로드가 막혀 있음.
+#   본문은 타입캐스트가 직접 1.2배(ttsTempo → tts.py audio_tempo, build 는 배속 안 함), 감정 normal(설정.txt), 구독 멘트는 따로 녹음한 1.0배·기쁨 파일을 마지막 줄(rate 1.0)로 넣고 그 앞 0.5초 쉼.
+API_EPS = ['2026-09-26_이슈' + n for n in ('', '2', '3', '4', '5', '6', '7', '8')]
 CTA_LINE = {"narr": END, "sub": "채널 구독하고\n매일 야구 이슈 받아보세요!", "rate": 1.0}
 def api_mode(e):
     last = dict(e['lines'][-1])
@@ -327,11 +327,13 @@ def api_mode(e):
     last['sub'] = '|'.join(last['sub'].split('|')[:-1])
     last['gapAfter'] = 0.5
     e['lines'] = e['lines'][:-1] + [last, dict(CTA_LINE)]
-    e['speed'] = 1.2; e['ttsApi'] = True
+    e['speed'] = 1.0; e['ttsTempo'] = 1.2; e['ttsApi'] = True; e['ttsWhole'] = True; e['rev'] = 'api-whole-normal-1.2x'
+    # 9/26: 통 합성 시험 — 1편만 먼저 만들고 나머지는 보류(확인 뒤 hold 를 뺀다)
+    if e.get('_name') != '2026-09-26_이슈': e['hold'] = True
 
 if __name__ == '__main__':
     for name, e in EPS.items():
-        if name in API_EPS: api_mode(e)
+        if name in API_EPS: e['_name'] = name; api_mode(e); e.pop('_name')
         json.dump(e, open(os.path.join(OUT, name + '.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
         for i, l in enumerate(e['lines']):
             for b in l['narr'].split(' / '):

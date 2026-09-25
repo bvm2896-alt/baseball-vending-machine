@@ -310,6 +310,9 @@ def refine_subs(i, line):
 # ---------- 메인 ----------
 def main():
     import tts
+    # 9/26: 타입캐스트가 직접 배속(TTS_TEMPO/콘티 ttsTempo)해서 만들면 음절 속도 기준도 그만큼 올린다(1.2배 줄을 '너무 빠름'으로 다시 합성하지 않게)
+    global RATE_MIN, RATE_MAX
+    _t = max(1.0, float(getattr(tts, 'TEMPO', 1.0) or 1.0)); RATE_MIN *= _t; RATE_MAX *= _t
     lines = tts.load_lines()
     N = len(lines)
     rep = {}
@@ -330,6 +333,7 @@ def main():
         print(f'{i:02d} {rep[i]["f0"]:>4.0f}Hz {rep[i]["rate"]:.1f}음/초 {rep[i]["dur"]:.1f}s' + (f'  ← {", ".join(b)}' if b else ''))
         # 9/26: NN.keep 이 있는 줄(따로 녹음해 넣은 구독 멘트 등)은 톤이 달라도 다시 합성하지 않는다
         if b and not os.path.exists(os.path.join(VOICE, f'{i:02d}.keep')): redo.append(i)
+    if redo and getattr(tts, 'whole_mode', lambda: False)(): print(f'주의 줄 {redo} — 통 합성이라 한 줄만 다시 만들지 않음(억양이 튐)'); redo = []
     if redo and getattr(tts, 'NO_API', False): print(f'주의 줄 {redo} — API 키가 없어 다시 합성하지 않음(웹 zip 그대로)'); redo = []
     if redo and not CHECK_ONLY and RETRY > 0:
         print(f'다시 합성 시도: {redo}')
