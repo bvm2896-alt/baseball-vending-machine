@@ -328,7 +328,8 @@ def main():
         b = flags(rep[i], target_f0, lines[i])
         rep[i]['flags'] = b
         print(f'{i:02d} {rep[i]["f0"]:>4.0f}Hz {rep[i]["rate"]:.1f}음/초 {rep[i]["dur"]:.1f}s' + (f'  ← {", ".join(b)}' if b else ''))
-        if b: redo.append(i)
+        # 9/26: NN.keep 이 있는 줄(따로 녹음해 넣은 구독 멘트 등)은 톤이 달라도 다시 합성하지 않는다
+        if b and not os.path.exists(os.path.join(VOICE, f'{i:02d}.keep')): redo.append(i)
     if redo and getattr(tts, 'NO_API', False): print(f'주의 줄 {redo} — API 키가 없어 다시 합성하지 않음(웹 zip 그대로)'); redo = []
     if redo and not CHECK_ONLY and RETRY > 0:
         print(f'다시 합성 시도: {redo}')

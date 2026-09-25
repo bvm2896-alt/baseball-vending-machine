@@ -432,7 +432,8 @@ def render(ep, ep_path):
         d, lead, tail = probe(src)
         ss, to = max(0, lead - 0.06), min(d, tail + 0.12)
         dst = VW(f't{i:02d}.wav')
-        rate = spd * pace_of(i, lines[i], N)
+        # 9/26: 줄에 "rate" 가 있으면 콘티 speed 와 상관없이 그 배속(구독 멘트 줄은 1.0 — 본문만 1.2배)
+        rate = float(lines[i]['rate']) if lines[i].get('rate') else spd * pace_of(i, lines[i], N)
         gain = static_gain(src, ss, to)
         def cut(ss, to):
             af = f'atrim=start={ss:.3f}:end={to:.3f},asetpts=PTS-STARTPTS'

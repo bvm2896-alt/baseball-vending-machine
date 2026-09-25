@@ -667,7 +667,8 @@ def pending_episodes():
                 reg[stem] = {'hash': hv, 'video': video, 'pc': platform.node(), 'at': 'before-registry'}; changed = True
                 log(f'[{stem}] 영상이 이미 있음 → 건너뜀'); continue
         vd = os.path.join(build.VOICE_ROOT, 'voice_' + stem)
-        if not voice_files(stem, series) and not os.path.exists(os.path.join(vd, '00.mp3')):
+        # 9/26: 콘티에 "ttsApi": true 면 zip 없이 타입캐스트 API(설정.txt 키)로 줄마다 합성한다
+        if not ep.get('ttsApi') and not voice_files(stem, series) and not os.path.exists(os.path.join(vd, '00.mp3')):
             log(f'[{stem}] 음성 zip 이 아직 없어요 ({series}\\음성\\{stem}.zip) → 건너뜀'); continue
         out.append((f, hv))
     if changed: reg_save(reg)
