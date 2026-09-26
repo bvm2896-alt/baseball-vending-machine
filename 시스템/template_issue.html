@@ -352,6 +352,8 @@ SCENE.photo = (lt, s) => {
 
 /* people: 인물 카드 1~3장. {title, items:[{img, name, team, note, bad:true|false}], text}
    사진(없으면 로고) + 이름 + 상태 한 줄. bad 면 상태 글자가 빨강, 아니면 초록 */
+/* 9/27: 카드 왼쪽 위 작은 표시 — 나라면 국기, 구단이면 로고, 둘 다 없으면 안 그림(빈 이미지 칸 방지) */
+const badgeOf = n => { const k = String(n || '').trim(); if (FLAG[k]) return flagBox(k, 64); const tt = T(k); return tt && LOGO[tt.code] ? chip(tt, 'S') : ''; };
 SCENE.people = (lt, s) => {
   const items = s.items || [], n = items.length || 1;
   const w = n === 1 ? 520 : n === 2 ? 430 : 280, ph = n === 3 ? 300 : 380;
@@ -360,10 +362,10 @@ SCENE.people = (lt, s) => {
   items.forEach((it, i) => {
     const src = photoSrc(it.img), t = it.team ? T(it.team) : null, p = seg(lt, .25 + i * .3, .5);
     const pic = src ? `<div style="position:relative;width:100%;height:${ph}px;overflow:hidden;background:#E9EDF3"><div class="pp" style="position:absolute;inset:0">${photoImg(it, src, w, ph, it.focus || '50% 10%')}</div></div>`
-      : `<div class="col" style="width:100%;height:${ph}px;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${t ? chip(t, n === 3 ? 'M' : 'L') : ''}</div>`;
+      : `<div class="col" style="width:100%;height:${ph}px;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${t && LOGO[t.code] ? chip(t, n === 3 ? 'M' : 'L') : (FLAG[String(it.team || '').trim()] ? flagBox(it.team, 200) : '')}</div>`;
     const col = it.bad === true ? RED : it.bad === false ? GREEN : TXT;
     h += `<div class="pane" style="width:${w}px;border-radius:32px;overflow:hidden;display:flex;flex-direction:column;${rise(p, 50)}">
-      <div style="position:relative">${pic}${t && src ? `<div style="position:absolute;left:14px;top:14px">${chip(t, 'S')}</div>` : ''}</div>
+      <div style="position:relative">${pic}${it.team && src ? `<div style="position:absolute;left:14px;top:14px">${badgeOf(it.team)}</div>` : ''}</div>
       <div class="col" style="padding:22px 16px 26px;gap:10px">
         <div class="title" style="font-size:${n === 3 ? 44 : 52}px;font-weight:900">${esc(it.name || '')}</div>
         ${it.note ? `<div class="label" style="font-size:${n === 3 ? 30 : 34}px;font-weight:800;color:${col}">${br(it.note)}</div>` : ''}</div></div>`;

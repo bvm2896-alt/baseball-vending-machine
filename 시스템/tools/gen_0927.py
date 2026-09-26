@@ -338,6 +338,7 @@ ep(DATE + '_이슈2', "야구이슈", "OB", "결승한일전", [
  "결승 한일전: 1994 히로시마 결승 일본 6-5(en.wiki Baseball_at_the_1994_Asian_Games + JOC history0215), 1998 방콕 결승 한국 13-1 7회 콜드(JOC), 2018 결승 한국 3-0. 한국 금 2010·2014·2018·2022 4연속(위키). 일본 금은 1994 하나 → 報知 '32年ぶり2度目'. ")
 
 if __name__ == '__main__':
+    EPS[DATE + '_이슈2']['rev'] = '0927-api-line-normal-1.2x+국기배지'   # 9/27: 사람 카드 국기 배지(빈 이미지 칸 고침) → 다시 만들기
     for name, e in EPS.items():
         json.dump(e, open(os.path.join(OUT, name + '.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
         for i, l in enumerate(e['lines']):
