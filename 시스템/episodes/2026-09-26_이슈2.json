@@ -402,35 +402,23 @@
   }
  ],
  "thumb": {
-  "graphic": "branch",
-  "root": [
-   "일본",
-   "대만"
-  ],
-  "results": [
+  "graphic": "poster",
+  "flags": [
    {
-    "cond": "일본 승",
-    "final": [
-     "한국",
-     "일본"
-    ]
+    "team": "한국",
+    "label": "결승 상대는"
    },
    {
-    "cond": "대만 1~4점 차",
-    "final": [
-     "한국",
-     "일본"
-    ]
+    "team": "일본",
+    "label": "일본?"
    },
    {
-    "cond": "대만 6점 차 이상",
-    "final": [
-     "한국",
-     "대만"
-    ]
+    "team": "대만",
+    "label": "대만?"
    }
   ],
-  "gh": 860,
+  "center": "?",
+  "gh": 900,
   "top": "중국만 이기면",
   "big": "한국 결승\n경우의 수",
   "teams": [
@@ -476,5 +464,5 @@
  },
  "ttsTempo": 1.2,
  "ttsApi": true,
- "rev": "api-line-normal-1.2x"
+ "rev": "api-line-normal-1.2x+태극기수정"
 }

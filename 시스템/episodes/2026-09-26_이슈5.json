@@ -264,21 +264,13 @@
   }
  ],
  "thumb": {
-  "graphic": "versus",
-  "left": {
-   "img": "상황별/린위민",
-   "label": "린위민"
-  },
-  "right": {
-   "team": "일본",
-   "label": "26일 일본"
-  },
-  "gh": 700,
+  "img": "상황별/린위민",
   "top": "대만 반응",
   "big": "린위민\n0-5 믿기 어렵다",
   "teams": [
    "HH"
   ],
+  "logos": false,
   "color": "#1E5EFF"
  },
  "youtube": {
@@ -320,5 +312,5 @@
  },
  "ttsTempo": 1.2,
  "ttsApi": true,
- "rev": "api-line-normal-1.2x"
+ "rev": "api-line-normal-1.2x+태극기수정"
 }

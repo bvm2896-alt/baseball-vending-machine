@@ -68,9 +68,9 @@ function trig(x, y, rot, bars) {
 const FLAG = {
   '한국': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
     <rect width="90" height="60" fill="#fff"/>
-    <g transform="translate(45,30) rotate(-33.69)">
-      <circle r="12" fill="#CD2E3A"/>
-      <path d="M-12,0 A6,6 0 0,1 0,0 A6,6 0 0,0 12,0 A12,12 0 0,1 -12,0 Z" fill="#0047A0"/>
+    <g transform="translate(45,30) rotate(-56.31)"><!-- 9/26 태극 좌우가 뒤집혀 있던 것 수정(위키미디어 공식 도안 기준: 빨강 위·파랑 아래, 빨강 머리 왼쪽 위) -->
+      <circle r="15" fill="#CD2E3A"/>
+      <path d="M0,-15 A7.5,7.5 0 0,0 0,0 A7.5,7.5 0 0,1 0,15 A15,15 0 0,1 0,-15 Z" fill="#0047A0"/>
     </g>
     ${trig(18, 12, -56.3, [1, 1, 1])}${trig(72, 12, 56.3, [0, 1, 0])}${trig(18, 48, 56.3, [1, 0, 1])}${trig(72, 48, -56.3, [0, 0, 0])}</svg>`,
   '대만': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
@@ -125,10 +125,30 @@ function graphicHtml(){
     return `<div style="${W};gap:22px"><div style="display:flex;align-items:center;gap:22px">${flag(rt[0],170)}<div style="font-size:70px;color:#8A93A3">vs</div>${flag(rt[1],170)}</div>
       ${rs.map(r=>`<div style="display:flex;align-items:center;gap:20px;background:#fff;border-radius:28px;padding:14px 26px;box-shadow:0 10px 26px rgba(18,22,31,.12)"><div style="width:380px;font-size:46px;letter-spacing:-2px;text-align:center;white-space:nowrap">${esc(r.cond)}</div><div style="font-size:64px;color:#16A34A">→</div>${flag(r.final[0],120)}<div style="font-size:44px;color:#8A93A3">vs</div>${flag(r.final[1],120)}</div>`).join('')}</div>`;
   }
+  if(g==='poster'){   /* 9/26: 이목 끄는 포스터형 — 큰 국기 둘 + 가운데 큰 물음표/VS + X 표시 + 위 배지 */
+    const F=TH.flags||[], cx=TH.center||'?';
+    const one=(f,k)=>`<div style="position:relative;display:flex;flex-direction:column;align-items:center;transform:rotate(${k?4:-4}deg)">
+      ${flag(f.team,370)}
+      ${f.cross?`<svg viewBox="0 0 100 70" style="position:absolute;left:-10px;top:-14px;width:390px;height:275px"><path d="M8,8 L92,62 M92,8 L8,62" stroke="#E5484D" stroke-width="11" stroke-linecap="round"/></svg>`:''}
+      ${f.label?`<div style="margin-top:22px;font-size:66px;letter-spacing:-3px;${f.labelColor?`color:${f.labelColor}`:''}">${esc(f.label)}</div>`:''}</div>`;
+    if(F.length===3){   /* 세 나라: 위에 주인공(한국), 아래에 결승 상대 후보 둘 + 가운데 큰 물음표 */
+      const sm=(f,k)=>`<div style="display:flex;flex-direction:column;align-items:center;transform:rotate(${k?4:-4}deg)">${flag(f.team,300)}${f.label?`<div style="margin-top:16px;font-size:56px;letter-spacing:-2px">${esc(f.label)}</div>`:''}</div>`;
+      return `<div style="${W};gap:26px;background:radial-gradient(60% 60% at 50% 45%, ${hex2(c1,.22)}, #FFFFFF 70%)">
+        <div style="display:flex;align-items:center;gap:26px">${flag(F[0].team,250)}${F[0].label?`<div style="font-size:70px;letter-spacing:-3px;line-height:1.05">${esc(F[0].label).replace('\\n','<br>')}</div>`:''}</div>
+        <div style="display:flex;align-items:center">${sm(F[1],0)}
+          <div style="width:170px;height:170px;border-radius:50%;background:#12161F;color:#FFD400;font-size:${[0,120,66,54][Math.min(3,String(cx).length)]}px;white-space:nowrap;display:flex;align-items:center;justify-content:center;margin:0 -36px;z-index:2;box-shadow:0 16px 40px rgba(0,0,0,.35);border:8px solid #fff">${esc(cx)}</div>
+          ${sm(F[2],1)}</div></div>`;
+    }
+    return `<div style="${W};background:radial-gradient(60% 60% at 50% 45%, ${hex2(c1,.22)}, #FFFFFF 70%)">
+      ${TH.badge?`<div style="position:absolute;top:40px;left:50%;transform:translateX(-50%) rotate(-3deg);background:#E5484D;color:#fff;font-size:64px;letter-spacing:-2px;padding:14px 34px;border-radius:24px;box-shadow:0 12px 30px rgba(229,72,77,.35);white-space:nowrap">${esc(TH.badge)}</div>`:''}
+      <div style="display:flex;align-items:center;gap:0;margin-top:${TH.badge?70:0}px">${F[0]?one(F[0],0):''}
+        <div style="width:190px;height:190px;border-radius:50%;background:#12161F;color:#FFD400;font-size:${[0,130,70,58][Math.min(3,String(cx).length)]}px;white-space:nowrap;display:flex;align-items:center;justify-content:center;margin:0 -40px;z-index:2;box-shadow:0 16px 40px rgba(0,0,0,.35);border:8px solid #fff">${esc(cx)}</div>
+        ${F[1]?one(F[1],1):''}</div></div>`;
+  }
   return '';
 }
 const GR=!!TH.graphic;
-const bigLines=String(TH.big||'').split('\n').length, PH_MAX=Math.min(980, 1100-250*bigLines);   // 큰 글씨가 1660px(안전 영역) 안에 끝나도록 사진 높이 상한(1줄 850, 2줄 600)
+const POSTER=TH.graphic==='poster', bigLines=String(TH.big||'').split('\n').length, PH_MAX=Math.min(980, 1100-(POSTER?190:250)*bigLines);   // 9/26 포스터형은 그림을 크게, 큰 글씨를 조금 작게   // 큰 글씨가 1660px(안전 영역) 안에 끝나도록 사진 높이 상한(1줄 850, 2줄 600)
 const PH_H = (()=>{ if(GR) return Math.min(PH_MAX, TH.gh||900); if(!src||!sz) return PH_MAX; const h=Math.round(940*sz[1]/sz[0]); return Math.max(520, Math.min(PH_MAX, h)); })();   // 사진 카드 높이: 사진 비율대로
 const Y0 = 340 + PH_H;   // 사진 아래 글 시작 기준
 const st=document.getElementById('st');
@@ -142,7 +162,7 @@ st.insertAdjacentHTML('beforeend',`
   </div>
   <div class="bar" style="background:${c1};top:${Y0+50}px"></div>
   <div class="top" style="top:${Y0+90}px">${nl(TH.top)}</div>
-  <div class="bigw" style="color:${cBig};top:${Y0+220}px">${nl(TH.big)}</div></div>
+  <div class="bigw" style="color:${cBig};top:${Y0+220}px;${POSTER?'font-size:200px;letter-spacing:-9px':''}">${nl(TH.big)}</div></div>
   <div class="brand">야구<b>자판기</b></div>`);
 // 글자가 폭(920)을 넘치면 자동 축소. 큰 글씨가 두 줄이면 위치를 위로 당긴다
 for(const sel of ['.top','.bigw']){

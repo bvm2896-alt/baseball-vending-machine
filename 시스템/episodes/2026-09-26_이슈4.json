@@ -317,21 +317,13 @@
   }
  ],
  "thumb": {
-  "graphic": "versus",
-  "left": {
-   "img": "상황별/히구치",
-   "label": "히구치"
-  },
-  "right": {
-   "img": "국가대표프로필/김도영",
-   "label": "김도영"
-  },
-  "gh": 700,
+  "img": "상황별/히구치",
   "top": "한국 타선 7이닝 무실점",
   "big": "히구치\n정체는 회사원",
   "teams": [
    "KT"
   ],
+  "logos": false,
   "color": "#E5484D"
  },
  "youtube": {
@@ -372,5 +364,5 @@
  },
  "ttsTempo": 1.2,
  "ttsApi": true,
- "rev": "api-line-normal-1.2x"
+ "rev": "api-line-normal-1.2x+태극기수정"
 }
