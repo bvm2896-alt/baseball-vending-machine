@@ -162,13 +162,11 @@ PATCH = {"2026-09-26_이슈2": {
 THUMB = {
  "2026-09-26_이슈": {"graphic": "score", "left": "한국", "right": "일본", "score": "0-5", "line": [0, 0, 3, 0, 0, 2, 0, 0, "X"], "lineHi": [3, 6], "gh": 760,
                     "top": "한일전 0-5", "big": "KBO 24명\n회사원에 참패", "teams": ["KT"], "color": "#E5484D"},
- "2026-09-26_이슈2": {"graphic": "branch", "root": ["일본", "대만"], "results": [{"cond": "일본 승", "final": ["한국", "일본"]}, {"cond": "대만 1~4점 차", "final": ["한국", "일본"]}, {"cond": "대만 6점 차 이상", "final": ["한국", "대만"]}], "gh": 860,
+ "2026-09-26_이슈2": {"graphic": "poster", "flags": [{"team": "한국", "label": "결승 상대는"}, {"team": "일본", "label": "일본?"}, {"team": "대만", "label": "대만?"}], "center": "?", "gh": 900,
                     "top": "중국만 이기면", "big": "한국 결승\n경우의 수", "teams": ["KT"], "color": "#1E5EFF"},
  "2026-09-26_이슈3": {"img": "상황별/데일리_한국전_보도", "fit": "contain", "top": "일본 언론 반응", "big": "프로가\n회사원에 졌다", "teams": ["KT"], "logos": False, "color": "#E5484D"},
- "2026-09-26_이슈4": {"graphic": "versus", "left": {"img": "상황별/히구치", "label": "히구치"}, "right": {"img": "국가대표프로필/김도영", "label": "김도영"}, "gh": 700,
-                    "top": "한국 타선 7이닝 무실점", "big": "히구치\n정체는 회사원", "teams": ["KT"], "color": "#E5484D"},
- "2026-09-26_이슈5": {"graphic": "versus", "left": {"img": "상황별/린위민", "label": "린위민"}, "right": {"team": "일본", "label": "26일 일본"}, "gh": 700,
-                    "top": "대만 반응", "big": "린위민\n0-5 믿기 어렵다", "teams": ["HH"], "color": "#1E5EFF"},
+ "2026-09-26_이슈4": {"img": "상황별/히구치", "top": "한국 타선 7이닝 무실점", "big": "히구치\n정체는 회사원", "teams": ["KT"], "logos": False, "color": "#E5484D"},   # 9/26 사용자: 히구치 한 명만
+ "2026-09-26_이슈5": {"img": "상황별/린위민", "top": "대만 반응", "big": "린위민\n0-5 믿기 어렵다", "teams": ["HH"], "logos": False, "color": "#1E5EFF"},   # 9/26 사용자: 린위민 한 명만
  "2026-09-26_이슈6": {"graphic": "versus", "left": {"img": "KBO프로필/최민석", "label": "최민석"}, "right": {"team": "중국", "label": "중국"}, "gh": 700,
                     "top": "지면 끝 중국전", "big": "최민석\n다승 1위 출격", "teams": ["OB"], "color": "#1E5EFF"},
  "2026-09-26_이슈7": {"graphic": "faces", "faces": [{"img": PIC.get(n, "KBO프로필/" + n)} for n, _ in MIPIL], "cols": 4, "gh": 900,
@@ -179,4 +177,4 @@ THUMB = {
 
 # 사진 출처 표기가 필요한 것(자유 이용 사진은 저작자 표시 조건)
 CREDIT = {"2026-09-26_이슈8": "사진: 이병규 — Cake6, CC BY-SA 3.0 (Wikimedia Commons) / 오승환·이대호 — MLB 공식 프로필"}
-REV = {"2026-09-26_이슈8": "api-line-normal-1.2x+손민한사진+이대호축소"}   # 사진만 바뀌면 콘티 지문이 안 바뀌어 다시 안 만들어진다 → rev 로 다시
+REV = {k: "api-line-normal-1.2x+태극기수정" for k in ["2026-09-26_이슈" + n for n in ("", "2", "3", "4", "5", "6", "7", "8")]}   # 9/26 태극기 좌우 수정 → 8편 다시(음성 재사용)   # 사진만 바뀌면 콘티 지문이 안 바뀌어 다시 안 만들어진다 → rev 로 다시

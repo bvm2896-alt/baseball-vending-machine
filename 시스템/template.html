@@ -413,6 +413,216 @@ SCENE.question = (lt, s) => {
   B(`<div class="mega" style="font-size:${s.size || 120}px;${pop(seg(lt, 0, .6))}">${br(s.text || '여러분 생각은?')}</div>`);
 };
 
+
+/* ───── 9/27: 야구이슈 템플릿의 그림 장면(teamgrid·steps·cards·league·ruler·scoreboard·bars·icons·compare)을 순위 템플릿(다크)으로 이식 ───── */
+document.documentElement.style.setProperty('--acc', ACC);
+const LINE = '#34405A';
+const FLAG = window.FLAG || {};
+const flagBox = (n, w = 104) => { const k = String(n || '').trim(); if (!k) return '';   // 순위 템플릿: 나라면 국기, 구단이면 로고 칩
+  if (FLAG[k]) return `<div style="width:${w}px;height:${Math.round(w * .667)}px;border-radius:${Math.round(w * .12)}px;overflow:hidden;flex:0 0 auto;border:2px solid #34405A;background:#fff">${FLAG[k]()}</div>`;
+  const tt = T(k); return LOGO[tt.code] ? `<div class="chip" style="width:${Math.round(w * .78)}px;height:${Math.round(w * .78)}px;border-radius:${Math.round(w * .18)}px"><img src="${LOGO[tt.code]}"></div>` : ''; };
+/* teamgrid: 구단 로고 격자 + 숫자. {title, items:[{team, value, label, bad}], cols(기본 5), text}
+   — "구단별 몇 명" 같은 걸 로고로 한눈에 (9/14 피드백) */
+SCENE.teamgrid = (lt, s) => {
+  const items = s.items || [], cols = s.cols || 5, n = items.length || 1;
+  const w = cols >= 5 ? 176 : cols === 4 ? 210 : 280, gap = 18;
+  let h = s.title ? `<div class="title gold" style="font-size:56px;font-weight:900;margin-bottom:28px;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div style="display:grid;grid-template-columns:repeat(${cols},${w}px);gap:${gap}px;justify-content:center">`;
+  items.forEach((it, i) => {
+    const t = T(it.team), p = seg(lt, .25 + i * .12, .45);
+    const col = it.bad === true ? RED : it.bad === false ? GREEN : (i === 0 ? 'var(--acc)' : TXT);
+    h += `<div class="pane col" style="width:${w}px;border-radius:28px;padding:18px 0 14px;gap:8px;${rise(p, 40)}">
+      ${chip(t, 'M', `width:${cols >= 5 ? 112 : 130}px;height:${cols >= 5 ? 112 : 130}px;border-radius:26px`)}
+      <div class="num" style="font-size:${cols >= 5 ? 74 : 84}px;font-weight:900;line-height:1.05;color:${col}">${br(it.value == null ? '' : String(it.value))}</div>
+      ${it.label ? `<div class="label" style="font-size:26px;color:${GRAY}">${esc(it.label)}</div>` : ''}</div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:34px;font-size:${s.size || 96}px;${pop(seg(lt, .4 + n * .12, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+
+/* steps: 날짜 카드가 왼쪽→오른쪽으로 이어지는 일정. {title, items:[{date, text, sub, hi}], text}
+   — "15~16 훈련 / 17 연습경기 / 18 출국 / 21 대만전" 을 글자 나열 대신 카드로 (9/14 피드백) */
+SCENE.steps = (lt, s) => {
+  const items = s.items || [], n = items.length || 1;
+  const w = n <= 3 ? 280 : n === 4 ? 215 : 172, gap = 16;
+  let h = s.title ? `<div class="title gold" style="font-size:56px;font-weight:900;margin-bottom:30px;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div class="row" style="gap:${gap}px;align-items:stretch">`;
+  items.forEach((it, i) => {
+    const p = seg(lt, .25 + i * .22, .45), hi = it.hi === true;
+    h += `<div class="pane col" style="width:${w}px;border-radius:28px;padding:22px 10px 24px;gap:14px;justify-content:flex-start;${hi ? 'border-color:var(--acc);box-shadow:0 14px 40px rgba(232,120,40,.22);' : ''}${rise(p, 40)}">
+      <div class="num" style="font-size:${n >= 5 ? 44 : 54}px;font-weight:900;line-height:1;color:${hi ? 'var(--acc)' : TXT}">${esc(it.date || '')}</div>
+      <div style="width:60%;height:4px;border-radius:2px;background:${hi ? 'var(--acc)' : LINE}"></div>
+      <div class="title" style="font-size:${n >= 5 ? 30 : 36}px;font-weight:800;line-height:1.25;text-align:center">${br(it.text || '')}</div>
+      ${it.sub ? `<div class="label" style="font-size:26px;color:${GRAY};line-height:1.3;text-align:center">${br(it.sub)}</div>` : ''}</div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:34px;font-size:${s.size || 96}px;${pop(seg(lt, .4 + n * .22, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+
+/* cards: 이름 카드 2~4장 (9/21 드래프트 구단별 편). {title, items:[{badge, name, sub, hi}], text}
+   steps 보다 크게 — 4장은 2×2, 3장 이하는 한 줄. 사진 없는 선수를 전부 같은 카드로 통일하는 용도 */
+/* 카드 이름에 'A vs B' 가 있으면 A / vs / B 세 줄로(9/24 사용자 지시). 직접 \n 을 넣은 이름은 그대로 */
+const cardName = t => { t = String(t || ''); return /\n/.test(t) ? t : t.replace(/\s*\bvs\b\s*/i, '\nvs\n'); };
+SCENE.cards = (lt, s) => {
+  const items = s.items || [], n = items.length || 1;
+  const grid = n >= 4, w = grid ? 470 : (n === 3 ? 330 : 440), gap = 15;
+  let h = s.title ? `<div class="title gold" style="font-size:56px;font-weight:900;margin-bottom:28px;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += grid ? `<div style="display:grid;grid-template-columns:repeat(2,${w}px);gap:${gap}px;justify-content:center">` : `<div class="row" style="gap:${gap}px;align-items:stretch">`;
+  items.forEach((it, i) => {
+    const p = seg(lt, .2 + i * .18, .45), hi = it.hi === true;
+    h += `<div class="pane col" style="width:${w}px;border-radius:30px;padding:${grid ? 40 : 30}px 12px ${grid ? 44 : 32}px;gap:${grid ? 20 : 14}px;justify-content:flex-start;${hi ? 'border-color:var(--acc);box-shadow:0 14px 40px rgba(232,120,40,.22);' : ''}${rise(p, 40)}">
+      <div class="num" style="height:54px;padding:0 22px;border-radius:14px;background:${hi ? 'var(--acc)' : '#0B0F14'};color:#fff;font-size:${grid ? 38 : 34}px;font-weight:900;display:flex;align-items:center">${esc(it.badge || '')}</div>
+      <div class="title" style="font-size:${n === 3 ? 66 : 78}px;font-weight:900;line-height:1.1;text-align:center">${br(cardName(it.name))}</div>
+      ${it.sub ? `<div class="label" style="font-size:${n === 3 ? 30 : 38}px;color:${GRAY};line-height:1.3;text-align:center">${br(it.sub)}</div>` : ''}</div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:34px;font-size:${s.size || 96}px;${pop(seg(lt, .3 + n * .18, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+
+/* 9/26 경우의 수 인포그래픽 (사용자: "국기 두 개에 글자만 — 이해시키려는 마음이 없다") ─────────────
+   league: 나라별 미니 순위표. {title, rows:[{team, rec, sub, val, tag, hi, out}], cut, cutLabel, text, note}
+     rec = "3승 0패" 같은 성적, val = 오른쪽 큰 값(득실 +2 등, 있으면 rec 대신), tag = 이름 옆 작은 알약(동률 등)
+     cut = 위에서 몇 번째 줄까지 결승인지 → 그 아래에 '결승 진출' 선, 위 줄들에 '결승' 표시
+   branch: 한 경기 결과에 따라 갈리는 길. {root:{left,right,label}, items:[{cond, sub, final:[a,b], hi}], text}
+   formula: 공식 카드. {title, left:[위, 아래], right:[위, 아래], op, note} */
+SCENE.league = (lt, s) => {
+  const rows = s.rows || [], n = rows.length || 1, cut = s.cut || 0;
+  const rh = n >= 4 ? 118 : 132, T0 = s.title ? .35 : 0;
+  let h = s.title ? `<div class="title" style="font-size:58px;font-weight:900;margin-bottom:26px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div class="col" style="width:900px;gap:12px;align-items:stretch">`;
+  const pc = seg(lt, T0 + n * .2 + .15, .45);   // 결승 표시가 뜨는 시점
+  rows.forEach((r, i) => {
+    const p = seg(lt, T0 + i * .2, .45), hi = r.hi === true, out = r.out === true, fin = cut && i < cut;
+    const col = hi ? 'var(--acc)' : TXT;
+    h += `<div class="pane" style="height:${rh}px;border-radius:26px;display:flex;align-items:center;gap:22px;padding:0 26px;${hi ? 'border-color:var(--acc);box-shadow:0 12px 34px rgba(30,94,255,.18);' : ''}${out ? 'background:#1E2533;' : ''}${rise(p, 36)};${out ? `opacity:${.5 * c01(p * 1.4)}` : ''}">
+      ${flagBox(r.team, rh >= 130 ? 104 : 96)}
+      <div class="col" style="align-items:flex-start;gap:6px;flex:1;min-width:0">
+        <div class="row" style="gap:12px;align-items:center"><div class="title" style="font-size:50px;font-weight:900;line-height:1;color:${col}">${esc(r.team)}</div>
+        ${r.tag ? `<div class="num" style="height:40px;padding:0 14px;border-radius:12px;background:${hi ? 'var(--acc)' : '#0B0F14'};color:#fff;font-size:26px;font-weight:900;display:flex;align-items:center">${esc(r.tag)}</div>` : ''}</div>
+        ${r.sub ? `<div class="label" style="font-size:27px;color:${GRAY};line-height:1.2;white-space:nowrap">${esc(r.sub)}</div>` : ''}</div>
+      ${r.bar != null ? (() => { const mx = s.barMax || 5, v = Number(r.bar) * eo(seg(lt, T0 + i * .2 + .25, .6)), w = Math.min(1, Math.abs(v) / mx) * 150;
+        const c = r.bar > 0 ? GREEN : r.bar < 0 ? RED : GRAY;
+        return `<div style="position:relative;width:320px;height:44px;flex:0 0 auto"><div style="position:absolute;left:159px;top:-6px;width:3px;height:56px;background:${TXT};opacity:.35"></div>
+          <div style="position:absolute;top:8px;height:28px;border-radius:8px;background:${c};${v >= 0 ? `left:162px;width:${w}px` : `left:${158 - w}px;width:${w}px`}"></div>
+          ${r.bar == 0 ? `<div style="position:absolute;left:150px;top:13px;width:20px;height:20px;border-radius:50%;background:${GRAY}"></div>` : ''}</div>`; })() : ''}
+      ${r.val != null ? `<div class="num" style="font-size:${String(r.val).length > 6 ? 46 : 58}px;font-weight:900;color:${col};white-space:nowrap">${esc(r.val)}</div>` : ''}
+      ${r.rec ? `<div class="num" style="font-size:54px;font-weight:900;color:${col};white-space:nowrap">${esc(r.rec)}</div>` : ''}
+      ${fin ? `<div class="num" style="height:52px;padding:0 16px;border-radius:14px;background:${GREEN};color:#fff;font-size:30px;font-weight:900;display:flex;align-items:center;${pop(pc)}">결승</div>` : ''}
+    </div>`;
+    if (cut && i === cut - 1 && i < n - 1)
+      h += `<div class="row" style="gap:14px;align-items:center;margin:2px 6px;opacity:${c01(pc * 1.4)}"><div style="flex:1;height:0;border-top:5px dashed ${GREEN};transform:scaleX(${eo(pc)});transform-origin:left"></div>
+        <div class="num" style="font-size:30px;font-weight:900;color:${GREEN};white-space:nowrap">▲ ${esc(s.cutLabel || '여기까지 결승')}</div></div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:28px;font-size:${s.size || 76}px;${pop(seg(lt, T0 + n * .2 + (cut ? .5 : .15), .5))}">${br(s.text)}</div>`;
+  if (s.note) h += `<div class="label" style="margin-top:14px;font-size:30px;color:${GRAY};text-align:center;opacity:${seg(lt, T0 + n * .2 + .6, .4)}">${br(s.note)}</div>`;
+  B(h);
+};
+/* ruler: 점수 차 눈금 위를 표시가 움직이며 구간(결과)이 바뀌는 모션. {title, from, to, unit, zones:[{a,b,label,team:[x,y],color}], focus, text}
+   — "대만이 몇 점 차로 이기면 누가 결승?" 을 글자 대신 그림으로 (9/26 사용자 지시) */
+SCENE.ruler = (lt, s) => {
+  const a0 = s.from || 1, a1 = s.to || 9, zs = s.zones || [], W = 860, n = a1 - a0 + 1, cw = W / n;
+  const mv = eo(seg(lt, .5, 1.6));                                   // 표시가 1점 차부터 끝까지 이동
+  const fz = s.focus != null ? zs[s.focus] : null;
+  const stopAt = fz ? (fz.a + fz.b) / 2 : a1;
+  const cur = a0 + (stopAt - a0) * mv;                               // 지금 가리키는 점수 차
+  const zi = zs.findIndex(z => cur >= z.a - .5 && cur <= z.b + .5);
+  let h = s.title ? `<div class="title" style="font-size:56px;font-weight:900;margin-bottom:30px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div style="position:relative;width:${W}px;height:440px;${rise(seg(lt, .15, .45), 30)}">`;
+  zs.forEach((z, k) => {
+    const x = (z.a - a0) * cw, w = (z.b - z.a + 1) * cw, on = k === zi, c = z.color || (k === 0 ? 'var(--acc)' : k === zs.length - 1 ? '#E5484D' : GRAY);
+    h += `<div style="position:absolute;left:${x + 3}px;top:120px;width:${w - 6}px;height:70px;border-radius:16px;background:${c};opacity:${on ? 1 : .28};transition:none"></div>
+      <div class="col" style="position:absolute;left:${x}px;top:210px;width:${w}px;gap:10px;align-items:center;opacity:${on ? 1 : .35}">
+        ${z.team ? `<div class="row" style="gap:10px;align-items:center">${flagBox(z.team[0], w > 300 ? 84 : 58)}${z.team[1] ? `<span class="title" style="font-size:30px;font-weight:900;color:${GRAY}">vs</span>${flagBox(z.team[1], w > 300 ? 84 : 58)}` : ''}</div>` : ''}
+        <div class="title" style="font-size:${w > 300 ? 44 : 28}px;font-weight:900;line-height:1.15;text-align:center">${br(z.label || '')}</div></div>`;
+  });
+  for (let v = a0; v <= a1; v++) h += `<div class="num" style="position:absolute;left:${(v - a0) * cw}px;width:${cw}px;top:132px;text-align:center;font-size:40px;font-weight:900;color:#fff">${v}</div>`;
+  const mx = (cur - a0 + .5) * cw;
+  h += `<div class="col" style="position:absolute;left:${mx - 90}px;width:180px;top:0;align-items:center;gap:0;opacity:${seg(lt, .35, .3)}">
+      <div class="num" style="height:64px;padding:0 18px;border-radius:16px;background:${TXT};color:#fff;font-size:38px;font-weight:900;display:flex;align-items:center;white-space:nowrap">${Math.round(cur)}${esc(s.unit || '점 차')}</div>
+      <div style="width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:22px solid ${TXT}"></div></div>`;
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:18px;font-size:${s.size || 76}px;${pop(seg(lt, 2.2, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+
+/* ── 9/26 그림 장면 2차 (사용자: "앞으로 모든 영상은 텍스트만 나오는 거 없이 전부 이런 식으로") ── */
+const tchip = (n, w) => FLAG[String(n || '').trim()] ? flagBox(n, w) : (T(n) && LOGO[(T(n) || {}).code] ? chip(T(n), w >= 90 ? 'M' : 'S') : '');
+/* scoreboard: 이닝별 점수판. {title, rows:[{team, runs:[..9], r}], marks:[{row, inn, label, color}], hi:[이닝], text} */
+SCENE.scoreboard = (lt, s) => {
+  const rows = s.rows || [], inn = s.innings || 9, cw = Math.floor(610 / inn), hiSet = new Set(s.hi || []);
+  let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:24px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div class="pane" style="width:900px;border-radius:26px;padding:18px 14px 22px;${rise(seg(lt, .1, .4), 30)}">`;
+  h += `<div class="row" style="gap:0;align-items:center;height:56px"><div style="width:190px"></div>${Array.from({ length: inn }, (_, k) => `<div class="num" style="width:${cw}px;text-align:center;font-size:30px;font-weight:900;color:${hiSet.has(k + 1) ? 'var(--acc)' : GRAY}">${k + 1}</div>`).join('')}<div class="num" style="width:90px;text-align:center;font-size:32px;font-weight:900">R</div></div>`;
+  rows.forEach((r, ri) => {
+    h += `<div class="row" style="gap:0;align-items:center;height:${s.tall ? 150 : 120}px;border-top:2px solid ${LINE};position:relative">
+      <div class="row" style="width:190px;gap:12px;align-items:center">${tchip(r.team, 70)}<div class="title" style="font-size:38px;font-weight:900">${esc(r.team)}</div></div>`;
+    for (let k = 0; k < inn; k++) {
+      const p = seg(lt, .35 + k * .12, .25), v = (r.runs || [])[k], m = (s.marks || []).find(x => x.row === ri && x.inn === k + 1);
+      const hl = hiSet.has(k + 1);
+      h += `<div class="col" style="width:${cw}px;height:100%;gap:4px;justify-content:center;position:relative;${hl ? `background:${ACC}12;` : ''}">
+        <div class="num" style="font-size:46px;font-weight:900;opacity:${c01(p * 1.5)};color:${v > 0 ? (r.hi ? 'var(--acc)' : TXT) : '#AAB2BF'}">${v == null ? '' : esc(String(v))}</div>
+        ${m ? `<div class="num" style="position:absolute;${ri === 0 ? 'top:-4px' : 'bottom:-4px'};height:34px;padding:0 8px;border-radius:10px;background:${m.color || RED};color:#fff;font-size:22px;font-weight:900;display:flex;align-items:center;white-space:nowrap;${pop(seg(lt, .45 + k * .12, .3))}">${esc(m.label)}</div>` : ''}</div>`;
+    }
+    h += `<div class="num" style="width:90px;text-align:center;font-size:56px;font-weight:900;color:${r.hi ? 'var(--acc)' : TXT};opacity:${seg(lt, .35 + inn * .12, .3)}">${esc(String(r.r ?? ''))}</div></div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:28px;font-size:${s.size || 70}px;${pop(seg(lt, .5 + inn * .12, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+/* bars: 가로 막대 비교. {title, items:[{label, value, max, unit, sub, hi, team, img}], text} */
+SCENE.bars = (lt, s) => {
+  const items = s.items || [], n = items.length || 1, mx = s.max || Math.max(...items.map(x => Number(x.value) || 0), 1);
+  let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:26px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div class="col" style="width:900px;gap:22px;align-items:stretch">`;
+  items.forEach((it, i) => {
+    const p = seg(lt, .3 + i * .3, .7), v = (Number(it.value) || 0), w = 560 * Math.min(1, v / (it.max || mx)) * eo(p), hi = it.hi === true;
+    const shown = Number.isInteger(v) ? Math.round(v * eo(p)) : (v * eo(p)).toFixed(it.dec ?? 2);
+    h += `<div class="pane" style="border-radius:24px;padding:18px 24px;${rise(seg(lt, .2 + i * .3, .4), 30)};${hi ? 'border-color:var(--acc);' : ''}">
+      <div class="row" style="gap:14px;align-items:center;justify-content:flex-start;margin-bottom:10px">${it.team ? tchip(it.team, 62) : ''}<div class="title" style="font-size:40px;font-weight:900">${esc(it.label || '')}</div>${it.sub ? `<div class="label" style="font-size:28px;color:${GRAY}">${esc(it.sub)}</div>` : ''}</div>
+      <div class="row" style="gap:18px;align-items:center;justify-content:flex-start"><div style="width:560px;height:46px;border-radius:12px;background:#1E2533;overflow:hidden"><div style="width:${w}px;height:100%;border-radius:12px;background:${hi ? 'var(--acc)' : (it.color || '#9AA3B2')}"></div></div>
+      <div class="num" style="font-size:56px;font-weight:900;color:${hi ? 'var(--acc)' : TXT};white-space:nowrap">${esc(String(shown))}<span style="font-size:32px">${esc(it.unit || '')}</span></div></div></div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:28px;font-size:${s.size || 70}px;${pop(seg(lt, .4 + n * .3 + .3, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+const ICON = {
+  person: c => `<svg viewBox="0 0 40 60" width="100%" height="100%"><circle cx="20" cy="11" r="9" fill="${c}"/><path d="M6,58 L6,32 Q6,22 20,22 Q34,22 34,32 L34,58 Z" fill="${c}"/></svg>`,
+  ball: c => `<svg viewBox="0 0 40 40" width="100%" height="100%"><circle cx="20" cy="20" r="17" fill="#fff" stroke="${c}" stroke-width="3"/><path d="M9,8 Q16,20 9,32 M31,8 Q24,20 31,32" stroke="#E5484D" stroke-width="2.4" fill="none"/></svg>`,
+};
+SCENE.icons = (lt, s) => {
+  const n = s.n || 10, on = s.on ?? n, cols = s.cols || (n > 16 ? 7 : 6), ic = ICON[s.icon || 'person'], w = Math.min(110, Math.floor(860 / cols) - 14);
+  const hgt = (s.icon || 'person') === 'person' ? w * 1.4 : w, step = Math.min(.08, 1.4 / n);
+  let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:24px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div style="display:grid;grid-template-columns:repeat(${cols},${w}px);gap:14px 14px;justify-content:center">`;
+  for (let i = 0; i < n; i++) {
+    const p = seg(lt, .3 + i * step, .3), isOn = i < on, c = isOn ? (s.color || 'var(--acc)') : '#3A4560';
+    const mk = s.mark === 'x' && isOn ? `<svg viewBox="0 0 40 40" style="position:absolute;inset:8% 8% auto 8%;width:84%;opacity:${c01(seg(lt, .5 + i * step, .25) * 1.4)}"><path d="M6,6 L34,34 M34,6 L6,34" stroke="#E5484D" stroke-width="6" stroke-linecap="round"/></svg>` : '';
+    h += `<div style="position:relative;width:${w}px;height:${hgt}px;${pop(p)}">${ic(isOn && s.mark === 'x' ? '#8A93A3' : c)}${mk}</div>`;
+  }
+  h += '</div>';
+  if (s.label) h += `<div class="num" style="margin-top:22px;font-size:56px;font-weight:900;text-align:center;color:${TXT};opacity:${seg(lt, .4 + n * step, .3)}">${br(s.label)}</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:16px;font-size:${s.size || 70}px;${pop(seg(lt, .6 + n * step, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+/* compare: 두 쪽 픽토그램 비교(예: 프로 24명 vs 0명). {title, left:{team,label,n,of}, right:{…}, text} */
+SCENE.compare = (lt, s) => {
+  const side = (x, k) => { const of = x.of || 24, n = x.n ?? of, cols = 6, w = 46;
+    let g = `<div style="display:grid;grid-template-columns:repeat(${cols},${w}px);gap:8px">`;
+    for (let i = 0; i < of; i++) g += `<div style="width:${w}px;height:${w * 1.4}px;${pop(seg(lt, .4 + k * .5 + i * .03, .25))}">${ICON.person(i < n ? (x.color || (k ? '#8A93A3' : 'var(--acc)')) : '#3A4560')}</div>`;
+    return `<div class="pane col" style="width:430px;border-radius:30px;padding:24px 10px 28px;gap:14px;${rise(seg(lt, .1 + k * .4, .4), 30)}">
+      <div class="row" style="gap:12px;align-items:center">${tchip(x.team, 80)}<div class="title" style="font-size:42px;font-weight:900">${esc(x.team || '')}</div></div>
+      ${g}</div></div><div class="num" style="margin-top:14px;font-size:50px;font-weight:900;text-align:center;opacity:${seg(lt, 1.1 + k * .3, .3)}">${esc(x.label || '')}</div>`; };
+  let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:24px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div style="display:flex;flex-direction:row;gap:40px;align-items:flex-start;justify-content:center"><div style="display:flex;flex-direction:column;align-items:center;width:430px">${side(s.left || {}, 0)}</div><div style="display:flex;flex-direction:column;align-items:center;width:430px">${side(s.right || {}, 1)}</div></div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 70}px;${pop(seg(lt, 1.8, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+/* ───── 이식 끝 ───── */
 const SUBS = EP.subs || [], BD = EP.bounds || [], SC = (EP.scenes || []);
 function drawSub(t) {
   const h = SUBS.find(s => t >= s[0] && t < s[1]);
