@@ -35,21 +35,40 @@ body{font-family:'KBO','Malgun Gothic',sans-serif;color:#fff}
 const TH=(window.EP&&EP.thumb)||{},P=(window.EP&&EP.photos)||{};
 const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 function src(n){if(!n)return'';if(P[n])return P[n];const k=Object.keys(P).find(k=>k.endsWith('/'+n)||k===n);return k?P[k]:''}
-const tg=TH.tag||(window.EP&&EP.railTitle)||'';
+const tg=TH.tag||'';   /* 9/27: 사용자 'KBO 깊게 텍스트 지워' — 레일 제목을 썸네일에 자동으로 넣지 않는다(콘티 thumb.tag 를 줄 때만) */
 document.getElementById('tagt').textContent=tg;
 if(!tg)document.getElementById('tag').style.display='none';
 const im=document.getElementById('pimg'); const s=src(TH.img); if(s)im.src=s; else document.getElementById('ph').style.display='none';
 if(TH.focus)im.style.objectPosition=TH.focus;
 document.getElementById('top').innerHTML=esc(TH.top||'').replace(/\n/g,'<br>');
+if(!TH.top)document.getElementById('top').style.display='none';   /* 9/27: 윗줄 없으면 칸도 없앤다 */
 /* 마지막 줄을 노랑으로 */
 const ls=String(TH.big||'').split('\n');
-document.getElementById('big').innerHTML=ls.map((t,i)=>i===ls.length-1?'<em>'+esc(t)+'</em>':esc(t)).join('<br>');
+const EMN=TH.emLines||1;   /* 9/27: 노랑 줄 수(뒤에서부터) */
+document.getElementById('big').innerHTML=ls.map((t,i)=>i>=ls.length-EMN?'<em>'+esc(t)+'</em>':esc(t)).join('<br>');
 const DS=TH.date||EP.date||EP.gameDate||'', d=DS.split('-'); const w=['일','월','화','수','목','금','토'];   /* 9/20: 콘티 thumb.date 가 있으면 그게 우선(경기 날짜 등) — 다른 썸네일 템플릿과 같은 규칙 */
 document.getElementById('date').textContent=d.length===3?`${+d[1]}월 ${+d[2]}일(${w[new Date(DS+'T12:00:00').getDay()]})`:'';
 if(TH.noDate||TH.date===false)document.getElementById('date').style.display='none';   /* 9/20: 롱폼 썸네일은 날짜 배지 없이(사용자 지시) */
-(function(){const el=document.getElementById('big');let fs=parseFloat(getComputedStyle(el).fontSize);
- const want=ls.length, lim=720, room=720-parseFloat(getComputedStyle(document.getElementById('L')).top)-150;
- while((el.scrollWidth>lim||el.offsetHeight>Math.min(room,fs*1.0*want+8))&&fs>54){fs-=3;el.style.fontSize=fs+'px';}
+(function(){const el=document.getElementById('big');
+ if(TH.fill){document.getElementById('L').style.width=(TH.theme==='white'?640:800)+'px';document.getElementById('L').style.top='56px';el.style.fontSize=(TH.bigSize||230)+'px';el.style.lineHeight='1.02';}   /* 9/27: fill = 글씨를 화면 높이만큼 최대로(줄바꿈은 콘티 그대로) */
+ let fs=parseFloat(getComputedStyle(el).fontSize);
+ const want=ls.length, lim=TH.fill?(TH.theme==='white'?640:800):720, room=720-parseFloat(getComputedStyle(document.getElementById('L')).top)-(TH.fill?56+(TH.top?document.getElementById('top').offsetHeight+16:0):150);
+ while((el.scrollWidth>lim||el.offsetHeight>(TH.fill?room:Math.min(room,fs*1.0*want+8)))&&fs>54){fs-=3;el.style.fontSize=fs+'px';}
+ if(TH.fill){const L=document.getElementById('L');L.style.top=Math.max(40,Math.round((720-L.offsetHeight)/2))+'px';}   /* 9/27: 글씨 덩어리를 세로 가운데로 */
  const t=document.getElementById('top');let ts=parseFloat(getComputedStyle(t).fontSize);
  while(t.scrollWidth>lim&&ts>26){ts-=2;t.style.fontSize=ts+'px';}})();
+
+/* 9/27: 색 조합(thumb.theme) — 편마다 다른 느낌. 기본은 어두운 남색+빨강 빛+노랑 */
+(function(){const T={
+ white:{bg:'linear-gradient(160deg,#FBFAF7 0%,#EFECE4 100%)',fade:'251,250,247',txt:'#111418',em:'#D10A1F',sh:'0 6px 22px rgba(0,0,0,.12)',brand:'rgba(255,255,255,.9)',light:1},   /* 9/27: 사진을 덜 가리게 — 사진 칸을 오른쪽으로 좁히고 흐림은 왼쪽 끝만 */
+ navy:{bg:'radial-gradient(70% 90% at 78% 40%, rgba(255,159,28,.22) 0%, rgba(8,23,53,0) 62%),linear-gradient(160deg,#123A7A 0%,#07183A 100%)',fade:'7,24,58',txt:'#FFFFFF',em:'#FF9F1C',sh:'0 10px 36px rgba(0,0,0,.55)',brand:'rgba(255,255,255,.75)'},
+ red:{bg:'linear-gradient(160deg,#D0122F 0%,#7C0719 100%)',fade:'124,7,25',txt:'#FFD9DE',em:'#FFFFFF',sh:'0 10px 36px rgba(60,0,10,.55)',brand:'rgba(255,255,255,.8)'}
+}[TH.theme]; if(!T)return;
+const st=document.createElement('style');
+st.textContent=`#s{background:${T.bg}!important}
+#ph:after{background:linear-gradient(90deg,rgb(${T.fade}) 0%,rgba(${T.fade},.85) 22%,rgba(${T.fade},0) 58%)!important}
+${T.light?`#ph{width:600px!important;right:0!important}#ph:after{background:linear-gradient(90deg,rgb(${T.fade}) 0%,rgba(${T.fade},.6) 12%,rgba(${T.fade},0) 30%)!important}#ph:before{background:linear-gradient(0deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 22%)!important}`:`#ph:before{background:linear-gradient(0deg,rgba(${T.fade},.6) 0%,rgba(${T.fade},0) 38%)!important}`}
+.big{color:${T.txt}!important;text-shadow:${T.sh}!important}.big em{color:${T.em}!important}
+.top{color:${T.txt}!important;opacity:.8}#brand,#brand b{color:${T.brand}!important}`;
+document.head.appendChild(st);})();
 </script></body></html>

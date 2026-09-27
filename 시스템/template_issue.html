@@ -55,6 +55,8 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 .photo img,.pp img{width:100%;height:100%;object-fit:cover;display:block}
 .photo .cap{position:absolute;left:0;right:0;bottom:0;padding:22px 30px;background:linear-gradient(180deg,rgba(18,22,31,0),rgba(18,22,31,.72));color:#fff;font-size:34px;font-weight:700;text-align:left;letter-spacing:-1px}
 .photo .tag{position:absolute;left:26px;top:26px;background:rgba(255,255,255,.92);color:#12161F;font-size:32px;font-weight:800;padding:10px 22px;border-radius:999px;letter-spacing:-1px}
+/* 9/27: 자료 제목(tag)은 사진 위에 겹치지 않게 사진 틀 바깥 위쪽에 따로 붙인다 */
+.tagout{align-self:center;background:#12161F;color:#fff;font-size:34px;font-weight:800;padding:10px 26px;border-radius:999px;letter-spacing:-1px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;flex:0 0 auto}
 /* 9/20 롱폼 챕터 쇼츠용(세로): 스탯 칩·명단 판·배지 — template_long 과 같은 이름 */
 .st{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
 .st>div{background:#fff;border:3px solid #E3E7EE;border-radius:24px;padding:16px 26px;min-width:150px;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 12px 30px rgba(18,22,31,.08)}
@@ -251,18 +253,19 @@ function photoImg(s, src, w, h, focus) {
   return `${back}<img src="${src}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${iw}${sz ? 'px' : ''};height:${ih}${sz ? 'px' : ''};object-fit:contain;${alpha ? '' : 'border-radius:18px;box-shadow:0 14px 40px rgba(0,0,0,.35)'}">`;
 }
 function photoBox(s, h = 560, p = 1, extra = '') {
+  const TAGH = s.tag ? 76 : 0;   /* 9/27: 자료 제목 칸 높이만큼 사진을 줄여 전체 높이는 그대로 */
   const src = photoSrc(s.img), team = s.team || (s.teams || [])[0];
   const sz = photoSize(s.img);
   let w = 900;   /* 9/20: 세로 사진이면 틀 폭을 사진 비율로 좁혀 양옆 흐린 여백을 없앤다 */
   if (src && sz && sz[1] > sz[0] * 1.05) { w = Math.max(360, Math.min(900, Math.round(h * sz[0] / sz[1]) + 12)); extra += `width:${w}px;`; if (!s.fit) s = Object.assign({}, s, { fit: 'cover' }); }
   const inner = src
-    ? photoImg(s, src, w, h)
+    ? photoImg(s, src, w, h - TAGH - (s.tag ? 14 : 0))
     : FLAG[String(team || '').trim()]
       ? `<div class="col" style="width:100%;height:100%;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)"><div style="width:${Math.round(h * 1.05)}px;height:${Math.round(h * .7)}px;border-radius:24px;overflow:hidden;box-shadow:0 18px 48px rgba(18,22,31,.14);border:3px solid #E3E7EE">${FLAG[String(team).trim()]()}</div></div>`   /* 9/20: 나라면 국기 */
       : `<div class="col" style="width:100%;height:100%;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${team ? chip(T(team), 'L') : ''}</div>`;
-  const tag = s.tag ? `<div class="tag">${esc(s.tag)}</div>` : '';
   const cap = s.caption ? `<div class="cap">${br(s.caption)}</div>` : '';
-  return `<div class="photo" style="height:${h}px;${s._keep ? '' : rise(p, 40)};${extra}">${inner}${tag}${cap}</div>`;
+  if (!s.tag) return `<div class="photo" style="height:${h}px;${s._keep ? '' : rise(p, 40)};${extra}">${inner}${cap}</div>`;
+  return `<div class="phwrap" style="display:flex;flex-direction:column;gap:14px;width:100%;flex:0 0 auto;${s._keep ? '' : rise(p, 40)};${extra}"><div class="tagout">${esc(s.tag)}</div><div class="photo" style="height:${h - TAGH - 14}px;width:100%">${inner}${cap}</div></div>`;
 }
 
 const SCENE = {};

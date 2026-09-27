@@ -13,5 +13,5 @@ body{margin:0;width:2560px;height:1440px;background:#0A0F1A;font-family:P,'Prete
 <script>
 const EP=window.EP||{};
 const q=(EP.lines||[]).slice(-1)[0]; const last=q?(typeof q==='string'?q:(q.sub||q.narr||'')):'';
-document.getElementById('top').textContent=EP.endTop||(last?last.replace(/\|/g,', ').replace(/\n/g,' ').replace(' / ',', ')+' — 댓글로 남겨 주세요':'');
+document.getElementById('top').textContent=EP.endTop||'';   /* 9/27: 사용자 '댓글로 남겨 주세요 이딴 것도 빼' — 위 문구는 콘티 endTop 을 줄 때만 */
 </script></body></html>

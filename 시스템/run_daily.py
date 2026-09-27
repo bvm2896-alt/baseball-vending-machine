@@ -330,10 +330,11 @@ def step_build(ep_path, only_lines=None):
                 log(f'[{k}] 음성 멈춤(사람 확인 필요): {ask}', '실패'); return None
             if ask.startswith('ASK_CHARS'):
                 _, c, lim = ask.split()
-                a = input(f'[{k}] 합성할 글자 수 {c}자 — 평소({lim}자)보다 많습니다. 정말 합성할까요? (y = 합성, Enter = 멈춤) ').strip().lower()
+                a = input(f'[{k}] ★ 합성할 글자 수 {c}자 — 평소({lim}자)보다 많습니다. 합성하려면 y 를 입력하고 Enter (그냥 Enter 는 멈춤): ').strip().lower()
                 flag = '--chars-ok'
             else:
-                a = input(f'[{k}] {ask[4:]} — 다음 계정 크레딧을 써서 계속할까요? (y = 계속, Enter = 멈춤) ').strip().lower()
+                print(f'\n[{k}] ★ {ask[4:].split(" → ")[0]} — 크레딧이 없습니다')
+                a = input(f'[{k}] ★ 다음 계정({ask.split(" → ")[-1]})으로 이어서 만들려면 y 를 입력하고 Enter (그냥 Enter 는 멈춤): ').strip().lower()
                 flag = '--switch-ok'
             if a not in ('y', 'ㅛ'):
                 log(f'[{k}] 음성 멈춤(사용자가 멈춤): {ask}', '실패'); return None
