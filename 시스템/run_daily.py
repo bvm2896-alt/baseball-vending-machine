@@ -667,7 +667,7 @@ def pending_episodes():
         if not m or m.group(2) not in slots: continue
         try: d = datetime.date.fromisoformat(m.group(1))
         except ValueError: continue
-        if not (today <= d <= today + datetime.timedelta(days=PENDING_DAYS)): continue
+        if not (today - datetime.timedelta(days=1) <= d <= today + datetime.timedelta(days=PENDING_DAYS)): continue   # 9/28: 자정 넘겨 만들 때 어제 날짜 콘티도 잡는다(사용자 "뭐야" — 27일 콘티가 28일 00:32 에 안 잡힘)
         found.append((m.group(1), m.group(2), int(m.group(3) or 1), f.replace('\\', '/'), stem))
     for _, slot, _, f, stem in sorted(found):
         ok, ep = valid_episode(f)
