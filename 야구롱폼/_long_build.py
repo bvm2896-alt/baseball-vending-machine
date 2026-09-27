@@ -14,6 +14,16 @@ p=ps[-1]; ep=json.load(io.open(p,encoding='utf-8-sig'))
 print('만들 롱폼:', p)
 print('  제목:', (ep.get('youtube') or {}).get('title','')[:70])
 print('  줄 수:', len(ep.get('lines',[])), ' / 타입캐스트 API' if ep.get('ttsApi') else ' / 음성 zip')
+# 9/27: 콘티 내용(챕터·대본 전 줄)을 보여 준 뒤에 묻는다 — 제목만 보고는 맞는 콘티인지 알 수 없어서
+L=ep.get('lines',[]); ch={c.get('from'):c for c in ep.get('chapters',[])}
+print('=' * 70)
+for i,l in enumerate(L):
+    if i in ch: print(f"\n[챕터] {ch[i].get('title','')}  ({ch[i].get('from')}~{ch[i].get('to')}줄)")
+    elif i==0: print('[도입]')
+    print(f"  {i:02d}  {l.get('narr','').replace(' / ',' ')}")
+print('=' * 70)
+print(f"  총 {len(L)}줄 / 대본 약 {sum(len(l.get('narr','').replace(' / ',' ')) for l in L)}자(공백 포함, 구독 멘트 포함)")
+print('  위 대본이 맞는지 보고 결정하세요. 이미 만든 줄·구독 멘트는 다시 합성하지 않습니다(tts 가 이번에 새로 만들 글자 수를 한 번 더 보여 줌).')
 a=input('이 콘티로 만들까요? (Enter 또는 y = 시작, 그 외 = 취소) ').strip().lower()
 if a not in ('','y','ㅛ'): sys.exit('취소했습니다')
 for c in (['build.py','prep',p],['tts.py'],['build.py','render',p]):
