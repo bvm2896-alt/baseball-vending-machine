@@ -13,14 +13,15 @@ tpl = sys.argv[2] if len(sys.argv) > 2 else build.template_for(ep) if hasattr(bu
 out = sys.argv[3] if len(sys.argv) > 3 else 'work/preview.html'
 N = len(ep['lines'])
 EP = build.load_episode(epp); EP['_path'] = epp
-EP['bounds'] = [float(i + 1) for i in range(N)]
+SEC = float(os.environ.get('PV_SEC', '1'))   # 9/27: 줄당 초(기본 1초). 애니메이션이 다 끝난 모습을 보려면 PV_SEC=4
+EP['bounds'] = [float(i + 1) * SEC for i in range(N)]
 if str(ep.get('series')) == '야구롱폼' and all('startLine' in x for x in ep.get('scenes', [])):   # 9/27: 롱폼은 장면 경계 = 장면 startLine
-    EP['bounds'] = [float(x['startLine']) for x in ep['scenes'][1:]]
+    EP['bounds'] = [float(x['startLine']) * SEC for x in ep['scenes'][1:]]
 def _sub(x):
     t = x['sub'] if isinstance(x, dict) else str(x)
     return t.split('|')[-1] if os.environ.get('PV_LAST') else t.split('|')[0]
-EP['subs'] = [[i, i + 1, _sub(ep['lines'][i])] for i in range(N)]
-EP['logos'] = build.logos_data_uri(); EP['photos'] = build.photos_data_uri(ep, epp); EP['photoSizes'] = build.PHOTO_SIZES; EP['total'] = float(N)
+EP['subs'] = [[i * SEC, (i + 1) * SEC, _sub(ep['lines'][i])] for i in range(N)]
+EP['logos'] = build.logos_data_uri(); EP['photos'] = build.photos_data_uri(ep, epp); EP['photoSizes'] = build.PHOTO_SIZES; EP['total'] = float(N) * SEC
 html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', build.font_dir_url())
 html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)
 os.makedirs(os.path.dirname(out) or '.', exist_ok=True)

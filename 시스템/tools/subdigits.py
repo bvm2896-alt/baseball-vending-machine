@@ -34,6 +34,13 @@ NAT_UNITS = '개|명|점|타점|안타|타수|경기|시|번|살|방|가지|게�
 def to_digits(t):
     # 0) 고유명사
     t = t.replace('케이비오', 'KBO').replace('에이조', 'A조').replace('비조', 'B조').replace('에네오스', 'ENEOS').replace('엘지', 'LG').replace('케이티', 'KT').replace('엔씨', 'NC').replace('에스에스지', 'SSG')
+    # 0-2) 연도(9/27: '이천이십육 대회'처럼 '년' 없이 쓴 해가 한글로 남았다) — 천구백…/이천… 은 해로 본다
+    def yr(m):
+        n = sino(m.group(1))
+        if n is None or not (1900 <= n <= 2099): return m.group(0)
+        return f"{n}{'년' if m.group(2) else ''}"
+    t = re.sub(r'(?<![가-힣])((?:천구백|이천)[영일이삼사오육칠팔구십]*)(?:( 년)|(?![가-힣]))', yr, t)
+    t = re.sub(r'(?<![가-힣])일 순위', '1순위', t)   # '일 순위' → 1순위 ('이 순위' 는 '이것' 뜻일 수 있어 안 바꾼다)
     # 1) 점수 'X 대 Y' (둘 다 한자어) — '이 대회' 를 피하려고 뒤에도 숫자 읽기가 있어야 한다
     def score(m):
         g2, tail = m.group(2), ''
