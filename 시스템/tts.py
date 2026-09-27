@@ -56,14 +56,30 @@ except Exception: pass
 def head(): return {'X-API-KEY': ACCOUNTS[ACC]['key'], 'Content-Type': 'application/json'}
 
 FAILS = {}   # 계정 이름 → 왜 못 썼는지 (마지막에 한 줄로 정리해서 보여준다)
+# 9/27 사고 뒤: 계정 자동 전환 금지. 1번 계정이 떨어지면 멈추고 사람에게 묻는다.
+#   KBO_ASK=1(롱폼만들기처럼 사람이 콘솔을 보고 있을 때) → 그 자리에서 y/n 을 묻는다
+#   그 외(지금실행 안에서 run_daily 가 부를 때) → 종료 코드 3 + 'ASK_SWITCH' 표시 → run_daily 가 묻고 --switch-ok 로 다시 부른다
+#   예약 실행(사람 없음)은 묻지 못하므로 그냥 멈춘다
+SWITCH_OK = '--switch-ok' in sys.argv
+NEED_ASK = None   # 사람에게 물어야 해서 멈춘 이유 (main 이 종료 코드 3 으로 알린다)
+def asking(): return os.environ.get('KBO_ASK') == '1' and sys.stdin is not None and sys.stdin.isatty()
 def next_account(reason):
-    """다음 계정으로 전환. 더 없으면 False"""
-    global ACC
+    """다음 계정으로 전환. 더 없거나 사람이 허락 안 하면 False"""
+    global ACC, SWITCH_OK, NEED_ASK
     FAILS[ACCOUNTS[ACC]['name']] = reason
     if ACC + 1 >= len(ACCOUNTS):
         print(f'  {ACCOUNTS[ACC]["name"]} {reason} — 남은 계정 없음')
-        print('  계정별 결과: ' + ' / '.join(f'{k}({ACCOUNTS[i]["key"][:6]}…): {v}' for i, (k, v) in enumerate(FAILS.items())))
+        print('  계정별 결과: ' + ' / '.join(f'{k}: {v}' for k, v in FAILS.items()))
         return False
+    if not SWITCH_OK:
+        nxt = ACCOUNTS[ACC + 1]['name']
+        if asking():
+            a = input(f'  {ACCOUNTS[ACC]["name"]} {reason} — {nxt} 크레딧을 써서 계속할까요? (y = 계속, Enter = 멈춤) ').strip().lower()
+            if a in ('y', 'ㅛ'): SWITCH_OK = True
+        if not SWITCH_OK:
+            NEED_ASK = f'SWITCH {ACCOUNTS[ACC]["name"]} {reason} → {nxt}'
+            print(f'  {ACCOUNTS[ACC]["name"]} {reason} — {nxt} 로 자동으로 넘어가지 않고 멈춤')
+            return False
     ACC += 1
     print(f'  {ACCOUNTS[ACC - 1]["name"]} {reason} → {ACCOUNTS[ACC]["name"]} 으로 전환')
     return True
@@ -681,8 +697,31 @@ if __name__ == '__main__':
         if need:
             sys.exit(f'음성 실패: 줄 {need} 의 음성이 없고 API 키도 없습니다 — 타입캐스트 웹 zip 을 ' + os.path.abspath(drop_paths()[0]) + ' 에 넣어 주세요 (zip 파일 수 = 줄 수)')
         print('완료 (웹 zip 음성 그대로 사용, API 없음)'); sys.exit(0)
+    # 9/27 사고 뒤: 합성 전에 이번에 새로 만들 줄·글자 수를 보여 주고, 평소보다 많으면 멈춘다
+    def _made(i):
+        mp3 = os.path.join(VDIR, f'{i:02d}.mp3'); txt = mp3.replace('.mp3', '.txt'); ff = os.path.join(VDIR, 'fresh.flag')
+        if os.path.exists(mp3.replace('.mp3', '.keep')) and os.path.exists(mp3): return True
+        if not (os.path.exists(mp3) and os.path.exists(txt)): return False
+        if io.open(txt, encoding='utf-8').read().strip() != lines[i].strip(): return False
+        return not (os.path.exists(ff) and os.path.getmtime(txt) < os.path.getmtime(ff))
+    if only is not None: todo = sorted(i for i in only if i < len(lines))
+    elif whole_mode():
+        _idx = [i for i in range(len(lines)) if not os.path.exists(os.path.join(VDIR, f'{i:02d}.keep'))]
+        todo = [] if all(_made(i) for i in _idx) else _idx
+    else: todo = [i for i in range(len(lines)) if '--fresh' in sys.argv or not _made(i)]
+    chars = sum(len(lines[i].replace('/', ' ').replace('  ', ' ').strip()) for i in todo)
+    LIMIT = 3500 if '롱폼' in VDIR else 800   # 숏폼 1편 보통 300~500자, 롱폼 보통 2,000~3,000자(공백 포함)
+    print(f'이번 합성: {len(todo)}줄 / 약 {chars}자(공백 포함) — 이 글자 수만큼 타입캐스트 크레딧이 듭니다 · 음성 폴더 {VDIR}')
+    if chars > LIMIT and '--chars-ok' not in sys.argv:
+        ok_ = False
+        if asking():
+            ok_ = input(f'  평소 분량({LIMIT}자)보다 많습니다. 정말 합성할까요? (y = 합성, Enter = 멈춤) ').strip().lower() in ('y', 'ㅛ')
+        if not ok_:
+            print(f'ASK_CHARS {chars} {LIMIT}')
+            sys.exit(3)
     if only is None and whole_mode():
         if not synth_whole(lines):
+            if NEED_ASK: print('ASK_' + NEED_ASK); sys.exit(3)
             if FAILS: print('계정별 결과: ' + ' / '.join(f'{k}: {v}' for k, v in FAILS.items()))
             sys.exit('통 합성 실패 — 줄별로 대신 만들지 않음(억양이 따로 놀아서)')
     print(f'{len(lines)}줄 합성 시작' + (f' (줄 {sorted(only)} 만)' if only else ''))
@@ -701,6 +740,10 @@ if __name__ == '__main__':
         ok = synth_index(lines, i)
         print(f'{i:02d} {"OK " if ok else "XX "} {line}')
         fail += (not ok)
+        if NEED_ASK:   # 1번 계정이 떨어져 멈춤 — 나머지 줄은 시도하지 않는다(만든 줄은 다음 실행 때 재사용)
+            print('ASK_' + NEED_ASK); sys.exit(3)
+        if not ok and FAILS and len(FAILS) >= len(ACCOUNTS):   # 모든 계정이 거부 → 나머지 줄은 시도해도 똑같이 실패하니 멈춘다
+            print('모든 타입캐스트 계정이 거부해서 나머지 줄은 시도하지 않음'); break
         time.sleep(0.3)
     if fail:
         if FAILS: print('계정별 결과: ' + ' / '.join(f'{k}: {v}' for k, v in FAILS.items()))
