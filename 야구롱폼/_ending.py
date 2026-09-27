@@ -2,8 +2,10 @@
 import glob, json, io, os, sys
 sys.path.insert(0, os.getcwd()); sys.argv = ['build.py']
 import build
-ps = [p for p in glob.glob('episodes/2026-09-18_*.json') if json.load(io.open(p, encoding='utf-8-sig')).get('chapters')]
-p = ps[0]; ep = build.load_episode(p); ep['_path'] = p
+import re
+ps = sorted(p for p in glob.glob('episodes/*.json') if re.match(r'\d{4}-\d{2}-\d{2}_롱폼', os.path.basename(p)) and json.load(io.open(p, encoding='utf-8-sig')).get('chapters'))   # 9/27: 날짜로 시작하는 가장 최근 롱폼(_샘플 제외)
+if len(sys.argv) > 1: ps = [p for p in ps if sys.argv[1] in p]
+p = ps[-1]; ep = build.load_episode(p); ep['_path'] = p
 out = build.out_paths(ep, p)[0]
 if not os.path.exists(out): sys.exit('mp4 없음: ' + out)
 mark = build.W('endcard_applied.txt')

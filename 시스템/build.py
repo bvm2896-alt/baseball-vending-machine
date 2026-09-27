@@ -102,7 +102,8 @@ def out_paths(ep, ep_path):
 
 # 구단 코드 → KBO_logos 폴더의 파일 이름
 LOGO_FILES = {'HT': '기아', 'SS': '삼성', 'LG': 'LG', 'OB': '두산', 'KT': 'KT',
-              'NC': 'NC', 'LT': '롯데', 'SK': 'SSG', 'HH': '한화', 'WO': '키움'}
+              'NC': 'NC', 'LT': '롯데', 'SK': 'SSG', 'HH': '한화', 'WO': '키움',
+              'KBO': 'KBO'}   # 9/27: 리그 엠블럼(KBO 공식 로고 페이지) — 썸네일 teams:["KBO"]
 LOGO_DIRS = [os.path.join(HERE, '..', 'KBO_logos'), os.path.join(HERE, 'KBO_logos'), os.path.join(HERE, 'logos')]
 
 # 야구이슈 편 사진: 콘티 장면의 img("김도영_번트.jpg" 또는 확장자 없이 "김도영_번트")를 아래 순서로 찾는다.

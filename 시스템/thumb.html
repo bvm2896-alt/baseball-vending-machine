@@ -18,7 +18,7 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic',sans-serif;font-weight
 </style></head><body><div id="st"></div>
 <script>
 const EP=window.EP||{}, TH=EP.thumb||{};
-const COLOR={SS:'#074CA1',KT:'#1A1A1A',LG:'#C30452',HT:'#EA0029',OB:'#131230',NC:'#315288',LT:'#041E42',SK:'#CE0E2D',HH:'#FC4E00',WO:'#820024'};
+const COLOR={KBO:'#0B2A6E',SS:'#074CA1',KT:'#1A1A1A',LG:'#C30452',HT:'#EA0029',OB:'#131230',NC:'#315288',LT:'#041E42',SK:'#CE0E2D',HH:'#FC4E00',WO:'#820024'};
 const ALIAS={'기아':'HT','KIA':'HT','엘지':'LG','케이티':'KT','엔씨':'NC','SSG':'SK','두산':'OB','삼성':'SS','롯데':'LT','한화':'HH','키움':'WO'};
 const codeOf=n=>{const t=(EP.standings||[]).find(t=>t.team===n||t.code===n||t.code===ALIAS[n]);return t?t.code:(ALIAS[n]||n)};
 const logo=c=>(EP.logos||{})[c]||'';
@@ -82,8 +82,8 @@ if(layout==='clash'){
       <div class="bg" style="background:radial-gradient(70% 45% at 50% 62%,${hex2('#FF3B30',.35)},rgba(0,0,0,0) 70%)"></div>
       <div class="date">${dateText}</div>
       <div class="chip" style="position:absolute;left:50%;top:420px;transform:translateX(-50%);width:380px;height:380px;border-radius:76px"><img src="${logo(teams[0])}"></div>
-      <div class="top" style="top:860px">${nl(TH.top)}</div>
-      <div class="bigw" style="${bigStyle};top:1000px;font-size:${short?420:bigFs}px;letter-spacing:${short?-20:-14}px">${nl(TH.big)}</div>
+      ${TH.top?`<div class="top" style="top:860px">${nl(TH.top)}</div>`:''}
+      <div class="bigw" style="${bigStyle};top:${TH.top?1000:880}px;font-size:${TH.bigSize||(short?420:bigFs)}px;letter-spacing:${short?-20:-14}px;line-height:1.0">${nl(TH.big)}</div>
       <div class="brand">야구<b>자판기</b></div>`);
 } else {
   el(`<div class="bg" style="background:radial-gradient(70% 45% at 50% 38%, rgba(224,69,58,.55) 0%, rgba(224,69,58,0) 70%),radial-gradient(90% 60% at 50% 100%, rgba(255,194,75,.25) 0%, rgba(255,194,75,0) 60%), #161c28"></div>

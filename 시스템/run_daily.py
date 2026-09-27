@@ -319,6 +319,26 @@ def step_build(ep_path, only_lines=None):
     else:
         args = ['tts.py'] + ([f'--only={only_lines}'] if only_lines else [])
         rc, out = py(*args, timeout=1200)
+        # 9/27: tts.py 가 '글자 수가 평소보다 많음' 또는 '1번 계정 소진 → 2번 계정 쓸까' 로 멈추면(종료 코드 3) 사람에게 묻는다.
+        #       사람이 보는 지금실행(--now)에서만 묻고, 예약 실행은 묻지 않고 실패로 남긴다
+        for _ in range(3):
+            if rc != 3: break
+            ask = [l for l in out.splitlines() if l.startswith('ASK_')]
+            ask = ask[-1] if ask else ''
+            for l in [l for l in out.splitlines() if l.startswith('이번 합성')][-1:]: print(l)
+            if '--now' not in ARGS:
+                log(f'[{k}] 음성 멈춤(사람 확인 필요): {ask}', '실패'); return None
+            if ask.startswith('ASK_CHARS'):
+                _, c, lim = ask.split()
+                a = input(f'[{k}] 합성할 글자 수 {c}자 — 평소({lim}자)보다 많습니다. 정말 합성할까요? (y = 합성, Enter = 멈춤) ').strip().lower()
+                flag = '--chars-ok'
+            else:
+                a = input(f'[{k}] {ask[4:]} — 다음 계정 크레딧을 써서 계속할까요? (y = 계속, Enter = 멈춤) ').strip().lower()
+                flag = '--switch-ok'
+            if a not in ('y', 'ㅛ'):
+                log(f'[{k}] 음성 멈춤(사용자가 멈춤): {ask}', '실패'); return None
+            args = args + [flag]
+            rc, out = py(*args, timeout=1200)
         if rc:
             keep = [l for l in out.splitlines() if l.strip() and ('계정' in l or '실패' in l or 'XX' in l)][-8:]   # 계정 전환·거부 사유가 보이게
             if not keep: keep = [l for l in out.splitlines() if l.strip()][-6:] or ['(출력 없음, 종료 코드 %s)' % rc]   # 9/15: 빈 오류 대신 마지막 줄이라도 보여준다

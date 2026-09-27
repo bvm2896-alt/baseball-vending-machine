@@ -467,11 +467,11 @@ SCENE.h2h = (lt, s) => {
   const R = n => Math.round(n * k);
   let h = s.title ? `<div class="title gold" style="font-size:${R(52)}px;margin-bottom:${R(18)}px;${S_ ? '' : rise(seg(lt, 0, .4), 20)}">${br(s.title)}</div>` : '';
   h += `<div class="h2h" style="gap:${R(13)}px">` + rows.map((r, i) => {
-    const p = S_ ? 1 : seg(lt, .15 + i * .18, .45), win = /승/.test(r.res || ''), col = win ? GREEN : RED;
+    const p = S_ ? 1 : seg(lt, .15 + i * .18, .45), win = /승/.test(r.res || ''), col = r.color || (win ? GREEN : /패/.test(r.res || '') ? RED : '#12161F');   /* 9/27: 승패가 아닌 표(메달 등)는 검정 글씨, 빈 res 는 칸 숨김 */
     return `<div class="r" style="${rise(p, 26)};border-color:${r.hi ? ACC : '#E3E7EE'};padding:${R(14)}px 30px">
       <div class="w" style="font-size:${R(40)}px">${esc(r.when || '')}${r.sub ? `<small style="font-size:${R(27)}px">${esc(r.sub)}</small>` : ''}</div>
       <div class="s num" style="color:${col};font-size:${R(54)}px">${esc(r.score || '')}</div>
-      <div class="b" style="background:${col};height:${R(54)}px;font-size:${R(34)}px">${esc(r.res || '')}</div></div>`;
+      ${r.res ? `<div class="b" style="background:${col};height:${R(54)}px;font-size:${R(34)}px">${esc(r.res)}</div>` : ''}</div>`;
   }).join('') + `</div>`;
   if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 80}px;${pop(seg(lt, S_ ? .05 : .25 + rows.length * .18, .5))}">${br(s.text)}</div>`;
   B(LR('', h));
@@ -528,6 +528,126 @@ SCENE.profile = (lt, s) => {
   B(LR(vis, txt, false, phW(s, H0)));
 };
 
+
+/* ───── 9/27: 쇼츠(template_issue) 그림 장면 이식 — facegrid·scoreboard·bars·podium·icons·compare ─────
+   세로(1080 폭)로 짠 장면을 1000px 틀에 그린 뒤 본문(1808x714)에 맞게 확대·축소한다(Bp). */
+const flagBox = (n, w = 104) => { const k = String(n || '').trim(); if (!k) return '';
+  if (FLAG[k]) return `<div style="width:${w}px;height:${Math.round(w * .667)}px;border-radius:${Math.round(w * .12)}px;overflow:hidden;flex:0 0 auto;box-shadow:0 4px 14px rgba(18,22,31,.16);border:2px solid #E3E7EE;background:#fff">${FLAG[k]()}</div>`;
+  const tt = T(k); return tt && LOGO[tt.code] ? `<div class="chip" style="width:${Math.round(w * .8)}px;height:${Math.round(w * .8)}px;border-radius:${Math.round(w * .18)}px"><img src="${LOGO[tt.code]}"></div>` : ''; };
+const tchip = (n, w) => flagBox(n, w);
+const faceImg = (src, it, focus) => `<img src="${src}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:${esc(it.focus || focus)}">`;
+const ICON = {
+  person: c => `<svg viewBox="0 0 40 60" width="100%" height="100%"><circle cx="20" cy="11" r="9" fill="${c}"/><path d="M6,58 L6,32 Q6,22 20,22 Q34,22 34,32 L34,58 Z" fill="${c}"/></svg>`,
+  ball: c => `<svg viewBox="0 0 40 40" width="100%" height="100%"><circle cx="20" cy="20" r="17" fill="#fff" stroke="${c}" stroke-width="3"/><path d="M9,8 Q16,20 9,32 M31,8 Q24,20 31,32" stroke="#E5484D" stroke-width="2.4" fill="none"/></svg>`,
+};
+function Bp(h) {
+  B(`<div class="port" style="width:1000px;flex:0 0 auto;transform-origin:50% 50%">${h}</div>`);
+  const el = document.querySelector('#body .port'); if (!el) return;
+  const hh = el.scrollHeight || 1, k = Math.min(1.45, 690 / hh, 1780 / 1000);
+  el.style.transform = `scale(${k.toFixed(3)})`;
+}
+SCENE.facegrid = (lt, s) => {
+  const items = s.items || [], n = items.length || 1, cols = s.cols || (n > 12 ? 4 : n > 6 ? 4 : 3);
+  const cw = Math.floor(900 / cols), d = Math.min(cw - 44, n > 12 ? 124 : 190), T0 = s.title ? .3 : 0, step = Math.min(.12, 1.4 / n);
+  let h = s.title ? `<div class="title" style="font-size:${n > 12 ? 48 : 54}px;font-weight:900;margin-bottom:${n > 12 ? 12 : 22}px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div style="display:grid;grid-template-columns:repeat(${cols},${cw}px);row-gap:${n > 12 ? 4 : 18}px;justify-content:center">`;
+  items.forEach((it, i) => {
+    const p = seg(lt, T0 + i * step, .4), src = photoSrc(it.img), t = it.team ? T(it.team) : null, hi = it.hi === true;
+    const face = src ? faceImg(src, it, '50% 18%')
+      : `<div class="col" style="position:absolute;inset:0;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${t ? chip(t, 'M') : ''}</div>`;
+    h += `<div class="col" style="gap:6px;align-items:center;${pop(p)};${it.dim ? 'filter:grayscale(1);opacity:.45' : ''}">
+      <div style="position:relative;width:${d}px;height:${d}px;border-radius:50%;overflow:hidden;border:${hi ? 6 : 4}px solid ${hi ? 'var(--acc)' : '#fff'};box-shadow:0 8px 22px rgba(18,22,31,.16);background:#E9EDF3">${face}</div>
+      <div class="row" style="gap:6px;align-items:center">${t && src ? chip(t, 'S') : ''}<div class="title" style="font-size:${n > 12 ? 30 : 36}px;font-weight:900;white-space:nowrap">${esc(it.name || '')}</div></div></div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 64}px;${pop(seg(lt, T0 + n * step + .3, .5))}">${br(s.text)}</div>`;
+  Bp(h);
+};
+SCENE.scoreboard = (lt, s) => {
+  const rows = s.rows || [], inn = s.innings || 9, cw = Math.floor(610 / inn), hiSet = new Set(s.hi || []);
+  let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:24px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div class="pane" style="width:900px;border-radius:26px;padding:18px 14px 22px;${rise(seg(lt, .1, .4), 30)}">`;
+  h += `<div class="row" style="gap:0;align-items:center;height:56px"><div style="width:190px"></div>${Array.from({ length: inn }, (_, k) => `<div class="num" style="width:${cw}px;text-align:center;font-size:30px;font-weight:900;color:${hiSet.has(k + 1) ? 'var(--acc)' : GRAY}">${k + 1}</div>`).join('')}<div class="num" style="width:90px;text-align:center;font-size:32px;font-weight:900">R</div></div>`;
+  rows.forEach((r, ri) => {
+    h += `<div class="row" style="gap:0;align-items:center;height:${s.tall ? 150 : 120}px;border-top:2px solid ${LINE};position:relative">
+      <div class="row" style="width:190px;gap:12px;align-items:center">${tchip(r.team, 70)}<div class="title" style="font-size:38px;font-weight:900">${esc(r.team)}</div></div>`;
+    for (let k = 0; k < inn; k++) {
+      const p = seg(lt, .35 + k * .12, .25), v = (r.runs || [])[k], m = (s.marks || []).find(x => x.row === ri && x.inn === k + 1);
+      const hl = hiSet.has(k + 1);
+      h += `<div class="col" style="width:${cw}px;height:100%;gap:4px;justify-content:center;position:relative;${hl ? `background:${ACC}12;` : ''}">
+        <div class="num" style="font-size:46px;font-weight:900;opacity:${c01(p * 1.5)};color:${v > 0 ? (r.hi ? 'var(--acc)' : TXT) : '#AAB2BF'}">${v == null ? '' : esc(String(v))}</div>
+        ${m ? `<div class="num" style="position:absolute;${ri === 0 ? 'top:-4px' : 'bottom:-4px'};height:34px;padding:0 8px;border-radius:10px;background:${m.color || RED};color:#fff;font-size:22px;font-weight:900;display:flex;align-items:center;white-space:nowrap;${pop(seg(lt, .45 + k * .12, .3))}">${esc(m.label)}</div>` : ''}</div>`;
+    }
+    h += `<div class="num" style="width:90px;text-align:center;font-size:56px;font-weight:900;color:${r.hi ? 'var(--acc)' : TXT};opacity:${seg(lt, .35 + inn * .12, .3)}">${esc(String(r.r ?? ''))}</div></div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:28px;font-size:${s.size || 70}px;${pop(seg(lt, .5 + inn * .12, .5))}">${br(s.text)}</div>`;
+  Bp(h);
+};
+SCENE.bars = (lt, s) => {
+  const items = s.items || [], n = items.length || 1, mx = s.max || Math.max(...items.map(x => Number(x.value) || 0), 1);
+  let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:26px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div class="col" style="width:900px;gap:22px;align-items:stretch">`;
+  items.forEach((it, i) => {
+    const p = seg(lt, .3 + i * .3, .7), v = (Number(it.value) || 0), w = 560 * Math.min(1, v / (it.max || mx)) * eo(p), hi = it.hi === true;
+    const shown = Number.isInteger(v) ? Math.round(v * eo(p)) : (v * eo(p)).toFixed(it.dec ?? 2);
+    h += `<div class="pane" style="border-radius:24px;padding:18px 24px;${rise(seg(lt, .2 + i * .3, .4), 30)};${hi ? 'border-color:var(--acc);' : ''}">
+      <div class="row" style="gap:14px;align-items:center;justify-content:flex-start;margin-bottom:10px">${it.team ? tchip(it.team, 62) : ''}<div class="title" style="font-size:40px;font-weight:900">${esc(it.label || '')}</div>${it.sub ? `<div class="label" style="font-size:28px;color:${GRAY}">${esc(it.sub)}</div>` : ''}</div>
+      <div class="row" style="gap:18px;align-items:center;justify-content:flex-start"><div style="width:560px;height:46px;border-radius:12px;background:#EEF1F6;overflow:hidden"><div style="width:${w}px;height:100%;border-radius:12px;background:${hi ? 'var(--acc)' : (it.color || '#9AA3B2')}"></div></div>
+      <div class="num" style="font-size:56px;font-weight:900;color:${hi ? 'var(--acc)' : TXT};white-space:nowrap">${esc(String(shown))}<span style="font-size:32px">${esc(it.unit || '')}</span></div></div></div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:28px;font-size:${s.size || 70}px;${pop(seg(lt, .4 + n * .3 + .3, .5))}">${br(s.text)}</div>`;
+  Bp(h);
+};
+SCENE.podium = (lt, s) => {
+  const by = m => (s.items || []).find(x => x.medal === m) || {};
+  const cols = [['은', by('은'), 230, '#B8C0CC'], ['금', by('금'), 320, '#F2B705'], ['동', by('동'), 170, '#C97B3A']];
+  let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:20px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div class="row" style="gap:18px;align-items:flex-end;height:640px">`;
+  const order = [2, 0, 1];   // 동 → 은 → 금 순서로 올라온다
+  cols.forEach(([m, it, ht, c], k) => {
+    const p = seg(lt, .3 + order[k] * .45, .6), q = seg(lt, .6 + order[k] * .45, .45), hi = it.hi === true;
+    h += `<div class="col" style="width:270px;gap:14px;align-items:center">
+      <div class="col" style="gap:10px;align-items:center;${pop(q)}">${tchip(it.team, m === '금' ? 150 : 124)}
+        <div class="title" style="font-size:${m === '금' ? 50 : 42}px;font-weight:900;color:${hi ? 'var(--acc)' : TXT}">${esc(it.team || '')}</div>
+        ${it.sub ? `<div class="label" style="font-size:28px;color:${GRAY};text-align:center">${br(it.sub)}</div>` : ''}</div>
+      <div class="col" style="width:100%;height:${ht * eo(p)}px;border-radius:20px 20px 0 0;background:${c};justify-content:flex-start;padding-top:14px;${hi ? 'box-shadow:0 0 0 6px var(--acc) inset;' : ''}">
+        <div class="num" style="width:84px;height:84px;border-radius:50%;background:#fff;color:${c};font-size:44px;font-weight:900;display:flex;align-items:center;justify-content:center;opacity:${c01(p * 2 - .6)}">${m}</div></div></div>`;
+  });
+  h += '</div>';
+  if (s.text) h += `<div class="big gold" style="margin-top:24px;font-size:${s.size || 70}px;${pop(seg(lt, 1.9, .5))}">${br(s.text)}</div>`;
+  Bp(h);
+};
+SCENE.icons = (lt, s) => {
+  const n = s.n || 10, on = s.on ?? n, cols = s.cols || (n > 16 ? 7 : 6), ic = ICON[s.icon || 'person'], w = Math.min(110, Math.floor(860 / cols) - 14);
+  const hgt = (s.icon || 'person') === 'person' ? w * 1.4 : w, step = Math.min(.08, 1.4 / n);
+  let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:24px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div style="display:grid;grid-template-columns:repeat(${cols},${w}px);gap:14px 14px;justify-content:center">`;
+  for (let i = 0; i < n; i++) {
+    const p = seg(lt, .3 + i * step, .3), isOn = i < on, c = isOn ? (s.color || 'var(--acc)') : '#C9D0DB';
+    const mk = s.mark === 'x' && isOn ? `<svg viewBox="0 0 40 40" style="position:absolute;inset:8% 8% auto 8%;width:84%;opacity:${c01(seg(lt, .5 + i * step, .25) * 1.4)}"><path d="M6,6 L34,34 M34,6 L6,34" stroke="#E5484D" stroke-width="6" stroke-linecap="round"/></svg>` : '';
+    h += `<div style="position:relative;width:${w}px;height:${hgt}px;${pop(p)}">${ic(isOn && s.mark === 'x' ? '#8A93A3' : c)}${mk}</div>`;
+  }
+  h += '</div>';
+  if (s.label) h += `<div class="num" style="margin-top:22px;font-size:56px;font-weight:900;text-align:center;opacity:${seg(lt, .4 + n * step, .3)}">${br(s.label)}</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:16px;font-size:${s.size || 70}px;${pop(seg(lt, .6 + n * step, .5))}">${br(s.text)}</div>`;
+  Bp(h);
+};
+SCENE.compare = (lt, s) => {
+  const side = (x, k) => { const of = x.of || 24, n = x.n ?? of, cols = 6, w = 46;
+    let g = `<div style="display:grid;grid-template-columns:repeat(${cols},${w}px);gap:8px">`;
+    for (let i = 0; i < of; i++) g += `<div style="width:${w}px;height:${w * 1.4}px;${pop(seg(lt, .4 + k * .5 + i * .03, .25))}">${ICON.person(i < n ? (x.color || (k ? '#8A93A3' : 'var(--acc)')) : '#DDE2EA')}</div>`;
+    return `<div class="pane col" style="width:430px;border-radius:30px;padding:24px 10px 28px;gap:14px;${rise(seg(lt, .1 + k * .4, .4), 30)}">
+      <div class="row" style="gap:12px;align-items:center">${tchip(x.team, 80)}<div class="title" style="font-size:42px;font-weight:900">${esc(x.team || '')}</div></div>
+      ${g}</div></div><div class="num" style="margin-top:14px;font-size:50px;font-weight:900;text-align:center;opacity:${seg(lt, 1.1 + k * .3, .3)}">${esc(x.label || '')}</div>`; };
+  let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:24px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div style="display:flex;flex-direction:row;gap:40px;align-items:flex-start;justify-content:center"><div style="display:flex;flex-direction:column;align-items:center;width:430px">${side(s.left || {}, 0)}</div><div style="display:flex;flex-direction:column;align-items:center;width:430px">${side(s.right || {}, 1)}</div></div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 70}px;${pop(seg(lt, 1.8, .5))}">${br(s.text)}</div>`;
+  Bp(h);
+};
+
+/* ───── 이식 끝 ───── */
 const MOTION = {
   chapter: s => 1.0 + ((s.items || []).length ? .35 : 0), hook: () => 1.1,
   big: s => .9 + ((s.stats || []).length) * .12 + (s.note ? .35 : 0), photo: () => 1.0, question: s => .7 + ((s.stats || []).length) * .12 + (s.note ? .35 : 0),
@@ -553,7 +673,8 @@ function drawRail(k, t) {
   document.getElementById('progBar').style.width = (100 * c01(t / total)) + '%';
   if (!CH.length) return;
   const rt = document.getElementById('railTitle'); if (rt) rt.style.display = 'none';   // 챕터가 있으면 railTitle 대신 챕터를 보여준다
-  let i = 0; for (let j = 0; j < CH.length; j++) if (k >= (CH[j].from || 0)) i = j;
+  const ln = (SC[Math.min(k, SC.length - 1)] || {}).startLine ?? k;   // 9/27: 장면이 없는 줄이 있으면 장면 번호 ≠ 줄 번호 → 장면의 startLine 으로 챕터를 찾는다
+  let i = 0; for (let j = 0; j < CH.length; j++) if (ln >= (CH[j].from || 0)) i = j;
   const box = document.getElementById('chap');
   box.style.display = 'flex';
   document.getElementById('chapN').textContent = (i + 1) + '/' + CH.length;
