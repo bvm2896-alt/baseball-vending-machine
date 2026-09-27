@@ -619,7 +619,7 @@ SCENE.compare = (lt, s) => {
     for (let i = 0; i < of; i++) g += `<div style="width:${w}px;height:${w * 1.4}px;${pop(seg(lt, .4 + k * .5 + i * .03, .25))}">${ICON.person(i < n ? (x.color || (k ? '#8A93A3' : 'var(--acc)')) : '#3A4560')}</div>`;
     return `<div class="pane col" style="width:430px;border-radius:30px;padding:24px 10px 28px;gap:14px;${rise(seg(lt, .1 + k * .4, .4), 30)}">
       <div class="row" style="gap:12px;align-items:center">${tchip(x.team, 80)}<div class="title" style="font-size:42px;font-weight:900">${esc(x.team || '')}</div></div>
-      ${g}</div></div><div class="num" style="margin-top:14px;font-size:50px;font-weight:900;text-align:center;opacity:${seg(lt, 1.1 + k * .3, .3)}">${esc(x.label || '')}</div>`; };
+      ${g}</div></div><div class="num" style="margin-top:14px;font-size:50px;font-weight:900;text-align:center;line-height:1.2;white-space:nowrap;opacity:${seg(lt, 1.1 + k * .3, .3)}">${br(x.label || '')}</div>`; };
   let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:24px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
   h += `<div style="display:flex;flex-direction:row;gap:40px;align-items:flex-start;justify-content:center"><div style="display:flex;flex-direction:column;align-items:center;width:430px">${side(s.left || {}, 0)}</div><div style="display:flex;flex-direction:column;align-items:center;width:430px">${side(s.right || {}, 1)}</div></div>`;
   if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 70}px;${pop(seg(lt, 1.8, .5))}">${br(s.text)}</div>`;

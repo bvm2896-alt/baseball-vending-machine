@@ -812,7 +812,7 @@ SCENE.compare = (lt, s) => {
     for (let i = 0; i < of; i++) g += `<div style="width:${w}px;height:${w * 1.4}px;${pop(seg(lt, .4 + k * .5 + i * .03, .25))}">${ICON.person(i < n ? (x.color || (k ? '#8A93A3' : 'var(--acc)')) : '#DDE2EA')}</div>`;
     return `<div class="pane col" style="width:430px;border-radius:30px;padding:24px 10px 28px;gap:14px;${rise(seg(lt, .1 + k * .4, .4), 30)}">
       <div class="row" style="gap:12px;align-items:center">${tchip(x.team, 80)}<div class="title" style="font-size:42px;font-weight:900">${esc(x.team || '')}</div></div>
-      ${g}</div></div><div class="num" style="margin-top:14px;font-size:50px;font-weight:900;text-align:center;opacity:${seg(lt, 1.1 + k * .3, .3)}">${esc(x.label || '')}</div>`; };
+      ${g}</div></div><div class="num" style="margin-top:14px;font-size:50px;font-weight:900;text-align:center;line-height:1.2;white-space:nowrap;opacity:${seg(lt, 1.1 + k * .3, .3)}">${br(x.label || '')}</div>`; };
   let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:24px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
   h += `<div style="display:flex;flex-direction:row;gap:40px;align-items:flex-start;justify-content:center"><div style="display:flex;flex-direction:column;align-items:center;width:430px">${side(s.left || {}, 0)}</div><div style="display:flex;flex-direction:column;align-items:center;width:430px">${side(s.right || {}, 1)}</div></div>`;
   if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 70}px;${pop(seg(lt, 1.8, .5))}">${br(s.text)}</div>`;
@@ -823,7 +823,7 @@ SCENE.compare = (lt, s) => {
 SCENE.question = (lt, s) => {
   if (s.choices) {   /* 9/26: 질문도 그림으로 — 두 갈래 선택 카드(국기/로고/사진 + 짧은 말) */
     const card = (c, k) => { const src = photoSrc(c.img);
-      const pic = src ? `<div style="position:relative;width:360px;height:300px;border-radius:24px;overflow:hidden;background:#E9EDF3">${faceImg(src, c, '50% 15%')}</div>` : `<div class="col" style="height:220px;justify-content:center">${tchip(c.team, 190)}</div>`;
+      const pic = src ? `<div style="position:relative;width:360px;height:300px;border-radius:24px;overflow:hidden;background:#E9EDF3">${faceImg(src, c, '50% 15%')}</div>` : (c.team ? `<div class="col" style="height:220px;justify-content:center">${tchip(c.team, 190)}</div>` : `<div class="col" style="height:120px"></div>`);
       return `<div class="pane col" style="width:410px;border-radius:30px;padding:24px 18px 28px;gap:18px;${slideX(seg(lt, .1 + k * .2, .5), k ? 120 : -120)}">${pic}
         <div class="title" style="font-size:52px;font-weight:900;line-height:1.15;text-align:center">${br(c.label || '')}</div></div>`; };
     return B(`<div class="mega" style="font-size:${s.size || 88}px;margin-bottom:34px;${pop(seg(lt, 0, .5))}">${br(s.text || '여러분 생각은?')}</div>

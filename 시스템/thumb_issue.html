@@ -149,7 +149,7 @@ function graphicHtml(){
 }
 const GR=!!TH.graphic;
 const POSTER=TH.graphic==='poster', bigLines=String(TH.big||'').split('\n').length, PH_MAX=Math.min(980, 1100-(POSTER?190:250)*bigLines);   // 9/26 포스터형은 그림을 크게, 큰 글씨를 조금 작게   // 큰 글씨가 1660px(안전 영역) 안에 끝나도록 사진 높이 상한(1줄 850, 2줄 600)
-const PH_H = (()=>{ if(GR) return Math.min(PH_MAX, TH.gh||900); if(!src||!sz) return PH_MAX; const h=Math.round(940*sz[1]/sz[0]); return Math.max(520, Math.min(PH_MAX, h)); })();   // 사진 카드 높이: 사진 비율대로
+const PH_H = (()=>{ if(GR) return Math.min(PH_MAX, TH.gh||900); if(!src||!sz) return PH_MAX; const h=Math.round(940*sz[1]/sz[0]); if(TH.perLine) return Math.min(h, TH.top?500:560); return Math.max(520, Math.min(PH_MAX, h)); })();   // 9/28 perLine(줄별 최대 글씨)이면 사진을 440까지 줄여 글자에 자리를 준다   // 사진 카드 높이: 사진 비율대로
 const Y0 = 340 + PH_H;   // 사진 아래 글 시작 기준
 const st=document.getElementById('st');
 st.insertAdjacentHTML('beforeend',`
@@ -162,7 +162,7 @@ st.insertAdjacentHTML('beforeend',`
   </div>
   <div class="bar" style="background:${c1};top:${Y0+50}px"></div>
   <div class="top" style="top:${Y0+90}px">${nl(TH.top)}</div>
-  <div class="bigw" style="color:${cBig};top:${Y0+220}px;${POSTER?'font-size:200px;letter-spacing:-9px':''}">${nl(TH.big)}</div></div>
+  <div class="bigw" style="color:${cBig};top:${Y0+(String(TH.top||"").trim()?220:100)}px;${POSTER?'font-size:200px;letter-spacing:-9px':''}">${nl(TH.big)}</div></div>
   <div class="brand">야구<b>자판기</b></div>`);
 // 글자가 폭(920)을 넘치면 자동 축소. 큰 글씨가 두 줄이면 위치를 위로 당긴다
 for(const sel of ['.top','.bigw']){
@@ -170,11 +170,23 @@ for(const sel of ['.top','.bigw']){
   const lines=e.innerHTML.split('<br>');
   e.innerHTML=lines.map(l=>`<span style="white-space:nowrap">${l}</span>`).join('<br>');
   const sps=[...e.querySelectorAll('span')];
+  if(sel==='.bigw'&&TH.perLine){   // 9/28: 줄마다 따로 폭(920)에 꽉 차게 — 줄 길이가 달라도 각 줄이 최대 크기(사용자 "모든 줄이 다 같은 크기일 필요는 없어")
+    e.style.lineHeight='1.0'; e.style.fontSize='1px';   // 부모 글자 크기의 줄 높이(strut)가 남지 않게
+    for(const sp of sps){ sp.style.display='inline-block'; sp.style.lineHeight='1.0'; let f=60; sp.style.fontSize=f+'px';
+      while(sp.getBoundingClientRect().width<920&&f<400){f+=4;sp.style.fontSize=f+'px';}
+      while(sp.getBoundingClientRect().width>920&&f>60){f-=2;sp.style.fontSize=f+'px';} }
+    if(Array.isArray(TH.lineScale)) sps.forEach((sp,i)=>{ const k=TH.lineScale[i]; if(k) sp.style.fontSize=(parseFloat(sp.style.fontSize)*k).toFixed(1)+'px'; });   // 9/28: 줄별 비율(예 [0.6,1] = 첫 줄을 60%로)
+    for(let i=0;i<40&&e.getBoundingClientRect().bottom>1440;i++){ for(const sp of sps){ sp.style.fontSize=(parseFloat(sp.style.fontSize)*0.96).toFixed(1)+'px'; } }   // 안전 영역(아래 1440) 안에 들어갈 때까지 전체 비율 축소
+    continue;
+  }
   let fs=parseFloat(getComputedStyle(e).fontSize);
   const w=()=>Math.max(...sps.map(sp=>sp.getBoundingClientRect().width));
   while(w()>920&&fs>60){fs-=8;e.style.fontSize=fs+'px';}
 }
 // 사진+글 덩어리를 세로 가운데(살짝 위)로 — 쇼츠 피드에서 가운데가 보이므로
 const big=document.querySelector('.bigw'), blk=document.getElementById('blk');
-if(big&&blk){ const bottom=big.getBoundingClientRect().bottom, top=340; const shift=Math.round((1920-(bottom-top))/2 - top - 40); blk.style.transform=`translateY(${Math.max(-20, Math.min(shift, 1660-bottom))}px)`; }   // 안전 영역: 위 340 ~ 아래 1660
+const SAFE_BOTTOM=1440;   // 9/28: 쇼츠 목록(격자)에서 아래 약 20%가 조회수 띠에 가려진다(사용자 캡처) → 글자는 1500px 위에서 끝나야 한다. 넘치면 사진+글 덩어리를 통째로 줄인다
+if(big&&blk){ const bottom=big.getBoundingClientRect().bottom, top=340;
+  if(bottom>SAFE_BOTTOM){ const k=(SAFE_BOTTOM-top)/(bottom-top); blk.style.transformOrigin=`50% ${top}px`; blk.style.transform=`scale(${k.toFixed(4)})`; }
+  else { const shift=Math.round((1920-(bottom-top))/2 - top - 40); blk.style.transform=`translateY(${Math.max(-20, Math.min(shift, SAFE_BOTTOM-bottom))}px)`; } }
 </script></body></html>
