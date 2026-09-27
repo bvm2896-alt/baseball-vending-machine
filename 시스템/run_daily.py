@@ -344,6 +344,13 @@ def step_build(ep_path, only_lines=None):
             keep = [l for l in out.splitlines() if l.strip() and ('계정' in l or '실패' in l or 'XX' in l)][-8:]   # 계정 전환·거부 사유가 보이게
             if not keep: keep = [l for l in out.splitlines() if l.strip()][-6:] or ['(출력 없음, 종료 코드 %s)' % rc]   # 9/15: 빈 오류 대신 마지막 줄이라도 보여준다
             log(f'[{k}] 음성 실패:\n' + '\n'.join(keep)[-900:], '실패'); return None
+        # 9/28: 새로 합성한 줄 수·재사용 줄 수를 분명히 남긴다(사용자 "생성하지 않았으면 생성되지 않았다고 나와야")
+        try:
+            m1 = re.search(r'이번 합성: (\d+)줄 / 약 ([\d,]+)자', out); m2 = re.search(r'기존 음성 (\d+)줄 재사용', out)
+            n_new = int(m1.group(1)) if m1 else 0; n_reuse = int(m2.group(1)) if m2 else 0
+            if n_new == 0: log(f'[{k}] 음성: 새로 합성한 줄 없음 — 기존 음성 {n_reuse}줄 전부 재사용(크레딧 0)')
+            else: log(f'[{k}] 음성: 새로 합성 {n_new}줄(약 {m1.group(2)}자, 크레딧 사용) · 기존 음성 {n_reuse}줄 재사용')
+        except Exception: pass
         # 음성 검수: 톤·속도 이탈 줄 다시 합성, 자막 타이밍 정밀 맞춤 (qa_voice.py)
         log(f'[{k}] 음성 검수 시작', '검수')
         rc, out = py('qa_voice.py', timeout=1500)
