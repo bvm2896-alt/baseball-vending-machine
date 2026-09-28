@@ -34,18 +34,23 @@ body{font-family:'KBO','Malgun Gothic',sans-serif;color:#fff}
 </div><script>
 const TH=(window.EP&&EP.thumb)||{},P=(window.EP&&EP.photos)||{};
 const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+/* 9/28: big 안의 [글자] 는 그 글자만 강조색(줄 전체 강조 emLines 대신). 괄호가 있으면 emLines 무시 */
+const HASBR=/\[[^\]]+\]/.test(String(TH.big||''));
+const line=(t,isEm)=>HASBR?esc(t).replace(/\[([^\]]+)\]/g,'<em>$1</em>'):(isEm?'<em>'+esc(t)+'</em>':esc(t));
 function src(n){if(!n)return'';if(P[n])return P[n];const k=Object.keys(P).find(k=>k.endsWith('/'+n)||k===n);return k?P[k]:''}
 const tg=TH.tag||'';   /* 9/27: 사용자 'KBO 깊게 텍스트 지워' — 레일 제목을 썸네일에 자동으로 넣지 않는다(콘티 thumb.tag 를 줄 때만) */
 document.getElementById('tagt').textContent=tg;
 if(!tg)document.getElementById('tag').style.display='none';
 const im=document.getElementById('pimg'); const s=src(TH.img); if(s)im.src=s; else document.getElementById('ph').style.display='none';
 if(TH.focus)im.style.objectPosition=TH.focus;
+if(TH.gray)im.style.filter='grayscale(1) contrast(1.12)';
+if(TH.zoom){im.style.transform='scale('+TH.zoom+')';im.style.transformOrigin=TH.zoomAt||TH.focus||'50% 30%';}   /* 9/28: 얼굴이 작은 사진은 확대(zoomAt = 확대 중심) */   /* 9/28: 옛날 사진은 흑백으로 통일 */
 document.getElementById('top').innerHTML=esc(TH.top||'').replace(/\n/g,'<br>');
 if(!TH.top)document.getElementById('top').style.display='none';   /* 9/27: 윗줄 없으면 칸도 없앤다 */
 /* 마지막 줄을 노랑으로 */
 const ls=String(TH.big||'').split('\n');
 const EMN=TH.emLines||1;   /* 9/27: 노랑 줄 수(뒤에서부터) */
-document.getElementById('big').innerHTML=ls.map((t,i)=>i>=ls.length-EMN?'<em>'+esc(t)+'</em>':esc(t)).join('<br>');
+document.getElementById('big').innerHTML=ls.map((t,i)=>line(t,i>=ls.length-EMN)).join('<br>');
 const DS=TH.date||EP.date||EP.gameDate||'', d=DS.split('-'); const w=['일','월','화','수','목','금','토'];   /* 9/20: 콘티 thumb.date 가 있으면 그게 우선(경기 날짜 등) — 다른 썸네일 템플릿과 같은 규칙 */
 document.getElementById('date').textContent=d.length===3?`${+d[1]}월 ${+d[2]}일(${w[new Date(DS+'T12:00:00').getDay()]})`:'';
 if(TH.noDate||TH.date===false)document.getElementById('date').style.display='none';   /* 9/20: 롱폼 썸네일은 날짜 배지 없이(사용자 지시) */
@@ -54,6 +59,19 @@ if(TH.noDate||TH.date===false)document.getElementById('date').style.display='non
  let fs=parseFloat(getComputedStyle(el).fontSize);
  const want=ls.length, lim=TH.fill?(TH.theme==='white'?640:800):720, room=720-parseFloat(getComputedStyle(document.getElementById('L')).top)-(TH.fill?56+(TH.top?document.getElementById('top').offsetHeight+16:0):150);
  while((el.scrollWidth>lim||el.offsetHeight>(TH.fill?room:Math.min(room,fs*1.0*want+8)))&&fs>54){fs-=3;el.style.fontSize=fs+'px';}
+ if(TH.fill&&TH.perLine){   /* 9/27: 줄마다 따로 폭에 꽉 차게 — 짧은 줄일수록 크게. 전체 높이가 넘치면 같은 비율로 줄인다 */
+   el.innerHTML=ls.map((t,i)=>`<div class="pl" style="white-space:nowrap;display:block;width:max-content">${line(t,i>=ls.length-EMN)}</div>`).join('');
+   const rows=[...el.querySelectorAll('.pl')]; const base=100;
+   const sizes=rows.map(r=>{r.style.fontSize=base+'px';return base*lim/Math.max(1,r.getBoundingClientRect().width);});
+   const cap=TH.lineMax||260; let sz=sizes.map(x=>Math.min(x,cap));
+   const tot=()=>{rows.forEach((r,i)=>{r.style.fontSize=sz[i]+'px';r.style.lineHeight='1.0';});return el.offsetHeight;};
+   let h=tot(); const gap=8; rows.forEach(r=>r.style.marginBottom=gap+'px'); h=tot();
+   if(h>room){const k=room/h; sz=sz.map(x=>x*k); tot();}
+ }
+ else if(TH.fill&&TH.emScale){   /* 9/27: 강조 줄(노랑/빨강)만 따로 더 키운다 — 폭·높이 안에서 최대로 */
+   let k=TH.emScale; const ems=el.querySelectorAll('em');
+   const fit=()=>{ems.forEach(e=>e.style.fontSize=k+'em'); return Math.max(...[...ems].map(e=>e.getBoundingClientRect().width))<=lim && el.offsetHeight<=room;};
+   while(!fit()&&k>1.0){k-=.03;} }
  if(TH.fill){const L=document.getElementById('L');L.style.top=Math.max(40,Math.round((720-L.offsetHeight)/2))+'px';}   /* 9/27: 글씨 덩어리를 세로 가운데로 */
  const t=document.getElementById('top');let ts=parseFloat(getComputedStyle(t).fontSize);
  while(t.scrollWidth>lim&&ts>26){ts-=2;t.style.fontSize=ts+'px';}})();
@@ -69,6 +87,7 @@ st.textContent=`#s{background:${T.bg}!important}
 #ph:after{background:linear-gradient(90deg,rgb(${T.fade}) 0%,rgba(${T.fade},.85) 22%,rgba(${T.fade},0) 58%)!important}
 ${T.light?`#ph{width:600px!important;right:0!important}#ph:after{background:linear-gradient(90deg,rgb(${T.fade}) 0%,rgba(${T.fade},.6) 12%,rgba(${T.fade},0) 30%)!important}#ph:before{background:linear-gradient(0deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 22%)!important}`:`#ph:before{background:linear-gradient(0deg,rgba(${T.fade},.6) 0%,rgba(${T.fade},0) 38%)!important}`}
 .big{color:${T.txt}!important;text-shadow:${T.sh}!important}.big em{color:${T.em}!important}
-.top{color:${T.txt}!important;opacity:.8}#brand,#brand b{color:${T.brand}!important}`;
+.top{color:${T.txt}!important;opacity:.8}#brand,#brand b{color:${T.brand}!important}
+${TH.emColor?`.big em{color:${TH.emColor}!important}`:''}`;   /* 9/28: 편마다 강조색만 바꾸기(예: 남색 + 롱폼② 빨강) */
 document.head.appendChild(st);})();
 </script></body></html>
