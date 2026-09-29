@@ -1,6 +1,6 @@
 {
  "date": "2026-09-30",
- "step": "완료",
+ "step": "시작",
  "videos": {},
  "built": {
   "순위": {
@@ -45,6 +45,7 @@
   "[08:44:58] [순위4] 음성 실패:\n  계정1 거부 403 UNUSUAL_ACTIVITY_DETECTED — 남은 계정 없음\n  계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED\n  실패 403: {\"error_code\":\"UNUSUAL_ACTIVITY_DETECTED\",\"message\":\"Unusual account activity has been detected. If this activity is determined to be abuse of free accounts, your access may be suspended. If you need \n00 XX  김도영이 돌아온 첫 타석에 홈런을 쳤는데 / 기아는 연장에서 졌어요\n모든 타입캐스트 계정이 거부해서 나머지 줄은 시도하지 않음\n계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED\n1줄 실패 — 모든 타입캐스트 계정이 거부됨(UNUSUAL_ACTIVITY 는 같은 PC 에서 무료 계정 여러 개를 쓴다고 본 것 → 계정 하나에 크레딧 충전이 확실한 해결)",
   "[08:44:58] [순위5] 음성 생성 시작",
   "[08:44:59] [순위5] 음성 실패:\n  계정1 거부 403 UNUSUAL_ACTIVITY_DETECTED — 남은 계정 없음\n  계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED\n  실패 403: {\"error_code\":\"UNUSUAL_ACTIVITY_DETECTED\",\"message\":\"Unusual account activity has been detected. If this activity is determined to be abuse of free accounts, your access may be suspended. If you need \n00 XX  두산이 엔씨를 오 대 이로 꺾고 / 가을야구 매직넘버를 이로 줄였어요\n모든 타입캐스트 계정이 거부해서 나머지 줄은 시도하지 않음\n계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED\n1줄 실패 — 모든 타입캐스트 계정이 거부됨(UNUSUAL_ACTIVITY 는 같은 PC 에서 무료 계정 여러 개를 쓴다고 본 것 → 계정 하나에 크레딧 충전이 확실한 해결)",
-  "[08:45:04] 끝 — 완성 0편, 실패 5편: 2026-09-30_순위.json, 2026-09-30_순위2.json, 2026-09-30_순위3.json, 2026-09-30_순위4.json, 2026-09-30_순위5.json"
+  "[08:45:04] 끝 — 완성 0편, 실패 5편: 2026-09-30_순위.json, 2026-09-30_순위2.json, 2026-09-30_순위3.json, 2026-09-30_순위4.json, 2026-09-30_순위5.json",
+  "[08:46:33] 시작 — 안 만든 콘티 찾기"
  ]
 }
