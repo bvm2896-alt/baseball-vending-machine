@@ -1,9 +1,14 @@
 {
  "date": "2026-09-29",
- "step": "시작",
+ "step": "완료",
  "videos": {},
  "built": {},
  "log": [
-  "[17:20:25] 시작 — 안 만든 콘티 찾기"
+  "[17:20:25] 시작 — 안 만든 콘티 찾기",
+  "[17:20:50] 깃허브에서 최신 프로그램·콘티 받음",
+  "[17:20:50] 만들 콘티 1편: 2026-09-30_이슈.json",
+  "[17:20:50] [이슈] 음성 생성 시작",
+  "[17:20:58] [이슈] 음성 실패:\n  계정1 거부 403 UNUSUAL_ACTIVITY_DETECTED — 남은 계정 없음\n  계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED\n  실패 403: {\"error_code\":\"UNUSUAL_ACTIVITY_DETECTED\",\"message\":\"Unusual account activity has been detected. If this activity is determined to be abuse of free accounts, your access may be suspended. If you need \n00 XX  이번 아시안게임엔 ABS가 없었어요 / 그런데 한국은 그것 때문에 지고 / 그것 덕분에 이겼어요\n모든 타입캐스트 계정이 거부해서 나머지 줄은 시도하지 않음\n계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED\n1줄 실패 — 모든 타입캐스트 계정이 거부됨(UNUSUAL_ACTIVITY 는 같은 PC 에서 무료 계정 여러 개를 쓴다고 본 것 → 계정 하나에 크레딧 충전이 확실한 해결)",
+  "[17:21:04] 끝 — 완성 0편, 실패 1편: 2026-09-30_이슈.json"
  ]
 }
