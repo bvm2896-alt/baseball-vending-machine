@@ -291,6 +291,18 @@ def refine_subs(i, line):
     if len(parts) <= 1: return 'single'
     path = os.path.join(VOICE, f'{i:02d}.mp3'); sj = path.replace('.mp3', '.segs.json')
     need = len(parts) - 1
+    # 9/28: 사람이 확인해 고정한 경계("lock": true)는 건드리지 않는다
+    try:
+        if json.load(open(sj)).get('lock'): return 'lock(고정)'
+    except Exception: pass
+    # 9/28: whisper 가 없으면 tts.seg_bounds(말하는 시간 기준 · 말 속도 고르게)로 잡는다 — 옛 assign_bounds 는 쉼 개수가 맞으면 순서대로 붙여 한 칸씩 밀렸다
+    if not whisper_model():
+        import tts
+        bb = tts.seg_bounds(path, parts)
+        b = [x for x, _ in bb]
+        durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
+        json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'src': 'speech-time'}, open(sj, 'w'))
+        return 'speech-time ' + ' '.join(f'{x:.2f}' for x in b[1:])
     sil, d = inner_silences(path)
     x = load(path)
     F, h = frames(x, 0.03, 0.01)

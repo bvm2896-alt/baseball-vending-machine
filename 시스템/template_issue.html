@@ -820,6 +820,58 @@ SCENE.compare = (lt, s) => {
 };
 
 /* question: 시청자 질문 (+ 사진) */
+
+/* pitchZone (9/29 신설): 주심 시점 정면 — 왼쪽 우타자(재현 이미지), 가운데 ABS 존, 바깥쪽(오른쪽)으로 넓은 주심 존, 정면에서 날아오는 공.
+   s.mode = intro(ABS 없음) | narrow(존 안쪽 끝 → 볼) | outside(존 밖 공 1개 → ABS면 볼 → 주심 스트라이크) | closer(타자 붙기 → 닿는다) | ball(더 바깥 → 볼)
+   s.img = 배경(주심 시점 사진, 흐림), s.batter.img = 타자 png. 시간은 lt 로만 계산(프레임 렌더). 상자 900×820 안 좌표. */
+SCENE.pitchZone = (lt, s) => {
+  const W = 900, H = 820, mode = s.mode || 'outside';
+  const bg = photoSrc(s.img), bat = photoSrc(s.batter && s.batter.img);
+  const ZL = 380, ZR = 640, ZT = 300, ZB = 720, ZW = ZR - ZL, BALL = Math.round(ZW * 7.3 / 47.2), EXT = Math.round(BALL * 1.5);
+  const KH = 700, KW = Math.round(KH * 350 / 828), KX = 24, KY = H - KH - 20;
+  const relX = 500, relY = 150;
+  const landOut = { x: ZR + BALL * 0.9, y: ZT + (ZB - ZT) * 0.5 }, landIn = { x: ZL + BALL * 0.7, y: ZT + (ZB - ZT) * 0.5 }, landFar = { x: ZR + EXT + BALL * 1.2, y: ZT + (ZB - ZT) * 0.6 }, landMid = { x: (ZL + ZR) / 2, y: (ZT + ZB) / 2 };
+  const shiftX = (landOut.x) - (ZR - BALL * 0.4);
+  const ABS = '#38BDF8', UMP = '#F59E0B', HIT = '#4ADE80', WH = '#FFFFFF';
+  const lab = (txt, x, y, col, size = 34, align = 'left') => `<div style="position:absolute;${align === 'right' ? `right:${W - x}px` : align === 'center' ? `left:${x}px;transform:translateX(-50%)` : `left:${x}px`};top:${y}px;font-size:${size}px;font-weight:900;color:${col};letter-spacing:-1px;white-space:nowrap;text-shadow:0 0 6px rgba(0,0,0,.9),0 2px 14px rgba(0,0,0,.8)">${esc(txt)}</div>`;
+  const call = (txt, col, p) => p <= 0 ? '' : `<div style="position:absolute;right:30px;top:36px;font-size:104px;font-weight:900;color:${col};letter-spacing:-3px;line-height:1;white-space:nowrap;text-shadow:0 0 8px rgba(0,0,0,.9),0 4px 24px rgba(0,0,0,.9);opacity:${c01(p * 3)};transform:scale(${0.6 + 0.4 * eo(Math.min(1, p * 3))});transform-origin:right top">${esc(txt)}</div>`;
+  const bottom = (txt, col, p = 1) => `<div style="position:absolute;left:0;right:0;bottom:22px;text-align:center;font-size:46px;font-weight:900;color:${col};letter-spacing:-1px;white-space:nowrap;text-shadow:0 0 6px rgba(0,0,0,.9),0 2px 14px rgba(0,0,0,.8);opacity:${c01(p * 2)}">${esc(txt)}</div>`;
+  const ballAt = (k, to, a = 1) => { const x = relX + (to.x - relX) * k - Math.sin(k * Math.PI) * 26, y = relY + (to.y - relY) * k - Math.sin(k * Math.PI) * 50 + k * k * 16, r = (BALL * 0.18) + (BALL / 2 - BALL * 0.18) * k * k;
+    return `<div style="position:absolute;left:${x - r}px;top:${y - r}px;width:${r * 2}px;height:${r * 2}px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#FFFFFF,#EDE7DA 70%,#BDB5A6);box-shadow:0 ${r * .3}px ${r}px rgba(0,0,0,.55);opacity:${a}"><svg viewBox="0 0 40 40" width="100%" height="100%"><path d="M11,6 Q19,20 11,34 M29,6 Q21,20 29,34" stroke="#C0392B" stroke-width="2.6" fill="none"/></svg></div>`; };
+  const flight = (t0, d, to) => { const k = eo(seg(lt, t0, d)); if (lt < t0) return ''; let h = ''; for (let i = 5; i >= 1; i--) { const kk = k - i * 0.05; if (kk > 0) h += ballAt(kk, to, 0.12); } return h + ballAt(k, to); };
+  const zoneBox = (a = 1) => `<div style="position:absolute;left:${ZL}px;top:${ZT}px;width:${ZW}px;height:${ZB - ZT}px;border:6px solid ${ABS};background:rgba(56,189,248,.16);box-sizing:border-box;opacity:${a};background-image:linear-gradient(rgba(56,189,248,.45) 2px,transparent 2px),linear-gradient(90deg,rgba(56,189,248,.45) 2px,transparent 2px);background-size:100% 33.34%,33.34% 100%"></div>` + lab('ABS 존', ZL, ZT - 46, ABS, 34);
+  const umpBox = (ext, a = 1, dash = true) => ext <= 0 || a <= 0 ? '' : `<div style="position:absolute;left:${ZR}px;top:${ZT}px;width:${ext}px;height:${ZB - ZT}px;background:rgba(245,158,11,.22);opacity:${a}"></div><div style="position:absolute;left:${ZL - 6}px;top:${ZT - 6}px;width:${ZW + ext + 12}px;height:${ZB - ZT + 12}px;border:6px ${dash ? 'dashed' : 'solid'} ${UMP};box-sizing:border-box;opacity:${a}"></div>` + (a > .5 ? lab('주심 존', ZR + ext + 10, ZT - 46, UMP, 34) : '');
+  const reach = (x, col, txt) => `<div style="position:absolute;left:${x - 3}px;top:${ZT - 40}px;width:0;height:${ZB - ZT + 60}px;border-left:6px dashed ${col};opacity:.95"></div>` + (txt ? lab(txt, x, ZT - 46, col, 30, 'center') : '');
+  const measure = (x1, x2, y, txt) => `<div style="position:absolute;left:${x1}px;top:${y - 2}px;width:${x2 - x1}px;height:4px;background:#fff"></div><div style="position:absolute;left:${x1}px;top:${y - 12}px;width:4px;height:24px;background:#fff"></div><div style="position:absolute;left:${x2 - 4}px;top:${y - 12}px;width:4px;height:24px;background:#fff"></div>` + lab(txt, (x1 + x2) / 2, y + 16, WH, 30, 'center');
+  const batter = (dx = 0) => bat ? `<div style="position:absolute;left:${KX + dx + KW * 0.5 - KW * .55}px;top:${KY + KH - 14}px;width:${KW * 1.1}px;height:26px;border-radius:50%;background:rgba(0,0,0,.4);filter:blur(4px)"></div><img src="${bat}" style="position:absolute;left:${KX + dx}px;top:${KY}px;width:${KW}px;height:${KH}px;object-fit:contain">` : '';
+  const arrow = (x, y, len, p) => p <= 0 ? '' : `<div style="position:absolute;left:${x}px;top:${y - 5}px;width:${len * eo(p)}px;height:10px;background:#fff;border-radius:5px;opacity:.95"></div><div style="position:absolute;left:${x + len * eo(p) - 6}px;top:${y - 18}px;width:0;height:0;border-top:18px solid transparent;border-bottom:18px solid transparent;border-left:30px solid #fff;opacity:${c01(p * 2)}"></div>`;
+  let inner = '';
+  if (mode === 'intro') {
+    const pA = seg(lt, 0, .5), pU = seg(lt, .9, .6), wob = 1 + .03 * Math.sin(lt * 5) * (pU > 0 ? 1 : 0);
+    inner = batter(0) + zoneBox(1 - .65 * pU) + `<div style="position:absolute;left:${ZL - 6}px;top:${ZT - 6}px;width:${ZW + 12}px;height:${ZB - ZT + 12}px;border:6px dashed ${UMP};box-sizing:border-box;opacity:${pU};transform:scale(${wob});transform-origin:center"></div>`
+      + flight(1.4, .8, landMid) + call('ABS 없음', UMP, seg(lt, 1.0, .3)) + bottom('볼 스트라이크는 주심이 본다', WH, seg(lt, 1.9, .4));
+  } else if (mode === 'narrow') {
+    const pN = seg(lt, 1.15, .5);
+    inner = batter(0) + zoneBox(1) + `<div style="position:absolute;left:${ZL + BALL * .9}px;top:${ZT + BALL * .5}px;width:${ZW - BALL * 1.8}px;height:${ZB - ZT - BALL}px;border:6px dashed ${UMP};box-sizing:border-box;opacity:${pN}"></div>` + (pN > .5 ? lab('사람 존', ZL + BALL * .9, ZB - 46, UMP, 30) : '')
+      + flight(.3, .8, landIn) + call('볼', WH, seg(lt, 1.15, .3)) + bottom('KBO 라면 스트라이크', ABS, seg(lt, 1.6, .4));
+  } else if (mode === 'outside') {
+    const ext = EXT * eo(seg(lt, 1.8, .6)), pS = seg(lt, 2.45, .3), pB = seg(lt, 1.15, .3);
+    inner = batter(0) + zoneBox(1) + umpBox(ext, c01(seg(lt, 1.8, .4))) + reach(ZR - BALL * .4, 'rgba(255,255,255,.9)', '배트 끝') + flight(.3, .8, landOut)
+      + (lt >= 1.15 ? measure(ZR, landOut.x - BALL / 2, landOut.y + BALL + 20, '공 1개 밖') : '')
+      + (pS > 0 ? call('스트라이크!', UMP, pS) : call('ABS 라면 볼', ABS, pB)) + bottom(pS > 0 ? '바깥쪽으로 공 한두 개 넓다' : '', UMP, pS);
+  } else if (mode === 'closer') {
+    const pM = eo(seg(lt, .1, .8)), dx = shiftX * pM, pH = seg(lt, 2.0, .3);
+    inner = batter(dx) + zoneBox(.55) + umpBox(EXT, 1) + reach(ZR - BALL * .4 + dx, pH > 0 ? HIT : 'rgba(255,255,255,.9)', '')
+      + (lt < 1.1 ? arrow(KX + KW * .6, ZT - 90, shiftX * 1.8, seg(lt, .1, .6)) : '') + (lt >= 1.1 ? flight(1.1, .8, landOut) : '')
+      + (pH > 0 ? `<div style="position:absolute;left:${landOut.x - BALL * .8 - 60 * pH}px;top:${landOut.y - BALL * .8 - 60 * pH}px;width:${(BALL * .8 + 60 * pH) * 2}px;height:${(BALL * .8 + 60 * pH) * 2}px;border:8px solid ${HIT};border-radius:50%;opacity:${1 - pH}"></div>` : '')
+      + call('닿는다', HIT, pH) + bottom(lt < 1.1 ? '홈플레이트에 바짝 붙어라' : (pH > 0 ? '같은 공이 배트에 닿는다' : ''), lt < 1.1 ? WH : HIT, 1);
+  } else { /* ball */
+    const pB = seg(lt, 1.2, .3);
+    inner = batter(shiftX) + zoneBox(.55) + umpBox(EXT, 1) + reach(ZR - BALL * .4 + shiftX, HIT, '') + ballAt(1, landOut, .3) + flight(.3, .8, landFar) + call('볼', WH, pB) + bottom('더 바깥으로 던지면 볼', WH, seg(lt, 1.5, .4));
+  }
+  B(`<div class="photo" style="height:${H}px;width:${W}px;background:#0f1a12">${bg ? `<img src="${bg}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 40%">` : ''}<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25),rgba(0,0,0,0) 30%,rgba(0,0,0,0) 70%,rgba(0,0,0,.35))"></div>${inner}</div>`);
+};
+
 SCENE.question = (lt, s) => {
   if (s.choices) {   /* 9/26: 질문도 그림으로 — 두 갈래 선택 카드(국기/로고/사진 + 짧은 말) */
     const card = (c, k) => { const src = photoSrc(c.img);
@@ -866,6 +918,7 @@ const MOTION = {
   scoreboard: s => .5 + (s.innings || 9) * .12 + .3 + (s.text ? .5 : 0),
   bars: s => .4 + (s.items || []).length * .3 + .5 + (s.text ? .5 : 0),
   podium: s => 1.9 + (s.text ? .5 : 0), upset: s => 1.7 + (s.text ? .5 : 0), compare: s => 1.8 + (s.text ? .5 : 0),
+  pitchZone: s => ({ intro: 2.6, narrow: 2.2, outside: 3.0, closer: 2.6, ball: 2.1 })[s.mode] || 2.6,
   icons: s => .6 + (s.n || 10) * Math.min(.08, 1.4 / (s.n || 10)) + .3 + (s.text ? .5 : 0),
   streaks: s => { const ts = s.teams || []; const last = ts.length ? Math.min(stN(ts[ts.length - 1].streak || (T(ts[ts.length - 1].team) || {}).st || ''), 10) : 0; return .5 + (ts.length - 1) * 1.0 + last * .12 + .45; },
 };

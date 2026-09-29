@@ -21,6 +21,8 @@ def _sub(x):
     t = x['sub'] if isinstance(x, dict) else str(x)
     return t.split('|')[-1] if os.environ.get('PV_LAST') else t.split('|')[0]
 EP['subs'] = [[i * SEC, (i + 1) * SEC, _sub(ep['lines'][i])] for i in range(N)]
+# 9/28: 호흡 구간 시작 시각(목차 강조용) — 미리보기는 줄 안을 고르게 나눈다
+EP['segT'] = [[round(i * SEC + k * SEC / max(1, len(l['narr'].split(' / '))), 3) for k in range(len(l['narr'].split(' / ')))] for i, l in enumerate(ep['lines'])]
 EP['logos'] = build.logos_data_uri(); EP['photos'] = build.photos_data_uri(ep, epp); EP['photoSizes'] = build.PHOTO_SIZES; EP['total'] = float(N) * SEC
 html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', build.font_dir_url())
 html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)
