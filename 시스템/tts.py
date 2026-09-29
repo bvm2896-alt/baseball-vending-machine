@@ -189,7 +189,10 @@ PAUSE = float(CFG.get('TTS_PAUSE', '0.12'))   # 대사 안의 " / " 표시 자�
 def tts_text(segs, is_last_q=False):
     """TTS 에 넣을 문장: 호흡 구간(' / ')은 쉼표로, 끝은 마침표/물음표로 → 한 사람이 쭉 읽는 자연스러운 억양.
     (쉼표·마침표 금지 규칙은 화면 자막 얘기고, TTS 입력엔 넣어야 억양이 자연스럽다)"""
-    t = ', '.join(segs)
+    # 9/28: 구간 끝에 물음표가 있으면(질문) 쉼표를 붙이지 않는다 → '보세요?, 댓글로' 대신 '보세요? 댓글로' (끝을 올려 읽게)
+    t = ''
+    for k, sg in enumerate(segs):
+        t += sg if k == 0 else ((' ' if segs[k - 1].endswith(('?', '!', '.')) else ', ') + sg)
     if not t.endswith(('?', '!', '.')): t += '.'
     return t
 
@@ -201,50 +204,67 @@ def probe_silences(path, thr='-35dB', mind=0.06):
     if len(en) < len(st): en.append(d)
     return d, list(zip(st, en))
 
-def seg_bounds(path, segs):
-    """한 번에 합성한 음성 안에서 각 호흡 구간이 시작하는 시각(초)과 그 자리의 실제 쉼(무음 구간).
-    타입캐스트는 쉼표마다 짧게 쉬므로, 음성 속 쉼의 개수가 호흡 구간 경계 수와 같으면 그대로 순서대로 쓴다.
-    더 많으면 글자 수 비율로 예상한 위치에 가장 잘 맞는 조합을 고르고, 적으면 있는 것만 맞추고 나머지는 비율로 추정.
-    반환: [(시작초, (무음시작,무음끝) 또는 None)]"""
-    d, sil = probe_silences(path, thr='-36dB', mind=0.08)
+def _syl(t):
+    return len(re.findall(r'[가-힣]', t)) + 1.3 * len(re.findall(r'[0-9A-Za-z]', t)) or 1
+
+def seg_bounds(path, segs, NONE=0.08, GAPB=0.5):
+    """한 번에 합성한 음성 안에서 각 호흡 구간(' / ')이 시작하는 시각(초)과 그 자리의 실제 쉼(무음 구간).
+    9/28 롱폼③ 사고(자막이 1초 넘게 먼저/늦게 넘어가고, 호흡 쉼이 단어 가운데 끼어 '말이 끊김') 뒤 새 방식:
+      - 타입캐스트는 쉼표 자리에서 안 쉬기도 하고, 쉼표 아닌 곳('셋째,' '경찰야구단이 ..')에서 쉬기도 한다.
+        그래서 '쉼 개수 = 경계 수면 순서대로 쓴다'는 옛 규칙이 경계를 통째로 한 칸씩 밀었다.
+      - 이제는 쉼을 뺀 '말하는 시간'으로 재서, 경계마다 (쉼 하나 | 쉼 없음)을 배정했을 때
+        구간별 말 속도(초/음절)가 가장 고르게 되는 배정을 고른다(동적 계획법). 긴 쉼은 경계일 가능성이 높아 가산점,
+        음절당 0.08~0.175초를 벗어나는 구간은 벌점. 쉼 없는 경계는 앞뒤 확정 경계 사이를 글자 수로 나눈다.
+    반환: [(시작초, (무음시작,무음끝) 또는 None)] — None 자리엔 호흡 쉼을 끼우지 않는다(단어 가운데 끼면 말이 끊긴다)"""
+    import functools, math
+    d, sil = probe_silences(path, thr='-36dB', mind=0.04)
     lead = sil[0][1] if sil and sil[0][0] < 0.02 else 0.0
     tail = sil[-1][0] if sil and sil[-1][1] >= d - 0.03 else d
     inner = [(a, b) for a, b in sil if a > lead + 0.05 and b < tail - 0.05]
+    cs, acc, prev = [], 0.0, lead
+    for a, b in inner:
+        acc += a - prev; cs.append(acc); prev = b
+    total = max(0.2, acc + (tail - prev))
     need = len(segs) - 1
-    syl = [max(1, len(re.findall(r'[가-힣A-Za-z0-9]', x))) for x in segs]
-    tot = sum(syl); speech = max(0.2, tail - lead)
-    exp = []
-    acc = 0
-    for k in range(need):
-        acc += syl[k]; exp.append(lead + speech * acc / tot)
-    chosen = [None] * need
-    if len(inner) == need:
-        chosen = list(inner)
-    elif len(inner) > need:
-        # 순서를 지키며 need 개 고르기: 예상 위치와의 차이 합이 최소인 조합 (동적 계획법)
-        import functools
-        mids = [(a + b) / 2 for a, b in inner]
-        @functools.lru_cache(None)
-        def best(i, k):   # inner[i:] 에서 exp[k:] 를 순서대로 맞출 때 최소 비용, 선택 인덱스
-            if k == need: return (0.0, ())
-            if len(inner) - i < need - k: return (1e9, ())
-            skip = best(i + 1, k)
-            c, rest = best(i + 1, k + 1)
-            take = (c + abs(mids[i] - exp[k]), (i,) + rest)
-            return min(skip, take, key=lambda x: x[0])
-        for k, idx in enumerate(best(0, 0)[1]): chosen[k] = inner[idx]
-    else:
-        # 쉼이 부족: 가까운 예상 위치에 하나씩 배정
-        used = set()
+    raw = [_syl(x) for x in segs]
+    w = [r + 1.0 for r in raw]; W = sum(w); ov = total / W   # +1: 구간 끝 음절은 늘어진다
+    def pen(sp_, k0, k1):
+        rr = sp_ / sum(raw[k0:k1])
+        return 0.0 if 0.08 <= rr <= 0.175 else 1.0
+    @functools.lru_cache(None)
+    def best(k, i, s0):
+        ws = sum(w[k + 1:]); r = (total - s0) / ws
+        opts = [(ws / W * abs(math.log(max(r, 1e-3) / ov)) + NONE * (need - k - 1) + pen(total - s0, k + 1, need + 1), ())]
+        for k2 in range(k + 1, need):
+            ws = sum(w[k + 1:k2 + 1])
+            for j in range(i, len(inner)):
+                s1 = cs[j]
+                if s1 <= s0: continue
+                g = inner[j][1] - inner[j][0]
+                c = ws / W * abs(math.log(((s1 - s0) / ws) / ov)) + NONE * (k2 - k - 1) - GAPB * min(g, 0.4) + pen(s1 - s0, k + 1, k2 + 1)
+                sub, path_ = best(k2, j + 1, s1)
+                opts.append((c + sub, ((k2, j),) + path_))
+        return min(opts, key=lambda z: z[0])
+    pick = [None] * need
+    for k2, j in best(-1, 0, 0.0)[1]: pick[k2] = j
+    def s2t(s):
+        acc, prev = 0.0, lead
         for a, b in inner:
-            m = (a + b) / 2
-            k = min((abs(m - e), j) for j, e in enumerate(exp) if j not in used)[1] if len(used) < need else None
-            if k is not None: chosen[k] = (a, b); used.add(k)
-    out, prev = [(0.0, None)], lead
-    for k in range(need):
-        iv = chosen[k]
-        pos = iv[1] if iv else max(prev + 0.15, exp[k])
-        out.append((round(pos, 3), iv)); prev = pos
+            if acc + (a - prev) >= s: return prev + (s - acc)
+            acc += a - prev; prev = b
+        return prev + (s - acc)
+    anc = {-1: 0.0}
+    for k, p in enumerate(pick):
+        if p is not None: anc[k] = cs[p]
+    anc[need] = total
+    out, last = [(0.0, None)], 0.0
+    for k, p in enumerate(pick):
+        if p is not None: pos, iv = inner[p][1], inner[p]
+        else:
+            lo = max(j for j in anc if j < k); hi = min(j for j in anc if j > k)
+            pos = s2t(anc[lo] + (anc[hi] - anc[lo]) * sum(w[lo + 1:k + 1]) / sum(w[lo + 1:hi + 1])); iv = None
+        pos = max(pos, last + 0.15); last = pos
+        out.append((round(pos, 3), iv))
     return out
 
 BREATH = float(CFG.get('TTS_BREATH', '0.1'))   # 긴 대사의 호흡 자리(' / ')에 살짝 끼워 넣는 쉼(초). 실제 쉼이 감지된 자리에만 넣는다

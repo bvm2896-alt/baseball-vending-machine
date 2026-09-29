@@ -624,9 +624,9 @@ SCENE.bars = (lt, s) => {
     const p = seg(lt, .3 + i * (big ? .3 : .2), .7), v = (Number(it.value) || 0), f = Math.min(1, v / (it.max || mx)) * eo(p), hi = it.hi === true;
     const shown = Number.isInteger(v) ? Math.round(v * eo(p)) : (v * eo(p)).toFixed(it.dec ?? 2), c = hi ? ACC : (it.color || '#9AA3B2');
     h += `<div class="pane" style="display:flex;align-items:center;gap:30px;border-radius:26px;padding:${PAD}px 36px;${rise(seg(lt, .2 + i * (big ? .3 : .2), .4), 30)};${hi ? 'border-color:var(--acc);' : ''}">
-      <div style="width:${big ? 300 : 360}px;flex:0 0 auto;display:flex;align-items:center;gap:14px">${it.team ? tchip(it.team, 62) : ''}<div class="title" style="font-size:${LS}px;font-weight:900;text-align:left">${esc(it.label || '')}${it.sub ? `<div class="label" style="font-size:${Math.round(LS * .55)}px;color:${GRAY}">${esc(it.sub)}</div>` : ''}</div></div>
+      <div style="width:${big ? 300 : 360}px;flex:0 0 auto;display:flex;align-items:center;gap:14px">${it.team ? tchip(it.team, 62) : ''}<div class="title" style="font-size:${LS}px;font-weight:900;text-align:left;line-height:1.12">${br(it.label || '')}${it.sub ? `<div style="margin-top:6px;font-size:${Math.round(LS * .7)}px;font-weight:800;letter-spacing:-1px;color:${hi ? 'var(--acc)' : '#3B4A63'}">${esc(it.sub)}</div>` : ''}</div></div>
       <div style="flex:1;height:${BH}px;border-radius:${Math.round(BH / 4)}px;background:#EEF1F6;overflow:hidden"><div style="width:${(f * 100).toFixed(2)}%;height:100%;border-radius:${Math.round(BH / 4)}px;background:${c}"></div></div>
-      <div class="num" style="width:${big ? 260 : 220}px;flex:0 0 auto;text-align:right;font-size:${NS}px;font-weight:900;color:${hi ? 'var(--acc)' : (it.color || TXT)};white-space:nowrap">${esc(String(shown))}<span style="font-size:${Math.round(NS * .45)}px;margin-left:4px">${esc(it.unit || '')}</span></div></div>`;
+      <div class="num" style="width:${big ? 260 : 220}px;flex:0 0 auto;text-align:right;font-size:${it.note ? Math.round(NS * .72) : NS}px;font-weight:900;color:${hi ? 'var(--acc)' : (it.color || TXT)};white-space:nowrap">${it.note ? esc(it.note) : `${esc(String(shown))}<span style="font-size:${Math.round(NS * .45)}px;margin-left:4px">${esc(it.unit || '')}</span>`}</div></div>`;   /* 9/28: note = 숫자 대신 글씨(예: 1946년 '시작') */
   });
   h += '</div>';
   if (s.text) h += `<div class="big gold" style="margin-top:${big ? 34 : 22}px;font-size:${s.size || 72}px;${pop(seg(lt, .4 + n * (big ? .3 : .2) + .3, .5))}">${br(s.text)}</div>`;
@@ -718,28 +718,62 @@ const titleH = (lt, s, sz = 56, mb = 26, still) => s.title ? `<div class="title"
 const textH = (lt, s, t0, sz = 72) => s.text ? `<div class="big gold" style="margin-top:26px;font-size:${s.size || sz}px;${pop(seg(lt, t0, .5))}">${br(s.text)}</div>` : '';
 
 /* toc: 말로 하는 목차 — on<0 이면 차례로 켜지고, on=i 면 i번 칸만 강조(챕터 시작) */
+/* 9/28 목차: (1) 목차를 읽는 줄(on:-1)은 칸이 먼저 차례로 올라오고, 말로 읽는 칸을 그 호흡이 시작될 때 강조색으로 바꾼다(EP.segT = 줄별 호흡 시작 시각).
+   (2) 챕터 시작 목차(on:N)는 사라졌다 다시 나오지 않는다 — 앞 장면도 목차면 그대로 두고, 앞에서 강조된 칸은 풀리고 이번 칸이 서서히 강조된다.
+   강조는 글씨 크기·여백을 바꾸지 않고(칸이 들썩이지 않게) 색과 살짝 확대(scale)로만. */
+const _hx = h => { h = String(h).replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)); };
+const mixC = (a, b, t) => { const A = _hx(a), Bc = _hx(b), k = c01(t); return `rgb(${A.map((v, i) => Math.round(v + (Bc[i] - v) * k)).join(',')})`; };
+let NOW = 0;
 SCENE.toc = (lt, s) => {
-  const CH = EP.chapters || [], on = s.on ?? -1;
+  const CH = EP.chapters || [], on = s.on ?? -1, n = CH.length;
+  const hiA = new Array(n).fill(0), dimA = new Array(n).fill(0), vis = new Array(n).fill(1);
+  if (on < 0) {
+    const T = (EP.segT || [])[s.startLine] || [], first = s.itemFrom ?? 1;
+    for (let i = 0; i < n; i++) vis[i] = seg(lt, .1 + i * .12, .4);            /* 칸은 첫 호흡 동안 차례로 올라온다 */
+    if (T.length > first) {
+      for (let i = 0; i < n; i++) {
+        const t0 = T[first + i], t1 = T[first + i + 1];
+        if (t0 == null) continue;
+        const up = c01((NOW - t0 + .08) / .25), down = t1 == null ? 0 : c01((NOW - t1 + .08) / .25);
+        hiA[i] = up * (1 - down);
+        if (NOW >= t0 - .08) vis[i] = 1;
+      }
+    }
+  } else {
+    const P = s._prev, fromToc = !!(s._same && P && P.type === 'toc');
+    const pOn = fromToc ? ((P.on ?? -1) < 0 ? n - 1 : P.on) : -1, pDim = fromToc && (P.on ?? -1) >= 0;
+    const q = eo(seg(lt, fromToc ? .05 : .25, .45));
+    for (let i = 0; i < n; i++) {
+      const was = i === pOn ? 1 : 0, now = i === on ? 1 : 0;
+      hiA[i] = was + (now - was) * q;
+      const d0 = pDim ? (i === pOn ? 0 : 1) : 0, d1 = i === on ? 0 : 1;
+      dimA[i] = d0 + (d1 - d0) * q;
+    }
+  }
   const items = CH.map((c, i) => {
-    const p = on < 0 ? seg(lt, .15 + i * .28, .45) : 1, hi = on === i, dim = on >= 0 && !hi;
-    return `<div class="row" style="gap:28px;justify-content:flex-start;width:1180px;padding:${hi ? 22 : 16}px 36px;border-radius:26px;background:${hi ? ACC : '#fff'};border:4px solid ${hi ? ACC : LINE};
-      box-shadow:0 10px 28px rgba(18,22,31,${hi ? .18 : .06});opacity:${dim ? .42 : 1};${on < 0 ? rise(p, 26) : hi ? pop(seg(lt, .05, .45)) : ''}">
-      <div class="num" style="width:78px;height:78px;border-radius:50%;flex:0 0 auto;background:${hi ? '#fff' : '#12161F'};color:${hi ? ACC : '#fff'};display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:900">${i + 1}</div>
-      <div style="font-size:${hi ? 64 : 56}px;font-weight:900;letter-spacing:-2px;color:${hi ? '#fff' : TXT};white-space:nowrap">${esc(c.title)}</div></div>`;
+    const a = hiA[i], p = vis[i];
+    return `<div class="row" style="gap:28px;justify-content:flex-start;width:1180px;padding:19px 36px;border-radius:26px;background:${mixC('#FFFFFF', ACC, a)};border:4px solid ${mixC(LINE, ACC, a)};
+      box-shadow:0 10px 28px rgba(18,22,31,${(.06 + .12 * a).toFixed(3)});opacity:${((1 - .58 * dimA[i]) * c01(p * 1.4)).toFixed(3)};transform:translateY(${((1 - eo(p)) * 26).toFixed(1)}px) scale(${(1 + .035 * a).toFixed(4)})">
+      <div class="num" style="width:78px;height:78px;border-radius:50%;flex:0 0 auto;background:${mixC('#12161F', '#FFFFFF', a)};color:${mixC('#FFFFFF', ACC, a)};display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:900">${i + 1}</div>
+      <div style="font-size:58px;font-weight:900;letter-spacing:-2px;color:${mixC(TXT, '#FFFFFF', a)};white-space:nowrap">${esc(c.title)}</div></div>`;
   }).join('');
-  wrapC(`<div class="col" style="gap:${CH.length > 4 ? 16 : 22}px">${items}</div>`);
+  wrapC(`<div class="col" style="gap:${n > 4 ? 18 : 24}px">${items}</div>`);
 };
 
 /* gantt: 팀 수명 막대 — 연도 커서가 흐르며 막대가 자라고, 해체된 팀은 회색으로 끝난다.
    rows:[{name,spans:[[a,b]],kind:'bank'|'co',people:[..]}], show:N, from/until(커서), marks:[{y,label,color}], hi:[이름], ended:true, labels:{이름:[사람]} */
 SCENE.gantt = (lt, s) => {
   const Y0 = s.y0 || 1946, Y1 = s.y1 || 2003, rows = (s.rows || []).slice(0, s.show || 99), n = rows.length;
-  const W = 1180, LW = 330, RH = Math.min(n <= 5 ? 84 : 62, Math.floor(560 / Math.max(1, n))), BH = Math.round(RH * .62);
+  /* 9/28: 이름 칸 폭을 전체 팀 이름(보이지 않는 줄 포함 → 이어지는 장면끼리 폭이 같다) 길이에 맞춘다.
+     예전엔 330 고정에 오른쪽 정렬이라 짧은 은행 이름일 때 그림 덩어리가 오른쪽으로 쏠려 보였다 */
+  const estW = t => [...String(t)].reduce((a, c) => a + (/[가-힣]/.test(c) ? 36 : /[·\s]/.test(c) ? 16 : 22), 0);
+  const W = 1180, LW = Math.min(330, Math.max(160, ...(s.rows || []).map(r => estW(r.label || r.name) + 34))), NA = (s.rows || []).length || n, RH = Math.min(NA <= 5 ? 84 : 62, Math.floor(560 / Math.max(1, NA))), BH = Math.round(RH * .62);
+  const prevLab = (s._same && s._prev && s._prev.labels) || {};
   const x = y => (c01((y - Y0) / (Y1 - Y0)) * W);
   const cur = s.from != null ? s.from + (s.until - s.from) * eo(seg(lt, .15, 1.2)) : (s.until || Y1);
   const NEW = s.newFrom ?? n, hiSet = new Set(s.hi || []);
   let h = titleH(lt, s, 52, 18, s._same);
-  h += `<div style="position:relative;width:${LW + W + 40}px">`;
+  h += `<div style="position:relative;width:${LW + W}px;left:-30px">`;   /* 9/28: 오른쪽 끝 연도 글자(2003·해체 연도) 만큼 살짝 왼쪽으로 → 그림 덩어리 가운데 */
   /* 축 */
   const ticks = s.ticks || [1946, 1960, 1970, 1982, 1990, 1997, 2003];
   h += `<div style="position:relative;height:44px;margin-left:${LW}px;width:${W}px">${ticks.map(y => `<div class="num" style="position:absolute;left:${x(y)}px;transform:translateX(-50%);font-size:28px;font-weight:800;color:${GRAY}">${y}</div>`).join('')}</div>`;
@@ -753,11 +787,12 @@ SCENE.gantt = (lt, s) => {
     const endLab = (s.endLabels && dead && (s.endLabels === true || s.endLabels.includes(r.name))) ? `<div class="num" style="position:absolute;left:${x(end) + 12}px;top:${(RH - 34) / 2}px;font-size:26px;font-weight:900;color:${isHi ? ACC : GRAY};white-space:nowrap">${end}</div>` : '';
     const ppl = (s.labels && s.labels[r.name] || []);
     const visEnd = Math.min(end, Math.max(r.spans[0][0], cur));   /* 9/28: 사람 이름표는 보이는 막대 끝 오른쪽에 */
-    const pch = ppl.map((nm, j) => `<div style="position:absolute;left:${x(visEnd) + 18 + j * 142}px;top:${(RH - 48) / 2}px;height:48px;padding:0 20px;border-radius:999px;background:#12161F;color:#fff;font-size:31px;font-weight:900;display:flex;align-items:center;white-space:nowrap;${pop(seg(lt, .3 + j * .2, .4))}">${esc(nm)}</div>`).join('');
+    const pch = ppl.map((nm, j) => `<div style="position:absolute;left:${x(visEnd) + 18 + j * 142}px;top:${(RH - 48) / 2}px;height:48px;padding:0 20px;border-radius:999px;background:#12161F;color:#fff;font-size:31px;font-weight:900;display:flex;align-items:center;white-space:nowrap;${(prevLab[r.name] || []).includes(nm) ? '' : pop(seg(lt, .3 + j * .2, .4))}">${esc(nm)}</div>`).join('');   /* 9/28: 앞 장면에 있던 이름표는 그대로 */
     h += `<div style="display:flex;align-items:center;height:${RH}px;${i < NEW ? '' : rise(p, 16)}">
-      <div style="width:${LW}px;flex:0 0 ${LW}px;text-align:right;padding-right:24px;font-size:${RH > 52 ? 36 : 31}px;font-weight:900;letter-spacing:-1px;white-space:nowrap;color:${dead && !isHi ? GRAY : TXT}">${esc(r.label || r.name)}</div>
+      <div style="width:${LW}px;flex:0 0 ${LW}px;text-align:left;padding-right:24px;font-size:${RH > 52 ? 36 : 31}px;font-weight:900;letter-spacing:-1px;white-space:nowrap;color:${dead && !isHi ? GRAY : TXT}">${esc(r.label || r.name)}</div>
       <div style="position:relative;width:${W}px;height:${RH}px;border-bottom:1px solid ${LINE}">${bars}${pch}${endLab}</div></div>`;
   });
+  if (n < NA) h += `<div style="height:${(NA - n) * RH}px"></div>`;   /* 9/28: 뒤에 나올 줄 자리를 미리 비워 둔다(줄이 늘 때 표가 위로 밀리지 않게) */
   /* 세로선 */
   (s.marks || []).forEach((m, k) => {
     const q = s._same && (s._prev.marks || []).some(z => z.y === m.y) ? 1 : seg(lt, .1 + k * .15, .4);
@@ -767,8 +802,9 @@ SCENE.gantt = (lt, s) => {
   /* 커서 */
   if (s.from != null) h += `<div style="position:absolute;left:${LW + x(cur)}px;top:-6px;height:${n * RH + 12}px;width:3px;margin-left:-1px;background:${ACC};opacity:.55"></div>`;
   h += `</div></div>`;
-  if (s.badge) h += `<div class="badge" style="margin-top:${(s.marks || []).length ? 64 : 24}px;background:${ACC};font-size:40px;padding:12px 30px;${pop(seg(lt, .5, .45))}">${esc(s.badge)}</div>`;
-  else if ((s.marks || []).length) h += `<div style="height:48px"></div>`;
+  /* 9/28: 배지는 표 아래 빈자리 위에 띄운다 → 배지가 있든 없든 표 위치가 같다(이어지는 장면에서 표가 들썩이지 않게) */
+  if (s.badge) h = h.replace(/<\/div><\/div>$/, '') + `<div style="position:absolute;left:${LW}px;width:${W}px;top:${n * RH + ((s.marks || []).length ? 64 : 22)}px;display:flex;justify-content:center"><div class="badge" style="background:${ACC};font-size:40px;padding:12px 30px;${pop(seg(lt, .5, .45))}">${esc(s.badge)}</div></div></div></div>`;
+  if ((s.marks || []).length) h += `<div style="height:48px"></div>`;
   wrapC(h);
 };
 
@@ -822,10 +858,10 @@ SCENE.funnel = (lt, s) => {
   let h = titleH(lt, s, 52, 26, s._same);
   h += `<div class="col" style="gap:14px">` + lv.map((l, i) => {
     const p = i < NEW ? 1 : seg(lt, .1 + (i - NEW) * .45, .5), w = Math.round(MAXW * Math.pow(.62, i)), last = i === n - 1 && n > 1;
-    return `<div style="display:flex;align-items:center;gap:28px;${i < NEW ? '' : rise(p, 22)}">
+    return `<div style="position:relative;display:flex;align-items:center;justify-content:center;${i < NEW ? '' : rise(p, 22)}">
       <div class="row" style="width:${w}px;height:130px;border-radius:${i ? 24 : 30}px;background:${last ? ACC : i ? '#3B4A63' : '#12161F'};color:#fff;gap:26px;clip-path:polygon(0 0,100% 0,${100 - 3}% 100%,3% 100%)">
         <span class="num" style="font-size:88px;font-weight:900;letter-spacing:-3px">${esc(l.n)}</span><span style="font-size:44px;font-weight:800">${esc(l.label || '')}</span></div>
-      ${l.chip ? `<div class="badge" style="background:#fff;color:${TXT};border:4px solid ${LINE};font-size:38px;padding:12px 26px;${pop(seg(lt, .4 + (i - NEW) * .45, .4))}">${esc(l.chip)}</div>` : ''}</div>`;
+      ${l.chip ? `<div style="position:absolute;left:100%;top:50%;transform:translateY(-50%);padding-left:28px"><div class="badge" style="background:#fff;color:${TXT};border:4px solid ${LINE};font-size:38px;padding:12px 26px;white-space:nowrap;${pop(seg(lt, .4 + (i - NEW) * .45, .4))}">${esc(l.chip)}</div></div>` : ''}</div>`;   /* 9/28: 칩은 막대 옆에 떠 있게(막대는 위 단과 같은 가운데 줄) */
   }).join('') + `</div>`;
   h += textH(lt, s, .5 + n * .45, 68);
   wrapC(h);
@@ -835,7 +871,8 @@ SCENE.funnel = (lt, s) => {
 SCENE.domino = (lt, s) => {
   const n = s.n || 5, st = s.state || 'fall', W = 150, H = 300;
   let h = titleH(lt, s, 52, 30, false);
-  h += `<div class="row" style="gap:70px;align-items:flex-end;height:${H + 40}px">` + Array.from({ length: n }, (_, i) => {
+  const lean = st === 'fall' ? eo(seg(lt, .3 + (n - 1) * .22, .35)) : st === 'down' ? 1 : 1 - eo(seg(lt, .3, .7));
+  h += `<div class="row" style="gap:70px;align-items:flex-end;height:${H + 40}px;transform:translateX(${(-120 * lean).toFixed(1)}px)">` + Array.from({ length: n }, (_, i) => {   /* 9/28: 쓰러진 칸은 오른쪽으로 눕는다 → 그만큼 왼쪽으로 옮겨 가운데 */
     let a;
     if (st === 'fall') a = 72 * eo(seg(lt, .3 + i * .22, .35));
     else if (st === 'down') a = 72;
@@ -856,11 +893,11 @@ SCENE.flip = (lt, s) => {
     const isOpen = i < open, anim = isOpen && i >= was, p = anim ? seg(lt, .15, .6) : isOpen ? 1 : 0;
     const ang = 180 * (1 - eo(p)), showBack = ang < 90;
     const face = showBack
-      ? `<div class="col" style="gap:22px;padding:40px 44px">${it.kind === 'quote' ? `<div style="font-size:120px;line-height:.6;font-weight:900;color:${ACC}">“</div>` : ''}
+      ? `<div class="col" style="gap:22px;padding:40px 44px">${it.kind === 'quote' ? `<div style="position:absolute;left:40px;top:34px;font-size:120px;line-height:.9;font-weight:900;color:${ACC}">“</div>` : ''}
           <div style="font-size:${it.fs || 60}px;font-weight:900;letter-spacing:-2px;line-height:1.28;text-align:center;color:${TXT}">${br(it.back || '')}</div>
           ${it.sub ? `<div class="label" style="font-size:34px;text-align:center">${br(it.sub)}</div>` : ''}</div>`
       : `<div class="num" style="font-size:180px;font-weight:900;color:#fff;opacity:.9">${i + 1}</div>`;
-    return `<div style="width:${its.length > 2 ? 520 : 760}px;min-height:520px;border-radius:36px;display:flex;align-items:center;justify-content:center;
+    return `<div style="position:relative;width:${its.length > 2 ? 520 : 760}px;min-height:520px;border-radius:36px;display:flex;align-items:center;justify-content:center;
       background:${showBack ? '#fff' : '#12161F'};border:4px solid ${showBack ? (it.hi ? ACC : LINE) : '#12161F'};box-shadow:0 18px 48px rgba(18,22,31,.12);
       transform:perspective(1600px) rotateY(${showBack ? ang : 180 - ang}deg);${was || s._same ? '' : rise(seg(lt, i * .15, .4), 30)}">${face}</div>`;
   }).join('') + `</div>`;
@@ -946,6 +983,7 @@ function render(t) {
   s._same = !!(prev && prev.type === s.type && (
     (s.type === 'h2h' && J(prev.rows) === J(s.rows) && (prev.title || '') === (s.title || '')) ||
     (s.type === 'matchup' && prev.left === s.left && prev.right === s.right && !photoSrc(s.img)) ||
+    (s.type === 'toc') ||   /* 9/28: 목차 → 목차는 사라지지 않고 강조만 옮긴다 */
     (s.cont && ['gantt', 'flow', 'cells', 'funnel', 'flip'].includes(s.type))));   /* 9/28: 이어지는 그림(콘티 cont:true)은 사라졌다 나타나지 않는다 */
   if (s._nmax == null) {   // 9/19: 같은 사진이 이어지는 profile 묶음의 최대 칩 수 (칩 크기를 처음부터 맞춰 둔다)
     let a = k, b = k; const same = (x, y) => x && y && x.type === 'profile' && y.type === 'profile' && photoSrc(x.img) && photoSrc(x.img) === photoSrc(y.img);
@@ -956,6 +994,7 @@ function render(t) {
   }
   const need = (MOTION[s.type] || MOTION.big)(s), fit = Math.max(0.6, (end - start) * 0.75);
   const lt = (t - start) * (need > fit ? need / fit : 1);
+  NOW = t;
   (SCENE[s.type] || SCENE.big)(lt, s);
   document.querySelectorAll('[data-fit]').forEach(el => {        // 한 줄짜리 강조 문구를 칸 폭에 맞춰 줄인다
     const lim = +el.dataset.fit; let fs = parseFloat(el.style.fontSize || getComputedStyle(el).fontSize), g = 0;

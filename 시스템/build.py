@@ -494,7 +494,9 @@ def render(ep, ep_path):
     total = st[N - 1] + clips[N - 1] + TAIL
     # 자막은 "실제로 말이 나오는 동안"만: 잘라낸 클립 안에서 말이 시작·끝나는 시각을 다시 재서 그 사이에만 띄운다
     subs = []
+    segT = []   # 9/28: 줄마다 호흡 구간이 실제로 시작하는 시각(초) — 목차를 읽는 동안 그 칸을 강조하는 데 쓴다
     for i in range(N):
+        segT.append([round(st[i], 2)])
         dst = VW(f't{i:02d}.wav')
         d2, lead2, tail2 = probe(dst)
         sp_start, sp_end = st[i] + max(0, lead2 - SUBLEAD), st[i] + min(d2, tail2 + 0.05)
@@ -508,6 +510,7 @@ def render(ep, ep_path):
                 starts_k, acc = [], 0.0
                 for k, d_ in enumerate(durs):
                     starts_k.append(st[i] + max(0, (acc - ss_i)) / rate); acc += d_ + pause
+                segT[-1] = [round(max(sp_start, x_), 2) for x_ in starts_k]
                 items = []
                 for k, pc in enumerate(pieces):
                     a = sp_start if k == 0 else max(sp_start, starts_k[k] - SUBLEAD)
@@ -535,14 +538,14 @@ def render(ep, ep_path):
         f.write("file 'tail.wav'\n")
     run(['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', VW('list.txt'), W('narration.wav')], check=True)
     # 4) 템플릿에 데이터 주입
-    EP = dict(ep); EP['subs'] = subs; EP['bounds'] = bounds; EP['logos'] = logos_data_uri(); EP['total'] = round(total, 2); EP['_path'] = ep_path
+    EP = dict(ep); EP['subs'] = subs; EP['segT'] = segT; EP['bounds'] = bounds; EP['logos'] = logos_data_uri(); EP['total'] = round(total, 2); EP['_path'] = ep_path
     EP['photos'] = photos_data_uri(ep, ep_path)  # 야구이슈 편 사진(없으면 빈 dict)
     EP['photoSizes'] = PHOTO_SIZES
     tpl = template_for(ep); print('템플릿:', tpl)
     html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
     html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)
     io.open(W('render.html'), 'w', encoding='utf-8').write(html)
-    json.dump({'total': round(total, 2), 'starts': st, 'durs': clips, 'gaps': gaps, 'bounds': bounds, 'subs': subs},
+    json.dump({'total': round(total, 2), 'starts': st, 'durs': clips, 'gaps': gaps, 'bounds': bounds, 'subs': subs, 'segT': segT},
               io.open(W('timeline.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     # 5) 프레임 렌더 → 무음 영상 (설정.txt VIDEO_FPS 기본 60, VIDEO_SCALE 기본 1.3333 = 1440x2560 2K)
     fps = int(cfg_get('VIDEO_FPS', '60')); scale = cfg_get('VIDEO_SCALE', '1.3333')
