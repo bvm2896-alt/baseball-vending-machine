@@ -350,7 +350,7 @@ SCENE.photo = (lt, s) => {
     return SCENE.big(lt, { text: t, size: Math.min(s.size || 130, 120) });
   }
   B(`${photoBox(s, s.h || 640, seg(lt, 0, .6))}
-  ${s.text ? `<div class="mega gold" style="margin-top:36px;font-size:${s.size || 130}px;${pop(seg(lt, .35, .6))}">${br(s.text)}</div>` : ''}`);
+  ${s.text ? `<div class="mega gold" style="margin-top:36px;font-size:${s.size || 130}px;${(s.size || 130) < 110 ? 'letter-spacing:-1px;word-spacing:6px;line-height:1.15;' : ''}${pop(seg(lt, .35, .6))}">${br(s.text)}</div>` : ''}`);
 };
 
 /* people: 인물 카드 1~3장. {title, items:[{img, name, team, note, bad:true|false}], text}
@@ -743,9 +743,10 @@ SCENE.bars = (lt, s) => {
     const p = seg(lt, .3 + i * .3, .7), v = (Number(it.value) || 0), w = 560 * Math.min(1, v / (it.max || mx)) * eo(p), hi = it.hi === true;
     const shown = Number.isInteger(v) ? Math.round(v * eo(p)) : (v * eo(p)).toFixed(it.dec ?? 2);
     h += `<div class="pane" style="border-radius:24px;padding:18px 24px;${rise(seg(lt, .2 + i * .3, .4), 30)};${hi ? 'border-color:var(--acc);' : ''}">
-      <div class="row" style="gap:14px;align-items:center;justify-content:flex-start;margin-bottom:10px">${it.team ? tchip(it.team, 62) : ''}<div class="title" style="font-size:40px;font-weight:900">${esc(it.label || '')}</div>${it.sub ? `<div class="label" style="font-size:28px;color:${GRAY}">${esc(it.sub)}</div>` : ''}</div>
+      <div class="row" style="gap:14px;align-items:center;justify-content:flex-start;margin-bottom:10px">${it.team ? tchip(it.team, 62) : ''}<div class="title" style="font-size:44px;font-weight:900">${esc(it.label || '')}</div></div>
       <div class="row" style="gap:18px;align-items:center;justify-content:flex-start"><div style="width:560px;height:46px;border-radius:12px;background:#EEF1F6;overflow:hidden"><div style="width:${w}px;height:100%;border-radius:12px;background:${hi ? 'var(--acc)' : (it.color || '#9AA3B2')}"></div></div>
-      <div class="num" style="font-size:56px;font-weight:900;color:${hi ? 'var(--acc)' : TXT};white-space:nowrap">${esc(String(shown))}<span style="font-size:32px">${esc(it.unit || '')}</span></div></div></div>`;
+      <div class="num" style="font-size:56px;font-weight:900;color:${hi ? 'var(--acc)' : TXT};white-space:nowrap">${esc(String(shown))}<span style="font-size:32px">${esc(it.unit || '')}</span></div></div>
+      ${it.sub ? `<div style="margin-top:10px;text-align:left;font-size:36px;font-weight:800;letter-spacing:-1px;color:${hi ? 'var(--acc)' : '#3B4A63'}">${esc(it.sub)}</div>` : ''}</div>`;   /* 9/30: 부제(기록)는 막대 아래 한 줄로 크게 */
   });
   h += '</div>';
   if (s.text) h += `<div class="big gold" style="margin-top:28px;font-size:${s.size || 70}px;${pop(seg(lt, .4 + n * .3 + .3, .5))}">${br(s.text)}</div>`;
@@ -903,7 +904,74 @@ function drawSub(t) {
   }
   /* 9/23 저녁: 화살표는 버튼 위에서 아래로(중심 x523, 끝 y1542~1554, 사용자 '너무 올렸다 살짝만 내려줘' 반영) — 긴 화면(버튼 y≈1626)에서 간격을 두고 짧은 화면도 고려. 그동안 자막은 1220 으로 올림 */
 }
+/* ───── 9/30 인포그래픽 3종 (사용자: "글자 카드만 이어지면 안 된다 → 모션그래픽·인포그래픽") ─────
+   vtime: 세로 연표 — 선이 위에서 아래로 자라며 연도 칸이 차례로 붙는다. {title, items:[{y, t, sub, hi}], show, newFrom, text}
+     cont:true 면 앞 장면과 이어져(사라졌다 나타나지 않음) newFrom 부터만 새로 나온다. hi 칸은 강조색.
+   gauge: 기준선을 채우는 막대 — "한 번에 채우기 vs 여러 대회를 모아 채우기". {title, rows:[{label, segs:[{t, v, hi}]}], line:{label}, text}
+   post: SNS 글 카드 — 줄이 하나씩 올라온다. {img, name, date, lines:[..], hiLast, text} (특정 앱 모양을 흉내 내지 않는 일반 글 카드) */
+SCENE.vtime = (lt, s) => {
+  const its = s.items || [], n = Math.min(its.length, s.show || its.length), NEW = s.newFrom ?? 0, RH = n >= 5 ? 150 : 176;
+  let h = s.title ? `<div class="title gold" style="font-size:56px;font-weight:900;margin-bottom:34px;${s.cont && s._same ? '' : pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  const grow = NEW > 0 ? (NEW - 1 + eo(seg(lt, .1, .35 + (n - NEW) * .35)) * (n - NEW)) / Math.max(1, n - 1) : eo(seg(lt, .1, .3 + n * .35));
+  h += `<div style="position:relative;width:880px;height:${n * RH}px">`;
+  h += `<div style="position:absolute;left:208px;top:${RH / 2}px;width:8px;border-radius:4px;background:${LINE};height:${(n - 1) * RH}px"></div>`;
+  h += `<div style="position:absolute;left:208px;top:${RH / 2}px;width:8px;border-radius:4px;background:var(--acc);height:${Math.max(0, (n - 1) * RH * grow)}px"></div>`;
+  its.slice(0, n).forEach((it, i) => {
+    const p = i < NEW ? 1 : seg(lt, .15 + (i - NEW) * .35, .4), hi = it.hi === true, top = i * RH;
+    h += `<div style="position:absolute;left:0;top:${top}px;height:${RH}px;width:880px;display:flex;align-items:center;${i < NEW ? '' : `opacity:${c01(p * 1.4)};transform:translateX(${(1 - eo(p)) * 40}px)`}">
+      <div class="num" style="width:176px;text-align:right;font-size:${hi ? 58 : 50}px;font-weight:900;color:${hi ? 'var(--acc)' : TXT};letter-spacing:-1px">${esc(it.y)}</div>
+      <div style="width:28px;height:28px;border-radius:50%;margin-left:22px;flex:0 0 auto;background:${hi ? 'var(--acc)' : '#fff'};border:6px solid ${hi ? 'var(--acc)' : '#12161F'};box-shadow:0 0 0 ${hi ? 8 : 0}px ${ACC}30"></div>
+      <div class="pane" style="margin-left:26px;flex:1;border-radius:24px;padding:18px 26px;${hi ? 'border-color:var(--acc);' : ''}">
+        <div class="title" style="font-size:${hi ? 50 : 44}px;font-weight:900;line-height:1.18;text-align:left;color:${hi ? 'var(--acc)' : TXT}">${br(it.t || '')}</div>
+        ${it.sub ? `<div class="label" style="font-size:30px;color:${GRAY};text-align:left;margin-top:6px">${br(it.sub)}</div>` : ''}</div></div>`;
+  });
+  h += `</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:30px;font-size:${s.size || 72}px;${pop(seg(lt, .4 + (n - NEW) * .35, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+SCENE.gauge = (lt, s) => {
+  const rows = s.rows || [], W = 820;
+  let h = s.title ? `<div class="title gold" style="font-size:56px;font-weight:900;margin-bottom:40px;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div style="position:relative;width:${W + 40}px;padding-top:70px">`;
+  h += `<div style="position:absolute;left:${W}px;top:0;bottom:-6px;width:6px;margin-left:-3px;border-radius:3px;background:#12161F"></div>`;
+  if (s.line) h += `<div style="position:absolute;left:${W}px;top:0;transform:translateX(-100%);background:#12161F;color:#fff;font-size:38px;font-weight:900;padding:6px 16px;border-radius:12px;white-space:nowrap">${esc(s.line.label || '')}</div>`;
+  let t0 = .3;
+  rows.forEach((r, ri) => {
+    const segs = r.segs || [], tot = segs.reduce((a, b) => a + (b.v || 1), 0);
+    h += `<div style="margin-top:${ri ? 42 : 18}px;${rise(seg(lt, t0 - .2, .4), 20)}"><div class="title" style="font-size:54px;font-weight:900;text-align:left;margin-bottom:14px">${esc(r.label || '')}</div>
+      <div style="position:relative;width:${W}px;height:118px;border-radius:22px;background:#E9EDF3;overflow:hidden;display:flex">`;
+    segs.forEach((g, gi) => {
+      const p = eo(seg(lt, t0 + gi * .45, .45)), w = W * (g.v || 1) / tot;
+      h += `<div style="width:${(w * p).toFixed(1)}px;height:100%;flex:0 0 auto;overflow:hidden;background:${g.hi ? 'var(--acc)' : ['#3B6BFF', '#5B82FF', '#7C9BFF', '#9BB3FF'][gi % 4]};border-right:${gi < segs.length - 1 ? '4px solid #fff' : '0'};display:flex;align-items:center;justify-content:center">
+        <span style="font-size:${segs.length >= 3 ? 42 : 50}px;font-weight:900;color:#fff;white-space:nowrap;opacity:${c01(p * 2 - 1)}">${esc(g.t || '')}</span></div>`;
+    });
+    h += `</div></div>`;
+    t0 += segs.length * .45 + .25;
+  });
+  h += `</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:36px;font-size:${s.size || 72}px;${pop(seg(lt, t0, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+SCENE.post = (lt, s) => {
+  const ls = s.lines || [], src = photoSrc(s.img);
+  let h = `<div class="pane" style="width:880px;border-radius:36px;padding:40px 48px 46px;text-align:left;${rise(seg(lt, 0, .45), 30)}">
+    <div class="row" style="gap:22px;justify-content:flex-start;margin-bottom:30px">
+      <div style="width:104px;height:104px;border-radius:50%;overflow:hidden;flex:0 0 auto;border:4px solid ${LINE};background:#E9EDF3">${src ? `<img src="${src}" style="width:100%;height:100%;object-fit:cover;object-position:${esc(s.focus || '50% 20%')}">` : ''}</div>
+      <div><div class="title" style="font-size:48px;font-weight:900;text-align:left">${esc(s.name || '')}</div>
+      ${s.date ? `<div class="label" style="font-size:30px;color:${GRAY};text-align:left">${esc(s.date)}</div>` : ''}</div></div>`;
+  ls.forEach((l, i) => {
+    const p = seg(lt, .35 + i * .32, .35), last = i === ls.length - 1 && s.hiLast;
+    h += `<div style="font-size:${last ? 76 : 68}px;font-weight:900;letter-spacing:-2px;line-height:1.3;color:${last ? 'var(--acc)' : TXT};${rise(p, 24)}">${br(l)}</div>`;
+  });
+  h += `</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:32px;font-size:${s.size || 72}px;${pop(seg(lt, .4 + ls.length * .32, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
+
 const MOTION = {
+  vtime: s => { const n = Math.min((s.items || []).length, s.show || 99); return .45 + (n - (s.newFrom || 0)) * .35 + .3 + (s.text ? .5 : 0); },
+  gauge: s => .3 + (s.rows || []).reduce((a, r) => a + (r.segs || []).length * .45 + .25, 0) + (s.text ? .5 : 0),
+  post: s => .5 + (s.lines || []).length * .32 + .3 + (s.text ? .5 : 0),
   hook: () => 1.1, big: s => .9 + ((s.stats || []).length) * .12 + (s.note ? .3 : 0), profile: s => .8 + ((s.stats || []).length) * .12 + (s.text ? .3 : 0), roster: s => 1.3 + (s.text ? .5 : 0), matchup: () => 1.4, table: () => 2.3, versus: () => 1.6, need: () => 1.6,
   shift: () => 1.4, rival: () => 1.5, verdict: s => (s.left && s.right ? 2.1 : 1.0), question: s => s.choices ? 0.9 : 0.7,
   photo: () => 1.0, people: s => .25 + ((s.items || []).length) * .3 + .5 + (s.text ? .5 : 0),
@@ -937,8 +1005,10 @@ function render(t) {
   }
   const need = (MOTION[s.type] || MOTION.big)(s), fit = Math.max(0.6, (end - start) * 0.75);
   const lt = (t - start) * (need > fit ? need / fit : 1);
+  s._same = !!(s.cont && prev && prev.type === s.type);
   (SCENE[s.type] || SCENE.big)(lt, s);
-  document.getElementById('body').style.opacity = s._keep ? '1' : String(c01((t - start) / 0.28));
+  s._same = !!(s.cont && prev && prev.type === s.type);   /* 9/30: 이어지는 그림(콘티 cont:true)은 사라졌다 나타나지 않는다 */
+  document.getElementById('body').style.opacity = (s._keep || s._same) ? '1' : String(c01((t - start) / 0.28));
   /* 바탕: 흰색에 주인공 팀 색을 아주 연하게 (위쪽에서 천천히 움직이는 빛) */
   const gx = 50 + 4 * Math.sin(t * .5), gy = 22 + 2 * Math.cos(t * .37);
   document.getElementById('stage').style.background = `radial-gradient(70% 40% at ${gx}% ${gy}%, ${ACC}22 0%, rgba(244,246,250,0) 70%),#F4F6FA`;
