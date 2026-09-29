@@ -578,8 +578,8 @@ SCENE.cards = (lt, s) => {
   h += grid ? `<div style="display:grid;grid-template-columns:repeat(2,${w}px);gap:${gap}px;justify-content:center">` : `<div class="row" style="gap:${gap}px;align-items:stretch">`;
   items.forEach((it, i) => {
     const p = seg(lt, .2 + i * .18, .45), hi = it.hi === true;
-    h += `<div class="pane col" style="width:${w}px;border-radius:30px;padding:${grid ? 40 : 30}px 12px ${grid ? 44 : 32}px;gap:${grid ? 20 : 14}px;justify-content:flex-start;${hi ? 'border-color:var(--acc);box-shadow:0 14px 40px rgba(232,120,40,.22);' : ''}${rise(p, 40)}">
-      <div class="num" style="height:54px;padding:0 22px;border-radius:14px;background:${hi ? 'var(--acc)' : '#12161F'};color:#fff;font-size:${grid ? 38 : 34}px;font-weight:900;display:flex;align-items:center">${esc(it.badge || '')}</div>
+    h += `<div class="pane col" style="width:${w}px;border-radius:30px;padding:${grid ? 40 : 30}px 12px ${grid ? 44 : 32}px;gap:${grid ? 20 : 14}px;justify-content:${items.some(x => x.badge) ? 'flex-start' : 'center'};${hi ? 'border-color:var(--acc);box-shadow:0 14px 40px rgba(232,120,40,.22);' : ''}${rise(p, 40)}">
+      ${it.badge ? `<div class="num" style="height:54px;padding:0 22px;border-radius:14px;background:${hi ? 'var(--acc)' : '#12161F'};color:#fff;font-size:${grid ? 38 : 34}px;font-weight:900;display:flex;align-items:center">${esc(it.badge)}</div>` : ''}
       <div class="title" style="font-size:${n === 3 ? 66 : 78}px;font-weight:900;line-height:1.1;text-align:center">${br(cardName(it.name))}</div>
       ${it.sub ? `<div class="label" style="font-size:${n === 3 ? 30 : 38}px;color:${GRAY};line-height:1.3;text-align:center">${br(it.sub)}</div>` : ''}</div>`;
   });
