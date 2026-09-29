@@ -1,0 +1,344 @@
+{
+ "speed": 1.0,
+ "gapScale": 0.75,
+ "ttsApi": true,
+ "ttsTempo": 1.2,
+ "date": "2026-09-30",
+ "gameDate": "2026-09-29",
+ "series": "야구순위",
+ "railTitle": "KBO 순위",
+ "focusTeam": "LG",
+ "topic": "LG_3연패_3위",
+ "rev": "0930-rank-lg-v1",
+ "standings": [
+  {
+   "rank": 1,
+   "code": "KT",
+   "team": "KT",
+   "winRate": 0.626,
+   "gameBehind": 0.0,
+   "games": 135,
+   "win": 82,
+   "lose": 49,
+   "draw": 4,
+   "streak": "2승"
+  },
+  {
+   "rank": 2,
+   "code": "SS",
+   "team": "삼성",
+   "winRate": 0.603,
+   "gameBehind": 3.0,
+   "games": 134,
+   "win": 79,
+   "lose": 52,
+   "draw": 3,
+   "streak": "3승"
+  },
+  {
+   "rank": 3,
+   "code": "LG",
+   "team": "LG",
+   "winRate": 0.564,
+   "gameBehind": 8.0,
+   "games": 134,
+   "win": 75,
+   "lose": 58,
+   "draw": 1,
+   "streak": "2패"
+  },
+  {
+   "rank": 4,
+   "code": "HT",
+   "team": "KIA",
+   "winRate": 0.55,
+   "gameBehind": 10.0,
+   "games": 133,
+   "win": 72,
+   "lose": 59,
+   "draw": 2,
+   "streak": "1패"
+  },
+  {
+   "rank": 5,
+   "code": "OB",
+   "team": "두산",
+   "winRate": 0.519,
+   "gameBehind": 14.0,
+   "games": 136,
+   "win": 68,
+   "lose": 63,
+   "draw": 5,
+   "streak": "1승"
+  },
+  {
+   "rank": 6,
+   "code": "NC",
+   "team": "NC",
+   "winRate": 0.466,
+   "gameBehind": 21.0,
+   "games": 135,
+   "win": 62,
+   "lose": 71,
+   "draw": 2,
+   "streak": "2패"
+  },
+  {
+   "rank": 7,
+   "code": "LT",
+   "team": "롯데",
+   "winRate": 0.455,
+   "gameBehind": 22.5,
+   "games": 134,
+   "win": 60,
+   "lose": 72,
+   "draw": 2,
+   "streak": "1승"
+  },
+  {
+   "rank": 8,
+   "code": "SK",
+   "team": "SSG",
+   "winRate": 0.454,
+   "gameBehind": 22.5,
+   "games": 135,
+   "win": 59,
+   "lose": 71,
+   "draw": 5,
+   "streak": "1승"
+  },
+  {
+   "rank": 9,
+   "code": "HH",
+   "team": "한화",
+   "winRate": 0.417,
+   "gameBehind": 27.5,
+   "games": 136,
+   "win": 55,
+   "lose": 77,
+   "draw": 4,
+   "streak": "1패"
+  },
+  {
+   "rank": 10,
+   "code": "WO",
+   "team": "키움",
+   "winRate": 0.351,
+   "gameBehind": 36.5,
+   "games": 138,
+   "win": 47,
+   "lose": 87,
+   "draw": 4,
+   "streak": "1패"
+  }
+ ],
+ "source": "9/29 LG 1-7 SSG(인천): 스타뉴스 2026092915565918433(3연패, 박해민 4회 솔로가 전부, 아빌라 9이닝 1실점 완투승) · OSEN G1112884476(에레디아 18호·전의산 12호 백투백, 톨허스트 3이닝 4실점, 박해민 5호) · 일간스포츠 isp202609290265(1회 2점, 4회 박성한 2타점 6-1) · OSEN(7회 고명준 희플 7-1). 3위 LG-4위 KIA 2게임 차(승패 계산, KIA도 5-8 패). 남은 10경기 = 144−75−58−1. 10/3~5 잠실 KIA-LG(bnt 다음 20260828000248039 · 전남일보 90000068989). 사진: SSG 랜더스 제공(일간스포츠·서울신문).",
+ "lines": [
+  {
+   "narr": "엘지가 에스에스지에 일 대 칠로 지고 / 삼 연패에 빠졌어요",
+   "sub": "LG가 SSG에 1-7로 지고|3연패에 빠졌어요"
+  },
+  {
+   "narr": "일 회에 두 점을 먼저 내줬고 / 삼 회엔 에레디아와 전의산에게 / 연속 타자 홈런을 맞았어요",
+   "sub": "1회에 2점을 먼저 내줬고|3회엔 에레디아와 전의산에게|연속 타자 홈런을 맞았어요"
+  },
+  {
+   "narr": "선발 톨허스트는 삼 이닝 네 점을 주고 / 일찍 내려갔어요",
+   "sub": "선발 톨허스트는\n3이닝 4점을 주고|일찍 내려갔어요"
+  },
+  {
+   "narr": "사 회 박해민의 솔로 홈런이 / 엘지의 유일한 점수였어요",
+   "sub": "4회 박해민의 솔로 홈런이|LG의 유일한 점수였어요"
+  },
+  {
+   "narr": "에스에스지 선발 아빌라는 / 구 이닝 일 실점으로 완투승을 거뒀어요",
+   "sub": "SSG 선발 아빌라는|9이닝 1실점으로\n완투승을 거뒀어요"
+  },
+  {
+   "narr": "구월 이십구 일 기준 순위예요 / 일 위부터 오 위까지 / 순서는 그대로예요",
+   "sub": "9월 29일 기준 순위예요|1위부터 5위까지|순서는 그대로예요"
+  },
+  {
+   "narr": "삼 위 엘지는 칠십오 승 오십팔 패 / 기아도 져서 / 사 위 기아와 두 게임 차는 그대로예요",
+   "sub": "3위 LG는 75승 58패|기아도 져서|4위 기아와 2게임\n차는 그대로예요"
+  },
+  {
+   "narr": "엘지는 남은 열 경기 가운데 / 기아와 맞대결이 네 경기 남아 있어요",
+   "sub": "LG는 남은 10경기 가운데|기아와 맞대결이\n4경기 남아 있어요"
+  },
+  {
+   "narr": "엘지, 삼 위를 지킬까요 / 아니면 기아에 내줄까요?",
+   "sub": "LG 3위를 지킬까요|아니면 기아에 내줄까요?",
+   "gapAfter": 0.5
+  },
+  {
+   "narr": "채널 구독하고 매일 야구 이슈 받아보세요",
+   "sub": "채널 구독하고\n매일 야구 이슈 받아보세요!",
+   "rate": 1.0
+  }
+ ],
+ "scenes": [
+  {
+   "type": "matchup",
+   "startLine": 0,
+   "left": "LG",
+   "right": "SSG",
+   "text": "3연패",
+   "size": 96,
+   "score": "1-7",
+   "tag": "9월 29일 인천"
+  },
+  {
+   "type": "people",
+   "startLine": 1,
+   "title": "3회 연속 타자 홈런",
+   "items": [
+    {
+     "img": "상황별/에레디아_홈런",
+     "name": "에레디아",
+     "team": "SSG",
+     "note": "솔로"
+    },
+    {
+     "img": "상황별/전의산_홈런",
+     "name": "전의산",
+     "team": "SSG",
+     "note": "솔로"
+    }
+   ],
+   "text": "",
+   "size": 80
+  },
+  {
+   "type": "people",
+   "startLine": 2,
+   "title": "LG 선발",
+   "items": [
+    {
+     "img": "상황별/톨허스트",
+     "name": "톨허스트",
+     "team": "LG",
+     "note": "3이닝 4실점"
+    }
+   ],
+   "text": "",
+   "size": 80
+  },
+  {
+   "type": "people",
+   "startLine": 3,
+   "title": "LG 유일한 점수",
+   "items": [
+    {
+     "img": "상황별/박해민",
+     "name": "박해민",
+     "team": "LG",
+     "note": "4회 솔로 홈런"
+    }
+   ],
+   "text": "",
+   "size": 80
+  },
+  {
+   "type": "photo",
+   "startLine": 4,
+   "img": "상황별/아빌라_완투",
+   "text": "9이닝 1실점\n완투승",
+   "size": 84,
+   "tag": "SSG 아빌라",
+   "focus": "50% 25%"
+  },
+  {
+   "type": "table",
+   "startLine": 5,
+   "highlight": [
+    "LG",
+    "KIA"
+   ]
+  },
+  {
+   "type": "league",
+   "startLine": 6,
+   "title": "3위 싸움",
+   "rows": [
+    {
+     "team": "LG",
+     "rec": "75승 58패",
+     "sub": "3위",
+     "hi": true
+    },
+    {
+     "team": "KIA",
+     "rec": "72승 59패",
+     "sub": "4위"
+    }
+   ],
+   "text": "LG와 KIA 2게임 차",
+   "size": 62
+  },
+  {
+   "type": "matchup",
+   "startLine": 7,
+   "left": "LG",
+   "right": "KIA",
+   "text": "남은 맞대결\n4경기",
+   "size": 84
+  },
+  {
+   "type": "question",
+   "startLine": 8,
+   "text": "3위",
+   "choices": [
+    {
+     "team": "LG",
+     "label": "LG가\n지킨다"
+    },
+    {
+     "team": "KIA",
+     "label": "KIA가\n뺏는다"
+    }
+   ]
+  }
+ ],
+ "thumb": {
+  "layout": "clash",
+  "teams": [
+   "LG",
+   "SSG"
+  ],
+  "top": "LG SSG에 지고 3연패",
+  "big": "3위\n위태"
+ },
+ "youtube": {
+  "title": "LG SSG에 1-7 패, 3연패 | 아빌라 완투승에 막혀… 3위 LG, 4위 KIA와 2게임 차 #LG트윈스 #프로야구순위",
+  "description": "9월 29일 LG 트윈스 1-7 SSG 랜더스(인천). LG 3연패, 4위 KIA와 2게임 차.\n\n1회 2점을 먼저 내주고 3회 에레디아·전의산에게 연속 타자 홈런을 맞았어요. 선발 톨허스트는 3이닝 4실점으로 일찍 내려갔고, 4회 박해민의 솔로 홈런이 유일한 점수였어요. SSG 선발 아빌라는 9이닝 1실점 완투승. KIA도 져서 3위 싸움은 2게임 차 그대로. LG는 남은 10경기 가운데 KIA와 맞대결이 4경기 남아 있어요(잠실 3연전 + 9월 27일 우천 노게임 광주 1경기).\n\nLG, 3위를 지킬까요 아니면 KIA에 내줄까요?\n\n사진: SSG 랜더스 제공\n\n야구자판기는 프로야구 순위와 경우의 수를 매일 1분으로 정리해요.",
+  "tags": [
+   "LG 트윈스",
+   "엘지 트윈스",
+   "박해민",
+   "톨허스트",
+   "SSG 랜더스",
+   "아빌라",
+   "에레디아",
+   "전의산",
+   "3위 싸움",
+   "KIA 타이거즈",
+   "프로야구 순위",
+   "KBO 순위",
+   "2026 프로야구",
+   "프로야구",
+   "KBO",
+   "야구 쇼츠",
+   "야구자판기"
+  ],
+  "hashtags": [
+   "#Shorts",
+   "#프로야구",
+   "#KBO",
+   "#LG트윈스",
+   "#3위싸움",
+   "#프로야구순위",
+   "#야구자판기"
+  ]
+ }
+}
