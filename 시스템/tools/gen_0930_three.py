@@ -214,7 +214,7 @@ ss_scenes = [
  {"type": "photo", "startLine": 2, "img": "상황별/페덱_9K", "text": "6이닝 무실점\n삼진 9개", "size": 84, "tag": "페덱 · 시즌 7승", "focus": "50% 25%"},
  {"type": "photo", "startLine": 3, "img": "상황별/강민호_3점포", "text": "7회 3점 홈런\n10-3", "size": 84, "tag": "강민호", "focus": "50% 25%"},
  {"type": "people", "startLine": 4, "title": "아시안게임 금메달", "items": [
-   {"img": "KBO프로필/김지찬", "name": "김지찬", "team": "삼성"}, {"img": "KBO프로필/이재현", "name": "이재현", "team": "삼성"}], "text": "", "size": 80},
+   {"img": "상황별/김지찬_상체", "name": "김지찬", "team": "삼성", "fit": "cover", "focus": "50% 12%"}, {"img": "상황별/이재현_상체", "name": "이재현", "team": "삼성", "fit": "cover", "focus": "50% 12%"}], "text": "", "size": 80},
  {"type": "table", "startLine": 5, "highlight": ["KT", "삼성"]},
  {"type": "league", "startLine": 6, "title": "2위 삼성", "rows": [
    {"team": "KT", "rec": "82승 49패", "sub": "1위"},
