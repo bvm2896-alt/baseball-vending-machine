@@ -41,7 +41,10 @@ def press(i, img, tag): return {"type": "photo", "startLine": i, "img": "상황�
 def photo(i, img, text, tag, **k):
     d = {"type": "photo", "startLine": i, "img": img, "text": text, "size": 84, "tag": tag}; d.update(k); return d
 
-COMMON = {"speed": 1.0, "gapScale": 0.75, "ttsApi": True, "ttsTempo": 1.2}
+# 9/30 사용자 지시: 음성 방식은 매번 사용자에게 묻고 정한다 — VOICE=api(기본, 지금실행 때 개인 계정 API 합성) | VOICE=web(Claude 가 크롬으로 타입캐스트 웹 zip → <시리즈>\음성\<콘티이름>.zip)
+VOICE = os.environ.get('VOICE', 'api')
+COMMON = ({"speed": 1.0, "gapScale": 0.75, "ttsApi": True, "ttsTempo": 1.2} if VOICE == 'api'
+          else {"speed": 1.2, "gapScale": 0.75, "ttsApi": False})   # 웹 zip 은 1.0x 로 받으니 렌더에서 1.2배(API 의 ttsTempo 1.2 와 같게)
 OUT = os.environ.get('GEN_OUT') or os.path.join(os.path.dirname(__file__), '..', 'episodes')
 
 # ───────────────────────── 순위 (9/29 결과) ─────────────────────────
