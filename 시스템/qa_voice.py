@@ -285,6 +285,72 @@ def assign_bounds(sil, lead, tail, parts, guess=None):
     for k in range(1, need + 1): bounds[k] = round(max(bounds[k], bounds[k - 1] + 0.15), 3)
     return bounds, used
 
+# 9/30 사용자 지적(순위3 "삼 위 엘지는 칠십오 승 오십팔 패 / 기아도 져서" 를 "58패기아도" 로 붙여 읽음):
+#   ' / ' 앞 구간이 이음말(-고·-서·-데·조사 등)로 안 끝나고 숫자·명사·'-요'로 끝나면 그 자리는 문장이 끊기는 곳 → 한 박자(STOP_PAUSE) 쉬어야 한다.
+#   쉼이 그보다 짧으면 그 쉼 한가운데에 무음을 끼워 늘린다(다시 합성 안 함 → 크레딧 0). 쉼이 아예 없으면 경계 근처 가장 조용한 곳에 끼운다.
+#   이미 충분히 쉬면 건드리지 않으므로 여러 번 돌려도 같다.
+STOP_PAUSE = float(cfg('QA_STOP_PAUSE', '0.40'))
+_JOIN = ('고', '서', '며', '면', '데', '지만', '니까', '려고', '도록', '듯', '게', '은', '는', '이', '가', '을', '를', '에', '에게', '한테',
+         '와', '과', '랑', '도', '의', '로', '에서', '엔', '선', '까지', '부터', '보다', '처럼', '나', '든', '께', '론', '만',
+         '어', '아', '해', '워', '야', '자', '러', '라', '아래', '때', '중', '동안')
+_NUM = set('일이삼사오육칠팔구십백천만억영')
+def is_stop(seg):
+    ws = seg.split()
+    w = re.sub(r'[^가-힣A-Za-z0-9]', '', ws[-1]) if ws else ''
+    if not w: return False
+    if w.endswith(('요', '다', '죠', '까', '니다')): return True
+    if set(w) <= _NUM: return True   # 숫자로 끝남("일 대 칠", "오십팔")
+    c = ord(w[-1]) - 0xAC00
+    if 0 <= c < 11172 and c % 28 in (4, 8): return False   # 받침 ㄴ·ㄹ = '돌아온 / 김지찬', '할 / 것' 같은 꾸밈말
+    return not w.endswith(_JOIN)
+
+def widen_stops(path, parts, b):
+    """문장이 끊기는 호흡 자리의 쉼을 STOP_PAUSE 까지 늘리고 늘어난 만큼 뒤 경계를 민다. (새 경계, 보고 글) 반환"""
+    ks = [k for k in range(1, len(parts)) if k < len(b) and is_stop(parts[k - 1])]
+    if not ks or STOP_PAUSE <= 0: return b, ''
+    sil, d = inner_silences(path, '-38dB', 0.03)
+    sr_ = 24000
+    try: sr_ = int(subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'a:0', '-show_entries', 'stream=sample_rate', '-of', 'csv=p=0', path], capture_output=True, text=True).stdout.strip() or 24000)
+    except Exception: pass
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', path, '-f', 'f32le', '-ac', '1', '-ar', str(sr_), '-'], capture_output=True).stdout
+    x = np.frombuffer(raw, dtype=np.float32).copy()
+    if not len(x): return b, ''
+    ins = []   # (삽입 시각, 늘릴 길이, 경계 번호)
+    for k in ks:
+        t = b[k]
+        iv = next(((s0, e0) for s0, e0 in sil if s0 - 0.06 <= t <= e0 + 0.06), None)
+        if iv:
+            gap = iv[1] - iv[0]
+            if gap >= STOP_PAUSE - 0.02: continue
+            ins.append(((iv[0] + iv[1]) / 2, STOP_PAUSE - gap, k))
+        else:   # 쉼 없이 붙여 읽은 자리: 경계 ±0.1초 안에서 가장 조용한 10ms
+            w = int(sr_ * 0.01); a0 = max(0, int((t - 0.1) * sr_)); a1 = min(len(x) - w, int((t + 0.1) * sr_))
+            if a1 <= a0: continue
+            en = [float(np.mean(x[j:j + w] ** 2)) for j in range(a0, a1, w)]
+            at = (a0 + int(np.argmin(en)) * w + w / 2) / sr_
+            ins.append((at, STOP_PAUSE, k))
+    if not ins: return b, ''
+    ins.sort()
+    fade = int(sr_ * 0.004); out, prev = [], 0
+    for at, add, _ in ins:
+        j = int(at * sr_); seg = x[prev:j].copy()
+        if len(seg) > fade: seg[-fade:] *= np.linspace(1, 0, fade, dtype=np.float32)
+        out += [seg, np.zeros(int(add * sr_), dtype=np.float32)]
+        prev = j
+    tailx = x[prev:].copy()
+    if len(tailx) > fade: tailx[:fade] *= np.linspace(0, 1, fade, dtype=np.float32)
+    y = np.concatenate(out + [tailx])
+    tmp = path + '.stop.mp3'
+    r = subprocess.run(['ffmpeg', '-y', '-v', 'error', '-f', 'f32le', '-ar', str(sr_), '-ac', '1', '-i', '-', '-b:a', '192k', tmp], input=y.tobytes(), capture_output=True)
+    if r.returncode != 0 or not os.path.exists(tmp): return b, ''
+    os.replace(tmp, path)
+    nb = list(b)
+    for j in range(1, len(b)):
+        nb[j] = round(b[j] + sum(add for at, add, _ in ins if at <= b[j] + 1e-6), 3)
+    for at, add, k in ins:   # 끼운 자리의 경계 = 끼운 무음이 끝나는 곳(다음 말 시작) 이상
+        nb[k] = round(max(nb[k], at + sum(a2 for t2, a2, _ in ins if t2 <= at) ), 3)
+    return nb, ' +한박자 ' + ','.join(f'{k}:{add:.2f}' for _, add, k in ins)
+
 def refine_subs(i, line):
     """호흡 구간 경계 확정 → NN.segs.json. 자막이 말 도중에 넘어가거나 잠깐 깜빡이지 않도록 경계는 쉼 끝에, 쉼이 없으면 글자 비율로"""
     parts = [p.strip() for p in line.split('/') if p.strip()]
@@ -300,9 +366,10 @@ def refine_subs(i, line):
         import tts
         bb = tts.seg_bounds(path, parts)
         b = [x for x, _ in bb]
+        b, wide = widen_stops(path, parts, b)
         durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
-        json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'src': 'speech-time'}, open(sj, 'w'))
-        return 'speech-time ' + ' '.join(f'{x:.2f}' for x in b[1:])
+        json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'src': 'speech-time' + wide}, open(sj, 'w'))
+        return 'speech-time' + wide + ' ' + ' '.join(f'{x:.2f}' for x in b[1:])
     sil, d = inner_silences(path)
     x = load(path)
     F, h = frames(x, 0.03, 0.01)
@@ -314,8 +381,9 @@ def refine_subs(i, line):
     guess = bounds_from_words(words, parts) if words else None
     guess = guess[1:] if guess else None
     b, matched = assign_bounds(sil, lead, tail, parts, guess)
+    b, wide = widen_stops(path, parts, b)
     durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
-    src = f'쉼 {matched}/{need}' + (' +whisper' if guess else '') + ('' if matched == need else ' +비율')
+    src = f'쉼 {matched}/{need}' + (' +whisper' if guess else '') + ('' if matched == need else ' +비율') + wide
     json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'src': src}, open(sj, 'w'))
     return src + ' ' + ' '.join(f'{x:.2f}' for x in b[1:])
 
