@@ -380,6 +380,8 @@ MAX_GAP = 0.6   # 어떤 쉼도 이보다 길지 않게(답답함 방지)
 
 def gap_after(i, line, n, nxt=None, scene_change=False):
     """줄과 줄 사이 쉼(초). 말이 이어지면 거의 안 쉬고, 문장이 끝나면 짧게, 장면(이미지)이 바뀌거나 방향을 바꾸는 말 앞에서만 조금 더 (최대 0.5초)"""
+    h = line.get('holdAfter')   # 10/1 사용자(롱폼④ 트레이드 장면 "조상우→KIA 티켓 받자마자 다음 장면"): 애니메이션이 끝날 때까지 화면을 잡아 두는 쉼 — MAX_GAP 제한 없이(최대 3초)
+    if h is not None: return round(min(3.0, max(0.0, float(h))), 2)
     g = line.get('gapAfter')
     if g is not None: return min(MAX_GAP, float(g))
     t = line['narr'].strip()
@@ -510,6 +512,14 @@ def render(ep, ep_path):
         need = float(s.get('minDur', MIN_SCENE.get(s.get('type'), 1.2)))
         if span < need:
             gaps[b - 1] = min(MAX_GAP, gaps[b - 1] + (need - span))   # 모션은 template 이 장면 길이에 맞춰 빨라지므로 쉼은 0.5초까지만
+    if is_long(ep) and cfg_get('CHUNK_CACHE', '1') != '0':
+        # 10/1 조각 렌더: 줄 시작을 프레임 칸에 맞춘다(쉼을 1프레임 미만으로 늘림) → 앞 줄 길이가 바뀌어도 뒤 장면 조각의 프레임 수가 그대로라 재사용된다
+        import math
+        _fps = 30 if os.environ.get('KBO_DRAFT') else int(cfg_get('VIDEO_FPS', '60'))
+        t = LEAD
+        for i in range(N - 1):
+            nxt = LEAD + math.ceil((t + clips[i] + gaps[i] - LEAD) * _fps - 1e-6) / _fps
+            gaps[i] = nxt - t - clips[i]; t = nxt
     st = line_starts()
     total = st[N - 1] + clips[N - 1] + TAIL
     # 자막은 "실제로 말이 나오는 동안"만: 잘라낸 클립 안에서 말이 시작·끝나는 시각을 다시 재서 그 사이에만 띄운다
@@ -569,11 +579,21 @@ def render(ep, ep_path):
               io.open(W('timeline.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     # 5) 프레임 렌더 → 무음 영상 (설정.txt VIDEO_FPS 기본 60, VIDEO_SCALE 기본 1.3333 = 1440x2560 2K)
     fps = int(cfg_get('VIDEO_FPS', '60')); scale = cfg_get('VIDEO_SCALE', '1.3333')
+    DRAFT = bool(os.environ.get('KBO_DRAFT'))   # 10/1: 검수용 빠른 버전(롱폼검수.cmd) — 1080p·30fps, 파일 이름 끝 _검수
+    if DRAFT: fps, scale = 30, '1.0'; print('검수용 빠른 버전: 30fps x1.0')
     shutil.rmtree(W('frames'), ignore_errors=True)
     print(f'프레임 렌더 {fps}fps x{scale} ({round(total)}초) …')
     cw, ch = canvas_of(ep)
     fenv = dict(os.environ); fenv['FRAME_W'], fenv['FRAME_H'] = str(cw), str(ch)
-    r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale], capture_output=True, text=True, encoding='utf-8', errors='replace', env=fenv)
+    r = None
+    if is_long(ep) and cfg_get('CHUNK_CACHE', '1') != '0':
+        # 10/1: 롱폼은 장면 조각으로 그리고, 지난번과 똑같은 조각은 다시 찍지 않는다(바뀐 장면만 새로)
+        try:
+            r = render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv)
+        except (Exception, SystemExit) as e:
+            print('조각 렌더 실패 → 전체를 한 번에 그립니다:', str(e)[-800:]); r = None
+    if r is None:
+        r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale], capture_output=True, text=True, encoding='utf-8', errors='replace', env=fenv)
     if r.returncode != 0: print('프레임 렌더 1차 실패 → 동시작업 1 로 다시:\n' + ((r.stderr or '') + '\n' + (r.stdout or ''))[-1200:])
     elif r.stdout: print((r.stdout or '').strip().splitlines()[-1])
     vd = dur_of(W('silent.mp4')) if os.path.exists(W('silent.mp4')) else 0.0
@@ -588,6 +608,7 @@ def render(ep, ep_path):
         if vd < total * 0.95: raise SystemExit(f'영상 길이 부족: {vd:.1f}s / {total:.1f}s (재시도 후에도)')
     # 6) 합성 → 결과물 폴더(영상/날짜/번호_팀.mp4)
     out, thumb_path, yt_path = out_paths(ep, ep_path)
+    if DRAFT: out = out[:-4] + '_검수.mp4'
     os.makedirs(os.path.dirname(out), exist_ok=True)
     name = os.path.splitext(os.path.basename(ep_path))[0]
     bgm = pick_bgm(ep)
@@ -612,6 +633,109 @@ def render(ep, ep_path):
     write_srt(subs, srt_path)   # 9/15 SEO: 유튜브 업로드 때 자막 파일로 첨부 → 자동 자막보다 정확하게 검색 색인
     print(f'완료: {out} {d:.2f}초 (자막 {len(subs)}개, 장면 {len(ep["scenes"])}개) 썸네일 {thumb}')
     return out
+
+def hashlib_short(t):
+    import hashlib; return hashlib.sha1(t.encode('utf-8')).hexdigest()[:8]
+CHUNK_VER = 'c1'   # 조각 렌더 방식이 바뀌면 올린다(옛 조각 전부 무효)
+def chunk_plan(EP, total, fps, scale, cw, ch, tpl_raw, font_sig=''):
+    """장면마다 조각 하나: (시작 초, 끝 초, 프레임 수, 지문, 워밍업 시각들). 지문 = 그 조각 그림을 정하는 모든 것(장면 기준 상대 시각으로).
+    앞 줄 길이가 바뀌어 장면이 통째로 밀려도 지문이 같으면 지난번 조각을 그대로 쓴다."""
+    import hashlib, math
+    SC = EP.get('scenes') or []; BD = list(EP.get('bounds') or []); N = len(EP.get('lines') or [])
+    n_all = int(math.ceil(fps * total))
+    edges = [0.0] + BD + [total]
+    fr = [0] + [int(round(b * fps)) for b in BD] + [n_all]
+    q = lambda x: round(x, 3)   # 숫자는 지문에 넣지 않고 따로 모아 허용 오차(0.021초)로 비교한다 — 절대 시각을 0.01초로 반올림한 값이라 상대 시각이 ±0.01 흔들림
+    G = hashlib.sha1((CHUNK_VER + '|' + tpl_raw + '|' + font_sig + '|' + json.dumps(
+        {k: EP.get(k) for k in ('chapters', 'dateLabel', 'focusTeam', 'logos', 'photoSizes', 'photos', 'railTitle', 'standings')},
+        ensure_ascii=False, sort_keys=True) + f'|{fps}|{scale}|{cw}x{ch}').encode('utf-8')).hexdigest()
+    plan = []
+    for k in range(len(BD) + 1):
+        t0, t1 = edges[k], edges[k + 1]; f0, f1 = fr[k], fr[k + 1]
+        if f1 <= f0: continue
+        sc = SC[min(k, len(SC) - 1)] if SC else {}
+        a = sc.get('startLine', 0); b = SC[k + 1].get('startLine', N) if k + 1 < len(SC) else N
+        subs = [[q(max(x0, t0) - t0), q(min(x1, t1) - t0), tx] for x0, x1, tx in (EP.get('subs') or []) if x1 > t0 and x0 < t1]
+        segT = [[q(x - t0) for x in (EP.get('segT') or [])[i]] for i in range(a, min(b, len(EP.get('segT') or [])))]
+        nums = [x for s_ in subs for x in s_[:2]] + [x for r_ in segT for x in r_] + [q(t1 - t0)]
+        subs_txt = [s_[2] for s_ in subs]; segT_n = [len(r_) for r_ in segT]
+        nb = [SC[j] if 0 <= j < len(SC) else None for j in (k - 3, k - 2, k - 1, k + 1)]   # 앞 장면(이어 그리기·같은 사진)·뒤 장면(칩 수 맞춤)
+        run_ = []   # 같은 사진 profile 묶음 전체(칩 크기를 묶음 최대로 맞춤)
+        if sc.get('type') == 'profile':
+            j = k
+            while j > 0 and SC[j - 1].get('type') == 'profile' and SC[j - 1].get('img') == sc.get('img'): j -= 1
+            while j < len(SC) and SC[j].get('type') == 'profile' and SC[j].get('img') == sc.get('img'): run_.append(SC[j]); j += 1
+        fp = hashlib.sha1((G + json.dumps([sc, nb, run_, subs_txt, segT_n, f1 - f0, k == len(BD)], ensure_ascii=False, sort_keys=True)).encode('utf-8')).hexdigest()[:20]
+        warm = [round(edges[j + 1] - 1.0 / fps, 4) for j in (k - 3, k - 2, k - 1) if j >= 0]
+        plan.append({'k': k, 't0': t0, 't1': t1, 'n': f1 - f0, 'fp': fp, 'nums': nums, 'warm': warm})
+    return plan
+
+def _font_sig():
+    d = os.path.join(HERE, '..', '폰트')
+    try: return ';'.join(f'{f}:{os.path.getsize(os.path.join(d, f))}' for f in sorted(os.listdir(d)))
+    except Exception: return ''
+
+def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
+    """장면 조각 렌더 → 이어 붙이기 → 진행 막대(ffmpeg) → W('silent.mp4'). subprocess 결과처럼 returncode 를 가진 객체를 돌려준다."""
+    import types, math
+    tpl_raw = io.open(tpl, encoding='utf-8').read()
+    plan = chunk_plan(EP, total, fps, scale, cw, ch, tpl_raw, _font_sig())
+    cdir = os.path.abspath(W(f'chunks_{ep_key(ep_path)}_{fps}x{scale}'))
+    os.makedirs(cdir, exist_ok=True)
+    idx_path = os.path.join(cdir, 'index.json')
+    try: idx = json.load(io.open(idx_path, encoding='utf-8'))
+    except Exception: idx = {}
+    def find(c):   # 같은 구조 + 숫자가 모두 0.021초 안 → 재사용
+        for e in idx.get(c['fp'], []):
+            f = os.path.join(cdir, e['file'])
+            if len(e['nums']) == len(c['nums']) and all(abs(x - y) <= 0.021 for x, y in zip(e['nums'], c['nums'])) and os.path.exists(f) and os.path.getsize(f) > 1000:
+                return f
+        return None
+    jobs, used = [], set()
+    for c in plan:
+        hit = find(c)
+        if hit: c['out'] = hit
+        else:
+            name = c['fp'] + '_' + hashlib_short(json.dumps(c['nums'])) + '.mp4'
+            c['out'] = os.path.join(cdir, name)
+            jobs.append({'t0': c['t0'], 't1': c['t1'], 'n': c['n'], 'out': c['out'] + '.tmp.mp4', 'warm': c['warm']})
+            idx.setdefault(c['fp'], []).append({'nums': c['nums'], 'file': name})
+        used.add(os.path.basename(c['out']))
+    new_f = sum(j['n'] for j in jobs); all_f = sum(c['n'] for c in plan)
+    print(f'조각 렌더: 장면 {len(plan)}개 중 {len(jobs)}개만 새로 그림 ({new_f}/{all_f} 프레임, {100 * new_f / max(1, all_f):.0f}%)')
+    sw = float(scale); Wd, Hd = int(round(cw * sw / 2)) * 2, int(round(ch * sw / 2)) * 2
+    acc_file = os.path.abspath(W('chunk_accent.json'))
+    J = {'fps': fps, 'scale': sw, 'W': Wd, 'H': Hd, 'quality': int(os.environ.get('FRAME_JPEG_Q', '95')), 'jobs': jobs, 'accentOut': acc_file}
+    jf = os.path.abspath(W('chunk_jobs.json')); json.dump(J, io.open(jf, 'w', encoding='utf-8'), ensure_ascii=False)
+    r = subprocess.run(['node', 'frames.js', '--chunks', jf], capture_output=True, text=True, encoding='utf-8', errors='replace', env=fenv)
+    if r.returncode != 0: raise RuntimeError('조각 렌더 오류:\n' + ((r.stderr or '') + (r.stdout or ''))[-1200:])
+    if r.stdout: print((r.stdout or '').strip().splitlines()[-1])
+    for j in jobs: os.replace(j['out'], j['out'][:-len('.tmp.mp4')])
+    # 이어 붙이기(다시 인코딩 없이)
+    lst = os.path.abspath(W('chunk_list.txt'))
+    with io.open(lst, 'w', encoding='utf-8') as f:
+        for c in plan: f.write("file '" + c['out'].replace('\\', '/').replace("'", "'\\''") + "'\n")
+    raw = W('silent_raw.mp4')
+    run(['ffmpeg', '-y', '-v', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-c', 'copy', raw], check=True)
+    # 진행 막대(템플릿 #prog: left 56 · right 56 · top 122 · 높이 5, CSS px) — 전체 길이 기준이라 조각에 넣지 않고 여기서 그린다
+    try: acc = json.load(io.open(acc_file, encoding='utf-8')).get('accent') or ''
+    except Exception: acc = ''
+    m = re.match(r'rgba?\((\d+),\s*(\d+),\s*(\d+)', acc or '')
+    col = '0x%02X%02X%02X' % tuple(int(x) for x in m.groups()) if m else '0x1E5EFF'
+    X0, Y0 = int(round(56 * sw)), int(round(122 * sw)); BW, BH = Wd - 2 * X0, max(2, int(round(5 * sw)))
+    fc = (f'[0:v]split[a][b];[b]crop={BW}:{BH}:{X0}:{Y0}[tr];color=c={col}:s={BW}x{BH}:r={fps}[bar];'
+          f"[tr][bar]overlay=x='-w+W*min(1,t/{total:.3f})':y=0:eval=frame:shortest=1[trf];[a][trf]overlay={X0}:{Y0}:shortest=1[v]")
+    run(['ffmpeg', '-y', '-v', 'error', '-i', raw, '-filter_complex', fc, '-map', '[v]', '-c:v', 'libx264', '-preset', cfg_get('CHUNK_PRESET', 'veryfast'),
+         '-crf', '16', '-tune', 'animation', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-r', str(fps), '-movflags', '+faststart', W('silent.mp4')], check=True)
+    # 이번에 안 쓴 옛 조각은 지운다(용량) — 목록도 이번 것만 남긴다
+    idx = {k_: [e for e in v if e['file'] in used] for k_, v in idx.items()}
+    idx = {k_: v for k_, v in idx.items() if v}
+    json.dump(idx, io.open(idx_path, 'w', encoding='utf-8'), ensure_ascii=False)
+    for f in os.listdir(cdir):
+        if f not in used and f != 'index.json':
+            try: os.remove(os.path.join(cdir, f))
+            except Exception: pass
+    return types.SimpleNamespace(returncode=0, stdout=f'조각 {len(jobs)}/{len(plan)} 새로 그림', stderr='')
 
 def append_endcard(EP, out):
     """롱폼 mp4 끝에 어두운 엔딩 카드(설정 ENDCARD_SEC, 기본 12초)를 붙인다(9/20 사용자 지시).

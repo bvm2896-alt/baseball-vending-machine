@@ -36,7 +36,61 @@ async function worker(browser, idx, from, to, fps, scale, W, H, out, quality, on
   return to - from;
 }
 
+/* 10/1 조각 렌더(롱폼 — 사용자 "수정할 때마다 처음부터 다시 만들어야 돼? 너무 오래 걸려"):
+   node frames.js --chunks <jobs.json>
+   jobs.json = {fps, scale, quality, W, H, jobs:[{t0, t1, n, out, warm:[초...]}], accentOut}
+   장면 하나 = 조각 하나. 조각의 j번째 프레임은 t0 + j/fps (장면 시작 기준)로 찍는다 → 앞 줄 길이가 바뀌어 장면이 통째로 밀려도 그림이 같다.
+   찍기 전에 warm 시각들(앞 장면들의 마지막 프레임)을 한 번씩 그려 둔다(앞 장면 DOM·폭을 이어받는 장면이 전체 렌더와 똑같이 나오게).
+   진행 막대는 window.__NOPROG 로 끄고 build.py 가 ffmpeg 로 따로 그린다. */
+function ffNullArgs(fps) { return ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(fps), '-i', '-', '-f', 'null', '-']; }
+async function chunkMode(jobsFile) {
+  const J = JSON.parse(fs.readFileSync(jobsFile, 'utf-8'));
+  const fps = J.fps, scale = J.scale, W = J.W, H = J.H, quality = J.quality || 95, TEST = !!process.env.FRAMES_NULL;   // FRAMES_NULL: 인코딩 없이(클라우드 시험용)
+  const NW = Math.max(1, Math.min(4, parseInt(process.env.FRAME_WORKERS || String(os.cpus().length - 1), 10) || 1));
+  const opts = {}; if (process.env.CHROME_PATH) opts.executablePath = process.env.CHROME_PATH;
+  const browser = await chromium.launch(opts);
+  const t0all = Date.now(); const total = J.jobs.reduce((a, j) => a + j.n, 0); let done = 0, lastLog = 0;
+  const queue = J.jobs.slice(); let accent = null;
+  async function runWorker(wi) {
+    const p = await browser.newPage({ viewport: { width: CW, height: CH }, deviceScaleFactor: scale });
+    await p.goto('file://' + path.join(WORK, 'render.html')); await p.waitForTimeout(900);
+    await p.evaluate(() => { window.__NOPROG = true; });
+    if (accent == null) accent = await p.evaluate(() => getComputedStyle(document.getElementById('progBar')).backgroundColor);
+    while (queue.length) {
+      const job = queue.shift();
+      for (const w of (job.warm || [])) await p.evaluate(t => window.render(t), w);
+      const ff = spawn('ffmpeg', TEST ? ffNullArgs(fps) : ffArgs(fps, W, H, job.out), { stdio: ['pipe', 'ignore', 'pipe'] });
+      let err = null, errText = ''; ff.on('error', e => { err = e; }); ff.stdin.on('error', e => { err = err || e; });
+      ff.stderr.on('data', d => { errText += d.toString(); if (errText.length > 4000) errText = errText.slice(-4000); });
+      const closed = new Promise(res => ff.on('close', res));
+      const write = buf => new Promise(res => { if (!ff.stdin.write(buf)) ff.stdin.once('drain', res); else res(); });
+      for (let j = 0; j < job.n && !err; j++) {
+        const t = Math.min(job.t0 + j / fps, job.t1 - 1e-4);
+        await p.evaluate(tt => window.render(tt), t);
+        await write(await p.screenshot({ type: 'jpeg', quality }));
+        done++;
+        if (done - lastLog >= fps * 10) { lastLog = done; process.stdout.write(`  ${done}/${total} 프레임 (${Math.round((Date.now() - t0all) / 1000)}초)\n`); }
+      }
+      ff.stdin.end();
+      const code = await closed;
+      if (err) throw new Error(`ffmpeg 실행 오류(조각 ${path.basename(job.out)}): ${err.message}\n${errText}`);
+      if (code !== 0) throw new Error(`ffmpeg 종료 코드 ${code}(조각 ${path.basename(job.out)})\n${errText}`);
+      if (!TEST) {
+        const size = fs.existsSync(job.out) ? fs.statSync(job.out).size : 0;
+        if (size < 1000) throw new Error(`조각 영상이 비었어요: ${job.out} (${size}바이트)\n${errText}`);
+      }
+    }
+    await p.close();
+  }
+  const ws = []; for (let w = 0; w < Math.min(NW, Math.max(1, J.jobs.length)); w++) ws.push(runWorker(w));
+  await Promise.all(ws);
+  await browser.close();
+  if (J.accentOut) fs.writeFileSync(J.accentOut, JSON.stringify({ accent }));
+  console.log(`chunks ${J.jobs.length}개 · frames ${total} → ${W}x${H} ${fps}fps, ${Math.round((Date.now() - t0all) / 1000)}초`);
+}
+
 (async () => {
+  if (process.argv[2] === '--chunks') return chunkMode(process.argv[3]);
   const DUR = parseFloat(process.argv[2] || '45'), OUT = process.argv[3] || path.join(WORK, 'silent.mp4');
   const FPS = parseInt(process.argv[4] || '60', 10), SCALE = parseFloat(process.argv[5] || '1.3333');
   const NW = Math.max(1, Math.min(4, parseInt(process.argv[6] || process.env.FRAME_WORKERS || String(os.cpus().length - 1), 10) || 1));
