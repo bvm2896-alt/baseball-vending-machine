@@ -277,6 +277,17 @@ def narr_check(lines):
             warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (열두 점, 스물두 경기)')
     return warns
 
+def sub_check(ep):
+    """9/30 사용자 지적(자막 "매직넘버를 이로 줄였어요" → 2로): 자막에 한글 숫자(이로·오 위·삼 회 …)가 남아 있으면 경고"""
+    warns = []
+    for i, l in enumerate(ep.get('lines') or []):
+        for w in re.split(r'[\s|]+', str(l.get('sub', ''))):
+            core = re.sub(r'[^가-힣0-9A-Za-z]', '', w)
+            if core in ('이', '이번', '일찍', '이제', '일본', '이로써', '오늘', '사실'): continue
+            if re.fullmatch(r'[일이삼사오육칠팔구십백천영]+(로|대|위|회|승|패|개|점|게임|경기|이닝|번째|년|월|호|타점|실점|사|루|차|명|할|푼|리)?(를|은|는|이|가|에|와|과|로|으로|째|에서|엔|까지|부터)?', core):
+                warns.append(f'{i:02d} 자막에 한글 숫자 "{w}" → 아라비아 숫자로 (예: 이로 → 2로): {l.get("sub", "")!r}')
+    return warns
+
 def ep_key(ep_path):
     stem = os.path.splitext(os.path.basename(ep_path))[0]
     return stem
@@ -298,6 +309,7 @@ def prep(ep, ep_path=None):
         io.open(W('current.txt'), 'w', encoding='utf-8').write(ep_key(ep_path))
         voice_dir(ep_key(ep_path))
     for w_ in narr_check(lines): print('숫자 읽기 경고:', w_)
+    for w_ in sub_check(ep): print('자막 숫자 경고:', w_)
     io.open(W('narration.txt'), 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
     # 9/26: 콘티 "ttsTempo": 1.2 → 타입캐스트 API 가 직접 1.2배로 말하게(tts.py 가 읽음). 없으면 설정.txt TTS_TEMPO
     io.open(W('tts_tempo.txt'), 'w', encoding='utf-8').write(str(ep.get('ttsTempo') or ''))
@@ -770,6 +782,10 @@ def write_youtube_txt(ep, path, dur=0):
     desc = (y.get('description') or '').rstrip()
     desc = re.sub(r'\n*📊 이 영상의 숫자\n(?:•[^\n]*\n?)+', '\n', desc)   # 옛 콘티의 숫자 목록은 빼고(9/15)
     desc = re.sub(r'\n+(?:#\S+\s*)+$', '', desc).strip()   # 설명 끝 해시태그 줄은 [해시태그] 칸으로
+    # 9/30 사용자 지시: 사진 출처는 맨 밑([태그] 아래 한 줄 띄고)으로 옮기고, '재생목록: …' 줄은 쓰지 않는다
+    _dl = desc.split('\n')
+    credits = [re.sub(r'^\s*사진\s*(?:출처)?\s*[:：]\s*', '사진 출처: ', l).strip() for l in _dl if re.match(r'\s*사진\s*(?:출처)?\s*[:：]', l)]
+    desc = re.sub(r'\n{3,}', '\n\n', '\n'.join(l for l in _dl if not re.match(r'\s*(?:사진\s*(?:출처)?|재생목록)\s*[:：]', l))).strip()
     hashtags = y.get('hashtags') or []
     if not hashtags:   # 콘티에 없으면 태그로 만든다(띄어쓰기 제거)
         stag = {'야구이슈': '#야구이슈', '야구분석': '#야구분석'}.get(str(ep.get('series', '')), '#야구순위')
@@ -777,6 +793,7 @@ def write_youtube_txt(ep, path, dur=0):
         hashtags = base + ['#' + t.replace(' ', '') for t in y.get('tags', []) if '#' + t.replace(' ', '') not in base][:10] + ['#야구스타그램', '#야구팬', '#Shorts']
     # 9/30 사용자 지시: 해시태그는 [해시태그] 머리글 없이 설명 맨 밑에 한 줄 띄고 → [설명] 칸을 통째로 복사하면 해시태그까지 한 번에
     body = ['[제목]', title_with_date(ep), '', '[설명]', desc, '', ' '.join(hashtags), '', '[태그]  (유튜브 태그 칸에 그대로)', ', '.join(y.get('tags', []))]
+    if credits: body += [''] + credits
     io.open(path, 'w', encoding='utf-8').write('\n'.join(body) + '\n')
 
 def cfg_get(k, default=''):
