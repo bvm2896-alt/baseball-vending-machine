@@ -15,6 +15,8 @@ __pycache__/
 *.mp4
 *.wav
 *.mp3
+# 9/30: 구독 멘트 고정 음성은 두 PC 모두 필요 → 깃에 올린다
+!시스템/고정음성/*.mp3
 *.lock
 render.html
 render_thumb.html

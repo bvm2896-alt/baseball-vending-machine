@@ -184,6 +184,31 @@ if __name__ == '__main__' and '--test' in sys.argv:
 
 def load_lines():
     return [l.strip() for l in io.open(os.path.join(WORK, 'narration.txt'), encoding='utf-8-sig') if l.strip()]
+
+# 9/30 사용자 지시: "마지막 구독멘트는 앞으로 계속 지금 생성한걸로" (9/30 KT편 스마트 이모션 구독 멘트)
+#   대사가 시스템\고정음성\구독멘트.txt 와 같으면 API·웹 zip 과 상관없이 고정음성\구독멘트.mp3 를 NN.mp3 로 복사하고 NN.keep 를 둔다.
+#   → 다시 합성하지 않음(크레딧 안 씀), qa_voice 도 다시 만들지 않음. 파일을 바꾸려면 고정음성 폴더의 두 파일만 바꾸면 된다.
+PIN_DIR = os.path.join(HERE, '고정음성')
+def _pin_norm(t): return re.sub(r'[\s/.,!?~·]', '', t or '')
+def pinned_idx(lines):
+    src = os.path.join(PIN_DIR, '구독멘트.mp3')
+    try: key = _pin_norm(io.open(os.path.join(PIN_DIR, '구독멘트.txt'), encoding='utf-8-sig').read())
+    except Exception: return []
+    if not key or not os.path.exists(src): return []
+    return [i for i, l in enumerate(lines) if _pin_norm(l) == key]
+def pin_lines(lines, quiet=False):
+    src = os.path.join(PIN_DIR, '구독멘트.mp3'); idx = pinned_idx(lines)
+    for i in idx:
+        mp3 = os.path.join(VDIR, f'{i:02d}.mp3')
+        same = os.path.exists(mp3) and os.path.getsize(mp3) == os.path.getsize(src) and open(mp3, 'rb').read() == open(src, 'rb').read()
+        if not same:
+            shutil.copyfile(src, mp3)
+            for suf in ('.segs.json', '.src'):   # 다른 음성으로 잡힌 자막 경계는 버린다
+                if os.path.exists(mp3.replace('.mp3', suf)): os.remove(mp3.replace('.mp3', suf))
+        io.open(mp3.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])
+        io.open(mp3.replace('.mp3', '.keep'), 'w', encoding='utf-8').write('고정음성\\구독멘트.mp3')
+    if idx and not quiet: print(f'구독 멘트 고정 음성 사용: 줄 {idx} (고정음성\\구독멘트.mp3, 합성 안 함)')
+    return set(idx)
 PAUSE = float(CFG.get('TTS_PAUSE', '0.12'))   # 대사 안의 " / " 표시 자리에서 쉬는 시간(초). 구간 자체의 앞뒤 무음은 잘라내므로 아주 짧게
 
 def tts_text(segs, is_last_q=False):
@@ -635,6 +660,21 @@ def split_zip(zip_path, lines):
             with z.open(zi) as fi, open(dst, 'wb') as fo: shutil.copyfileobj(fi, fo)
             files.append(dst)
     af = 'silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse,silenceremove=start_periods=1:start_threshold=-38dB:start_silence=0.05,areverse'
+    _pin = pinned_idx(lines)
+    if _pin and len(files) == len(lines) - len(_pin):   # 9/30: 대본에서 구독 멘트를 뺀 zip → 나머지 줄에 순서대로
+        _free = [i for i in range(len(lines)) if i not in _pin]
+        for i, f in zip(_free, files):
+            mp3 = os.path.join(VDIR, f'{i:02d}.mp3')
+            r = subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', f, '-af', af, '-b:a', '192k', mp3], capture_output=True, text=True, encoding='utf-8', errors='replace')
+            if r.returncode != 0 or not os.path.exists(mp3):
+                print(f'  {i:02d} 무음 다듬기 실패 → 원본 그대로 사용: {(r.stderr or "")[-120:]}')
+                shutil.copyfile(f, mp3)
+            io.open(mp3.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])
+            for suf in ('.segs.json', '.src'):
+                if os.path.exists(mp3.replace('.mp3', suf)): os.remove(mp3.replace('.mp3', suf))
+            mark_breaths(mp3, lines[i], first=(i == 0))
+        pin_lines(lines, quiet=True)
+        print(f'zip 의 문장 파일 {len(files)}개 → 구독 멘트 뺀 줄별 음성으로 사용'); shutil_rm(tmp); return len(lines)
     if len(files) == len(lines):
         for i, f in enumerate(files):
             mp3 = os.path.join(VDIR, f'{i:02d}.mp3')
@@ -692,9 +732,11 @@ def fetch_drop(lines, wait_min=0):
 
 if __name__ == '__main__':
     lines = load_lines()
+    PINNED = pin_lines(lines)   # 9/30: 구독 멘트 고정 음성
     manual = CFG.get('TTS_MANUAL', '0').strip() == '1'
     try:
         got = fetch_drop(lines, wait_min=int(CFG.get('TTS_WAIT_MIN', '40')) if manual else 0)
+        if got: pin_lines(lines, quiet=True)   # 웹 zip 이 구독 멘트 줄을 덮었으면 다시 고정 음성으로
         if got and manual:
             print(f'완료 (통 음성에서 {got}줄 잘라 씀)'); sys.exit(0)
     except SystemExit: raise
@@ -708,6 +750,7 @@ if __name__ == '__main__':
     except SystemExit: raise
     except Exception as e: print(f'  통 음성 처리 실패(줄별 external 또는 TTS 로 진행): {e}')
     if not disabled: fetch_external(lines)
+    pin_lines(lines, quiet=True)   # 9/30: 통 음성·external 이 구독 멘트 줄을 덮었어도 고정 음성으로
     only = None
     for a in sys.argv:
         if a.startswith('--only='): only = {int(x) for x in a.split('=',1)[1].replace(',', ' ').split()}
@@ -724,7 +767,7 @@ if __name__ == '__main__':
         if not (os.path.exists(mp3) and os.path.exists(txt)): return False
         if io.open(txt, encoding='utf-8').read().strip() != lines[i].strip(): return False
         return not (os.path.exists(ff) and os.path.getmtime(txt) < os.path.getmtime(ff))
-    if only is not None: todo = sorted(i for i in only if i < len(lines))
+    if only is not None: todo = sorted(i for i in only if i < len(lines) and i not in PINNED)
     elif whole_mode():
         _idx = [i for i in range(len(lines)) if not os.path.exists(os.path.join(VDIR, f'{i:02d}.keep'))]
         todo = [] if all(_made(i) for i in _idx) else _idx
@@ -757,6 +800,7 @@ if __name__ == '__main__':
         elif '--fresh' not in sys.argv and only is None and os.path.exists(mp3) and os.path.exists(txt) \
                 and io.open(txt, encoding='utf-8').read().strip() == line.strip():
             reuse += 1; print(f'{i:02d} 재사용 {line}'); continue   # 같은 대사로 이미 만든 음성이 있으면 크레딧 안 씀 (--fresh 면 전부 새로)
+        if i in PINNED: print(f'{i:02d} 구독 멘트 고정 음성 → 합성 안 함'); continue
         ok = synth_index(lines, i)
         print(f'{i:02d} {"OK " if ok else "XX "} {line}')
         fail += (not ok)

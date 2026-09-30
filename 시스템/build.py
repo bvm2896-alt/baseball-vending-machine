@@ -308,7 +308,15 @@ def prep(ep, ep_path=None):
         # 타입캐스트 웹(구독)에 붙여 넣을 대본: 줄 사이 빈 줄(문단 쉼) → 통째로 내려받아 <시리즈>\음성\<콘티이름>.mp3 로 두면 tts.py 가 줄별로 자른다
         try:
             drop = os.path.join(HERE, '..', series_of(ep, ep_path), '음성'); os.makedirs(drop, exist_ok=True)
-            txt = '\n\n'.join(l.replace(' / ', ', ') for l in lines) + '\n'
+            # 9/30: 구독 멘트는 고정 음성(시스템\고정음성\구독멘트.mp3)을 쓰므로 웹 대본에서 뺀다(크레딧 절약). zip 파일 수 = 줄 수 - 구독 멘트 줄 수
+            _pk = ''
+            try:
+                if os.path.exists(os.path.join(HERE, '고정음성', '구독멘트.mp3')):
+                    _pk = re.sub(r'[\s/.,!?~·]', '', io.open(os.path.join(HERE, '고정음성', '구독멘트.txt'), encoding='utf-8-sig').read())
+            except Exception: _pk = ''
+            _web = [l for l in lines if not (_pk and re.sub(r'[\s/.,!?~·]', '', l) == _pk)]
+            if len(_web) != len(lines): print(f'웹 대본: 구독 멘트 {len(lines) - len(_web)}줄 뺌(고정 음성 사용) → zip 파일 {len(_web)}개면 정상')
+            txt = '\n\n'.join(l.replace(' / ', ', ') for l in _web) + '\n'
             io.open(os.path.join(drop, ep_key(ep_path) + '_대본.txt'), 'w', encoding='utf-8').write(txt)
             print(f'대본 저장: {os.path.relpath(os.path.join(drop, ep_key(ep_path) + "_대본.txt"), os.path.join(HERE, ".."))}  (타입캐스트 웹에 붙여 넣고, 받은 mp3 를 같은 폴더에 {ep_key(ep_path)}.mp3 로)')
         except Exception as e: print('대본 저장 실패(무시):', e)
@@ -767,8 +775,8 @@ def write_youtube_txt(ep, path, dur=0):
         stag = {'야구이슈': '#야구이슈', '야구분석': '#야구분석'}.get(str(ep.get('series', '')), '#야구순위')
         base = ['#야구자판기', stag, '#프로야구', '#KBO', '#야구']
         hashtags = base + ['#' + t.replace(' ', '') for t in y.get('tags', []) if '#' + t.replace(' ', '') not in base][:10] + ['#야구스타그램', '#야구팬', '#Shorts']
-    body = ['[제목]', title_with_date(ep), '', '[설명]', desc, '', '[태그]  (유튜브 태그 칸에 그대로)', ', '.join(y.get('tags', [])), '',
-            '[해시태그]  (인스타그램·틱톡 캡션에 복붙 / 유튜브 설명 끝에 붙여도 됨)', ' '.join(hashtags)]
+    # 9/30 사용자 지시: 해시태그는 [해시태그] 머리글 없이 설명 맨 밑에 한 줄 띄고 → [설명] 칸을 통째로 복사하면 해시태그까지 한 번에
+    body = ['[제목]', title_with_date(ep), '', '[설명]', desc, '', ' '.join(hashtags), '', '[태그]  (유튜브 태그 칸에 그대로)', ', '.join(y.get('tags', []))]
     io.open(path, 'w', encoding='utf-8').write('\n'.join(body) + '\n')
 
 def cfg_get(k, default=''):
