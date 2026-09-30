@@ -1,5 +1,5 @@
 날짜: 2026-09-30
-단계: 음성
+단계: 검수
 
 영상 순위 파일: D:\★희수\야구자판기\야구순위\영상\2026-09-29\순위_KT연장승매직7.mp4
 영상 순위2 파일: D:\★희수\야구자판기\야구순위\영상\2026-09-29\순위2_삼성3연승2위.mp4
@@ -7,15 +7,6 @@
 → 수동 업로드 모드: 영상 폴더의 mp4 와 _유튜브.txt(제목·설명·태그)로 유튜브 스튜디오에서 직접 올리세요
 
 기록:
-[08:47:01] [순위4] 음성 실패:
-  계정1 거부 403 UNUSUAL_ACTIVITY_DETECTED — 남은 계정 없음
-  계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED
-  실패 403: {"error_code":"UNUSUAL_ACTIVITY_DETECTED","message":"Unusual account activity has been detected. If this activity is determined to be abuse of free accounts, your access may be suspended. If you need 
-00 XX  김도영이 돌아온 첫 타석에 홈런을 쳤는데 / 기아는 연장에서 졌어요
-모든 타입캐스트 계정이 거부해서 나머지 줄은 시도하지 않음
-계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED
-1줄 실패 — 모든 타입캐스트 계정이 거부됨(UNUSUAL_ACTIVITY 는 같은 PC 에서 무료 계정 여러 개를 쓴다고 본 것 → 계정 하나에 크레딧 충전이 확실한 해결)
-[08:47:01] [순위5] 음성 생성 시작
 [08:47:03] [순위5] 음성 실패:
   계정1 거부 403 UNUSUAL_ACTIVITY_DETECTED — 남은 계정 없음
   계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED
@@ -51,3 +42,5 @@
 [09:14:48] [순위3] 영상 준비 완료 (수동 업로드 모드): 폴더의 mp4 와 _유튜브.txt 제목·설명을 유튜브 스튜디오에 직접 올리세요
 [09:14:48] [순위4] 음성 생성 시작
 [09:15:46] [순위4] 음성: 새로 합성 11줄(약 511자, 크레딧 사용) · 기존 음성 0줄 재사용
+[09:15:53] [순위4] 음성 검수 시작
+[09:17:08] [순위4] 음성 검수:   08 쉼 2/2 +whisper 1.81 3.57 |   09 쉼 1/1 +whisper 1.57 | 남은 주의 줄: [3, 10] (03: 톤 이탈 -3.1반음; 10: 톤 이탈 -2.9반음)
