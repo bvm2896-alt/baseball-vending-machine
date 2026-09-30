@@ -149,7 +149,7 @@ function graphicHtml(){
 }
 const GR=!!TH.graphic;
 const POSTER=TH.graphic==='poster', bigLines=String(TH.big||'').split('\n').length, PH_MAX=Math.min(980, 1100-(POSTER?190:250)*bigLines);   // 9/26 포스터형은 그림을 크게, 큰 글씨를 조금 작게   // 큰 글씨가 1660px(안전 영역) 안에 끝나도록 사진 높이 상한(1줄 850, 2줄 600)
-const PH_H = (()=>{ if(GR) return Math.min(PH_MAX, TH.gh||900); if(!src||!sz) return PH_MAX; const h=Math.round(940*sz[1]/sz[0]); if(TH.perLine) return Math.min(h, TH.top?500:560); return Math.max(520, Math.min(PH_MAX, h)); })();   // 9/28 perLine(줄별 최대 글씨)이면 사진을 440까지 줄여 글자에 자리를 준다   // 사진 카드 높이: 사진 비율대로
+const PH_H = (()=>{ if(TH.ph) return TH.ph;   /* 9/30: 콘티 thumb.ph = 사진 카드 높이 직접(작게 하면 큰 글씨가 커진다) */ if(GR) return Math.min(PH_MAX, TH.gh||900); if(!src||!sz) return PH_MAX; const h=Math.round(940*sz[1]/sz[0]); if(TH.perLine) return Math.min(h, TH.top?500:560); return Math.max(520, Math.min(PH_MAX, h)); })();   // 9/28 perLine(줄별 최대 글씨)이면 사진을 440까지 줄여 글자에 자리를 준다   // 사진 카드 높이: 사진 비율대로
 const Y0 = 340 + PH_H;   // 사진 아래 글 시작 기준
 const st=document.getElementById('st');
 st.insertAdjacentHTML('beforeend',`
