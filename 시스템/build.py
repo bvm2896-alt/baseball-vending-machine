@@ -826,6 +826,8 @@ def make_thumb(EP, out):
     # 야구이슈 편은 화이트 사진형 썸네일(thumb_issue.html), 순위 편은 기존 thumb.html
     ser = str(EP.get('series', '')).strip()
     if ser == '야구롱폼' and os.path.exists('thumb_long.html'): tpl = 'thumb_long.html'           # 9/18: 롱폼은 가로 1280x720
+    lay = str((EP.get('thumb') or {}).get('layout') or '').strip()
+    if ser == '야구롱폼' and lay and os.path.exists(f'thumb_long_{lay}.html'): tpl = f'thumb_long_{lay}.html'   # 9/30: 롱폼 썸네일 다른 구조(thumb.layout="crash" → thumb_long_crash.html 폭락 차트형)
     elif ser == '야구분석' and os.path.exists('thumb_analysis.html'): tpl = 'thumb_analysis.html'   # 9/15: 분석은 구단 색 바탕 + 구단 로고 화면 가득
     else: tpl = 'thumb_issue.html' if (ser in ('야구이슈', '야구분석') and os.path.exists('thumb_issue.html')) else 'thumb.html'
     if 'photos' not in EP:
