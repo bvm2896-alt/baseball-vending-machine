@@ -1,19 +1,10 @@
 날짜: 2026-09-30
-단계: 검수
+단계: 영상완료
 
 영상 순위 파일: H:\내 드라이브\야구자판기_영상확인\야구순위\2026-09-29\순위_KT매직7김도영41.mp4
 → 수동 업로드 모드: 영상 폴더의 mp4 와 _유튜브.txt(제목·설명·태그)로 유튜브 스튜디오에서 직접 올리세요
 
 기록:
-[08:44:53] [순위2] 음성 생성 시작
-[08:44:55] [순위2] 음성 실패:
-  계정1 거부 403 UNUSUAL_ACTIVITY_DETECTED — 남은 계정 없음
-  계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED
-  실패 403: {"error_code":"UNUSUAL_ACTIVITY_DETECTED","message":"Unusual account activity has been detected. If this activity is determined to be abuse of free accounts, your access may be suspended. If you need 
-00 XX  삼성이 한화를 십 대 오로 꺾고 / 삼 연승을 달렸어요
-모든 타입캐스트 계정이 거부해서 나머지 줄은 시도하지 않음
-계정별 결과: 계정1: 거부 403 UNUSUAL_ACTIVITY_DETECTED
-1줄 실패 — 모든 타입캐스트 계정이 거부됨(UNUSUAL_ACTIVITY 는 같은 PC 에서 무료 계정 여러 개를 쓴다고 본 것 → 계정 하나에 크레딧 충전이 확실한 해결)
 [08:44:55] [순위3] 음성 생성 시작
 [08:44:56] [순위3] 음성 실패:
   계정1 거부 403 UNUSUAL_ACTIVITY_DETECTED — 남은 계정 없음
@@ -98,3 +89,5 @@
 [08:58:59] [순위] 음성: 새로 합성 10줄(약 404자, 크레딧 사용) · 기존 음성 0줄 재사용
 [08:59:05] [순위] 음성 검수 시작
 [09:00:31] [순위] 음성 검수:   07 쉼 2/2 +whisper 1.90 3.89 |   08 쉼 1/1 +whisper 2.12 | 남은 주의 줄: [6] (06: 톤 이탈 +3.6반음)
+[09:00:38] [순위] 영상 렌더 시작 (3~5분)
+[09:04:00] [순위] 영상 완성 42.0초 → D:\★희수\야구자판기\야구순위\영상\2026-09-29\순위_KT연장승매직7.mp4
