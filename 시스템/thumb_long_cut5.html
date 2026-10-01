@@ -1,0 +1,49 @@
+<!doctype html>
+<!-- 야구자판기 롱폼 썸네일 '누끼 5명형' 1280x720 (2026-10-01 밤, 사용자 레퍼런스 '1픽 총정리' 그대로: 검은 배경 + 뒤에 흐린 큰 글자 + 얼굴 크기 똑같은 선수 5명 + 아래 흰 큰 글씨 한 줄)
+     콘티 thumb: {"layout":"cut5", "faces":[{"img":"누끼/권희동","h":601,"left":-171,"top":47}, ...5개],
+                 "ghost":"가을야구 탈락 5팀", "lines":[[{"t":"2027 가을야구 가능?","c":"#fff","s":150}]], "bg":"#121214"}
+     faces[].h/left/top 은 tools\face_fit.py 가 얼굴 상자(OpenCV)로 계산 — 얼굴 높이(F=215px)·얼굴 중심(y=255)이 5명 모두 같게.
+     규칙: 선수는 카드·테두리 없이 누끼(선수이미지\누끼\*.png, tools\cutout.py) 그대로. 글씨는 Black Han Sans(폰트\BlackHanSans.ttf). -->
+<html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'BHS';src:url('__FONT_DIR__/BlackHanSans.ttf') format('truetype')}
+@font-face{font-family:'NB';src:url('__FONT_DIR__/NotoSansKR-Black.otf')}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#000}
+body{font-family:'BHS','NB',sans-serif;color:#fff}
+#s{position:relative;width:1280px;height:720px;overflow:hidden}
+#ghost{position:absolute;left:0;right:0;top:6px;text-align:center;font-size:132px;line-height:1;letter-spacing:-2px;color:rgba(255,255,255,.14);white-space:nowrap;z-index:1}
+#row{position:absolute;inset:0;z-index:2}
+.p{position:absolute;filter:drop-shadow(0 10px 22px rgba(0,0,0,.7))}
+.col{position:absolute;top:0;height:720px;overflow:hidden}
+.col .p{filter:drop-shadow(0 0 0 rgba(0,0,0,0))}
+#band{position:absolute;left:0;right:0;bottom:0;height:46px;background:rgba(10,8,20,.92);z-index:5;display:flex;align-items:center;justify-content:center;gap:18px;font-family:'NB';font-size:26px;letter-spacing:0;color:#fff}
+#band span{color:#FFE200}
+.p img{display:block;height:100%;width:auto}
+#floor{position:absolute;left:0;right:0;bottom:0;height:260px;background:linear-gradient(180deg,rgba(18,18,20,0),rgba(18,18,20,.85) 60%,rgba(18,18,20,1));z-index:3}
+#txt{position:absolute;left:0;right:0;bottom:34px;display:flex;flex-direction:column;align-items:center;z-index:4}
+.t{line-height:1;letter-spacing:-3px;white-space:nowrap;-webkit-text-stroke:16px #000;paint-order:stroke fill;filter:drop-shadow(0 8px 0 rgba(0,0,0,.55))}
+</style></head><body><div id="s"><div id="ghost"></div><div id="row"></div><div id="floor"></div><div id="txt"></div><div id="band"></div></div><script>
+const TH=(window.EP&&EP.thumb)||{}, P=(window.EP&&EP.photos)||{};
+function src(n){if(!n)return'';if(P[n])return P[n];const k=Object.keys(P).find(k=>k===n||k.replace(/\.[a-z0-9]+$/i,'')===n||k.endsWith('/'+n));return k?P[k]:''}
+const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+document.getElementById('s').style.background=TH.bg||'#121214';
+document.getElementById('ghost').textContent=TH.ghost||'';
+const faces=TH.faces||[], n=faces.length||1;
+const slot=1280/n;
+document.getElementById('row').innerHTML=faces.map((f,i)=>{const z=10-Math.abs(i-(n-1)/2)*2;
+  if(TH.clip) return `<div class="col" style="left:${Math.round(slot*i)}px;width:${Math.round(slot)+1}px"><div class="p" style="left:${(f.left||0)-Math.round(slot*i)}px;top:${f.top||0}px;height:${f.h||600}px"><img src="${src(f.img)}"></div></div>`;
+  return `<div class="p" style="left:${f.left||0}px;top:${f.top||0}px;height:${f.h||600}px;z-index:${z}"><img src="${src(f.img)}"></div>`}).join('')
+  /* heads: 10/1 밤 사용자 "선수끼리 얼굴 겹쳐서 안 보이지 않게" — 몸은 자연스럽게 겹치고(가운데가 앞), 머리(턱선 TH.chin 위)만
+     자기 칸 폭 안에서 한 번 더 맨 위에 그린다 → 어떤 얼굴도 다른 선수 몸·모자에 가려지지 않고, 칸 경계 세로 줄도 안 생긴다 */
+  + (TH.chin ? faces.map((f,i)=>{const sw=TH.slotW||1280, sx=TH.slotX||0, sl=sw/n, L=Math.round(sx+sl*i), R=Math.round(sx+sl*(i+1)), pad=TH.headPad??14;
+      return `<div style="position:absolute;left:${L-pad}px;top:0;width:${R-L+pad*2}px;height:${TH.chin}px;overflow:hidden;z-index:20">
+        <div class="p" style="left:${(f.left||0)-(L-pad)}px;top:${f.top||0}px;height:${f.h||600}px;filter:none"><img src="${src(f.img)}"></div></div>`}).join('') : '');
+if(TH.bgGrad) document.getElementById('s').style.background=TH.bgGrad;
+if(TH.band){document.getElementById('band').innerHTML=TH.band.map(x=>x.startsWith('*')?`<span>${esc(x.slice(1))}</span>`:esc(x)).join('<i style="opacity:.5">·</i>');} else document.getElementById('band').style.display='none';
+if(TH.floor===false) document.getElementById('floor').style.display='none';
+if(TH.stroke) document.querySelectorAll('.t').forEach(e=>e.style.webkitTextStroke=TH.stroke);
+const lines=TH.lines||[[{t:'제목',s:150}]];
+const box=document.getElementById('txt');
+box.innerHTML=lines.map((ln,i)=>`<div class="t" style="margin-top:${i?(ln[0].mt??-4):0}px">${ln.map(x=>`<span style="font-size:${x.s||150}px;color:${x.c||'#fff'}">${esc(x.t)}</span>`).join('')}</div>`).join('');
+[...box.children].forEach(el=>{let g=0;while(el.getBoundingClientRect().width>1220&&g++<40){[...el.children].forEach(s=>{s.style.fontSize=(parseFloat(s.style.fontSize)*.96)+'px'})}});
+</script></body></html>

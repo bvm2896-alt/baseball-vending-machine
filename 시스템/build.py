@@ -93,6 +93,7 @@ def out_paths(ep, ep_path):
     key = stem.rsplit('_', 1)[-1] if '_' in stem else stem
     date = game_date(ep)
     series = series_of(ep, ep_path)
+    if series == '야구롱폼': date = datetime.date.today().isoformat()   # 10/1 사용자: "롱폼은 만든 날짜로 폴더 생기게" (숏폼은 그대로 경기 날짜)
     if os.path.abspath(OUT_ROOT) == os.path.abspath(os.path.join(HERE, '..', '영상')):
         d = os.path.abspath(os.path.join(HERE, '..', series, '영상', date))       # 드라이브 없을 때: 야구자판기\<시리즈>\영상\날짜
     else:
@@ -181,6 +182,43 @@ def find_photo(name, ep_path=None):
                     return os.path.join(d, f)
     return None
 
+def center_subject(src, base):
+    """배경이 한 가지 색인 프로필 사진(구단 프로필·누끼)에서 인물이 좌우로 치우쳐 있으면 모자란 쪽에 같은 배경을 덧대 인물을 가운데로 옮긴다.
+    10/1 사용자 지적("레이예스 왼쪽으로 치우쳐 있어, 앞으로 어느 한쪽으로 치우칠 일 없게"). 경기 사진처럼 배경이 복잡하면 건드리지 않는다.
+    자르지 않고 덧대기만 하므로 인물·팔이 잘리는 일은 없다.
+    10/1 밤: 누끼 폴더(선수이미지\누끼)는 건드리지 않는다 — 썸네일 cut5 는 tools\face_fit.py 가 원본 기준으로 위치를 계산한다."""
+    if '누끼' in str(src).replace('\\', '/').split('/')[-2:-1] or '/누끼/' in str(src).replace('\\', '/'): return src
+    try:
+        import numpy as np
+        pr = run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height,pix_fmt', '-of', 'csv=p=0', src])
+        w, h, pf = pr.stdout.strip().split(',')[:3]; w, h = int(w), int(h)
+        alpha = bool(re.search(r'^(rgba|bgra|argb|abgr|ya8|ya16|gbrap|pal8|yuva)', pf.lower()))
+        SW = 160; sh = max(2, int(round(h * SW / w / 2)) * 2)
+        raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', src, '-vf', f'scale={SW}:{sh}', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-'], capture_output=True).stdout
+        a = np.frombuffer(raw, np.uint8).reshape(sh, SW, 4).astype(int)
+        if alpha:
+            mask = a[:, :, 3] > 40; bgc = 'black@0'
+        else:
+            k = 6; cs = [a[:k, :k, :3], a[:k, -k:, :3], a[sh // 2 - 3:sh // 2 + 3, :k, :3], a[sh // 2 - 3:sh // 2 + 3, -k:, :3]]
+            cm = np.array([c.reshape(-1, 3).mean(0) for c in cs])
+            if np.abs(cm - cm.mean(0)).max() > 18 or np.array([c.reshape(-1, 3).std(0).max() for c in cs]).max() > 14: return src   # 배경이 한 색이 아니다
+            bg = cm.mean(0); mask = np.abs(a[:, :, :3] - bg).max(2) > 40
+            bgc = '0x%02X%02X%02X' % tuple(int(round(v)) for v in bg)
+        col = mask.mean(0); xs = np.where(col > 0.03)[0]
+        if len(xs) < 4: return src
+        cx = (xs[0] + xs[-1] + 1) / 2 / SW
+        if abs(cx - .5) < .04: return src
+        cxp = cx * w; nw = int(round(2 * max(cxp, w - cxp))); nw += nw % 2
+        x0 = int(round(nw / 2 - cxp))
+        out = W('photo_' + re.sub(r'[^0-9A-Za-z가-힣_.-]', '_', base) + ('_c.png' if alpha or src.lower().endswith('.png') else '_c.jpg'))
+        r = run(['ffmpeg', '-y', '-loglevel', 'error', '-i', src, '-vf', f'pad={nw}:{h}:{x0}:0:color={bgc}'] + ([] if out.endswith('.png') else ['-q:v', '3']) + [out])
+        if r.returncode == 0 and os.path.exists(out):
+            print(f'사진 가운데 맞춤: "{base}" 인물 중심 {cx:.2f} → 0.50 (좌우 배경 덧댐 {w}→{nw}px)')
+            return out
+    except Exception as e:
+        print('사진 가운데 맞춤 건너뜀:', base, e)
+    return src
+
 def photos_data_uri(ep, ep_path=None):
     """콘티가 쓰는 사진만 data URI 로 (키 = 콘티에 적힌 이름 그대로). 큰 사진은 렌더 html 이 무거워지니 1600px 이하로 줄여 넣는다"""
     out = {}; sizes = PHOTO_SIZES
@@ -205,6 +243,7 @@ def photos_data_uri(ep, ep_path=None):
                     r = run(['ffmpeg', '-y', '-loglevel', 'error', '-i', found, '-vf', "scale='min(1600,iw)':-2", '-q:v', '3', tmp])
                 if r.returncode == 0 and os.path.exists(tmp): src = tmp
             except Exception: pass
+        src = center_subject(src, base)   # 10/1 사용자: 인물이 한쪽으로 치우친 프로필(레이예스) → 배경을 덧대 인물을 가운데로
         ext = os.path.splitext(src)[1].lower()
         mime = 'image/png' if ext == '.png' else 'image/webp' if ext == '.webp' else 'image/jpeg'
         out[name] = f'data:{mime};base64,' + base64.b64encode(open(src, 'rb').read()).decode()
@@ -261,20 +300,26 @@ def logos_data_uri():
 
 # ---------- prep ----------
 # 숫자 읽기 규칙: 나레이션은 한글로 적는다(타입캐스트가 숫자를 제멋대로 읽는 것 방지).
-#  고유어(하나·둘·셋…): 점, 경기, 게임 차, 개, 명, 번, 시, 가지, 장  → "열두 점", "스물두 경기", "두 시"
+#  고유어(하나·둘·셋…): 경기, 게임 차, 시, 가지, 장 → "스물두 경기", "두 시"; 개·명·번도 한 자리(1~9)는 고유어 → "세 개", "두 번"
 #  한자어(일·이·삼…): 승, 패, 위, 이닝, 회, 년, 월, 일, 분, 초, 억, 달러, 순위, 라운드, 연승/연패, 점수(삼 대 십구), 승률·타율 → "이 승 십 패", "이십사 이닝"
-NATIVE = r'(한|두|세|네|다섯|여섯|일곱|여덟|아홉|열\S*|스물\S*|서른\S*)'
+#  10/1 밤 사용자 정정("서른여덟점이 아니라 삼십팔점", "칠백여든한점 → 칠백팔십일점", "예순세번 → 육십삼번", "여든한개 → 팔십일개"):
+#   **점(득점·실점·득실차·점수)은 항상 한자어**(삼 점, 삼십팔 점), **개·명·번은 10 이상이면 한자어**(십육 개, 백육십구 개, 육십삼 번). 경고가 뜨면 합성 전에 반드시 고친다.
+NATIVE = r'(한|두|세|네|다섯|여섯|일곱|여덟|아홉|열\S*|스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*)'
+NATIVE10 = r'(열\S*|스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*|[가-힣]*(여든|아흔|예순|일흔|쉰|마흔|서른|스물|열)[가-힣]*)'
 SINO = r'(일|이|삼|사|오|육|칠|팔|구|십\S*|백\S*)'
+SINO1 = r'(일|이|삼|사|오|육|칠|팔|구)'
 def narr_check(lines):
     warns = []
     for i, t in enumerate(lines):
         if re.search(r'\d', t): warns.append(f'{i:02d} 숫자는 한글로 적어 주세요: {t}')
-        for m in re.finditer(NATIVE + r' ?(승|패|위|이닝|회|년|월|일|분|초|억|달러|순위|라운드)(?![가-힣])', t):
-            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (이 승, 십 패, 삼 위)')
-        for m in re.finditer(r'(?<![가-힣])' + SINO + r' ?(점|경기|게임|개|명|가지|장)(?![가-힣])', t):
-            # 소수점("십이 점 삼팔", "오 점 영이")은 한자어가 맞다 — 점 뒤에 바로 숫자가 이어지면 넘어간다
-            if m.group(2) == '점' and re.match(r' ?(영|일|이|삼|사|오|육|칠|팔|구)', t[m.end():]): continue
-            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (열두 점, 스물두 경기)')
+        for m in re.finditer(NATIVE + r' ?(승|패|위|이닝|회|년|월|일|분|초|억|달러|순위|라운드|점)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (이 승, 십 패, 삼 위, 삼십팔 점)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE10 + r' ?(개|명|번|장)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (십육 개, 백육십구 개, 육십삼 번)')
+        for m in re.finditer(r'(?<![가-힣])' + SINO + r' ?(경기|게임|가지)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (스물두 경기, 세 게임 차)')
+        for m in re.finditer(r'(?<![가-힣십백천])' + SINO1 + r' (개|명|번|장)(?![가-힣])', t):   # 띄어 쓴 것만("이 번") — "이번 겨울"·"일 번"(등번호)은 제외
+            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (세 개, 두 번)')
     return warns
 
 def sub_check(ep):
