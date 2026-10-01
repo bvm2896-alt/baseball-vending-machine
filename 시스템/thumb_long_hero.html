@@ -1,0 +1,51 @@
+<!doctype html>
+<!-- 야구자판기 롱폼 썸네일 '히어로형' 1280x720 (2026-10-01 밤 신설, 사용자 레퍼런스 '골글 내놔라':
+     "프로필 사진만 쓰지 말고 멋있는 경기 중 사진들로 조합, 일렬로 세우지 않고, 배경도 멋지게" / "색을 꼭 따라 할 필요는 없고 저런 느낌")
+     구도: 가운데 선수 1명이 가장 크고 맨 앞(z 최상), 양옆 2명씩은 조금 작고 뒤로 엇갈려(바깥일수록 작고 뒤) — 얼굴은 서로 안 가림.
+     배경: 어두운 바탕 + 가운데 뒤에서 퍼지는 강한 빛(glow) + 빛줄기(rays) + 불티(sparks) + 아래 어둠. 색은 bg.c1/c2 로.
+     글씨: 맨 위 작은 줄(top), 아래 두꺼운 큰 글씨(lines, Black Han Sans, 검정 테두리 + 그림자).
+     콘티 thumb: {"layout":"hero", "people":[{"img":"누끼/…","x":640,"y":0,"h":760,"z":5,"flip":false}, …], "top":"…", "lines":[[{"t":"…","c":"#FFD400","s":160}]], "bg":{"c1":"#FF7A00","c2":"#3A0A00"}}
+       people[].fade = 그림 아래 끝 N px 를 투명하게(사진이 허리에서 잘려 딱 끊긴 선이 보일 때). people[].x = 얼굴 가운데 x, y = 위로 올림(px, 아래 기준), h = 그림 높이, z = 앞뒤(클수록 앞). 누끼는 tools\cutout.py. -->
+<html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'BHS';src:url('__FONT_DIR__/BlackHanSans.ttf') format('truetype')}
+@font-face{font-family:'NB';src:url('__FONT_DIR__/NotoSansKR-Black.otf')}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#000}
+body{font-family:'BHS','NB',sans-serif;color:#fff}
+#s{position:relative;width:1280px;height:720px;overflow:hidden;background:#07060A}
+#bg,#rays,#sparks,#vig{position:absolute;inset:0}
+#rays{mix-blend-mode:screen;opacity:.55}
+#sparks{mix-blend-mode:screen}
+#vig{background:radial-gradient(120% 90% at 50% 40%,rgba(0,0,0,0) 45%,rgba(0,0,0,.75) 100%);z-index:1}
+#row{position:absolute;inset:0;z-index:2}
+.p{position:absolute;bottom:0;transform-origin:50% 100%}
+.p img{display:block;height:100%;width:auto}
+#floor{position:absolute;left:0;right:0;bottom:0;height:300px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.78) 55%,rgba(0,0,0,.95));z-index:3}
+#top{position:absolute;left:0;right:0;top:14px;text-align:center;z-index:6;font-size:66px;letter-spacing:-1px;color:rgba(255,255,255,.92);-webkit-text-stroke:10px rgba(0,0,0,.85);paint-order:stroke fill;white-space:nowrap}
+#txt{position:absolute;left:0;right:0;bottom:30px;display:flex;flex-direction:column;align-items:center;z-index:4}
+.t{line-height:1;letter-spacing:-3px;white-space:nowrap;-webkit-text-stroke:18px #000;paint-order:stroke fill;filter:drop-shadow(0 10px 0 rgba(0,0,0,.6)) drop-shadow(0 0 30px rgba(0,0,0,.6))}
+</style></head><body><div id="s"><div id="bg"></div><canvas id="rays" width="1280" height="720"></canvas><canvas id="sparks" width="1280" height="720"></canvas><div id="top"></div><div id="vig"></div><div id="row"></div><div id="floor"></div><div id="txt"></div></div><script>
+const TH=(window.EP&&EP.thumb)||{}, P=(window.EP&&EP.photos)||{};
+function src(n){if(!n)return'';if(P[n])return P[n];const k=Object.keys(P).find(k=>k===n||k.replace(/\.[a-z0-9]+$/i,'')===n||k.endsWith('/'+n));return k?P[k]:''}
+const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const B=TH.bg||{}, c1=B.c1||'#FF6A00', c2=B.c2||'#2A0800', c3=B.c3||'#FFD27A';
+/* 배경: 가운데 뒤 강한 빛 + 바깥 어둠 */
+document.getElementById('bg').style.background=`radial-gradient(55% 70% at 50% 42%,${c3} 0%,${c1} 22%,${c2} 62%,#050307 100%)`;
+/* 빛줄기: 가운데 위에서 사방으로 */
+(function(){const c=document.getElementById('rays').getContext('2d'), cx=640, cy=300; let seed=7; const R=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  for(let i=0;i<46;i++){const a=i/46*Math.PI*2+R()*.08, w=.018+R()*.05, L=1500; const g=c.createLinearGradient(cx,cy,cx+Math.cos(a)*900,cy+Math.sin(a)*900);
+    g.addColorStop(0,'rgba(255,240,200,.55)'); g.addColorStop(1,'rgba(255,240,200,0)'); c.fillStyle=g; c.beginPath(); c.moveTo(cx,cy);
+    c.lineTo(cx+Math.cos(a-w)*L,cy+Math.sin(a-w)*L); c.lineTo(cx+Math.cos(a+w)*L,cy+Math.sin(a+w)*L); c.closePath(); c.globalAlpha=.25+R()*.5; c.fill();}})();
+/* 불티: 작은 빛 점 */
+(function(){const c=document.getElementById('sparks').getContext('2d'); let seed=11; const R=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  for(let i=0;i<140;i++){const x=R()*1280, y=R()*720, r=.8+R()*2.6, g=c.createRadialGradient(x,y,0,x,y,r*4); g.addColorStop(0,`rgba(255,${190+R()*60|0},120,${.5+R()*.5})`); g.addColorStop(1,'rgba(255,150,60,0)'); c.fillStyle=g; c.beginPath(); c.arc(x,y,r*4,0,7); c.fill();}})();
+document.getElementById('top').textContent=TH.top||'';
+/* 선수: left/top/h(px) 로 직접 배치(tools 에서 얼굴 상자로 계산). z 클수록 앞. head:[x0,y0,x1,y1] 이 있으면 그 사각형(머리)만 맨 위에 한 번 더 → 얼굴은 절대 안 가려짐 */
+const ppl=TH.people||[];
+const one=(f,extra,clip)=>`<div class="p" style="left:${f.left}px;top:${f.top}px;height:${f.h}px;bottom:auto;z-index:${f.z||1};${extra||''}${clip?`clip-path:inset(${clip[1]-f.top}px ${f.left+f.wpx-clip[2]}px ${f.top+f.h-clip[3]}px ${clip[0]-f.left}px);`:''}${f.fade?`-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - ${f.fade}px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - ${f.fade}px),transparent);`:''}filter:drop-shadow(0 0 ${f.glow??16}px rgba(0,0,0,.85))${f.bright?` brightness(${f.bright})`:''}"><img src="${src(f.img)}"${f.flip?' style="transform:scaleX(-1)"':''}></div>`;
+document.getElementById('row').innerHTML=ppl.map(f=>one(f)).join('')+ppl.filter(f=>f.head&&f.wpx).map(f=>one(Object.assign({},f,{z:30}),'',f.head)).join('');
+const lines=TH.lines||[[{t:'제목',s:160,c:'#FFD400'}]];
+const box=document.getElementById('txt');
+box.innerHTML=lines.map((ln,i)=>`<div class="t" style="margin-top:${i?(ln[0].mt??-6):0}px">${ln.map(x=>`<span style="font-size:${x.s||160}px;color:${x.c||'#fff'}">${esc(x.t)}</span>`).join('')}</div>`).join('');
+[...box.children].forEach(el=>{let g=0;while(el.getBoundingClientRect().width>1230&&g++<40){[...el.children].forEach(s=>{s.style.fontSize=(parseFloat(s.style.fontSize)*.96)+'px'})}});
+</script></body></html>

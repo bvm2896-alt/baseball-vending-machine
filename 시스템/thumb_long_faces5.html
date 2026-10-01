@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- 야구자판기 롱폼 썸네일 '얼굴 5명형' 1280x720 (2026-10-01 신설, 롱폼⑤ 탈락 5팀 — 사용자 선택 "5팀 얼굴 5명 + 2027엔?")
+     콘티 thumb: {"layout":"faces5", "faces":[{"img":"KBO프로필/권희동","team":"NC","color":"#315288","focus":"50% 10%"}, ...5개],
+                 "lines":[[{"t":"탈락 5팀","c":"#fff","s":96}],[{"t":"2027엔 ","c":"#fff","s":150},{"t":"가을야구?","c":"#FFE200","s":150}]]}
+     faces[].zoom/origin = 얼굴 크기 맞추기(10/1 사용자 "다들 같은 크기로") — 모자 꼭대기~턱 높이가 카드마다 같게.
+     규칙: 위 = 구단 색 띠 + 로고 + 선수 프로필(흰 테두리 카드), 아래 = 두꺼운 폰트 + 검정 테두리 큰 글씨(폭 1200 꽉). -->
+<html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'NB';src:url('__FONT_DIR__/NotoSansKR-Black.otf')}
+@font-face{font-family:'KBO';src:url('__FONT_DIR__/KBO Dia Gothic_bold.ttf') format('truetype');font-weight:700 900}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#000}
+body{font-family:'NB','KBO',sans-serif;color:#fff}
+#s{position:relative;width:1280px;height:720px;overflow:hidden;background:radial-gradient(70% 60% at 50% 30%,#1E3A78,#0A1A3A 60%,#020611)}
+#row{position:absolute;left:24px;right:24px;top:22px;height:430px;display:flex;gap:14px}
+.c{flex:1;position:relative;border-radius:22px;overflow:hidden;border:6px solid #fff;box-shadow:0 14px 30px rgba(0,0,0,.6);background:#E9EDF3}
+.c img.p{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.c .band{position:absolute;left:0;right:0;bottom:0;height:64px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:34px;letter-spacing:-1px}
+.c .band img{height:50px;width:56px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5))}  /* 10/1 밤 사용자: 로고는 누끼 그대로(흰 카드 없이) */
+#txt{position:absolute;left:0;right:0;top:452px;bottom:14px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.t{line-height:1;letter-spacing:-4px;white-space:nowrap;-webkit-text-stroke:16px #000;paint-order:stroke fill;filter:drop-shadow(0 8px 0 rgba(0,0,0,.55))}
+#brand{position:absolute;right:30px;top:-200px;font-size:22px;color:rgba(255,255,255,.85);-webkit-text-stroke:5px #000;paint-order:stroke fill}
+</style></head><body><div id="s"><div id="row"></div><div id="txt"></div><div id="brand">야구자판기</div></div><script>
+const TH=(window.EP&&EP.thumb)||{}, P=(window.EP&&EP.photos)||{}, LG=(window.EP&&EP.logos)||{};
+function src(n){if(!n)return'';if(P[n])return P[n];const k=Object.keys(P).find(k=>k===n||k.replace(/\.[a-z0-9]+$/i,'')===n||k.endsWith('/'+n));return k?P[k]:''}
+const AL={'기아':'HT','KIA':'HT','엘지':'LG','케이티':'KT','엔씨':'NC','NC':'NC','에스에스지':'SK','SSG':'SK','두산':'OB','삼성':'SS','롯데':'LT','한화':'HH','키움':'WO'};
+const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+document.getElementById('row').innerHTML=(TH.faces||[]).map(f=>{const lg=LG[AL[f.team]||f.team];
+  return `<div class="c" style="border-color:#fff"><img class="p" src="${src(f.img)}" style="object-position:${f.focus||'50% 12%'};${f.zoom?`transform:scale(${f.zoom});transform-origin:${f.origin||'50% 10%'};`:''}">
+   <div class="band" style="background:${f.color||'#12161F'}">${lg?`<img src="${lg}">`:''}<span>${esc(f.label||f.team)}</span></div></div>`}).join('');
+const lines=TH.lines||[[{t:'제목',s:150}]];
+const box=document.getElementById('txt');
+box.innerHTML=lines.map((ln,i)=>`<div class="t" style="margin-top:${i?(ln[0].mt??-6):0}px">${ln.map(x=>`<span style="font-size:${x.s||140}px;color:${x.c||'#fff'}">${esc(x.t)}</span>`).join('')}</div>`).join('');
+/* 글자 묶음이 칸(1220 x 254)을 넘으면 비율로 줄인다 */
+requestAnimationFrame(()=>{const r=box.getBoundingClientRect();let mw=0,h=0;box.querySelectorAll('.t').forEach(e=>{const b=e.getBoundingClientRect();mw=Math.max(mw,b.width);h+=b.height});
+ const k=Math.min(1,1220/mw,(r.height)/h); if(k<1)box.style.transform=`scale(${k.toFixed(3)})`;});
+</script></body></html>
