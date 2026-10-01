@@ -439,9 +439,10 @@ SCENE.steps = (lt, s) => {
   const items = s.items || [], n = items.length, GAP = n >= 5 ? 36 : 56;
   const colW = Math.min(440, Math.floor((1808 - GAP * (n - 1)) / Math.max(1, n)));
   const DS = n >= 5 ? 44 : 50, TS = n >= 5 ? 54 : 60;
-  let h = s.title ? `<div class="title gold" style="font-size:52px;margin-bottom:40px;${rise(seg(lt, 0, .4), 20)}">${br(s.title)}</div>` : '';
+  const PV = s._same ? (s._prev.items || []).filter(r => !r.hide).length : 0;   /* 10/1: cont 면 앞 칸은 그대로, 새 칸만 */
+  let h = s.title ? `<div class="title gold" style="font-size:52px;margin-bottom:40px;${PV ? '' : rise(seg(lt, 0, .4), 20)}">${br(s.title)}</div>` : '';
   h += `<div class="row" style="gap:0;justify-content:center;width:100%;align-items:flex-start">` + items.map((it, i) => {
-    const p = seg(lt, .15 + i * .22, .45);
+    const p = it.hide ? 0 : i < PV ? 1 : seg(lt, .15 + (i - PV) * .22, .45);   /* hide: 자리만 잡아 둔다 */
     return `${i ? `<div style="flex:0 0 ${GAP}px;height:5px;border-radius:3px;background:#D8DEE8;margin-top:${Math.round(DS * 1.35)}px;opacity:${c01(p * 1.5)}"></div>` : ''}
       <div class="col" style="gap:22px;width:${colW}px;flex:0 0 ${colW}px;${rise(p, 34)}">
         <div class="num" style="min-width:${Math.round(DS * 2.9)}px;height:${Math.round(DS * 2.7)}px;padding:0 ${Math.round(DS * .7)}px;border-radius:999px;background:${it.hi ? ACC : '#fff'};border:4px solid ${it.hi ? ACC : LINE};color:${it.hi ? '#fff' : TXT};display:flex;align-items:center;justify-content:center;font-size:${DS}px;font-weight:900;letter-spacing:-1.5px;white-space:nowrap;box-shadow:0 10px 28px rgba(18,22,31,.08)">${esc(it.date || (i + 1))}</div>
@@ -529,12 +530,13 @@ SCENE.statbars = (lt, s) => {
   const rows = s.rows || [], L = s.left ? T(s.left) : null, R = s.right ? T(s.right) : null;
   if (rows.length && rows.every(r => r.lv == null && r.rv == null)) return textCompare(lt, s);   /* 9/27: 숫자 없는 비교는 막대 대신 두 칸 비교표 */
   const CL = s.leftColor || '#12161F', CR = s.rightColor || ACC, BW = 420;
-  let h = `<div class="row" style="width:100%;justify-content:space-between;margin-bottom:16px;${rise(seg(lt, 0, .4), 18)}">
+  const PV = s._same ? (s._prev.rows || []).filter(r => !r.hide).length : 0;   /* 10/1: cont 면 앞 장면에 있던 줄은 그대로, 새 줄만 */
+  let h = `<div class="row" style="width:100%;justify-content:space-between;margin-bottom:16px;${PV ? '' : rise(seg(lt, 0, .4), 18)}">
     <div class="row" style="gap:16px">${L ? chip(L, 'S') : ''}<b style="font-size:46px;font-weight:900;letter-spacing:-2px;color:${CL}">${esc(s.leftName || (L ? L.nm : ''))}</b></div>
     ${s.title ? `<div class="title gold" style="font-size:46px">${br(s.title)}</div>` : ''}
     <div class="row" style="gap:16px"><b style="font-size:46px;font-weight:900;letter-spacing:-2px;color:${CR}">${esc(s.rightName || (R ? R.nm : ''))}</b>${R ? chip(R, 'S') : ''}</div></div>`;
   h += `<div class="sb">` + rows.map((r, i) => {
-    const q = seg(lt, .15 + i * .16, .5), p = eo(q);
+    const q = r.hide ? 0 : i < PV ? 1 : seg(lt, .15 + (i - PV) * .16, .5), p = eo(q);   /* hide: 자리만 잡아 둔다(다음 장면에서 나타날 줄) */
     const m = Math.max(1e-9, Number(r.lv) || 0, Number(r.rv) || 0);   // 줄마다 그 줄의 최대값을 100% 로
     const lw = (Number(r.lv) || 0) / m * BW * p, rw = (Number(r.rv) || 0) / m * BW * p;
     return `<div class="r" style="opacity:${c01(q * 1.6)}">
@@ -542,7 +544,7 @@ SCENE.statbars = (lt, s) => {
       <div class="k">${br(r.k || '')}</div>
       <div class="h"><div class="bar" style="width:${rw}px;background:${CR}"></div><span class="n num" style="color:${CR}">${esc(r.r || '')}</span></div></div>`;
   }).join('') + `</div>`;
-  if (s.text) h += `<div class="big gold" style="margin-top:24px;font-size:${s.size || 76}px;${pop(seg(lt, .3 + rows.length * .16, .5))}">${br(s.text)}</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:24px;font-size:${s.size || 76}px;${PV && s._prev.text === s.text ? '' : pop(seg(lt, .3 + (rows.length - PV) * .16, .5))}">${br(s.text)}</div>`;
   B(LR('', h));
 };
 
@@ -582,12 +584,13 @@ function Bp(h) {
 }
 SCENE.facegrid = (lt, s) => {
   const items = s.items || [], n = items.length || 1, cols = s.cols || (n > 12 ? 4 : n > 6 ? 4 : 3);
-  const cw = Math.floor(900 / cols), d = Math.min(cw - 44, n > 12 ? 124 : 190), T0 = s.title ? .3 : 0, step = Math.min(.12, 1.4 / n);
+  const cw = Math.floor(900 / cols), d = Math.min(cw - 44, n > 12 ? 124 : (s.whole ? 230 : 190)), T0 = s.title ? .3 : 0, step = Math.min(.12, 1.4 / n);
+  /* 10/1 사용자: "얼굴만 띡 자르지 말고 원은 그대로 있어도 프로필 전체가 나오게" → whole: 사진을 원 안에 통째로(높이 맞춤, 아래 정렬) */
   let h = s.title ? `<div class="title" style="font-size:${n > 12 ? 48 : 54}px;font-weight:900;margin-bottom:${n > 12 ? 12 : 22}px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
   h += `<div style="display:grid;grid-template-columns:repeat(${cols},${cw}px);row-gap:${n > 12 ? 4 : 18}px;justify-content:center">`;
   items.forEach((it, i) => {
     const p = seg(lt, T0 + i * step, .4), src = photoSrc(it.img), t = it.team ? T(it.team) : null, hi = it.hi === true;
-    const face = src ? faceImg(src, it, '50% 18%')
+    const face = src ? (s.whole ? `<img src="${src}" style="position:absolute;left:0;right:0;bottom:0;margin:auto;height:100%;width:100%;object-fit:contain;object-position:50% 100%">` : faceImg(src, it, '50% 18%'))
       : `<div class="col" style="position:absolute;inset:0;background:linear-gradient(160deg,#EEF1F6,#DDE3EC)">${t ? chip(t, 'M') : ''}</div>`;
     h += `<div class="col" style="gap:6px;align-items:center;${pop(p)};${it.dim ? 'filter:grayscale(1);opacity:.45' : ''}">
       <div style="position:relative;width:${d}px;height:${d}px;border-radius:50%;overflow:hidden;border:${hi ? 6 : 4}px solid ${hi ? 'var(--acc)' : '#fff'};box-shadow:0 8px 22px rgba(18,22,31,.16);background:#E9EDF3">${face}</div>
@@ -1204,7 +1207,7 @@ function render(t) {
     (s.type === 'h2h' && J(prev.rows) === J(s.rows) && (prev.title || '') === (s.title || '')) ||
     (s.type === 'matchup' && prev.left === s.left && prev.right === s.right && !photoSrc(s.img)) ||
     (s.type === 'toc') ||   /* 9/28: 목차 → 목차는 사라지지 않고 강조만 옮긴다 */
-    (s.cont && ['gantt', 'flow', 'cells', 'funnel', 'flip', 'rankline', 'password', 'scale', 'stack', 'contracts', 'people', 'tiles'].includes(s.type))));   /* 9/30: 롱폼④ 새 장면도 이어 그리기 */   /* 9/28: 이어지는 그림(콘티 cont:true)은 사라졌다 나타나지 않는다 */
+    (s.cont && ['gantt', 'flow', 'cells', 'funnel', 'flip', 'rankline', 'password', 'scale', 'stack', 'contracts', 'people', 'tiles', 'statbars', 'steps'].includes(s.type))));   /* 10/1: 롱폼⑤ 표·타임라인도 새 줄만 */   /* 9/30: 롱폼④ 새 장면도 이어 그리기 */   /* 9/28: 이어지는 그림(콘티 cont:true)은 사라졌다 나타나지 않는다 */
   if (s._nmax == null) {   // 9/19: 같은 사진이 이어지는 profile 묶음의 최대 칩 수 (칩 크기를 처음부터 맞춰 둔다)
     let a = k, b = k; const same = (x, y) => x && y && x.type === 'profile' && y.type === 'profile' && photoSrc(x.img) && photoSrc(x.img) === photoSrc(y.img);
     while (a > 0 && same(SC[a - 1], SC[a])) a--;
