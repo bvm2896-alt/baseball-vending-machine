@@ -46,6 +46,6 @@ const one=(f,extra,clip)=>`<div class="p" style="left:${f.left}px;top:${f.top}px
 document.getElementById('row').innerHTML=ppl.map(f=>one(f)).join('')+ppl.filter(f=>f.head&&f.wpx).map(f=>one(Object.assign({},f,{z:30}),'',f.head)).join('');
 const lines=TH.lines||[[{t:'제목',s:160,c:'#FFD400'}]];
 const box=document.getElementById('txt');
-box.innerHTML=lines.map((ln,i)=>`<div class="t" style="margin-top:${i?(ln[0].mt??-6):0}px">${ln.map(x=>`<span style="font-size:${x.s||160}px;color:${x.c||'#fff'}">${esc(x.t)}</span>`).join('')}</div>`).join('');
-[...box.children].forEach(el=>{let g=0;while(el.getBoundingClientRect().width>1230&&g++<40){[...el.children].forEach(s=>{s.style.fontSize=(parseFloat(s.style.fontSize)*.96)+'px'})}});
+box.innerHTML=lines.map((ln,i)=>`<div class="t" style="margin-top:${i?(ln[0].mt??-6):0}px">${ln.map(x=>`<span style="font-size:${x.s||160}px;color:${x.c||'#fff'}${x.ls!=null?`;letter-spacing:${x.ls}px`:''}">${esc(x.t)}</span>`).join('')}</div>`).join('');
+[...box.children].forEach(el=>{let g=0;while(el.getBoundingClientRect().width>(TH.maxW||1230)&&g++<40){[...el.children].forEach(s=>{s.style.fontSize=(parseFloat(s.style.fontSize)*.96)+'px'})}});
 </script></body></html>

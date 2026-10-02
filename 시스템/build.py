@@ -126,11 +126,14 @@ def is_long(ep):
     return str(ep.get('series', '')).strip() == '야구롱폼'
 
 def canvas_of(ep):
+    if ep.get('vertical'): return (1080, 1920)   # 10/2: 롱폼에서 잘라 세로로 다시 짠 컷 쇼츠(template_long 세로 틀)
     return (1920, 1080) if is_long(ep) else (1080, 1920)
 
 def template_for(ep):
     """시리즈별 템플릿: 야구이슈 이고 template_issue.html 이 있으면 그것(화이트), 아니면 template.html(순위 편, 다크)"""
     ser = str(ep.get('series', '')).strip()
+    if ser == '야구롱폼' and ep.get('vertical') and os.path.exists('template_long_v.html'):   # 10/2: 컷 쇼츠(세로) 전용 — 롱폼 템플릿을 안 바꿔야 롱폼 조각이 그대로 재사용된다
+        return 'template_long_v.html'
     if ser == '야구롱폼' and os.path.exists('template_long.html'):       # 9/18: 롱폼 전용(가로 1920x1080)
         return 'template_long.html'
     if ser == '야구분석' and os.path.exists('template_analysis.html'):   # 9/15: 분석 전용(팀 색 띠 리포트형)
@@ -353,6 +356,21 @@ def prep(ep, ep_path=None):
     if ep_path:
         io.open(W('current.txt'), 'w', encoding='utf-8').write(ep_key(ep_path))
         voice_dir(ep_key(ep_path))
+    vf = ep.get('voiceFrom') or {}
+    if ep_path and vf.get('ep'):
+        # 10/2 컷 쇼츠: 롱폼에서 이미 만든 음성을 줄 번호를 바꿔 복사(대사가 같은 줄만) → tts.py 는 새 줄만 합성
+        src_dir, dst_dir, cp = voice_dir(vf['ep']), voice_dir(ep_key(ep_path)), 0
+        rd = lambda f: io.open(f, encoding='utf-8').read().strip() if os.path.exists(f) else None
+        for j, i in enumerate(vf.get('lines') or []):
+            if i is None or j >= len(lines): continue
+            s3, st_ = os.path.join(src_dir, f'{int(i):02d}.mp3'), os.path.join(src_dir, f'{int(i):02d}.txt')
+            if not os.path.exists(s3) or rd(st_) != lines[j]: continue
+            if rd(os.path.join(dst_dir, f'{j:02d}.txt')) == lines[j] and os.path.exists(os.path.join(dst_dir, f'{j:02d}.mp3')): continue
+            for ext in ('.mp3', '.txt', '.segs.json'):
+                f = os.path.join(src_dir, f'{int(i):02d}{ext}')
+                if os.path.exists(f): shutil.copyfile(f, os.path.join(dst_dir, f'{j:02d}{ext}'))
+            cp += 1
+        print(f'롱폼 음성 재사용: {cp}줄 복사 ({vf["ep"]} → {ep_key(ep_path)})')
     for w_ in narr_check(lines): print('숫자 읽기 경고:', w_)
     for w_ in sub_check(ep): print('자막 숫자 경고:', w_)
     io.open(W('narration.txt'), 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
@@ -630,13 +648,32 @@ def render(ep, ep_path):
     print(f'프레임 렌더 {fps}fps x{scale} ({round(total)}초) …')
     cw, ch = canvas_of(ep)
     fenv = dict(os.environ); fenv['FRAME_W'], fenv['FRAME_H'] = str(cw), str(ch)
+    # 10/2: 그래픽카드 없는 PC(회사)는 2K 에서 크롬 GPU 가 죽는다 → 한 번 죽으면 work\no_gpu.flag 를 남기고, 그 PC 는 다음부터 처음부터 GPU 없이 그린다
+    #       (work\ 는 깃에 안 올라가므로 그래픽카드 있는 집 PC 는 영향 없음. 다시 GPU 로 그리려면 이 파일을 지우면 된다)
+    NOGPU_FLAG = W('no_gpu.flag')
+    # 10/2 2차: 회사 PC 는 GPU 를 꺼도 크롬 여러 개로 동시에 찍으면 터졌고(Unable to capture screenshot), 크롬 1개일 때만 끝까지 갔다 → 표시가 있는 PC 는 동시작업 1
+    def _mark_no_gpu():
+        fenv['FRAME_NO_GPU'] = '1'; fenv['FRAME_WORKERS'] = '1'
+        try: io.open(NOGPU_FLAG, 'w', encoding='utf-8').write('이 PC 는 GPU 없이 그린다(10/2 build.py 가 GPU 오류 뒤 자동으로 만듦). 지우면 다시 GPU 로 그림.\n')
+        except Exception: pass
+    if os.path.exists(NOGPU_FLAG): fenv['FRAME_NO_GPU'] = '1'; fenv['FRAME_WORKERS'] = '1'; print('이 PC 는 GPU 없이 크롬 1개로 그립니다(work\\no_gpu.flag) — 조각은 다 그린 것부터 저장')
     r = None
     if is_long(ep) and cfg_get('CHUNK_CACHE', '1') != '0':
         # 10/1: 롱폼은 장면 조각으로 그리고, 지난번과 똑같은 조각은 다시 찍지 않는다(바뀐 장면만 새로)
         try:
             r = render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv)
         except (Exception, SystemExit) as e:
-            print('조각 렌더 실패 → 전체를 한 번에 그립니다:', str(e)[-800:]); r = None
+            # 10/2 회사 PC: 2K 렌더 중 크롬 GPU 가 죽음 → 다 그린 조각은 두고, GPU 끄고 남은 장면만 이어서
+            print('조각 렌더 실패:', str(e)[-500:])
+            print('→ 그래픽(GPU)을 끄고, 이미 그린 장면은 그대로 두고 남은 장면만 이어서 그립니다')
+            _mark_no_gpu()
+            r = None
+            for _try in (2, 3):   # 10/2 밤: 다 그린 조각은 남으니 같은 방식으로 이어서 두 번 더(전체 한 번에 그리기는 회사 PC 에서 더 잘 터짐)
+                try:
+                    r = render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv); break
+                except (Exception, SystemExit) as e2:
+                    print(f'조각 렌더 {_try}번째 실패:', str(e2)[-400:])
+            if r is None: print('조각 렌더 세 번 실패 → 전체를 한 번에 그립니다')
     if r is None:
         r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale], capture_output=True, text=True, encoding='utf-8', errors='replace', env=fenv)
     if r.returncode != 0: print('프레임 렌더 1차 실패 → 동시작업 1 로 다시:\n' + ((r.stderr or '') + '\n' + (r.stdout or ''))[-1200:])
@@ -644,7 +681,8 @@ def render(ep, ep_path):
     vd = dur_of(W('silent.mp4')) if os.path.exists(W('silent.mp4')) else 0.0
     if r.returncode != 0 or vd < total * 0.95:
         # 조각 파일을 동시에 쓰다 깨진 경우(OneDrive 동기화 폴더에서 가끔) → 한 번 더, 이번엔 조각 없이 한 번에 그린다
-        print(f'경고: 무음 영상이 깨졌거나 짧음({vd:.1f}s / {total:.1f}s) → 한 번 더 그립니다(동시작업 1)')
+        print(f'경고: 무음 영상이 깨졌거나 짧음({vd:.1f}s / {total:.1f}s) → GPU 끄고 한 번 더 그립니다(동시작업 1)')
+        _mark_no_gpu()
         try: os.remove(W('silent.mp4'))
         except Exception: pass
         r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale, '1'], capture_output=True, text=True, encoding='utf-8', errors='replace', env=fenv)
@@ -669,7 +707,7 @@ def render(ep, ep_path):
         print('배경음악:', os.path.basename(bgm))
     else:
         run(['ffmpeg', '-y', '-i', W('silent.mp4'), '-i', W('narration.wav'), '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], check=True)
-    if is_long(ep): append_endcard(EP, out)   # 9/20: 롱폼은 끝에 어두운 엔딩 카드(유튜브 최종 화면 자리)
+    if is_long(ep) and not ep.get('vertical'): append_endcard(EP, out)   # 9/20: 롱폼은 끝에 어두운 엔딩 카드(유튜브 최종 화면 자리)
     d = dur_of(out)
     thumb = make_thumb(EP, thumb_path)
     write_youtube_txt(ep, yt_path, d)
@@ -743,8 +781,8 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
         else:
             name = c['fp'] + '_' + hashlib_short(json.dumps(c['nums'])) + '.mp4'
             c['out'] = os.path.join(cdir, name)
-            jobs.append({'t0': c['t0'], 't1': c['t1'], 'n': c['n'], 'out': c['out'] + '.tmp.mp4', 'warm': c['warm']})
-            idx.setdefault(c['fp'], []).append({'nums': c['nums'], 'file': name})
+            jobs.append({'t0': c['t0'], 't1': c['t1'], 'n': c['n'], 'out': c['out'] + '.tmp.mp4', 'final': c['out'], 'warm': c['warm']})
+            if not any(e['file'] == name for e in idx.get(c['fp'], [])): idx.setdefault(c['fp'], []).append({'nums': c['nums'], 'file': name})
         used.add(os.path.basename(c['out']))
     new_f = sum(j['n'] for j in jobs); all_f = sum(c['n'] for c in plan)
     print(f'조각 렌더: 장면 {len(plan)}개 중 {len(jobs)}개만 새로 그림 ({new_f}/{all_f} 프레임, {100 * new_f / max(1, all_f):.0f}%)')
@@ -752,10 +790,13 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
     acc_file = os.path.abspath(W('chunk_accent.json'))
     J = {'fps': fps, 'scale': sw, 'W': Wd, 'H': Hd, 'quality': int(os.environ.get('FRAME_JPEG_Q', '95')), 'jobs': jobs, 'accentOut': acc_file}
     jf = os.path.abspath(W('chunk_jobs.json')); json.dump(J, io.open(jf, 'w', encoding='utf-8'), ensure_ascii=False)
+    # 10/2: 목록을 먼저 적어 둔다 — 조각은 다 그려지는 대로 제 이름이 되므로, 도중에 터져도 다음 실행은 남은 장면만 그린다
+    json.dump(idx, io.open(idx_path, 'w', encoding='utf-8'), ensure_ascii=False)
     r = subprocess.run(['node', 'frames.js', '--chunks', jf], capture_output=True, text=True, encoding='utf-8', errors='replace', env=fenv)
     if r.returncode != 0: raise RuntimeError('조각 렌더 오류:\n' + ((r.stderr or '') + (r.stdout or ''))[-1200:])
     if r.stdout: print((r.stdout or '').strip().splitlines()[-1])
-    for j in jobs: os.replace(j['out'], j['out'][:-len('.tmp.mp4')])
+    for j in jobs:
+        if os.path.exists(j['out']): os.replace(j['out'], j['final'])
     # 이어 붙이기(다시 인코딩 없이)
     lst = os.path.abspath(W('chunk_list.txt'))
     with io.open(lst, 'w', encoding='utf-8') as f:
@@ -767,7 +808,8 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
     except Exception: acc = ''
     m = re.match(r'rgba?\((\d+),\s*(\d+),\s*(\d+)', acc or '')
     col = '0x%02X%02X%02X' % tuple(int(x) for x in m.groups()) if m else '0x1E5EFF'
-    X0, Y0 = int(round(56 * sw)), int(round(122 * sw)); BW, BH = Wd - 2 * X0, max(2, int(round(5 * sw)))
+    X0, Y0 = (int(round(90 * sw)), int(round(290 * sw))) if EP.get('vertical') else (int(round(56 * sw)), int(round(122 * sw)))   # 10/2: 세로 컷 쇼츠는 레일 밑줄 바로 아래
+    BW, BH = Wd - 2 * X0, max(2, int(round(5 * sw)))
     fc = (f'[0:v]split[a][b];[b]crop={BW}:{BH}:{X0}:{Y0}[tr];color=c={col}:s={BW}x{BH}:r={fps}[bar];'
           f"[tr][bar]overlay=x='-w+W*min(1,t/{total:.3f})':y=0:eval=frame:shortest=1[trf];[a][trf]overlay={X0}:{Y0}:shortest=1[v]")
     run(['ffmpeg', '-y', '-v', 'error', '-i', raw, '-filter_complex', fc, '-map', '[v]', '-c:v', 'libx264', '-preset', cfg_get('CHUNK_PRESET', 'veryfast'),
@@ -996,7 +1038,8 @@ def make_thumb(EP, out):
     ser = str(EP.get('series', '')).strip()
     if ser == '야구롱폼' and os.path.exists('thumb_long.html'): tpl = 'thumb_long.html'           # 9/18: 롱폼은 가로 1280x720
     lay = str((EP.get('thumb') or {}).get('layout') or '').strip()
-    if ser == '야구롱폼' and lay and os.path.exists(f'thumb_long_{lay}.html'): tpl = f'thumb_long_{lay}.html'   # 9/30: 롱폼 썸네일 다른 구조(thumb.layout="crash" → thumb_long_crash.html 폭락 차트형)
+    if ser == '야구롱폼' and lay and os.path.exists(f'thumb_long_{lay}.html'): tpl = f'thumb_long_{lay}.html'
+    elif ser == '야구롱폼' and EP.get('vertical') and os.path.exists('thumb_issue.html'): tpl = 'thumb_issue.html'   # 10/2: 컷 쇼츠는 세로 이슈 썸네일   # 9/30: 롱폼 썸네일 다른 구조(thumb.layout="crash" → thumb_long_crash.html 폭락 차트형)
     elif ser == '야구분석' and os.path.exists('thumb_analysis.html'): tpl = 'thumb_analysis.html'   # 9/15: 분석은 구단 색 바탕 + 구단 로고 화면 가득
     else: tpl = 'thumb_issue.html' if (ser in ('야구이슈', '야구분석') and os.path.exists('thumb_issue.html')) else 'thumb.html'
     if 'photos' not in EP:
@@ -1008,7 +1051,7 @@ def make_thumb(EP, out):
     io.open(W('render_thumb.html'), 'w', encoding='utf-8').write(html)
     os.makedirs(os.path.dirname(out), exist_ok=True)
     env = dict(os.environ)
-    if ser == '야구롱폼': env['THUMB_W'], env['THUMB_H'] = '1280', '720'     # 유튜브 롱폼 썸네일은 16:9
+    if ser == '야구롱폼' and not EP.get('vertical'): env['THUMB_W'], env['THUMB_H'] = '1280', '720'     # 유튜브 롱폼 썸네일은 16:9
     r = subprocess.run(['node', 'thumb.js', W('render_thumb.html'), out], capture_output=True, text=True, encoding='utf-8', errors='replace', env=env)
     if r.returncode != 0: print('썸네일 실패:', (r.stderr or r.stdout)[-300:]); return None
     if os.path.getsize(out) > 2 * 1024 * 1024:
