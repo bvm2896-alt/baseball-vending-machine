@@ -108,6 +108,20 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 .st.n4>div{padding:18px 30px;min-width:170px}.st.n4>div b{font-size:70px}.st.n4>div i{font-size:34px}
 .st.n5>div{padding:13px 20px;min-width:132px}.st.n5>div b{font-size:50px}.st.n5>div i{font-size:27px}
 .badge{display:inline-flex;align-items:center;gap:10px;color:#fff;font-size:32px;font-weight:800;padding:8px 22px;border-radius:999px;letter-spacing:-1px}
+
+/* 10/2 세로 컷 쇼츠(EP.vertical): 1080x1920 — 위 레일·제목, 가운데 롱폼 장면(내용 폭에 맞춰 확대·축소), 아래 큰 자막 */
+html.vert,html.vert body{width:1080px;height:1920px}
+html.vert #stage{position:absolute;left:0;top:0;transform-origin:0 0}
+html.vert #body{top:120px;height:780px}   /* 본문 폭은 장면 종류별로 vertical 스크립트가 정한다(막대·표는 좁게 → 세로 화면에서 크게) */
+html.vert #hdr{left:90px;right:90px;top:200px;height:80px;border-bottom:3px solid #E3E7EE}
+html.vert #prog{left:90px;right:90px;top:290px}
+html.vert #sub{left:70px;right:70px;top:1330px;bottom:auto}
+html.vert #sub span{font-size:56px}
+#vtitle{position:absolute;left:60px;right:60px;top:318px;text-align:center;display:none}
+html.vert #vtitle{display:block}
+#vtitle .l{font-size:80px;font-weight:900;letter-spacing:-3px;line-height:1.1;color:#12161F;white-space:nowrap}
+#vtitle .l.a{color:var(--acc)}
+#vtitle .bs{margin-top:16px;font-size:32px;font-weight:700;color:#6A7382;letter-spacing:-.5px}
 </style></head><body>
 <div id="stage">
   <div id="hdr">
@@ -563,9 +577,9 @@ SCENE.statbars = (lt, s) => {
   const rows = s.rows || [], L = s.left ? T(s.left) : null, R = s.right ? T(s.right) : null;
   if (rows.length && rows.every(r => r.lv == null && r.rv == null)) return textCompare(lt, s);   /* 9/27: 숫자 없는 비교는 막대 대신 두 칸 비교표 */
   /* 10/1 밤 사용자 "읽을 수가 없다" → 표를 가운데 1640px 카드에 크게: 숫자 64px·막대 64px, 항목 이름은 가운데 진하게. textSlot = 아래 문구 자리를 미리 비워 두어(px) 다음 장면에서 글이 생겨도 표가 밀리지 않는다 */
-  const CL = s.leftColor || '#12161F', CR = s.rightColor || ACC, BW = 380, VW = 250, KW = 260, RH = rows.length >= 4 ? 90 : 108, BH = rows.length >= 4 ? 50 : 60;
+  const CL = s.leftColor || '#12161F', CR = s.rightColor || ACC, BW = EP.vertical ? 230 : 380, VW = EP.vertical ? 240 : 250, KW = EP.vertical ? 200 : 260, RH = rows.length >= 4 ? 90 : 108, BH = rows.length >= 4 ? 50 : 60;
   const PV = s._same ? (s._prev.rows || []).filter(r => !r.hide).length : 0;   /* 10/1: cont 면 앞 장면에 있던 줄은 그대로, 새 줄만 */
-  let h = `<div class="pane col" style="width:1640px;border-radius:36px;padding:26px 44px 30px;gap:6px;${PV ? '' : rise(seg(lt, 0, .4), 18)}">
+  let h = `<div class="pane col" style="width:${EP.vertical ? 2 * VW + 2 * BW + KW + 88 : 1640}px;border-radius:36px;padding:26px 44px 30px;gap:6px;${PV ? '' : rise(seg(lt, 0, .4), 18)}">
     ${L && R && /vs/i.test(s.title || '') ? /* 10/2 사용자 "가운데 롯데 vs 한화가 있는데 양 끝에 또 있다 → 가운데에 로고랑 같이": 머리줄 하나로 [로고] 롯데 vs 한화 [로고] */
       `<div class="row" style="width:100%;justify-content:center;gap:22px;margin-bottom:10px"><div class="chip" style="width:110px;height:110px"><img src="${LOGO[L.code] || ''}"></div><b style="font-size:60px;font-weight:900;letter-spacing:-2px;color:${CL}">${esc(s.leftName || L.nm)}</b><b style="font-size:46px;font-weight:900;color:${GRAY}">vs</b><b style="font-size:60px;font-weight:900;letter-spacing:-2px;color:${CR}">${esc(s.rightName || R.nm)}</b><div class="chip" style="width:110px;height:110px"><img src="${LOGO[R.code] || ''}"></div></div>` :
     `<div class="row" style="width:100%;justify-content:space-between;margin-bottom:10px">
@@ -1433,4 +1447,54 @@ function render(t) {
   drawRail(k, t); drawSub(t);
 }
 window.render = render; render(0);
+/* 10/2 세로 컷 쇼츠: 장면마다 '다 그려진 모습'의 내용 상자를 재서(이어 그리는 장면 묶음은 합쳐서) 세로 화면 가운데 칸(620~1260)에 맞게 키운다 */
+if (EP.vertical) (function () {
+  const de = document.documentElement; de.classList.add('vert');
+  const stage = document.getElementById('stage');
+  ['hdr', 'prog', 'sub'].forEach(id => document.body.appendChild(document.getElementById(id)));
+  const vt = document.createElement('div'); vt.id = 'vtitle';
+  vt.innerHTML = (EP.vtitle || []).map((x, i) => `<div class="l${i ? ' a' : ''}">${String(x).replace(/</g, '&lt;')}</div>`).join('') + (EP.vbasis ? `<div class="bs">${EP.vbasis}</div>` : '');
+  document.body.appendChild(vt);
+  vt.querySelectorAll('.l').forEach(el => { let fs = 80, g = 0; el.style.fontSize = fs + 'px'; while (el.scrollWidth > 960 && g++ < 40) { fs -= 3; el.style.fontSize = fs + 'px'; } });
+  const ZX = 540, ZY = 925, ZW = 1000, ZH = 750;   /* 장면 칸: 550~1300 */
+  function box() {
+    const body = document.getElementById('body'); let L = 1e9, R = -1e9, T = 1e9, B = -1e9;
+    body.querySelectorAll('*').forEach(e => { const c = e.getBoundingClientRect(); if (c.width < 2 || c.height < 2) return;
+      const cs = getComputedStyle(e); if (cs.visibility === 'hidden' || cs.display === 'none' || +cs.opacity < 0.05) return;
+      const own = [...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim());
+      const bx = cs.backgroundColor !== 'rgba(0, 0, 0, 0)' || (cs.borderStyle !== 'none' && parseFloat(cs.borderWidth) > 0) || cs.boxShadow !== 'none';
+      const shape = ['path', 'circle', 'rect', 'line', 'ellipse', 'polygon', 'polyline', 'text'].includes(e.tagName);
+      if (!(own || e.tagName === 'IMG' || shape || bx)) return;
+      if (bx && c.width > 1800) return;
+      L = Math.min(L, c.left); R = Math.max(R, c.right); T = Math.min(T, c.top); B = Math.max(B, c.bottom); });
+    return L < R ? { L, R, T, B } : { L: 56, R: 1864, T: 146, B: 860 };
+  }
+  const NARROW = ['bars', 'statbars', 'cells', 'tiles', 'steps', 'teamgrid', 'contracts', 'stack', 'question', 'scoreboard'];
+  const bodyEl = document.getElementById('body');
+  function setBody(k) { const nar = NARROW.includes((SC[k] || {}).type); bodyEl.style.left = nar ? '410px' : '56px'; bodyEl.style.width = nar ? '1100px' : '1808px'; }
+  const VZ = [];
+  stage.style.transform = 'none';
+  let g = null;
+  for (let k = 0; k < SC.length; k++) {
+    const end = (k < BD.length ? BD[k] : (EP.total || 3)) - 0.03;
+    setBody(k); render(end); stage.style.transform = 'none';
+    const b = box(), s = SC[k];
+    if (g && (s._same || s._keep)) { g.L = Math.min(g.L, b.L); g.R = Math.max(g.R, b.R); g.T = Math.min(g.T, b.T); g.B = Math.max(g.B, b.B); g.ks.push(k); }
+    else { g = Object.assign({ ks: [k] }, b); VZ.push(g); }
+  }
+  const Z = [];
+  VZ.forEach(g => { const w = g.R - g.L + 40, h = g.B - g.T + 30;
+    const z = Math.max(0.42, Math.min(1.0, ZW / w, ZH / h));
+    g.ks.forEach(k => Z[k] = { z, cx: (g.L + g.R) / 2, cy: (g.T + g.B) / 2 }); });
+  window.__VZ = Z;
+  const base = render;
+  function vrender(t) {
+    let k = 0; while (k < BD.length && t >= BD[k]) k++; k = Math.min(k, SC.length - 1);
+    setBody(k); base(t);
+    const q = Z[k] || { z: 0.56, cx: 960, cy: 503 };
+    stage.style.transform = `translate(${(ZX - q.cx * q.z).toFixed(1)}px, ${(ZY - q.cy * q.z).toFixed(1)}px) scale(${q.z.toFixed(4)})`;
+    document.body.style.background = stage.style.background; stage.style.background = 'transparent';
+  }
+  window.render = vrender; vrender(0);
+})();
 </script></body></html>
