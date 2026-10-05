@@ -5,6 +5,10 @@
 # 10/2: 롱폼을 쪼갠 컷 쇼츠(YYYY-MM-DD_롱폼컷N.json, "vertical": true)도 같이 만든다 — 롱폼을 먼저, 그다음 컷(컷은 롱폼 음성을 가져다 쓴다).
 #       이미 같은 내용으로 만든 편(work\long_built.json 에 콘티 지문이 같은 것)은 건너뛴다. 검수판(KBO_DRAFT)과 최종판은 따로 센다.
 # 합성 전에 어떤 콘티를 만드는지 보여 주고 Enter(y)를 받아야 시작한다.
+# 10/2 밤 사용자 "롱폼만들기 말고 롱폼_숏츠만들기 배치파일을 하나 더" → 두 버튼으로 나눈다.
+#       --long : 롱폼만 (롱폼만들기.cmd·롱폼검수.cmd)
+#       --cuts : 컷 쇼츠만 (롱폼_숏츠만들기.cmd) — 롱폼은 건드리지 않는다. 날짜를 안 주면 가장 최근 날짜의 롱폼컷 콘티 전부.
+#       둘 다 없으면 예전처럼 롱폼 + 그 롱폼의 컷.
 # tts.py 는 새로 만들 글자 수를 보여 주고, 3,500자 넘거나 1번 계정이 떨어지면 여기서 y 를 받아야 계속한다(9/27).
 import glob, json, io, os, re, subprocess, sys, hashlib
 def load(p): return json.load(io.open(p, encoding='utf-8-sig'))
@@ -15,22 +19,40 @@ try: built = json.load(io.open(BUILT, encoding='utf-8'))
 except Exception: built = {}
 def done(p): return built.get(f'{DRAFT}|{os.path.basename(p)}') == fp(p)
 
-ps = sorted(p for p in glob.glob('episodes/*.json')
-            if re.match(r'\d{4}-\d{2}-\d{2}_롱폼', os.path.basename(p)) and load(p).get('chapters'))
-if len(sys.argv) > 1: ps = [p for p in ps if sys.argv[1] in os.path.basename(p)]
-if not ps: sys.exit('만들 롱폼 콘티가 없습니다 (episodes\\YYYY-MM-DD_롱폼.json)')
-p = ps[-1]; ep = load(p)
-cuts = sorted((c for c in glob.glob('episodes/*.json')
-               if re.match(r'\d{4}-\d{2}-\d{2}_롱폼컷\d+\.json$', os.path.basename(c)) and load(c).get('vertical')
-               and (load(c).get('voiceFrom') or {}).get('ep') == os.path.splitext(os.path.basename(p))[0]),
-              key=lambda c: int(re.search(r'컷(\d+)', c).group(1)))
-todo = ([] if done(p) else [p]) + [c for c in cuts if not done(c)]
-if not todo:
-    sys.exit(f'다 만들어져 있어요({DRAFT}판): {os.path.basename(p)} + 컷 {len(cuts)}편 — 콘티를 고치면 다시 만듭니다')
+args = sys.argv[1:]
+MODE = 'long' if '--long' in args else 'cuts' if '--cuts' in args else 'both'
+args = [a for a in args if a not in ('--long', '--cuts')]
+iscut = lambda c: re.match(r'\d{4}-\d{2}-\d{2}_롱폼컷\d+\.json$', os.path.basename(c)) and load(c).get('vertical')
+cutkey = lambda c: (os.path.basename(c)[:10], int(re.search(r'컷(\d+)', os.path.basename(c)).group(1)))
+p = None
+if MODE == 'cuts':
+    cuts = sorted((c for c in glob.glob('episodes/*.json') if iscut(c)), key=cutkey)
+    if args: cuts = [c for c in cuts if args[0] in os.path.basename(c)]
+    elif cuts: cuts = [c for c in cuts if os.path.basename(c)[:10] == max(os.path.basename(x)[:10] for x in cuts)]   # 가장 최근 날짜 컷만
+    if not cuts: sys.exit('만들 컷 쇼츠 콘티가 없습니다 (episodes\\YYYY-MM-DD_롱폼컷N.json)')
+    todo = [c for c in cuts if not done(c)]
+    if not todo:
+        sys.exit(f'다 만들어져 있어요({DRAFT}판): 컷 {len(cuts)}편 ' + ', '.join(os.path.basename(c) for c in cuts) + ' — 콘티를 고치면 다시 만듭니다')
+else:
+    ps = sorted(x for x in glob.glob('episodes/*.json')
+                if re.match(r'\d{4}-\d{2}-\d{2}_롱폼', os.path.basename(x)) and not iscut(x) and load(x).get('chapters'))
+    if args: ps = [x for x in ps if args[0] in os.path.basename(x)]
+    if not ps: sys.exit('만들 롱폼 콘티가 없습니다 (episodes\\YYYY-MM-DD_롱폼.json)')
+    p = ps[-1]; ep = load(p)
+    cuts = [] if MODE == 'long' else sorted(
+        (c for c in glob.glob('episodes/*.json')
+         if iscut(c) and (load(c).get('voiceFrom') or {}).get('ep') == os.path.splitext(os.path.basename(p))[0]), key=cutkey)
+    todo = ([] if done(p) else [p]) + [c for c in cuts if not done(c)]
+    if not todo:
+        sys.exit(f'다 만들어져 있어요({DRAFT}판): {os.path.basename(p)}' + (f' + 컷 {len(cuts)}편' if cuts else '') + ' — 콘티를 고치면 다시 만듭니다')
 
 print('=' * 70)
 print(f'이번에 만들 것({DRAFT}판):', ', '.join(os.path.basename(x) for x in todo))
-if p not in todo: print(f'  (롱폼 {os.path.basename(p)} 은 이미 만들어져 있어 건너뜀)')
+if p and p not in todo: print(f'  (롱폼 {os.path.basename(p)} 은 이미 만들어져 있어 건너뜀)')
+if MODE == 'cuts':
+    skip = [c for c in cuts if c not in todo]
+    if skip: print('  (이미 만들어져 있어 건너뜀: ' + ', '.join(os.path.basename(c) for c in skip) + ')')
+    print('  롱폼은 만들지 않습니다(컷 쇼츠만). 롱폼에서 만든 음성은 그대로 가져다 씁니다.')
 for x in todo:
     e = load(x); L = e.get('lines', [])
     print('=' * 70)
@@ -55,3 +77,4 @@ for x in todo:
     built[f'{DRAFT}|{os.path.basename(x)}'] = fp(x)
     os.makedirs('work', exist_ok=True); json.dump(built, io.open(BUILT, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 print(f'\n완료({DRAFT}판): ' + ', '.join(os.path.basename(x) for x in todo))
+if MODE == 'cuts' and todo: print('영상 폴더: 야구롱폼\\영상\\' + os.path.basename(todo[0])[:10] + ' (그다음 깃저장)')

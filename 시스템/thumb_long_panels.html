@@ -1,0 +1,36 @@
+<!doctype html>
+<!-- 야구자판기 롱폼 썸네일 '구단 패널형' 1280x720 (2026-10-03 밤 신설)
+     레퍼런스: 야친남 너클볼 「외인 타자 11명 재계약 할래? 말래?」56만(선수마다 구단 색 칸, 칸 안에 상체) · 야필독 「1픽 총정리」57만(얼굴 같은 크기 한 줄)
+     구조: 세로 칸 N개(구단 색 그라데이션) — 선수 누끼는 **자기 칸 안에서만** 보임(overflow hidden → 손·머리가 옆 칸을 못 뚫음), 얼굴 크기·높이 같게,
+           칸 아래쪽은 검정 그라데이션, 맨 아래 큰 글씨 2줄(흰 + 노랑, 검정 테두리). 폰트 Pretendard Black.
+     콘티 thumb: {"layout":"panels","panels":[{"team":"KT","img":"누끼/…","face":[x,y,w,h],"c1":"#…","c2":"#…"}, …],"F":200,"cy":250,
+                 "lines":[[{"t":"가을야구 확정 5팀","c":"#fff","s":96}],[{"t":"2027에도 갈까?","c":"#FFD400","s":190}]],"maxW":1240} -->
+<html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'PB';src:url('__FONT_DIR__/Pretendard-Black.otf')}
+@font-face{font-family:'NB';src:url('__FONT_DIR__/NotoSansKR-Black.otf')}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#000}
+body{font-family:'PB','NB',sans-serif;color:#fff}
+#s{position:relative;width:1280px;height:720px;overflow:hidden;background:#000}
+#cols{position:absolute;inset:0;display:flex}
+.col{position:relative;flex:1;height:720px;overflow:hidden}
+.col .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.55) 70%,rgba(0,0,0,.92) 100%);z-index:3}
+.col .p{position:absolute;z-index:2;filter:drop-shadow(0 0 14px rgba(0,0,0,.8))}
+.col .p img{display:block;height:100%;width:auto}
+.col .sep{position:absolute;right:0;top:0;bottom:0;width:3px;background:rgba(0,0,0,.85);z-index:4}
+.col .logo{position:absolute;left:50%;top:16px;transform:translateX(-50%);height:54px;z-index:4;filter:drop-shadow(0 2px 6px rgba(0,0,0,.8))}
+#txt{position:absolute;left:0;right:0;bottom:24px;display:flex;flex-direction:column;align-items:center;z-index:6}
+.t{line-height:1;letter-spacing:-5px;white-space:nowrap;-webkit-text-stroke:16px #000;paint-order:stroke fill;filter:drop-shadow(0 10px 0 rgba(0,0,0,.75)) drop-shadow(0 0 28px rgba(0,0,0,.7))}
+</style></head><body><div id="s"><div id="cols"></div><div id="txt"></div></div><script>
+const TH=(window.EP&&EP.thumb)||{}, P=(window.EP&&EP.photos)||{}, L=(window.EP&&EP.logos)||{};
+function src(n){if(!n)return'';if(P[n])return P[n];const k=Object.keys(P).find(k=>k===n||k.replace(/\.[a-z0-9]+$/i,'')===n||k.endsWith('/'+n));return k?P[k]:''}
+const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const panels=TH.panels||[], n=panels.length||1, cw=1280/n, F=TH.F||200, cy=TH.cy||250;
+/* 사진 배치: 칸 가운데 x, cy 에 얼굴 가운데, 얼굴 높이 F → 칸 좌표계로 left/top/h */
+document.getElementById('cols').innerHTML=panels.map((p,i)=>{const [x,y,w,h]=p.face||[0,0,100,100]; const s=F/h; const left=cw/2-(x+w/2)*s, top=cy-(y+h/2)*s; const H=(p.h||1000)*s;
+  return `<div class="col" style="background:linear-gradient(180deg,${p.c1||'#333'} 0%,${p.c2||'#000'} 100%)"><div class="p" style="left:${left}px;top:${top}px;height:${H}px"><img src="${src(p.img)}"></div><div class="shade"></div>${TH.logos===false?'':`<img class="logo" src="${L[p.team]||''}">`}${i<n-1?'<div class="sep"></div>':''}</div>`}).join('');
+const lines=TH.lines||[[{t:'제목',s:190,c:'#fff'}]];
+const box=document.getElementById('txt');
+box.innerHTML=lines.map((ln,i)=>`<div class="t" style="margin-top:${i?(ln[0].mt??-4):0}px">${ln.map(x=>`<span style="font-size:${x.s||190}px;color:${x.c||'#fff'}${x.ls!=null?`;letter-spacing:${x.ls}px`:''}">${esc(x.t)}</span>`).join('')}</div>`).join('');
+[...box.children].forEach(el=>{let g=0;while(el.getBoundingClientRect().width>(TH.maxW||1240)&&g++<40){[...el.children].forEach(s=>{s.style.fontSize=(parseFloat(s.style.fontSize)*.96)+'px'})}});
+</script></body></html>

@@ -37,6 +37,7 @@ const c1=COLOR[teams[0]]||'#E5484D';
 const cBig=TH.color||(EP.series==='야구분석'?c1:pickAccent(c1, EP.epIndex||0));   // 큰 글씨 색: 이슈는 편마다 다르게, 분석은 그 편 구단 키컬러(9/15)
 const hex2=(h,a)=>{const n=parseInt(h.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`};
 // 날짜 배지 = '올리는 날짜'(콘티 date) — 레일 날짜·제목 첫 해시태그와 같은 날. 2026-09-17 사용자 지시로 '경기 날짜'에서 바꿈
+/* 10/6 사용자 "KBO 이슈랑 날짜 없애": thumb.noPills 면 위 알약 둘 다 없음 */
 const dateText=(()=>{ if(TH.date) return TH.date; let d=new Date((EP.date||EP.gameDate||'')+'T00:00:00'); if(isNaN(d)) return EP.dateLabel||'';
   return `${d.getMonth()+1}월 ${d.getDate()}일 (${'일월화수목금토'[d.getDay()]})`; })();
 /* 사진: EP.photos[이름] (build.py 가 넣음). 크기(EP.photoSizes)로 잘라 채울지/통째로 보일지 결정 — 영상 템플릿과 같은 규칙 */
@@ -44,7 +45,10 @@ const PH=EP.photos||{}, PS=EP.photoSizes||{};
 const find=(o,n)=>{ if(!n) return null; const b=String(n).replace(/\.[a-z0-9]+$/i,''); const k=Object.keys(o).find(x=>x===n||x===b||x.replace(/\.[a-z0-9]+$/i,'')===b); return k?o[k]:null; };
 const src=find(PH,TH.img), sz=find(PS,TH.img);
 function photoHtml(w,h){
-  if(!src) return `<div style="position:absolute;inset:0;background:linear-gradient(160deg,${hex2(c1,.18)},${hex2(c1,.05)})"></div><div class="chip" style="left:50%;top:50%;transform:translate(-50%,-50%);width:480px;height:480px;border-radius:96px"><img src="${logo(teams[0])}"></div>`;
+  if(!src) return `<img src="${logo(teams[0])}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain">`;
+  /* 10/2 밤 사용자 "아빌라가 카드 안에 가득 차게 / 카드를 빼거나 / 누끼만 따서 상체까지만" → thumb.cutout: true 면 카드 없이 누끼 선수를 크게,
+     머리 위부터 허리(사진 높이의 cutoutCrop, 기본 0.8)까지만 보이고 아래는 배경으로 부드럽게 사라진다(칸 높이에 맞춰 커짐) */
+  if(TH.cutout) return `<img src="${src}" style="position:absolute;left:50%;top:0;transform:translateX(-50%);height:${(100/(TH.cutoutCrop||0.8)).toFixed(1)}%;width:auto;max-width:none;object-fit:contain">`;   /* 10/2 밤 사용자 "롯데 로고를 카드에 넣지 말고 로고만 나오게 크게" → 사진이 없으면 카드·흰 칩 없이 로고 누끼만 칸 높이 가득 */
   let fit=TH.fit;
   if(!fit){ if(!sz) fit='cover'; else { const cs=Math.max(w/sz[0],h/sz[1]), r=(sz[0]/sz[1])/(w/h); fit=(!sz[2]&&cs<=1.3&&r>0.6&&r<1.7)?'cover':'contain'; } }
   if(fit==='cover') return `<img src="${src}" style="object-position:${esc(TH.focus||'50% 12%')}">`;
@@ -148,15 +152,20 @@ function graphicHtml(){
   return '';
 }
 const GR=!!TH.graphic;
-const POSTER=TH.graphic==='poster', bigLines=String(TH.big||'').split('\n').length, PH_MAX=Math.min(980, 1100-(POSTER?190:250)*bigLines);   // 9/26 포스터형은 그림을 크게, 큰 글씨를 조금 작게   // 큰 글씨가 1660px(안전 영역) 안에 끝나도록 사진 높이 상한(1줄 850, 2줄 600)
-const PH_H = (()=>{ if(TH.ph) return TH.ph;   /* 9/30: 콘티 thumb.ph = 사진 카드 높이 직접(작게 하면 큰 글씨가 커진다) */ if(GR) return Math.min(PH_MAX, TH.gh||900); if(!src||!sz) return PH_MAX; const h=Math.round(940*sz[1]/sz[0]); if(TH.perLine) return Math.min(h, TH.top?500:560); return Math.max(520, Math.min(PH_MAX, h)); })();   // 9/28 perLine(줄별 최대 글씨)이면 사진을 440까지 줄여 글자에 자리를 준다   // 사진 카드 높이: 사진 비율대로
-const Y0 = 340 + PH_H;   // 사진 아래 글 시작 기준
+/* 9/28 1440 → 10/2 밤 1560: 사용자 쇼츠 목록 캡처(빨간 선 "이렇게나 남는데 텍스트 크기를 안 키우고 버린다고?") — 목록 칸은 썸네일 위아래가 약 150px씩 잘리고
+   '조회수' 글자는 약 1595px 부터 → 글자는 1560 위에서 끝나면 된다. thumb.safeBottom 으로 편마다 바꿀 수 있음 */
+const SAFE_BOTTOM = TH.safeBottom || 1560;
+const POSTER=TH.graphic==='poster', bigLines=String(TH.big||'').split('\n').length, PH_MAX=Math.min(980, 1100+(SAFE_BOTTOM-1440)-(POSTER?190:250)*bigLines);   // 9/26 포스터형은 그림을 크게, 큰 글씨를 조금 작게   // 큰 글씨가 1660px(안전 영역) 안에 끝나도록 사진 높이 상한(1줄 850, 2줄 600)
+const PH_H = (()=>{ if(TH.ph) return TH.ph;   /* 9/30: 콘티 thumb.ph = 사진 카드 높이 직접(작게 하면 큰 글씨가 커진다) */ if(GR) return Math.min(PH_MAX, TH.gh||900); if(!src||!sz||TH.cutout) return PH_MAX; const h=Math.round(940*sz[1]/sz[0]); if(TH.perLine) return Math.min(h, TH.top?500:560); return Math.max(520, Math.min(PH_MAX, h)); })();   // 9/28 perLine(줄별 최대 글씨)이면 사진을 440까지 줄여 글자에 자리를 준다   // 사진 카드 높이: 사진 비율대로
+const CUT_LIFT = TH.cutout ? (TH.cutoutLift ?? 220) : 0;   /* 10/2 밤: 누끼 썸네일은 카드 위 빈 공간까지 써서 선수를 크게(머리가 위로 220px 더) */
+const CUT_OVER = TH.cutout ? (TH.cutoutOverlap ?? 110) : 0, PH_MIN = TH.cutout ? 300 : 360;   /* 10/2 밤 사용자 "아빌라 텍스트 크기 저게 최선이야?" → 누끼는 아래가 서서히 사라지므로 글씨를 그 부분에 110px 겹쳐 올리고, 사진 칸 최소도 300 으로 */
+const Y0 = 340 + PH_H - CUT_OVER;   // 사진 아래 글 시작 기준
 const st=document.getElementById('st');
 st.insertAdjacentHTML('beforeend',`
   <div class="bg" style="background:radial-gradient(70% 36% at 50% 18%,${hex2(c1,.16)} 0%,rgba(244,246,250,0) 70%),#F4F6FA"></div>
-  <div class="pill" style="left:70px;top:200px;background:#12161F;color:#fff"><span style="width:18px;height:18px;border-radius:9px;background:${c1};display:inline-block"></span>${esc(EP.railTitle||"KBO 이슈")}</div>
-  <div class="pill" style="right:70px;top:200px;background:#fff;color:#12161F;border:6px solid #12161F;font-size:56px">${esc(dateText)}</div>
-  <div id="blk" style="position:absolute;inset:0"><div class="photo" style="height:${PH_H}px">${GR?graphicHtml():photoHtml(940,PH_H)}
+  ${(EP.vertical||TH.noPills)?'':`<div class="pill" style="left:70px;top:200px;background:#12161F;color:#fff"><span style="width:18px;height:18px;border-radius:9px;background:${c1};display:inline-block"></span>${esc(EP.railTitle||"KBO 이슈")}</div>`}
+  ${!(EP.vertical||TH.noPills)?`<div class="pill" style="right:70px;top:200px;background:#fff;color:#12161F;border:6px solid #12161F;font-size:56px">${esc(dateText)}</div>`:''}
+  <div id="blk" style="position:absolute;inset:0"><div class="photo" style="height:${PH_H}px;${!GR&&!src?'background:transparent;box-shadow:none;border-radius:0':''}${!GR&&src&&TH.cutout?`top:${340-CUT_LIFT}px;height:${PH_H+CUT_LIFT}px;left:0;right:0;`+'background:transparent;box-shadow:none;border-radius:0;-webkit-mask-image:linear-gradient(to bottom,#000 '+Math.round((TH.cutoutFade||0.8)*100)+'%,transparent 100%);mask-image:linear-gradient(to bottom,#000 '+Math.round((TH.cutoutFade||0.8)*100)+'%,transparent 100%)':''}">${GR?graphicHtml():photoHtml(940,PH_H)}
     ${!GR&&src&&teams[0]&&TH.logos!==false?`<div class="chip" style="left:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[0])}"></div>`:''}
     ${!GR&&src&&teams[1]&&TH.logos!==false?`<div class="chip" style="right:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[1])}"></div>`:''}
   </div>
@@ -178,19 +187,30 @@ for(const sel of ['.top','.bigw']){
     if(Array.isArray(TH.lineScale)) sps.forEach((sp,i)=>{ const k=TH.lineScale[i]; if(k) sp.style.fontSize=(parseFloat(sp.style.fontSize)*k).toFixed(1)+'px'; });   // 9/28: 줄별 비율(예 [0.6,1] = 첫 줄을 60%로)
     // 10/1 사용자(쇼츠 목록 캡처): "텍스트가 썸네일에 가득 차지 않고 빈 공간이 있다" → 넘치면 글자를 줄이기 전에 사진 카드부터 줄인다(최소 360).
     //   글자는 줄마다 폭 920 에 꽉 찬 크기를 지키고, 사진이 360 까지 줄어도 넘칠 때만 글자를 줄인다. 콘티에 thumb.ph 를 직접 준 편은 건드리지 않는다.
-    const over=e.getBoundingClientRect().bottom-1440, phEl=document.querySelector('.photo');
-    if(over>0&&phEl&&!TH.ph&&!GR){ const d=Math.min(over, Math.max(0, PH_H-360));
-      if(d>0){ phEl.style.height=(PH_H-d)+'px'; for(const q of ['.bar','.top','.bigw']){ const x=document.querySelector(q); if(x) x.style.top=(parseFloat(x.style.top)-d)+'px'; } } }
-    for(let i=0;i<40&&e.getBoundingClientRect().bottom>1440;i++){ for(const sp of sps){ sp.style.fontSize=(parseFloat(sp.style.fontSize)*0.96).toFixed(1)+'px'; } }   // 안전 영역(아래 1440) 안에 들어갈 때까지 전체 비율 축소
+    const over=e.getBoundingClientRect().bottom-SAFE_BOTTOM, phEl=document.querySelector('.photo');
+    if(over>0&&phEl&&!TH.ph&&!GR){ const d=Math.min(over, Math.max(0, PH_H-PH_MIN));
+      if(d>0){ phEl.style.height=(PH_H+CUT_LIFT-d)+'px'; for(const q of ['.bar','.top','.bigw']){ const x=document.querySelector(q); if(x) x.style.top=(parseFloat(x.style.top)-d)+'px'; } } }
+    for(let i=0;i<40&&e.getBoundingClientRect().bottom>SAFE_BOTTOM;i++){ for(const sp of sps){ sp.style.fontSize=(parseFloat(sp.style.fontSize)*0.96).toFixed(1)+'px'; } }   // 안전 영역(아래 1440) 안에 들어갈 때까지 전체 비율 축소
     continue;
   }
   let fs=parseFloat(getComputedStyle(e).fontSize);
   const w=()=>Math.max(...sps.map(sp=>sp.getBoundingClientRect().width));
   while(w()>920&&fs>60){fs-=8;e.style.fontSize=fs+'px';}
+  /* 10/2 밤 사용자 "텍스트는 사진의 좌우 넓이만큼 차지해도 돼" → 큰 글씨(줄 크기는 같게)는 가장 긴 줄이 폭 920 이 될 때까지 키운다. thumb.grow:false 면 끔 */
+  if(sel==='.bigw'&&TH.grow!==false){
+    while(w()<920&&fs<520){fs+=4;e.style.fontSize=fs+'px';}
+    if(w()>920){fs-=4;e.style.fontSize=fs+'px';}
+    /* 10/2 밤 사용자 재지적("원래 있던 거에서 텍스트만 사진 넓이만큼 키워달라") → 구조·왼쪽 정렬은 그대로, 글씨를 먼저 키우고
+       아래 안전선(SAFE_BOTTOM)을 넘으면 10/1 규칙처럼 사진 칸부터 줄이고(최소 360) 그래도 넘칠 때만 글씨를 줄인다 */
+    const over=e.getBoundingClientRect().bottom-SAFE_BOTTOM, phEl=document.querySelector('.photo');
+    if(over>0&&phEl&&!TH.ph&&!GR){ const d=Math.min(over, Math.max(0, PH_H-PH_MIN));
+      if(d>0){ phEl.style.height=(PH_H+CUT_LIFT-d)+'px'; for(const q of ['.bar','.top','.bigw']){ const x=document.querySelector(q); if(x) x.style.top=(parseFloat(x.style.top)-d)+'px'; } } }
+    while(e.getBoundingClientRect().bottom>SAFE_BOTTOM&&fs>60){fs-=4;e.style.fontSize=fs+'px';}
+  }
 }
 // 사진+글 덩어리를 세로 가운데(살짝 위)로 — 쇼츠 피드에서 가운데가 보이므로
 const big=document.querySelector('.bigw'), blk=document.getElementById('blk');
-const SAFE_BOTTOM=1440;   // 9/28: 쇼츠 목록(격자)에서 아래 약 20%가 조회수 띠에 가려진다(사용자 캡처) → 글자는 1500px 위에서 끝나야 한다. 넘치면 사진+글 덩어리를 통째로 줄인다
+/* SAFE_BOTTOM 은 맨 위(const GR 줄)로 옮김 */   // 9/28: 쇼츠 목록(격자)에서 아래 약 20%가 조회수 띠에 가려진다(사용자 캡처) → 글자는 1500px 위에서 끝나야 한다. 넘치면 사진+글 덩어리를 통째로 줄인다
 if(big&&blk){ const bottom=big.getBoundingClientRect().bottom, top=340;
   if(bottom>SAFE_BOTTOM){ const k=(SAFE_BOTTOM-top)/(bottom-top); blk.style.transformOrigin=`50% ${top}px`; blk.style.transform=`scale(${k.toFixed(4)})`; }
   else { const shift=Math.round((1920-(bottom-top))/2 - top - 40); blk.style.transform=`translateY(${Math.max(-20, Math.min(shift, SAFE_BOTTOM-bottom))}px)`; } }

@@ -1,0 +1,42 @@
+<!doctype html>
+<!-- 야구자판기 롱폼 썸네일 '라인업형' 1280x720 (2026-10-03 밤 신설)
+     레퍼런스(조회수 상위, 서로 다른 채널): 야필독 「2027 FA」45만 · 야필독 「1픽 총정리」57만 · 야친남 너클볼 「2027 FA 총정리」104만
+     공통 구조를 그대로 따름: ① 검정 바탕 + 흐린 큰 글자(ghost) ② 선수 5명 얼굴 크기 똑같이, 가슴 위까지, 한 줄로 나란히(가운데가 살짝 앞)
+                           ③ 위 작은 맥락 한 줄(흰) ④ 아래 1/3 검정 그라데이션 + 거대한 핵심어(흰/노랑, 검정 테두리) — 폰트 Pretendard Black
+     콘티 thumb: {"layout":"lineup","people":[{"img":"누끼/…","left":…,"top":…,"h":…,"z":…}](tools/hero_fit.py 로 계산, F 전원 같게),
+                 "ghost":"2027","top":"작은 맥락","lines":[[{"t":"2027 ","c":"#FFD400"},{"t":"가을야구","c":"#fff"}]],"bg":"#0B0B10","maxW":1240} -->
+<html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'PB';src:url('__FONT_DIR__/Pretendard-Black.otf')}
+@font-face{font-family:'NB';src:url('__FONT_DIR__/NotoSansKR-Black.otf')}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#000}
+body{font-family:'PB','NB',sans-serif;color:#fff}
+#s{position:relative;width:1280px;height:720px;overflow:hidden}
+#bg{position:absolute;inset:0}
+#ghost{position:absolute;left:0;right:0;top:40px;text-align:center;font-size:330px;line-height:1;letter-spacing:-12px;color:rgba(255,255,255,.07);white-space:nowrap;z-index:1}
+#row{position:absolute;inset:0;z-index:2}
+.p{position:absolute}
+.p img{display:block;height:100%;width:auto}
+#floor{position:absolute;left:0;right:0;bottom:0;height:340px;background:linear-gradient(180deg,rgba(5,5,8,0) 0%,rgba(5,5,8,.85) 48%,#050508 100%);z-index:3}
+#top{position:absolute;left:0;right:0;top:18px;text-align:center;z-index:6;font-size:62px;letter-spacing:-1px;color:#fff;-webkit-text-stroke:9px #000;paint-order:stroke fill;white-space:nowrap;filter:drop-shadow(0 4px 0 rgba(0,0,0,.7))}
+#txt{position:absolute;left:0;right:0;bottom:26px;display:flex;flex-direction:column;align-items:center;z-index:5}
+.t{line-height:1;letter-spacing:-6px;white-space:nowrap;-webkit-text-stroke:16px #000;paint-order:stroke fill;filter:drop-shadow(0 10px 0 rgba(0,0,0,.75)) drop-shadow(0 0 28px rgba(0,0,0,.7))}
+</style></head><body><div id="s"><div id="bg"></div><div id="ghost"></div><div id="row"></div><div id="floor"></div><div id="top"></div><div id="txt"></div></div><script>
+const TH=(window.EP&&EP.thumb)||{}, P=(window.EP&&EP.photos)||{};
+function src(n){if(!n)return'';if(P[n])return P[n];const k=Object.keys(P).find(k=>k===n||k.replace(/\.[a-z0-9]+$/i,'')===n||k.endsWith('/'+n));return k?P[k]:''}
+const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const bg=TH.bg||'#0B0B10';
+document.getElementById('bg').style.background=`radial-gradient(70% 60% at 50% 35%,${TH.bg2||'#1C1C26'} 0%,${bg} 70%,#000 100%)`;
+document.getElementById('ghost').textContent=TH.ghost||'';
+document.getElementById('top').textContent=TH.top||'';
+const ppl=TH.people||[];
+/* 기본 층: 몸 전체. 머리 층(head=[x0,y0,x1,y1]): 같은 그림을 머리 타원(부드러운 가장자리)으로만 잘라 맨 위(z 30)에 한 번 더 → 옆 사람 팔이 얼굴을 못 가림 */
+const one=(f,top)=>{let mask='';if(top){const [x0,y0,x1,y1]=f.head;const ecx=(x0+x1)/2-f.left,ecy=(y0+y1)/2-f.top,rx=(x1-x0)/2,ry=(y1-y0)/2;mask=`-webkit-mask-image:radial-gradient(ellipse ${rx}px ${ry}px at ${ecx}px ${ecy}px,#000 82%,transparent 100%);mask-image:radial-gradient(ellipse ${rx}px ${ry}px at ${ecx}px ${ecy}px,#000 82%,transparent 100%);`}
+ else if(f.fade){mask=`-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - ${f.fade}px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - ${f.fade}px),transparent);`}
+ return `<div class="p" style="left:${f.left}px;top:${f.top}px;height:${f.h}px;z-index:${top?30:(f.z||1)};${mask}filter:drop-shadow(0 0 ${f.glow??14}px rgba(0,0,0,.9))"><img src="${src(f.img)}"${f.flip?' style="transform:scaleX(-1)"':''}></div>`};
+document.getElementById('row').innerHTML=ppl.map(f=>one(f,false)).join('')+ppl.filter(f=>f.head).map(f=>one(f,true)).join('');
+const lines=TH.lines||[[{t:'제목',s:200,c:'#fff'}]];
+const box=document.getElementById('txt');
+box.innerHTML=lines.map((ln,i)=>`<div class="t" style="margin-top:${i?(ln[0].mt??-4):0}px">${ln.map(x=>`<span style="font-size:${x.s||200}px;color:${x.c||'#fff'}${x.ls!=null?`;letter-spacing:${x.ls}px`:''}">${esc(x.t)}</span>`).join('')}</div>`).join('');
+[...box.children].forEach(el=>{let g=0;while(el.getBoundingClientRect().width>(TH.maxW||1240)&&g++<40){[...el.children].forEach(s=>{s.style.fontSize=(parseFloat(s.style.fontSize)*.96)+'px'})}});
+</script></body></html>
