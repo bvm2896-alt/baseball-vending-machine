@@ -3,7 +3,14 @@
 # 작업 폴더는 work\이슈2편 (순위 창 work\순위, 이슈 지금실행 work\이슈 와 안 겹침). 음성 폴더는 편마다 work\voice_<편> 이라 안 겹침.
 # 다 만들면 status\built.json 에 적어서 나중에 지금실행이 같은 편을 다시 만들지 않게 한다.
 import os, sys, io, json, hashlib, platform, datetime, subprocess
-EPS = sys.argv[1:] or ['episodes/2026-10-01_이슈.json', 'episodes/2026-10-01_이슈2.json']
+# 10/6: 인자 없이 부르면 가장 최근 날짜의 이슈 콘티(YYYY-MM-DD_이슈*.json) 전부 — cmd 는 ASCII 만 쓸 수 있어 한글 경로를 넘길 수 없다
+import glob, re as _re
+def _latest_issue():
+    fs = [f.replace(os.sep, '/') for f in glob.glob(os.path.join('episodes', '????-??-??_이슈*.json'))]
+    if not fs: return []
+    d = max(_re.match(r'.*/(\d{4}-\d{2}-\d{2})_', f).group(1) for f in fs)
+    return sorted(f for f in fs if os.path.basename(f).startswith(d + '_'))
+EPS = sys.argv[1:] or _latest_issue()
 env = dict(os.environ, KBO_WORK=os.path.join('work', '이슈2편'), KBO_ASK='1')
 env.setdefault('FRAME_WORKERS', '2')   # 순위 창과 CPU 나눠 쓰기
 os.makedirs(env['KBO_WORK'], exist_ok=True)

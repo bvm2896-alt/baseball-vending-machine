@@ -185,39 +185,72 @@ def find_photo(name, ep_path=None):
                     return os.path.join(d, f)
     return None
 
-def center_subject(src, base):
-    """배경이 한 가지 색인 프로필 사진(구단 프로필·누끼)에서 인물이 좌우로 치우쳐 있으면 모자란 쪽에 같은 배경을 덧대 인물을 가운데로 옮긴다.
-    10/1 사용자 지적("레이예스 왼쪽으로 치우쳐 있어, 앞으로 어느 한쪽으로 치우칠 일 없게"). 경기 사진처럼 배경이 복잡하면 건드리지 않는다.
-    자르지 않고 덧대기만 하므로 인물·팔이 잘리는 일은 없다.
-    10/1 밤: 누끼 폴더(선수이미지\누끼)는 건드리지 않는다 — 썸네일 cut5 는 tools\face_fit.py 가 원본 기준으로 위치를 계산한다."""
-    if '누끼' in str(src).replace('\\', '/').split('/')[-2:-1] or '/누끼/' in str(src).replace('\\', '/'): return src
+def center_subject(src, base, origin=None):
+    """프로필 사진에서 인물이 좌우로 치우쳐 있으면 모자란 쪽에 배경을 덧대 인물을 가운데로 옮긴다(자르지 않는다).
+    10/1 사용자 지적("레이예스 왼쪽으로 치우쳐 있어") → 10/4 밤 사용자 지적("스기모토·오윤석·김현수 카드 안에서 치우침, 일부러 그러냐"):
+    옛 방식은 네 귀퉁이 색이 완전히 같을 때만 돌아가 KT 처럼 검은 배경에 조명 번짐이 있는 사진은 건너뛰었다.
+    새 방식: 줄마다 왼쪽·오른쪽 가장자리 색을 따로 재서(그라데이션 OK) 인물 마스크를 만들고, **머리(인물 맨 위 25% 높이) 가운데**를 기준으로 맞춘다
+    (들고 있는 공·방망이가 중심을 끌지 않게). 덧대는 배경은 그 줄의 가장자리 픽셀을 그대로 늘려 이음새가 안 생긴다.
+    가장자리가 매끈하지 않은(경기 사진 등) 사진은 건드리지 않는다. 누끼 폴더는 건드리지 않는다."""
+    sp = str(origin or src).replace('\\', '/')   # 폴더 판정은 원본 경로로(work\photo_*.jpg 로 줄인 뒤 불리기 때문)
+    if '/누끼/' in sp: return src
+    if not ('/KBO프로필/' in sp or '/MLB/' in sp): return src   # 스튜디오 프로필만. 경기 사진은 배경이 복잡해 덧대면 티가 난다 → 콘티 focus 로
     try:
         import numpy as np
-        pr = run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height,pix_fmt', '-of', 'csv=p=0', src])
-        w, h, pf = pr.stdout.strip().split(',')[:3]; w, h = int(w), int(h)
-        alpha = bool(re.search(r'^(rgba|bgra|argb|abgr|ya8|ya16|gbrap|pal8|yuva)', pf.lower()))
-        SW = 160; sh = max(2, int(round(h * SW / w / 2)) * 2)
-        raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', src, '-vf', f'scale={SW}:{sh}', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-'], capture_output=True).stdout
-        a = np.frombuffer(raw, np.uint8).reshape(sh, SW, 4).astype(int)
-        if alpha:
-            mask = a[:, :, 3] > 40; bgc = 'black@0'
+        from PIL import Image
+        im = Image.open(src); alpha = im.mode in ('RGBA', 'LA', 'P') and 'A' in im.getbands() or im.mode == 'P'
+        a = np.asarray(im.convert('RGBA')).astype(int); h, w = a.shape[:2]; k = max(4, w // 50)
+        if a[:, :, 3].min() < 250:
+            mask = a[:, :, 3] > 40; alpha = True
         else:
-            k = 6; cs = [a[:k, :k, :3], a[:k, -k:, :3], a[sh // 2 - 3:sh // 2 + 3, :k, :3], a[sh // 2 - 3:sh // 2 + 3, -k:, :3]]
-            cm = np.array([c.reshape(-1, 3).mean(0) for c in cs])
-            if np.abs(cm - cm.mean(0)).max() > 18 or np.array([c.reshape(-1, 3).std(0).max() for c in cs]).max() > 14: return src   # 배경이 한 색이 아니다
-            bg = cm.mean(0); mask = np.abs(a[:, :, :3] - bg).max(2) > 40
-            bgc = '0x%02X%02X%02X' % tuple(int(round(v)) for v in bg)
-        col = mask.mean(0); xs = np.where(col > 0.03)[0]
-        if len(xs) < 4: return src
-        cx = (xs[0] + xs[-1] + 1) / 2 / SW
-        if abs(cx - .5) < .04: return src
-        cxp = cx * w; nw = int(round(2 * max(cxp, w - cxp))); nw += nw % 2
-        x0 = int(round(nw / 2 - cxp))
-        out = W('photo_' + re.sub(r'[^0-9A-Za-z가-힣_.-]', '_', base) + ('_c.png' if alpha or src.lower().endswith('.png') else '_c.jpg'))
-        r = run(['ffmpeg', '-y', '-loglevel', 'error', '-i', src, '-vf', f'pad={nw}:{h}:{x0}:0:color={bgc}'] + ([] if out.endswith('.png') else ['-q:v', '3']) + [out])
-        if r.returncode == 0 and os.path.exists(out):
-            print(f'사진 가운데 맞춤: "{base}" 인물 중심 {cx:.2f} → 0.50 (좌우 배경 덧댐 {w}→{nw}px)')
-            return out
+            alpha = False
+            sL = a[:, :k, :3].std(axis=1).max(1); sR = a[:, -k:, :3].std(axis=1).max(1)
+            if np.median(sL) > 12 or np.median(sR) > 12: return src   # 가장자리가 배경이 아니다(경기 사진)
+            # 전체 배경색(네 가장자리 띠 전체의 중앙값) → 줄별로는 그 색에 가까운(60 이내) 가장자리 픽셀만으로 다시 잼. 인물이 가장자리에 닿은 줄은 전체 배경색을 쓴다(흰 띠 방지)
+            edge = np.concatenate([a[:, :k, :3].reshape(-1, 3), a[:, -k:, :3].reshape(-1, 3), a[:k, :, :3].reshape(-1, 3)])
+            g = np.median(edge, axis=0)
+            def rowbg(strip):
+                v = np.repeat(g[None, :], h, 0).astype(float)
+                for y in range(h):
+                    px = strip[y]; near = px[np.abs(px - g).max(1) < 60]
+                    if len(near) >= 3: v[y] = np.median(near, axis=0)
+                return v
+            L = rowbg(a[:, :k, :3])[:, None, :]; R = rowbg(a[:, -k:, :3])[:, None, :]
+            use = (np.arange(w) < w / 2)[None, :, None]
+            bg = np.where(use, L, R)
+            mask = np.abs(a[:, :, :3] - bg).max(2) > 40
+        rows = np.where(mask.mean(1) > 0.02)[0]
+        if len(rows) < 4: return src
+        top = rows[0]; head = mask[top:top + max(8, int((rows[-1] - top) * 0.25))]
+        ys, xs = np.where(head)
+        if len(xs) < 20: return src
+        cx = float(np.median(xs)) / w   # 중앙값: 들고 있는 공·방망이(작은 덩어리)에 안 끌린다
+        if abs(cx - .5) < .025 or abs(cx - .5) > .25: return src
+        cxp = cx * w; nw = int(round(2 * max(cxp, w - cxp))); nw += nw % 2; x0 = int(round(nw / 2 - cxp))
+        out = np.zeros((h, nw, 4), np.uint8)
+        if alpha: out[:, x0:x0 + w] = a
+        else:
+            out[:, x0:x0 + w] = a
+            # 덧대는 색 = 그 줄의 바깥쪽 가장자리(폭 8%) 중 배경 픽셀의 중앙값(왼쪽 덧댐은 왼쪽 띠, 오른쪽은 오른쪽 띠).
+            # 인물에 가까운 픽셀(조명 번짐)을 섞으면 밝은 띠가 생긴다. 인물이 가장자리에 닿아 배경이 없는 줄은 위아래 줄에서 보간.
+            k2 = max(6, int(w * 0.08))
+            def strip_bg(cols):
+                v = np.full((h, 3), np.nan)
+                for y in range(h):
+                    px = a[y, cols][:, :3]; px = px[np.abs(px - g).max(1) < 60]   # 전체 배경색에 가까운 픽셀만(인물·장비 제외)
+                    if len(px) >= 4: v[y] = np.median(px, axis=0)
+                ok = ~np.isnan(v[:, 0])
+                if ok.sum() == 0: return np.repeat(g[None, :], h, 0).astype(float)
+                idx = np.arange(h)
+                for c in range(3): v[:, c] = np.interp(idx, idx[ok], v[ok, c])
+                return v
+            bl = strip_bg(slice(0, k2)); br = strip_bg(slice(w - k2, w))
+            out[:, :x0, :3] = np.clip(bl, 0, 255).astype(np.uint8)[:, None, :]; out[:, x0 + w:, :3] = np.clip(br, 0, 255).astype(np.uint8)[:, None, :]
+            out[:, :x0, 3] = 255; out[:, x0 + w:, 3] = 255
+        dst = W('photo_' + re.sub(r'[^0-9A-Za-z가-힣_.-]', '_', base) + ('_c.png' if alpha else '_c.jpg'))
+        (Image.fromarray(out, 'RGBA') if alpha else Image.fromarray(out[:, :, :3], 'RGB')).save(dst, quality=93)
+        print(f'사진 가운데 맞춤: "{base}" 머리 중심 {cx:.2f} → 0.50 (좌우 배경 덧댐 {w}→{nw}px)')
+        return dst
     except Exception as e:
         print('사진 가운데 맞춤 건너뜀:', base, e)
     return src
@@ -246,7 +279,7 @@ def photos_data_uri(ep, ep_path=None):
                     r = run(['ffmpeg', '-y', '-loglevel', 'error', '-i', found, '-vf', "scale='min(1600,iw)':-2", '-q:v', '3', tmp])
                 if r.returncode == 0 and os.path.exists(tmp): src = tmp
             except Exception: pass
-        src = center_subject(src, base)   # 10/1 사용자: 인물이 한쪽으로 치우친 프로필(레이예스) → 배경을 덧대 인물을 가운데로
+        src = center_subject(src, base, origin=found)   # 10/1 사용자: 인물이 한쪽으로 치우친 프로필(레이예스) → 배경을 덧대 인물을 가운데로
         ext = os.path.splitext(src)[1].lower()
         mime = 'image/png' if ext == '.png' else 'image/webp' if ext == '.webp' else 'image/jpeg'
         out[name] = f'data:{mime};base64,' + base64.b64encode(open(src, 'rb').read()).decode()
@@ -277,6 +310,7 @@ def load_episode(path):
     # 화면 오른쪽 위 날짜 = '올리는 날짜'(콘티 date, 제목 해시태그와 같은 날) — 2026-09-17 사용자 지시
     # 썸네일 날짜 배지·결과물 폴더는 그대로 '경기 날짜' 기준
     ep['dateLabel'] = (ep.get('date') or game_date(ep)).replace('-', '.')
+    if ep.get('series') not in DATED: ep['dateLabel'] = ''   # 10/2 밤 사용자: 롱폼·컷 쇼츠(야구롱폼)는 날짜 없음, 처음부터 만드는 숏폼은 그대로
     return ep
 
 def font_dir_url():
@@ -306,9 +340,11 @@ def logos_data_uri():
 #  고유어(하나·둘·셋…): 경기, 게임 차, 시, 가지, 장 → "스물두 경기", "두 시"; 개·명·번도 한 자리(1~9)는 고유어 → "세 개", "두 번"
 #  한자어(일·이·삼…): 승, 패, 위, 이닝, 회, 년, 월, 일, 분, 초, 억, 달러, 순위, 라운드, 연승/연패, 점수(삼 대 십구), 승률·타율 → "이 승 십 패", "이십사 이닝"
 #  10/1 밤 사용자 정정("서른여덟점이 아니라 삼십팔점", "칠백여든한점 → 칠백팔십일점", "예순세번 → 육십삼번", "여든한개 → 팔십일개"):
-#   **점(득점·실점·득실차·점수)은 항상 한자어**(삼 점, 삼십팔 점), **개·명·번은 10 이상이면 한자어**(십육 개, 백육십구 개, 육십삼 번). 경고가 뜨면 합성 전에 반드시 고친다.
+#   **점(득점·실점·득실차·점수)은 항상 한자어**(삼 점, 삼십팔 점), **번은 10 이상이면 한자어**(육십삼 번), **개·명은 20 이상이면 한자어**(팔십일 개, 칠십삼 명). 경고가 뜨면 합성 전에 반드시 고친다.
+#  10/5 사용자 정정(롱폼⑦ "한 구단 십 명=열 명, 십이 개 구단=열두 개 구단, 십이 명=열두 명"): **개·명의 10~19 는 고유어**(열 명, 열두 개 구단, 열두 명).
 NATIVE = r'(한|두|세|네|다섯|여섯|일곱|여덟|아홉|열\S*|스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*)'
 NATIVE10 = r'(열\S*|스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*|[가-힣]*(여든|아흔|예순|일흔|쉰|마흔|서른|스물|열)[가-힣]*)'
+NATIVE20 = r'(스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*|[가-힣]*(여든|아흔|예순|일흔|쉰|마흔|서른|스물)[가-힣]*)'
 SINO = r'(일|이|삼|사|오|육|칠|팔|구|십\S*|백\S*)'
 SINO1 = r'(일|이|삼|사|오|육|칠|팔|구)'
 def narr_check(lines):
@@ -317,8 +353,12 @@ def narr_check(lines):
         if re.search(r'\d', t): warns.append(f'{i:02d} 숫자는 한글로 적어 주세요: {t}')
         for m in re.finditer(NATIVE + r' ?(승|패|위|이닝|회|년|월|일|분|초|억|달러|순위|라운드|점)(?![가-힣])', t):
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (이 승, 십 패, 삼 위, 삼십팔 점)')
-        for m in re.finditer(r'(?<![가-힣])' + NATIVE10 + r' ?(개|명|번|장)(?![가-힣])', t):
-            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (십육 개, 백육십구 개, 육십삼 번)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE10 + r' ?(번|장)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (육십삼 번)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE20 + r' ?(개|명)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (팔십일 개, 칠십삼 명)')
+        for m in re.finditer(r'(?<![가-힣])(십[일이삼사오육칠팔구]?) ?(개|명)(?!월|복|단|령|문|인|성|소)', t):   # 10/5: 10~19 개·명은 고유어
+            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (열 명, 열두 개 구단, 열두 명)')
         for m in re.finditer(r'(?<![가-힣])' + SINO + r' ?(경기|게임|가지)(?![가-힣])', t):
             warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (스물두 경기, 세 게임 차)')
         for m in re.finditer(r'(?<![가-힣십백천])' + SINO1 + r' (개|명|번|장)(?![가-힣])', t):   # 띄어 쓴 것만("이 번") — "이번 겨울"·"일 번"(등번호)은 제외
@@ -415,13 +455,31 @@ def probe(f):
     return d, lead, tail
 
 TARGET_MEAN, PEAK_CAP = -19.0, -1.0   # 줄 평균 음량 목표(dB), 피크 상한(dB)
+def speech_level(f, ss, to):
+    """10/4: 말하는 구간만의 음량(dB, 20ms 창 RMS 의 중앙값). mean_volume 은 쉼이 길수록 낮게 나와 줄마다 들쭉날쭉했다"""
+    try:
+        import numpy as np
+        raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', f, '-af', f'atrim=start={ss:.3f}:end={to:.3f}', '-f', 'f32le', '-ac', '1', '-ar', '16000', '-'], capture_output=True).stdout
+        x = np.frombuffer(raw, dtype=np.float32)
+        w = 320; fr = x[:len(x) // w * w].reshape(-1, w)
+        if not len(fr): return None
+        db = 20 * np.log10(np.sqrt((fr ** 2).mean(1)) + 1e-9)
+        sp = db[db > -35]
+        return float(np.median(sp)) if len(sp) else None
+    except Exception:
+        return None
+
 def static_gain(f, ss, to):
-    """잘라낼 구간의 평균·최대 음량을 재서 한 번에 적용할 고정 이득(dB). 평균을 목표에 맞추되 피크가 상한을 넘지 않게"""
-    r = run(['ffmpeg', '-i', f, '-af', f'atrim=start={ss:.3f}:end={to:.3f},volumedetect', '-f', 'null', '-'])
-    m = re.search(r'mean_volume: ([\-\d.]+)', r.stderr); p = re.search(r'max_volume: ([\-\d.]+)', r.stderr)
-    if not m or not p: return 0.0
-    mean, peak = float(m.group(1)), float(p.group(1))
-    return round(min(TARGET_MEAN - mean, PEAK_CAP - peak), 2)
+    """잘라낼 구간의 음량을 재서 한 번에 적용할 고정 이득(dB).
+    10/4 사용자 지적(롱폼⑥ 9:20 삼성 지갑 줄 "갑자기 목소리가 엄청 작아진다"): 전엔 피크 상한 때문에 작은 줄을 못 올렸다(65번 줄 평균 -23dB, 이득 +0.2).
+    이제 말소리 중앙값을 목표(TARGET_MEAN)에 맞추고, 피크는 cut() 의 alimiter 가 -1dB 로 누른다. 이득은 -6~+9dB 로 제한"""
+    lv = speech_level(f, ss, to)
+    if lv is None:
+        r = run(['ffmpeg', '-i', f, '-af', f'atrim=start={ss:.3f}:end={to:.3f},volumedetect', '-f', 'null', '-'])
+        m = re.search(r'mean_volume: ([\-\d.]+)', r.stderr)
+        if not m: return 0.0
+        lv = float(m.group(1))
+    return round(max(-6.0, min(9.0, TARGET_MEAN - lv)), 2)
 
 def end_level(f, ms=30):
     """파일 마지막 ms 구간의 평균 음량(dB). 말이 잘렸으면 크게 나온다"""
@@ -439,14 +497,14 @@ def gap_scale():
     if GAP_OVERRIDE is not None: return max(0.3, float(GAP_OVERRIDE))
     try: return max(0.5, float(cfg_get('GAP_SCALE', '1.25')))
     except Exception: return 1.25
-MAX_GAP = 0.6   # 어떤 쉼도 이보다 길지 않게(답답함 방지)
+MAX_GAP = 0.6   # 어떤 쉼도 이보다 길지 않게(답답함 방지). 10/4: 콘티 gapAfter 는 0.8 까지 허용(챕터 제목·결론 뒤 뜸)
 
 def gap_after(i, line, n, nxt=None, scene_change=False):
     """줄과 줄 사이 쉼(초). 말이 이어지면 거의 안 쉬고, 문장이 끝나면 짧게, 장면(이미지)이 바뀌거나 방향을 바꾸는 말 앞에서만 조금 더 (최대 0.5초)"""
     h = line.get('holdAfter')   # 10/1 사용자(롱폼④ 트레이드 장면 "조상우→KIA 티켓 받자마자 다음 장면"): 애니메이션이 끝날 때까지 화면을 잡아 두는 쉼 — MAX_GAP 제한 없이(최대 3초)
     if h is not None: return round(min(3.0, max(0.0, float(h))), 2)
     g = line.get('gapAfter')
-    if g is not None: return min(MAX_GAP, float(g))
+    if g is not None: return min(0.8, float(g))
     t = line['narr'].strip()
     if CONNECT_END.search(t) and not t.endswith(('요', '죠')): gap = 0.10
     elif t.endswith('?'): gap = 0.30
@@ -459,7 +517,7 @@ def gap_after(i, line, n, nxt=None, scene_change=False):
 def pace_of(i, line, n):
     """줄별 말 속도 배율. 기본은 그대로(1.0) — 느리게 하면 답답하다는 피드백. 콘티에 pace: slow|normal|fast 로만 조절"""
     p = line.get('pace')
-    if p in ('slow', 'normal', 'fast'): return {'slow': 0.94, 'normal': 1.0, 'fast': 1.08}[p]
+    if p in ('slow', 'normal', 'fast'): return {'slow': 1.0, 'normal': 1.0, 'fast': 1.0435}[p]   # 10/4 밤 사용자 '완급은 1.15~1.2 사이에서만' → 보통 1.15(speed 1.0455×tts 1.1), 빠름 1.2(×1.0435), 느림 없음   # 10/4 사용자 '완급조절 없어 지루' → 폭을 키움(0.94/1.08 → 0.90/1.12)
     return 1.0
 
 # 장면 종류별 최소 길이(초): 모션이 다 끝나기 전에 장면이 넘어가지 않도록, 나레이션이 짧으면 장면 끝에 여유를 둔다
@@ -535,7 +593,7 @@ def render(ep, ep_path):
             if abs(rate - 1.0) > 0.01: af += f',atempo={rate:.3f}'
             # 음량은 줄마다 '고정 이득'으로만 맞춘다(loudnorm 같은 동적 정규화는 짧은 클립의 앞뒤 음량을 출렁이게 해 기계음처럼 들림)
             # + 앞뒤 12ms 페이드(딱 끊기는 소리 방지)
-            af += f',volume={gain:.2f}dB,aresample=44100,afade=t=in:d=0.012,areverse,afade=t=in:d=0.012,areverse'
+            af += f',volume={gain:.2f}dB,alimiter=limit=0.89:attack=3:release=40:level=false,aresample=44100,afade=t=in:d=0.012,areverse,afade=t=in:d=0.012,areverse'   # 10/4: 피크는 리미터(-1dB)로
             run(['ffmpeg', '-y', '-i', src, '-af', af, '-ar', '44100', '-ac', '1', dst], check=True)
         cut(ss, to)
         # 검수: 잘린 끝이 아직 말소리(-30dB 이상)면 끝을 자르지 않고 다시
@@ -970,8 +1028,11 @@ def write_srt(subs, path):
     io.open(path, 'w', encoding='utf-8').write('\n'.join(body) + '\n')
     return path
 
+DATED = ('야구이슈', '야구순위', '야구분석')   # 10/2 밤 사용자: 롱폼·컷 쇼츠(야구롱폼)만 날짜(화면·썸네일·제목 해시태그) 없음
+
 def upload_tag(ep):
     """제목 맨 앞 해시태그 = 영상 올리는 날짜(콘티 date, 밤 제작이면 다음날). 예: #9월13일"""
+    if ep.get('series') not in DATED: return ''
     try:
         d = datetime.date.fromisoformat(str(ep.get('date', ''))[:10])
         return f'#{d.month}월{d.day}일'

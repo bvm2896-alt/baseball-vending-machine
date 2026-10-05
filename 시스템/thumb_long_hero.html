@@ -1,5 +1,7 @@
 <!doctype html>
-<!-- 야구자판기 롱폼 썸네일 '히어로형' 1280x720 (2026-10-01 밤 신설, 사용자 레퍼런스 '골글 내놔라':
+<!-- 10/5 밤: thumb.layers(그림 층) 추가
+     10/5: thumb.bgImg(배경 사진)·thumb.txtCss(글씨 자리)·lines[][].box(글자 조각 뒤 색 박스, 사용자 '강조색이 이상해' → 노란 번쩍임 대신 빨간 박스) 추가
+     야구자판기 롱폼 썸네일 '히어로형' 1280x720 (2026-10-01 밤 신설, 사용자 레퍼런스 '골글 내놔라':
      "프로필 사진만 쓰지 말고 멋있는 경기 중 사진들로 조합, 일렬로 세우지 않고, 배경도 멋지게" / "색을 꼭 따라 할 필요는 없고 저런 느낌")
      구도: 가운데 선수 1명이 가장 크고 맨 앞(z 최상), 양옆 2명씩은 조금 작고 뒤로 엇갈려(바깥일수록 작고 뒤) — 얼굴은 서로 안 가림.
      배경: 어두운 바탕 + 가운데 뒤에서 퍼지는 강한 빛(glow) + 빛줄기(rays) + 불티(sparks) + 아래 어둠. 색은 bg.c1/c2 로.
@@ -7,11 +9,14 @@
      콘티 thumb: {"layout":"hero", "people":[{"img":"누끼/…","x":640,"y":0,"h":760,"z":5,"flip":false}, …], "top":"…", "lines":[[{"t":"…","c":"#FFD400","s":160}]], "bg":{"c1":"#FF7A00","c2":"#3A0A00"}}
        people[].fade = 그림 아래 끝 N px 를 투명하게(사진이 허리에서 잘려 딱 끊긴 선이 보일 때). people[].x = 얼굴 가운데 x, y = 위로 올림(px, 아래 기준), h = 그림 높이, z = 앞뒤(클수록 앞). 누끼는 tools\cutout.py. -->
 <html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'GM';src:url('__FONT_DIR__/GmarketSansBold.ttf') format('truetype')}
+@font-face{font-family:'JN';src:url('__FONT_DIR__/Jalnan2.ttf') format('truetype')}
+@font-face{font-family:'PB';src:url('__FONT_DIR__/Pretendard-Black.otf')}
 @font-face{font-family:'BHS';src:url('__FONT_DIR__/BlackHanSans.ttf') format('truetype')}
 @font-face{font-family:'NB';src:url('__FONT_DIR__/NotoSansKR-Black.otf')}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:1280px;height:720px;overflow:hidden;background:#000}
-body{font-family:'BHS','NB',sans-serif;color:#fff}
+body{font-family:'GM','JN','PB','NB',sans-serif;color:#fff} /* 10/3: 레퍼런스 폰트 Gmarket Sans Bold(잘난체 JN 은 thumb.font 로) */ /* 10/3: 사용자 'Black Han Sans 별로' → Pretendard Black 우선 */
 #s{position:relative;width:1280px;height:720px;overflow:hidden;background:#07060A}
 #bg,#rays,#sparks,#vig{position:absolute;inset:0}
 #rays{mix-blend-mode:screen;opacity:.55}
@@ -22,15 +27,20 @@ body{font-family:'BHS','NB',sans-serif;color:#fff}
 .p img{display:block;height:100%;width:auto}
 #floor{position:absolute;left:0;right:0;bottom:0;height:300px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.78) 55%,rgba(0,0,0,.95));z-index:3}
 #top{position:absolute;left:0;right:0;top:14px;text-align:center;z-index:6;font-size:66px;letter-spacing:-1px;color:rgba(255,255,255,.92);-webkit-text-stroke:10px rgba(0,0,0,.85);paint-order:stroke fill;white-space:nowrap}
+#band{position:absolute;left:0;right:0;display:none;z-index:4;background:rgba(0,0,0,.62)}
 #txt{position:absolute;left:0;right:0;bottom:30px;display:flex;flex-direction:column;align-items:center;z-index:4}
-.t{line-height:1;letter-spacing:-3px;white-space:nowrap;-webkit-text-stroke:18px #000;paint-order:stroke fill;filter:drop-shadow(0 10px 0 rgba(0,0,0,.6)) drop-shadow(0 0 30px rgba(0,0,0,.6))}
-</style></head><body><div id="s"><div id="bg"></div><canvas id="rays" width="1280" height="720"></canvas><canvas id="sparks" width="1280" height="720"></canvas><div id="top"></div><div id="vig"></div><div id="row"></div><div id="floor"></div><div id="txt"></div></div><script>
+.t{display:inline-block;line-height:1;letter-spacing:-3px;white-space:nowrap;-webkit-text-stroke:18px #000;paint-order:stroke fill;filter:drop-shadow(0 10px 0 rgba(0,0,0,.6)) drop-shadow(0 0 30px rgba(0,0,0,.6))}
+</style></head><body><div id="s"><div id="bg"></div><canvas id="rays" width="1280" height="720"></canvas><canvas id="sparks" width="1280" height="720"></canvas><div id="top"></div><div id="vig"></div><div id="row"></div><div id="floor"></div><div id="band"></div><div id="txt"></div></div><script>
 const TH=(window.EP&&EP.thumb)||{}, P=(window.EP&&EP.photos)||{};
 function src(n){if(!n)return'';if(P[n])return P[n];const k=Object.keys(P).find(k=>k===n||k.replace(/\.[a-z0-9]+$/i,'')===n||k.endsWith('/'+n));return k?P[k]:''}
 const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const B=TH.bg||{}, c1=B.c1||'#FF6A00', c2=B.c2||'#2A0800', c3=B.c3||'#FFD27A';
 /* 배경: 가운데 뒤 강한 빛 + 바깥 어둠 */
-document.getElementById('bg').style.background=`radial-gradient(55% 70% at 50% 42%,${c3} 0%,${c1} 22%,${c2} 62%,#050307 100%)`;
+/* 10/5: thumb.bgImg:{img, blur, bright, sat, pos, over} — 배경을 실제 장소 사진(흐리고 어둡게)으로. over = 사진 위에 덮는 그라데이션(글씨 쪽을 더 어둡게) */
+if(TH.bgImg&&src(TH.bgImg.img)){const g=TH.bgImg,bg=document.getElementById('bg');bg.innerHTML=`<img src="${src(g.img)}" style="position:absolute;inset:-${(g.blur||0)*3}px;width:calc(100% + ${(g.blur||0)*6}px);height:calc(100% + ${(g.blur||0)*6}px);object-fit:cover;object-position:${g.pos||'50% 50%'};filter:blur(${g.blur||0}px) brightness(${g.bright??.5}) saturate(${g.sat??1})">`+(g.over?`<div style="position:absolute;inset:0;background:${g.over}"></div>`:'');}
+if(!(TH.bgImg&&src(TH.bgImg.img)))document.getElementById('bg').style.background=TH.bgCss||`radial-gradient(55% 70% at 50% 42%,${c3} 0%,${c1} 22%,${c2} 62%,#050307 100%)`;
+/* 10/3: thumb.rays(0~1)·thumb.sparks(0~1)·thumb.vig(비네트 세기) — 레퍼런스 '골글 내놔라'형은 rays 0·sparks 0.25·vig 강하게 */
+if(TH.rays!=null)document.getElementById('rays').style.opacity=TH.rays;if(TH.sparks!=null)document.getElementById('sparks').style.opacity=TH.sparks;if(TH.vig)document.getElementById('vig').style.background=TH.vig;
 /* 빛줄기: 가운데 위에서 사방으로 */
 (function(){const c=document.getElementById('rays').getContext('2d'), cx=640, cy=300; let seed=7; const R=()=>(seed=(seed*16807)%2147483647)/2147483647;
   for(let i=0;i<46;i++){const a=i/46*Math.PI*2+R()*.08, w=.018+R()*.05, L=1500; const g=c.createLinearGradient(cx,cy,cx+Math.cos(a)*900,cy+Math.sin(a)*900);
@@ -44,8 +54,17 @@ document.getElementById('top').textContent=TH.top||'';
 const ppl=TH.people||[];
 const one=(f,extra,clip)=>`<div class="p" style="left:${f.left}px;top:${f.top}px;height:${f.h}px;bottom:auto;z-index:${f.z||1};${extra||''}${clip?`clip-path:inset(${clip[1]-f.top}px ${f.left+f.wpx-clip[2]}px ${f.top+f.h-clip[3]}px ${clip[0]-f.left}px);`:''}${f.fade?`-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - ${f.fade}px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - ${f.fade}px),transparent);`:''}filter:drop-shadow(0 0 ${f.glow??16}px rgba(0,0,0,.85))${f.bright?` brightness(${f.bright})`:''}"><img src="${src(f.img)}"${f.flip?' style="transform:scaleX(-1)"':''}></div>`;
 document.getElementById('row').innerHTML=ppl.map(f=>one(f)).join('')+ppl.filter(f=>f.head&&f.wpx).map(f=>one(Object.assign({},f,{z:30}),'',f.head)).join('');
+/* 10/5 밤: thumb.layers:[{html, z, img}] — 사람·글씨 말고 그림(봉투·구단 이름표·VS 배지·반반 배경)을 자유 배치. html 안 {{IMG}} = layer.img 사진(build 가 img 키로 실음) */
+(TH.layers||[]).forEach(l=>{const d=document.createElement('div');d.style.cssText=`position:absolute;inset:0;z-index:${l.z??3};pointer-events:none`;d.innerHTML=String(l.html||'').split('{{IMG}}').join(src(l.img));document.getElementById('s').appendChild(d);});
+if(TH.font)document.body.style.fontFamily=TH.font+",'GM','NB',sans-serif";
 const lines=TH.lines||[[{t:'제목',s:160,c:'#FFD400'}]];
 const box=document.getElementById('txt');
-box.innerHTML=lines.map((ln,i)=>`<div class="t" style="margin-top:${i?(ln[0].mt??-6):0}px">${ln.map(x=>`<span style="font-size:${x.s||160}px;color:${x.c||'#fff'}${x.ls!=null?`;letter-spacing:${x.ls}px`:''}">${esc(x.t)}</span>`).join('')}</div>`).join('');
+if(TH.txtCss)box.style.cssText+=';'+TH.txtCss;   /* 10/5: 글씨 자리(예: 왼쪽 위로 몰고 왼쪽 정렬) */
+/* 10/3 레퍼런스 '마무리 대격변'형: thumb.textStyle:"crisp" → 테두리 얇게(stroke px)·번진 그림자 없음·자간 보통, thumb.band:true → 글씨 뒤 폭 전체 검정 반투명 띠(bandPad px) */
+if(TH.textStyle==='shine'){const gc=TH.shineColor||'rgba(255,255,255,.75)',r=TH.shine||10;const st=document.createElement('style');st.textContent=`.t{-webkit-text-stroke:0;letter-spacing:${TH.ls??0}px;filter:drop-shadow(0 0 ${r}px ${gc}) drop-shadow(0 0 ${r*1.6}px ${gc}) drop-shadow(0 0 ${r*2.2}px rgba(0,0,0,.95)) drop-shadow(0 8px 10px rgba(0,0,0,.9))}`;document.head.appendChild(st);}
+if(TH.textStyle==='glow'){const st=document.createElement('style');st.textContent=`.t{-webkit-text-stroke:0;letter-spacing:${TH.ls??0}px;filter:drop-shadow(0 0 ${TH.glow||14}px #000) drop-shadow(0 0 ${TH.glow||14}px rgba(0,0,0,.9)) drop-shadow(0 6px 8px rgba(0,0,0,.9))}`;document.head.appendChild(st);}
+if(TH.textStyle==='crisp'){const st=document.createElement('style');st.textContent=`.t{-webkit-text-stroke:${TH.stroke||9}px #000;letter-spacing:${TH.ls??0}px;filter:drop-shadow(0 4px 0 rgba(0,0,0,.9))}`;document.head.appendChild(st);}
+box.innerHTML=lines.map((ln,i)=>`<div class="t" style="margin-top:${i?(ln[0].mt??-6):0}px">${ln.map(x=>`<span style="font-size:${x.s||160}px;color:${x.c||'#fff'}${x.ls!=null?`;letter-spacing:${x.ls}px`:''}${x.box?`;display:inline-block;background:${x.box};padding:${x.bp||'.06em .14em .02em'};margin:0 .04em 0 0;border-radius:${x.br??8}px;-webkit-text-stroke:0;line-height:1.02;box-shadow:0 6px 0 rgba(0,0,0,.55)`:''}${x.g?`;background:${x.g};-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent`:''}">${esc(x.t)}</span>`).join('')}</div>`).join('');
 [...box.children].forEach(el=>{let g=0;while(el.getBoundingClientRect().width>(TH.maxW||1230)&&g++<40){[...el.children].forEach(s=>{s.style.fontSize=(parseFloat(s.style.fontSize)*.96)+'px'})}});
+if(TH.band){const r=box.getBoundingClientRect(),pad=TH.bandPad??18,b=document.getElementById('band');b.style.display='block';b.style.top=(r.top-pad)+'px';b.style.height=(r.height+pad*2)+'px';if(TH.bandColor)b.style.background=TH.bandColor;}
 </script></body></html>

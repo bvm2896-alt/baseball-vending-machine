@@ -1,0 +1,48 @@
+<!doctype html>
+<!-- 야구자판기 롱폼 썸네일 '로고+주인공형' 1280x720 (2026-10-03 밤 신설, A안 '라인업형'과 완전히 다른 구조의 B안)
+     레퍼런스(서로 다른 채널): 야구대리 「9년째 또 실패? 롯데 싹 바꾼다」15만(어두운 구장 + 인물 1명 크게 + 구단 로고 + 흰/빨강 2줄)
+                           · 스포츠클래식 「벌써 난리난 2027 FA 명단」49만(어두운 배경, 노랑 맥락 줄 + 흰 거대 줄)
+                           · 이글스 EVERYDAY 「내년 시즌 FA 총정리」41만(야간 구장 배경 + 상체 인물 + 흰/초록 큰 글씨)
+     구조: 어두운 남색 야간 구장 느낌(빛줄기·보케) + 위 왼쪽에 5구단 로고 누끼 한 줄 + 오른쪽 주인공 1명 상체 크게 + 왼쪽 아래 글씨 2~3줄(흰·노랑, 검정 테두리) — 폰트 SUIT Heavy
+     콘티 thumb: {"layout":"logos","teams":["KT","SS","LG","HT","OB"],"logoH":150,"hero":{"img":"누끼/…","left":…,"top":…,"h":…},
+                 "lines":[[{"t":"가을야구 확정 5팀","c":"#fff","s":84}],[{"t":"2027에도","c":"#FFD400","s":190}],[{"t":"갈 수 있어?","c":"#fff","s":190}]],"maxW":760} -->
+<html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'SH';src:url('__FONT_DIR__/SUIT-Heavy.otf')}
+@font-face{font-family:'NB';src:url('__FONT_DIR__/NotoSansKR-Black.otf')}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#000}
+body{font-family:'SH','NB',sans-serif;color:#fff}
+#s{position:relative;width:1280px;height:720px;overflow:hidden;background:#070B18}
+#bg,#rays,#bokeh,#vig{position:absolute;inset:0}
+#rays{mix-blend-mode:screen;opacity:.5}
+#bokeh{mix-blend-mode:screen}
+#vig{background:radial-gradient(120% 100% at 60% 45%,rgba(0,0,0,0) 40%,rgba(0,0,0,.8) 100%);z-index:1}
+#logos{position:absolute;left:40px;top:34px;display:flex;gap:26px;align-items:center;z-index:4}
+#logos img{display:block;width:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.8))}
+#hero{position:absolute;z-index:3;filter:drop-shadow(0 0 24px rgba(0,0,0,.9))}
+#hero img{display:block;height:100%;width:auto}
+#floor{position:absolute;left:0;right:0;bottom:0;height:260px;background:linear-gradient(180deg,rgba(7,11,24,0),rgba(7,11,24,.7) 60%,rgba(7,11,24,.9));z-index:2}
+#txt{position:absolute;left:40px;bottom:36px;display:flex;flex-direction:column;align-items:flex-start;z-index:5}
+.t{line-height:1;letter-spacing:-5px;white-space:nowrap;-webkit-text-stroke:15px #000;paint-order:stroke fill;filter:drop-shadow(0 9px 0 rgba(0,0,0,.75)) drop-shadow(0 0 26px rgba(0,0,0,.7))}
+</style></head><body><div id="s"><div id="bg"></div><canvas id="rays" width="1280" height="720"></canvas><canvas id="bokeh" width="1280" height="720"></canvas><div id="vig"></div><div id="floor"></div><div id="logos"></div><div id="hero"></div><div id="txt"></div></div><script>
+const TH=(window.EP&&EP.thumb)||{}, P=(window.EP&&EP.photos)||{}, L=(window.EP&&EP.logos)||{};
+function src(n){if(!n)return'';if(P[n])return P[n];const k=Object.keys(P).find(k=>k===n||k.replace(/\.[a-z0-9]+$/i,'')===n||k.endsWith('/'+n));return k?P[k]:''}
+const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const B=TH.bg||{}, c1=B.c1||'#1B3A8A', c2=B.c2||'#070B18';
+document.getElementById('bg').style.background=`radial-gradient(70% 80% at 72% 30%,${c1} 0%,${c2} 60%,#030509 100%)`;
+(function(){const c=document.getElementById('rays').getContext('2d'), cx=940, cy=120; let seed=5; const R=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  for(let i=0;i<30;i++){const a=Math.PI*.35+i/30*Math.PI*.9+R()*.05, w=.012+R()*.03, Ln=1500; const g=c.createLinearGradient(cx,cy,cx+Math.cos(a)*900,cy+Math.sin(a)*900);
+    g.addColorStop(0,'rgba(180,210,255,.5)'); g.addColorStop(1,'rgba(180,210,255,0)'); c.fillStyle=g; c.beginPath(); c.moveTo(cx,cy);
+    c.lineTo(cx+Math.cos(a-w)*Ln,cy+Math.sin(a-w)*Ln); c.lineTo(cx+Math.cos(a+w)*Ln,cy+Math.sin(a+w)*Ln); c.closePath(); c.globalAlpha=.2+R()*.4; c.fill();}})();
+(function(){const c=document.getElementById('bokeh').getContext('2d'); let seed=23; const R=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  for(let i=0;i<90;i++){const x=R()*1280, y=R()*520, r=6+R()*26, g=c.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,`rgba(200,225,255,${.06+R()*.16})`); g.addColorStop(.7,`rgba(200,225,255,${.03+R()*.08})`); g.addColorStop(1,'rgba(200,225,255,0)'); c.fillStyle=g; c.beginPath(); c.arc(x,y,r,0,7); c.fill();}})();
+const teams=TH.teams||['KT','SS','LG','HT','OB'], lh=TH.logoH||150;
+document.getElementById('logos').innerHTML=teams.map(t=>`<img src="${L[t]||''}" style="height:${lh}px">`).join('');
+const H=TH.hero||{}; const hero=document.getElementById('hero');
+hero.style.cssText+=`left:${H.left||760}px;top:${H.top||40}px;height:${H.h||900}px;${H.fade?`-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - ${H.fade}px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - ${H.fade}px),transparent);`:''}`;
+hero.innerHTML=`<img src="${src(H.img)}"${H.flip?' style="transform:scaleX(-1)"':''}>`;
+const lines=TH.lines||[[{t:'제목',s:160,c:'#fff'}]];
+const box=document.getElementById('txt');
+box.innerHTML=lines.map((ln,i)=>`<div class="t" style="margin-top:${i?(ln[0].mt??-2):0}px">${ln.map(x=>`<span style="font-size:${x.s||160}px;color:${x.c||'#fff'}${x.ls!=null?`;letter-spacing:${x.ls}px`:''}">${esc(x.t)}</span>`).join('')}</div>`).join('');
+[...box.children].forEach(el=>{let g=0;while(el.getBoundingClientRect().width>(TH.maxW||760)&&g++<40){[...el.children].forEach(s=>{s.style.fontSize=(parseFloat(s.style.fontSize)*.96)+'px'})}});
+</script></body></html>

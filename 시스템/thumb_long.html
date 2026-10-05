@@ -53,7 +53,7 @@ const EMN=TH.emLines||1;   /* 9/27: 노랑 줄 수(뒤에서부터) */
 document.getElementById('big').innerHTML=ls.map((t,i)=>line(t,i>=ls.length-EMN)).join('<br>');
 const DS=TH.date||EP.date||EP.gameDate||'', d=DS.split('-'); const w=['일','월','화','수','목','금','토'];   /* 9/20: 콘티 thumb.date 가 있으면 그게 우선(경기 날짜 등) — 다른 썸네일 템플릿과 같은 규칙 */
 document.getElementById('date').textContent=d.length===3?`${+d[1]}월 ${+d[2]}일(${w[new Date(DS+'T12:00:00').getDay()]})`:'';
-if(TH.noDate||TH.date===false)document.getElementById('date').style.display='none';   /* 9/20: 롱폼 썸네일은 날짜 배지 없이(사용자 지시) */
+document.getElementById('date').style.display='none';   /* 10/2 밤 사용자: 롱폼·컷 쇼츠 썸네일엔 날짜를 넣지 않는다 */   /* 9/20: 롱폼 썸네일은 날짜 배지 없이(사용자 지시) */
 (function(){const el=document.getElementById('big');
  if(TH.fill){document.getElementById('L').style.width=(TH.theme==='white'?640:800)+'px';document.getElementById('L').style.top='56px';el.style.fontSize=(TH.bigSize||230)+'px';el.style.lineHeight='1.02';}   /* 9/27: fill = 글씨를 화면 높이만큼 최대로(줄바꿈은 콘티 그대로) */
  let fs=parseFloat(getComputedStyle(el).fontSize);

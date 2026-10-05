@@ -3,7 +3,7 @@
  "gameDate": "2026-10-01",
  "series": "야구롱폼",
  "vertical": true,
- "railTitle": "KBO 깊게",
+ "railTitle": "",
  "focusTeam": "NC",
  "speed": 1.0909,
  "ttsApi": true,
@@ -14,7 +14,7 @@
   "NC 블론세이브 31개",
   "리그 최다"
  ],
- "vbasis": "10월 1일 경기까지 기준",
+ "vbasis": "",
  "voiceFrom": {
   "ep": "2026-10-01_롱폼",
   "lines": [
@@ -168,24 +168,26 @@
    ]
   },
   {
-   "type": "teamgrid",
-   "startLine": 5,
-   "items": [
+   "type": "profile",
+   "img": "KBO프로필/박치국",
+   "name": "박치국",
+   "sub": "두산 불펜 · FA 예상",
+   "text": "두 팀이 박치국을\n두고 경쟁?",
+   "textSize": 88,
+   "textAt": 2,
+   "stats": [
     {
-     "team": "NC",
-     "value": "블론 31개",
-     "label": "리그 최다",
+     "k": "NC 리그 최다",
+     "v": "블론 31개",
      "at": 0
     },
     {
-     "team": "한화",
-     "value": "세이브 16개",
-     "label": "리그 꼴찌",
+     "k": "한화 리그 꼴찌",
+     "v": "세이브 16개",
      "at": 1
     }
    ],
-   "text": "두 팀이 박치국을 두고 경쟁?",
-   "textAt": 2
+   "startLine": 5
   },
   {
    "type": "bars",
@@ -206,10 +208,8 @@
   {
    "type": "question",
    "text": "박치국\n두산 잔류? 이적?",
-   "logos": [
-    "두산",
-    "NC",
-    "한화"
+   "faces": [
+    "KBO프로필/박치국"
    ],
    "startLine": 7
   },
@@ -231,8 +231,14 @@
   "teams": [
    "NC"
   ],
-  "top": "리그 최다",
-  "big": "NC\n블론세이브 31"
+  "top": "",
+  "big": "NC\n리그 최다\n블론세이브",
+  "perLine": true,
+  "lineScale": [
+   0.55,
+   1,
+   1
+  ]
  },
  "youtube": {
   "title": "NC 다이노스 | 블론세이브 31개 리그 최다, 박치국 오면 달라질까 #NC다이노스 #박치국",

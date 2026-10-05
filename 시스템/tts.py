@@ -301,6 +301,37 @@ def seg_bounds(path, segs, NONE=0.08, GAPB=0.5):
 
 BREATH = float(CFG.get('TTS_BREATH', '0.1'))   # 긴 대사의 호흡 자리(' / ')에 살짝 끼워 넣는 쉼(초). 실제 쉼이 감지된 자리에만 넣는다
 
+PAUSE_MAX = float(CFG.get('TTS_PAUSE_MAX', '0.9'))   # 10/4 사용자("그 중심에는 손주영이 있어요 하고 한참 가만히 있다가 말해, 텀 줄여"): 한 줄 안의 쉼이 이보다 길면 PAUSE_KEEP 으로 줄인다
+PAUSE_KEEP = float(CFG.get('TTS_PAUSE_KEEP', '0.5'))
+def trim_long_pauses(path, maxp=None, keep=None):
+    """타입캐스트가 쉼표·마침표 뒤에 1초 넘게 멈추는 줄: 줄 안의 무음이 maxp 초를 넘으면 keep 초만 남기고 잘라 낸다(앞뒤 4ms 페이드). 자른 구간 수를 돌려준다.
+    seg_bounds 보다 먼저 불러야 경계가 잘린 음성 기준으로 잡힌다."""
+    import numpy as np
+    maxp = PAUSE_MAX if maxp is None else maxp; keep = PAUSE_KEEP if keep is None else keep
+    if maxp <= 0 or keep >= maxp: return 0
+    d, sil = probe_silences(path, thr='-35dB', mind=maxp)
+    inner = [(a, b) for a, b in sil if a > 0.1 and b < d - 0.1]
+    if not inner: return 0
+    sr_ = 44100
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', path, '-f', 'f32le', '-ac', '1', '-ar', str(sr_), '-'], capture_output=True).stdout
+    x = np.frombuffer(raw, dtype=np.float32).copy()
+    if not len(x): return 0
+    fade = int(sr_ * 0.004); out, prev = [], 0
+    for a, b in inner:
+        cut0 = int((a + keep / 2) * sr_); cut1 = int((b - keep / 2) * sr_)   # 쉼 가운데를 잘라 양쪽에 keep/2 씩 남긴다
+        seg = x[prev:cut0].copy()
+        if len(seg) > fade: seg[-fade:] *= np.linspace(1, 0, fade, dtype=np.float32)
+        out.append(seg); prev = cut1
+    tailx = x[prev:].copy()
+    if len(tailx) > fade: tailx[:fade] *= np.linspace(0, 1, fade, dtype=np.float32)
+    y = np.concatenate(out + [tailx])
+    tmp = path + '.trim.mp3'
+    r = subprocess.run(['ffmpeg', '-y', '-v', 'error', '-f', 'f32le', '-ar', str(sr_), '-ac', '1', '-i', '-', '-b:a', '192k', tmp], input=y.tobytes(), capture_output=True)
+    if r.returncode != 0 or not os.path.exists(tmp): return 0
+    os.replace(tmp, path)
+    print(f'  긴 쉼 {len(inner)}곳 줄임({os.path.basename(path)}: ' + ', '.join(f'{b - a:.2f}s→{keep:.2f}s' for a, b in inner) + ')')
+    return len(inner)
+
 def insert_breaths(path, bounds):
     """실제 쉼이 감지된 호흡 자리마다 BREATH 초의 무음을 끼워 넣어 '와다다다' 읽는 느낌을 없앤다. 새 경계 목록을 돌려준다"""
     cuts = [iv for _, iv in bounds[1:] if iv]
@@ -339,6 +370,8 @@ def synth_line(line, prev, nxt, out, pause=None):
     ok = synth(text, tts_text(p_) if p_ else '', tts_text(n_) if n_ else '', out)
     sj = out.replace('.mp3', '.segs.json')
     if not ok: return False
+    try: trim_long_pauses(out)   # 10/4: 줄 안의 1초 가까운 멈춤을 0.5초로
+    except Exception as e: print('  긴 쉼 줄이기 실패:', e)
     if len(segs) <= 1:
         try: os.remove(sj)
         except Exception: pass
@@ -361,6 +394,7 @@ def mark_breaths(mp3, line, first=False):
     sj = mp3.replace('.mp3', '.segs.json')
     if len(segs) <= 1: return
     try:
+        trim_long_pauses(mp3)   # 10/4
         bounds = seg_bounds(mp3, segs)
         b = [x for x, _ in bounds] if first else insert_breaths(mp3, bounds)
         durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
