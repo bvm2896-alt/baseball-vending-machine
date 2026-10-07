@@ -23,13 +23,21 @@ def open_cfg(path='설정.txt'):
 
 def load_cfg():
     cfg = {}
-    with open_cfg('설정.txt') as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith('#') or '=' not in line:
-                continue
-            k, v = line.split('=', 1)
-            cfg[k.strip()] = v.strip().strip('"').strip("'")
+    try:
+        with open_cfg('설정.txt') as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                k, v = line.split('=', 1)
+                cfg[k.strip()] = v.strip().strip('"').strip("'")
+    except Exception as e:
+        print(f'설정.txt 를 못 읽었어요({type(e).__name__}) — 윈도우 환경 변수만 씁니다')
+    # 10/7: 회사 PC 는 보안 프로그램(DOCURAY)이 설정.txt 를 암호화해서 키를 못 읽는다 →
+    #       윈도우 환경 변수 TYPECAST_* · TTS_* 가 있으면 그 값을 쓴다(파일보다 우선). 등록: 야구롱폼\API키등록.cmd (setx)
+    for k, v in os.environ.items():
+        if k.upper().startswith(('TYPECAST_', 'TTS_')) and v.strip():
+            cfg[k.upper()] = v.strip().strip('"').strip("'")
     return cfg
 
 CFG = load_cfg()
@@ -799,7 +807,7 @@ if __name__ == '__main__':
         need = [i for i, line in enumerate(lines) if only is None or i in only]
         need = [i for i in need if not (os.path.exists(os.path.join(VDIR, f'{i:02d}.mp3')) and os.path.exists(os.path.join(VDIR, f'{i:02d}.txt')) and io.open(os.path.join(VDIR, f'{i:02d}.txt'), encoding='utf-8').read().strip() == lines[i].strip())]
         if need:
-            sys.exit(f'음성 실패: 줄 {need} 의 음성이 없고 API 키도 없습니다 — 타입캐스트 웹 zip 을 ' + os.path.abspath(drop_paths()[0]) + ' 에 넣어 주세요 (zip 파일 수 = 줄 수)')
+            sys.exit(f'음성 실패: 줄 {need} 의 음성이 없고 API 키도 없습니다(회사 PC 는 야구롱폼\\API키등록.cmd 로 키를 한 번 등록한 뒤 새 창에서 다시 실행) — 또는 타입캐스트 웹 zip 을 ' + os.path.abspath(drop_paths()[0]) + ' 에 넣어 주세요 (zip 파일 수 = 줄 수)')
         print('완료 (웹 zip 음성 그대로 사용, API 없음)'); sys.exit(0)
     # 9/27 사고 뒤: 합성 전에 이번에 새로 만들 줄·글자 수를 보여 주고, 평소보다 많으면 멈춘다
     def _made(i):
@@ -816,7 +824,11 @@ if __name__ == '__main__':
     chars = sum(len(lines[i].replace('/', ' ').replace('  ', ' ').strip()) for i in todo)
     LIMIT = 3500 if '롱폼' in VDIR else 800   # 숏폼 1편 보통 300~500자, 롱폼 보통 2,000~3,000자(공백 포함)
     print(f'이번 합성: {len(todo)}줄 / 약 {chars}자(공백 포함) — 이 글자 수만큼 타입캐스트 크레딧이 듭니다 · 음성 폴더 {VDIR}')
-    if chars > LIMIT and '--chars-ok' not in sys.argv:
+    # 10/6: cmd 창에서 input() 이 기다리지 않고 빈 값으로 넘어가 '멈춤'이 됨 → 사용자가 채팅에서 승인한 글자 수를 콘티 ttsCharsOk 에 적고,
+    #       _two_build 가 KBO_CHARS_OK 로 넘기면 그 수까지는 묻지 않는다
+    _ok_upto = int(os.environ.get('KBO_CHARS_OK') or 0)
+    if chars > LIMIT and _ok_upto >= chars: print(f'  콘티 승인 글자 수({_ok_upto}자) 안이라 그대로 합성합니다')
+    if chars > LIMIT and '--chars-ok' not in sys.argv and _ok_upto < chars:
         ok_ = False
         if asking():
             ok_ = input(f'  평소 분량({LIMIT}자)보다 많습니다. 정말 합성할까요? (y = 합성, Enter = 멈춤) ').strip().lower() in ('y', 'ㅛ')
