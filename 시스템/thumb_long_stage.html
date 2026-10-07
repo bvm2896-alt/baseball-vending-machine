@@ -1,0 +1,58 @@
+<!doctype html>
+<!-- 야구자판기 롱폼 썸네일 '무대형(stage)' 1280x720 (2026-10-07 신설, 롱폼⑧ MVP 레이스)
+     사용자 10/7: "보정이 너무 심해" · "여러 명이 한곳에 모여 하나의 이미지처럼 조화롭게" · "템플릿 돌려쓰지 말고 매번 다른 디자인".
+     구도: 야간 구장 조명(보케) + 위에서 내려오는 두 줄기 스포트라이트 → 그 빛 속에 선수들이 한 무리로 모여 선다.
+           선수 뒤에 거대한 금색 핵심어(word, 예 "MVP")가 깔리고 머리가 글자를 살짝 가린다(포스터 느낌). 아래 큰 질문 글씨.
+     보정: 누끼 원본 그대로 + 아주 약한 대비·채도(grade) + 금빛 테두리 빛(rim) + 같은 방향 그림자로 한 장면처럼 묶는다(거친 보정 X).
+     콘티 thumb: {"layout":"stage","people":[{img,left,top,h,z,flip,fade}], "kicker":"…", "kickBox":true, "kickSize":44, "kickLs":1, "word":"MVP", "lines":[[{t,c,s}]], "grade":{c,s,b}, "rim":"rgba(…)"} -->
+<html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'GM';src:url('__FONT_DIR__/GmarketSansBold.ttf') format('truetype')}
+@font-face{font-family:'NB';src:url('__FONT_DIR__/NotoSansKR-Black.otf')}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#000}
+body{font-family:'GM','NB',sans-serif;color:#fff}
+#s{position:relative;width:1280px;height:720px;overflow:hidden;background:#060A18}
+canvas{position:absolute;inset:0}
+#word{position:absolute;left:0;right:0;text-align:center;z-index:2;line-height:.86;letter-spacing:-6px;white-space:nowrap}
+#word span{background:linear-gradient(180deg,#FFF6C8 0%,#FFD24A 38%,#E09A0E 70%,#8A5300 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 0 rgba(60,30,0,.55)) drop-shadow(0 0 40px rgba(255,190,60,.35))}
+#kick{position:absolute;left:0;right:0;text-align:center;z-index:2;font-size:40px;letter-spacing:10px;color:#FFE9A8;text-shadow:0 2px 10px rgba(0,0,0,.7)}
+#row{position:absolute;inset:0;z-index:3}
+.p{position:absolute}
+.p img{display:block;width:100%;height:100%}
+#floor{position:absolute;left:0;right:0;bottom:0;height:330px;z-index:4;background:linear-gradient(180deg,rgba(4,6,14,0) 0%,rgba(4,6,14,.72) 45%,rgba(4,6,14,.96) 100%)}
+#txt{position:absolute;left:0;right:0;bottom:26px;z-index:5;display:flex;flex-direction:column;align-items:center}
+.t{display:inline-block;line-height:1.02;letter-spacing:-4px;white-space:nowrap;text-shadow:0 8px 0 rgba(0,0,0,.55),0 0 34px rgba(0,0,0,.85)}
+</style></head><body><div id="s"><canvas id="bg" width="1280" height="720"></canvas><canvas id="beam" width="1280" height="720"></canvas><div id="kick"></div><div id="word"></div><div id="row"></div><canvas id="dust" width="1280" height="720" style="z-index:4;mix-blend-mode:screen"></canvas><div id="floor"></div><div id="txt"></div></div>
+<script>
+const TH=(window.EP&&EP.thumb)||{}, P=(window.EP&&EP.photos)||{};
+function src(n){if(!n)return'';if(P[n])return P[n];const k=Object.keys(P).find(k=>k===n||k.replace(/\.[a-z0-9]+$/i,'')===n||k.endsWith('/'+n));return k?P[k]:''}
+const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let seed=TH.seed||7; const R=()=>(seed=(seed*16807)%2147483647)/2147483647;
+/* 배경: 남색 밤하늘 + 위쪽 구장 조명 보케(흐린 빛 방울) + 바닥 쪽 관중석 어둠 */
+(function(){const c=document.getElementById('bg').getContext('2d');
+  let g=c.createLinearGradient(0,0,0,720); g.addColorStop(0,TH.sky1||'#0E1C3E'); g.addColorStop(.55,TH.sky2||'#081026'); g.addColorStop(1,'#03050C'); c.fillStyle=g; c.fillRect(0,0,1280,720);
+  g=c.createRadialGradient(640,250,40,640,250,560); g.addColorStop(0,'rgba(255,196,90,.30)'); g.addColorStop(.5,'rgba(255,160,60,.08)'); g.addColorStop(1,'rgba(0,0,0,0)'); c.fillStyle=g; c.fillRect(0,0,1280,720);
+  c.filter='blur(6px)'; for(let i=0;i<70;i++){const x=R()*1280,y=10+R()*170,r=4+R()*16,a=.12+R()*.35; const w=R()<.75; c.fillStyle=w?`rgba(255,248,225,${a})`:`rgba(255,200,110,${a})`; c.beginPath(); c.arc(x,y,r,0,7); c.fill();}
+  c.filter='blur(2px)'; for(const lx of [120,1160]){for(let k=0;k<12;k++){c.fillStyle='rgba(255,252,235,.85)'; c.beginPath(); c.arc(lx-60+(k%4)*40,40+Math.floor(k/4)*30,7,0,7); c.fill();}
+    const gg=c.createRadialGradient(lx,70,10,lx,70,220); gg.addColorStop(0,'rgba(255,245,215,.45)'); gg.addColorStop(1,'rgba(255,245,215,0)'); c.fillStyle=gg; c.fillRect(lx-240,-150,480,440);}
+  c.filter='none';})();
+/* 스포트라이트 두 줄기: 양쪽 조명탑에서 가운데 무리로 */
+(function(){const c=document.getElementById('beam').getContext('2d'); c.globalCompositeOperation='screen';
+  for(const [x0,x1] of [[120,560],[1160,720]]){const g=c.createLinearGradient(x0,40,x1,600); g.addColorStop(0,'rgba(255,240,200,.32)'); g.addColorStop(1,'rgba(255,220,150,0)');
+    c.fillStyle=g; c.beginPath(); c.moveTo(x0-18,50); c.lineTo(x0+18,50); c.lineTo(x1+230,720); c.lineTo(x1-230,720); c.closePath(); c.fill();}})();
+/* 금빛 먼지(앞쪽, 아주 약하게) */
+(function(){const c=document.getElementById('dust').getContext('2d'); const n=TH.dust==null?60:TH.dust;
+  for(let i=0;i<n;i++){const x=R()*1280,y=60+R()*460,r=.8+R()*2.2; c.fillStyle=`rgba(255,${200+R()*40|0},120,${.25+R()*.45})`; c.beginPath(); c.arc(x,y,r,0,7); c.fill();}})();
+/* 위 작은 줄 + 거대 핵심어 */
+const kk=document.getElementById('kick'); kk.style.top=(TH.kickTop==null?14:TH.kickTop)+'px';
+if(TH.kicker){ if(TH.kickBox){ kk.innerHTML=`<span style="display:inline-block;padding:${TH.kickPad||'8px 26px 6px'};border-radius:999px;background:${TH.kickBg||'rgba(8,10,22,.72)'};border:2px solid ${TH.kickLine||'rgba(255,214,120,.75)'};box-shadow:0 4px 18px rgba(0,0,0,.5)">${esc(TH.kicker)}</span>` } else kk.textContent=TH.kicker;
+  if(TH.kickSize) kk.style.fontSize=TH.kickSize+'px'; if(TH.kickLs!=null) kk.style.letterSpacing=TH.kickLs+'px'; if(TH.kickColor) kk.style.color=TH.kickColor; }
+const wd=document.getElementById('word'); wd.innerHTML=TH.word?`<span>${esc(TH.word)}</span>`:''; wd.style.top=(TH.wordTop==null?52:TH.wordTop)+'px'; wd.style.fontSize=(TH.wordSize||380)+'px';
+/* 선수: 원본 누끼 + 약한 통일 보정 + 금빛 테두리 빛 + 바닥 쪽 그림자 */
+const GR=TH.grade||{}, rim=TH.rim||'rgba(255,214,120,.85)';
+document.getElementById('row').innerHTML=(TH.people||[]).map(p=>{const s=src(p.img); if(!s)return'';
+  const fd=p.fade==null?(TH.fade||0):p.fade; const f=`contrast(${GR.c||1.05}) saturate(${GR.s||1.04}) brightness(${p.b||GR.b||1}) drop-shadow(0 0 1.5px ${rim}) drop-shadow(0 0 14px rgba(255,190,80,.28)) drop-shadow(-10px 14px 18px rgba(0,0,0,.55))`;
+  return `<div class="p" style="left:${p.left}px;top:${p.top}px;width:${p.wpx}px;height:${p.h}px;z-index:${p.z||1};${p.flip?'transform:scaleX(-1);':''}filter:${f}"><img src="${s}" style="${fd?`-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - ${fd}px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - ${fd}px),transparent)`:''}"></div>`}).join('');
+/* 아래 큰 글씨 */
+document.getElementById('txt').innerHTML=(TH.lines||[]).map(L=>`<div>${L.map(x=>`<span class="t" style="font-size:${x.s||150}px;color:${x.c||'#fff'};${x.ml?`margin-left:${x.ml}px;`:''}">${esc(x.t)}</span>`).join('')}</div>`).join('');
+</script></body></html>

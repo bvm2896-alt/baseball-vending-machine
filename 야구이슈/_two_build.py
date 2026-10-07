@@ -17,12 +17,34 @@ os.makedirs(env['KBO_WORK'], exist_ok=True)
 def run(*a):
     print('\n>>', ' '.join(a), flush=True)
     return subprocess.call([sys.executable, '-X', 'utf8', *a], env=env)
+# 10/6 사고(김도영 편을 또 만들어 음성 2줄 재합성): 인자 없이 부르면 status\built.json 에 '같은 지문'으로 만든 기록이 있는 편은 건너뛴다.
+# 지문 = 아래 '만든 기록'과 같은 계산(콘티 JSON + 음성 zip/mp3). 콘티를 고치면 지문이 달라져 다시 만든다. 편을 직접 적어 부르면 무조건 만든다.
+def _fp(p):
+    ep = json.load(io.open(p, encoding='utf-8-sig')); stem = os.path.splitext(os.path.basename(p))[0]
+    h = hashlib.sha1(json.dumps(ep, ensure_ascii=False, sort_keys=True).encode('utf-8'))
+    for e in ('.zip', '.mp3', '.wav', '.m4a'):
+        f = os.path.join('..', str(ep.get('series') or '야구이슈'), '음성', stem + e)
+        if os.path.exists(f): h.update(open(f, 'rb').read())
+    return stem, h.hexdigest()
+if not sys.argv[1:]:
+    try: _reg = json.load(io.open(os.path.join('status', 'built.json'), encoding='utf-8'))
+    except Exception: _reg = {}
+    _keep = []
+    for p in EPS:
+        try: stem, fp = _fp(p)
+        except Exception: _keep.append(p); continue
+        if (_reg.get(stem) or {}).get('hash') == fp: print('이미 만든 편이라 건너뜀(같은 콘티):', os.path.basename(p))
+        else: _keep.append(p)
+    EPS = _keep
+if not EPS: print('새로 만들 편이 없어요.'); sys.exit(0)
 print('만들 편:', ', '.join(os.path.basename(p) for p in EPS), '/ 작업 폴더', env['KBO_WORK'])
 done, fail = [], []
 for p in EPS:
     name = os.path.basename(p)
     if not os.path.exists(p): print('콘티 없음:', p); fail.append(name); continue
     if run('build.py', 'prep', p): print('prep 실패:', name); fail.append(name); continue
+    try: env['KBO_CHARS_OK'] = str(int(json.load(io.open(p, encoding='utf-8-sig')).get('ttsCharsOk') or 0))   # 10/6: 채팅에서 승인한 글자 수
+    except Exception: env['KBO_CHARS_OK'] = '0'
     if run('tts.py'): print('음성 실패:', name); fail.append(name); continue
     if run('qa_voice.py'): print('음성 검수 오류(무시하고 진행):', name)
     if run('build.py', 'render', p): print('렌더 실패:', name); fail.append(name); continue
