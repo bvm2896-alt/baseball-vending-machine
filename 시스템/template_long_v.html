@@ -22,6 +22,8 @@ body{font-family:'KBO','Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo',
 #meta .d{font-size:32px;font-weight:600;color:#6A7382;letter-spacing:1px}
 #prog{position:absolute;left:56px;right:56px;top:122px;height:5px;border-radius:3px;background:#E3E7EE;overflow:hidden}
 #prog i{display:block;height:5px;border-radius:3px;background:var(--acc);width:0}
+/* 10/7 사용자 "모든 기록은 기준일을 작게 표기" → 장면에 asof 가 있으면 진행 막대 아래 오른쪽에 작은 회색 글씨 */
+#asof{display:none;font-size:32px;font-weight:800;color:#2B3A55;letter-spacing:-.5px;background:#fff;border:3px solid #C9D3E3;border-radius:999px;padding:6px 22px 7px;box-shadow:0 4px 12px rgba(18,22,31,.08);white-space:nowrap}  /* 10/7 밤 사용자 "기록 기준일이 조금 더 잘 보이게": 위 머리줄(챕터 알약 왼쪽)에 흰 알약 — 본문과 절대 안 겹침 */
 /* 본문 */
 #body{position:absolute;left:56px;width:1808px;top:146px;height:714px;will-change:opacity,transform;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
@@ -115,6 +117,7 @@ html.vert #stage{position:absolute;left:0;top:0;transform-origin:0 0}
 html.vert #body{top:120px;height:780px}   /* 본문 폭은 장면 종류별로 vertical 스크립트가 정한다(막대·표는 좁게 → 세로 화면에서 크게) */
 html.vert #hdr{left:90px;right:90px;top:200px;height:80px;border-bottom:3px solid #E3E7EE}
 html.vert #prog{left:90px;right:90px;top:290px}
+html.vert #asof{font-size:34px}
 html.vert #sub{left:70px;right:70px;top:1345px;bottom:auto}
 html.vert #railTitle,html.vert #railDate{display:none!important}   /* 10/2 밤 사용자: 오른쪽 위 'KBO 깊게'·날짜 빼기(컷 쇼츠엔 날짜 없음) */
 html.vert #sub span{font-size:56px}
@@ -123,11 +126,15 @@ html.vert #vtitle{display:block}
 #vtitle .l{font-size:80px;font-weight:900;letter-spacing:-3px;line-height:1.1;color:#12161F;white-space:nowrap}
 #vtitle .l.a{color:var(--acc)}
 #vtitle .bs{margin-top:16px;font-size:32px;font-weight:700;color:#6A7382;letter-spacing:-.5px}
+/* 10/8 사용자: 관련 영상 유도 줄엔 쇼츠 화면 아래 '관련 영상' 칸(▶ 막대, 영상 좌표 y≈1830·x 45~905)을 가리키는 화살표 — 자막(가운데)·유튜브 채널/제목 줄(y 1580~)을 피해 왼쪽 여백에 */
+#relArrow{position:absolute;left:0;right:0;top:1505px;display:none;flex-direction:column;align-items:center;gap:0;z-index:50}
+#relArrow .lb{background:var(--acc);color:#fff;font-size:42px;font-weight:900;line-height:1;letter-spacing:-1px;text-align:center;padding:14px 30px;border-radius:40px;box-shadow:0 8px 20px rgba(18,22,31,.2);margin-bottom:4px}
+#relArrow svg{display:block}
 </style></head><body>
 <div id="stage">
   <div id="hdr">
     <div id="brand"><div class="m" id="brandBar"></div><div>야구<b>자판기</b></div></div>
-    <div id="meta"><div class="d" id="railTitle" style="font-size:32px;font-weight:800;color:#12161F;letter-spacing:1px"></div><div id="chap" style="display:none"><span class="n" id="chapN"></span><span id="chapT"></span></div><div class="d num" id="railDate"></div></div>
+    <div id="meta"><div id="asof"></div><div class="d" id="railTitle" style="font-size:32px;font-weight:800;color:#12161F;letter-spacing:1px"></div><div id="chap" style="display:none"><span class="n" id="chapN"></span><span id="chapT"></span></div><div class="d num" id="railDate"></div></div>
   </div>
   <div id="prog"><i id="progBar"></i></div>
   <div id="body"></div>
@@ -328,7 +335,9 @@ const SCENE = {};
 function brP(s, k, d = .45, off = 0) {
   if (k == null) return null;
   const segs = (EP.segT || [])[s.startLine] || []; if (!segs.length) return null;
-  const i = Math.floor(k), f = k - i, t0 = segs[i] ?? segs[segs.length - 1], t1 = segs[i + 1] ?? (t0 + 1.5);
+  const i = Math.floor(k), f = k - i, t1 = segs[i + 1] ?? ((segs[i] ?? segs[segs.length - 1]) + 1.5);
+  /* 10/7 밤 사용자("칩이 사라졌다가 다시 생김"): at 0 = 장면이 시작하는 순간(말 시작 전 빈 카드 0.5초 없앰) */
+  let t0 = segs[i] ?? segs[segs.length - 1]; if (i === 0 && s._k != null) { const sb = s._k > 0 ? (BD[s._k - 1] ?? t0) : 0; t0 = Math.min(t0, sb); }
   return c01((NOW - (t0 + (t1 - t0) * f) - off) / d);
 }
 const pk = (s, k, d, fallback) => { const b = brP(s, k, d); return b == null ? fallback : b; };
@@ -633,7 +642,7 @@ SCENE.profile = (lt, s) => {
   const src = photoSrc(s.img);
   const vis = (PW && src) ? chainPhoto(s, src, PW, H0, lt, K) : PH(s, H0, seg(lt, 0, .5));
   const f = s.showFrom || 0;
-  const st = sts.map((x, i) => `<div style="${s._tw ? 'flex:1 1 auto;' : ''}${i < f ? '' : rise(pk(s, x.at, .45, seg(lt, (K ? .1 : .2) + (i - f) * .12, .45)), 18)}"><b class="num" style="color:${x.hi ? ACC : TXT}">${esc(x.v)}</b><i>${esc(x.k)}</i></div>`).join('');
+  const st = sts.map((x, i) => `<div style="${s._tw ? 'flex:1 1 auto;' : ''}${i < f || (K && s._prev && s._prev.type === 'profile' && ((s._prev.stats || [])[i] || {}).v === x.v && ((s._prev.stats || [])[i] || {}).k === x.k) ? '' : rise(pk(s, x.at, .45, seg(lt, (K ? .1 : .2) + (i - f) * .12, .45)), 18)}"><b class="num" style="color:${x.hi ? ACC : TXT}">${esc(x.v)}</b><i>${esc(x.k)}</i></div>`).join('');
   const quote = s.text && /^[“"]/.test(s.text.trim());
   const txt = `<div class="col" style="height:${H0}px;${s._tw ? 'width:' + s._tw + 'px;' : ''}justify-content:flex-start;align-items:flex-start;gap:26px;padding-top:8px">
     <div style="${K ? '' : rise(seg(lt, .04, .45), 22)}">
@@ -728,12 +737,12 @@ SCENE.bars = (lt, s) => {
   let h = s.term ? `<div class="col" style="gap:10px;margin-bottom:${big ? 34 : 20}px;${pop(seg(lt, 0, .4))}"><div class="title" style="font-size:${big ? 84 : 68}px;font-weight:900;color:${ACC};letter-spacing:-3px;line-height:1.05">${esc(s.term)}</div>${s.title ? `<div class="label" style="font-size:${big ? 44 : 38}px;font-weight:700;text-align:center;line-height:1.25">${br(s.title)}</div>` : ''}</div>`
     : s.title ? `<div class="title" style="font-size:${n >= 6 ? 52 : 60}px;font-weight:900;margin-bottom:${big ? 36 : n >= 6 ? 14 : 22}px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
   h += `<div class="col" style="width:1500px;gap:${big ? 24 : n <= 4 ? 14 : 10}px;align-items:stretch">`;
-  const K = s._same;   /* 10/1 밤: cont 면 앞 장면 막대는 그대로 */
+  const K = s._same, PVN = K ? (s._prev.items || []).filter(x => !x.hide).length : 0;   /* 10/1 밤: cont 면 앞 장면 막대는 그대로 / 10/7 밤: 새로 붙는 막대만 뜬다 */
   items.forEach((it, i) => {
-    const p0 = K ? 1 : seg(lt, .3 + i * (big ? .3 : .2), .7), p = pk(s, it.at, .7, p0), v = (Number(it.value) || 0), f = Math.min(1, v / (it.max || mx)) * eo(p), hi = it.hi === true;
+    const KI = K && i < PVN, p0 = KI ? 1 : seg(lt, .3 + i * (big ? .3 : .2), .7), p = KI ? 1 : pk(s, it.at, .7, p0), v = (Number(it.value) || 0), f = Math.min(1, v / (it.max || mx)) * eo(p), hi = it.hi === true;
     const shown = Number.isInteger(v) ? Math.round(v * eo(p)) : (v * eo(p)).toFixed(it.dec ?? 2), c = hi ? ACC : (it.color || '#9AA3B2');
     const LG = big ? 110 : n <= 4 ? 90 : 60;   /* 10/1 밤 사용자 "로고를 넣을 거면 크게" */
-    h += `<div class="pane" style="display:flex;align-items:center;gap:30px;border-radius:26px;padding:${PAD}px 36px;${K ? '' : rise(pk(s, it.at, .4, seg(lt, .2 + i * (big ? .3 : .2), .4)), 30)};${hi ? 'border-color:var(--acc);' : ''}">
+    h += `<div class="pane" style="display:flex;align-items:center;gap:30px;border-radius:26px;padding:${PAD}px 36px;${it.hide ? 'visibility:hidden;' : KI ? '' : rise(pk(s, it.at, .4, seg(lt, .2 + i * (big ? .3 : .2), .4)), 30)};${hi ? 'border-color:var(--acc);' : ''}">
       <div style="width:${big ? 430 : 380}px;flex:0 0 auto;display:flex;align-items:center;gap:16px">${it.img && photoSrc(it.img) ? faceC(it.img, LG, it.gray) : it.team && LOGO[(T(it.team) || {}).code] ? `<div class="chip" style="width:${LG}px;height:${LG}px"><img src="${LOGO[T(it.team).code]}"></div>` : ''}<div class="title" style="font-size:${LS}px;font-weight:900;text-align:left;line-height:1.12">${br(it.label || '')}${it.sub ? `<div style="margin-top:6px;font-size:${Math.round(LS * .7)}px;font-weight:800;letter-spacing:-1px;color:${hi ? 'var(--acc)' : '#3B4A63'}">${esc(it.sub)}</div>` : ''}</div></div>
       <div style="flex:1;min-width:300px;height:${BH}px;border-radius:${Math.round(BH / 4)}px;background:#EEF1F6;overflow:hidden"><div style="width:${(f * 100).toFixed(2)}%;height:100%;border-radius:${Math.round(BH / 4)}px;background:${c}"></div></div>
       <div class="num" style="min-width:${big ? 260 : 220}px;flex:0 0 auto;text-align:right;font-size:${it.note ? Math.round(NS * .72) : NS}px;font-weight:900;color:${hi ? 'var(--acc)' : (it.color || TXT)};white-space:nowrap">${it.note ? esc(it.note) : `${esc(String(shown))}<span style="font-size:${Math.round(NS * .45)}px;margin-left:4px">${esc(it.unit || '')}</span>`}</div></div>`;   /* 9/28: note = 숫자 대신 글씨(예: 1946년 '시작') / 10/1 밤: 숫자 칸은 min-width 라 "19.4개" 가 카드 밖으로 안 나간다 */
@@ -1382,6 +1391,8 @@ function drawSub(t) {
   sp.innerHTML = h ? br(h[2]) : ''; sp.style.visibility = h ? 'visible' : 'hidden';
 }
 function drawRail(k, t) {
+  { const a = document.getElementById('asof'), sa = (SC[Math.min(k, SC.length - 1)] || {}).asof || '';   /* 10/7 기준일 */
+    if (a) { if (a.textContent !== sa) a.textContent = sa; a.style.display = sa ? 'block' : 'none'; } }
   const total = EP.total || (BD.length ? BD[BD.length - 1] : 1);
   document.getElementById('progBar').style.width = window.__NOPROG ? '0' : (100 * c01(t / total)) + '%';   // 10/1: 조각 렌더(바뀐 장면만 다시 그리기)에선 진행 막대를 ffmpeg 가 따로 그린다(전체 길이에 따라 달라지므로)
   if (!CH.length) return;
@@ -1687,7 +1698,8 @@ function prepAll() {
   const J = x => JSON.stringify(x == null ? null : x);   // 9/19: 앞 장면과 같은 뼈대(표·국기 줄)면 그 부분은 다시 안 그린다
   SC.forEach((s, k) => {
     const prev = k > 0 ? SC[k - 1] : null;                   // 9/18: 같은 사진이면 사진은 그대로 두고 글/칩만 바뀌게
-    s._prev = prev; s._next = SC[k + 1] || null;
+    s._prev = prev; s._next = SC[k + 1] || null; s._k = k;
+    s._seen = SC.slice(0, k).some(x => x.type === s.type && x.chain && x.chain === s.chain);   /* 10/7 밤: 같은 틀(mvp10)을 다시 꺼낼 때는 칸을 하나씩 쌓지 않고 한 번에 */
     s._keep = !!(prev && photoSrc(prev.img) && photoSrc(prev.img) === photoSrc(s.img));
     /* 9/27: 표에 줄이 하나씩 늘어나는 h2h 는 앞 장면에 있던 줄은 그대로 두고 새 줄만 아래에 붙는다 */
     s._prevN = 0;
@@ -1725,7 +1737,7 @@ function ghostOf(k, t, start) {
 /* @@MVP1007 */
 /* ───── 10/7 롱폼⑧ 「2026 MVP 레이스」 새 인포그래픽 장면: mvp10 ─────
    지난 10년(2016~2025) MVP 열 칸 한 줄: 연도 · 구단 로고 · 이름 → 줄마다 보여 주는 것만 바뀐다(s.show).
-   show: 'role'(투수/타자 배지 + 개수) · 'hr'(그해 홈런왕이 MVP를 놓친 칸에 빨간 표시, 같은 해엔 초록) · 'rank'(팀 정규시즌 순위 배지)
+   show: 'role'(투수/타자 배지 + 개수) · 'hr'(그해 홈런왕이 MVP를 놓친 칸에 빨간 표시, 같은 해엔 초록. 공동 홈런왕처럼 이름이 5자 넘으면 글씨 23px) · 'rank'(팀 정규시즌 순위 배지)
          · 'first'(1위 팀 칸만 강조) · 'pick'(한 해만 크게 + 칩).  extra = 11번째 칸(2026 후보, 점선).
    같은 chain('mvp10') 이면 칸·로고·이름은 그대로 있고 배지·표시만 새로 뜬다(사라졌다 다시 생기지 않음). */
 const MVP_ROLE = { P: { t: '투수', c: '#2F6FD6' }, H: { t: '타자', c: '#E8730C' } };
@@ -1735,7 +1747,7 @@ SCENE.mvp10 = (lt, s) => {
   const show = s.show || '', pick = s.pick, pAt = k => pk(s, k, .5, seg(lt, .25, .5));
   let h = titleH(lt, s, 56, 28, K && s._prev && s._prev.title === s.title);
   h += `<div class="row" style="gap:10px;align-items:stretch;justify-content:center">` + all.map((it, i) => {
-    const pIn = K ? 1 : seg(lt, .15 + i * .09, .45), t = T(it.team || ''), isPick = pick != null && String(it.y) === String(pick);
+    const pIn = K ? 1 : s._seen ? seg(lt, 0, .35) : seg(lt, .15 + i * .09, .45), t = T(it.team || ''), isPick = pick != null && String(it.y) === String(pick);
     const dim = (show === 'first' && it.rank !== 1 && !it.extra) || (pick != null && !isPick) ? .32 : 1;
     const role = MVP_ROLE[it.role] || null, pr = show === 'role' ? pAt(s.roleAt == null ? 0 : s.roleAt) : 0;
     const hrBad = show === 'hr' && it.hr && it.hr !== '=' , hrSame = show === 'hr' && it.hr === '=', ph = show === 'hr' ? pAt(s.hrAt == null ? 0 : s.hrAt) : 0;
@@ -1750,7 +1762,7 @@ SCENE.mvp10 = (lt, s) => {
         role && show === 'role' ? `<div style="background:${role.c};color:#fff;border-radius:999px;padding:6px 18px;font-size:36px;font-weight:900;${pop(pr)}">${role.t}</div>`
         : (show === 'rank' || show === 'first') && it.rank ? `<div style="background:${rankC};color:#fff;border-radius:14px;padding:4px 16px;font-size:40px;font-weight:900;${pop(prk)}">${it.rank}위</div>`
         : hrSame ? `<div style="color:${GREEN};font-size:32px;font-weight:900;line-height:1.05;text-align:center;${pop(ph)}">홈런왕<br>= MVP</div>`
-        : hrBad ? `<div style="color:${RED};font-size:30px;font-weight:900;line-height:1.05;text-align:center;white-space:nowrap;${pop(ph)}">홈런왕<br>${esc(it.hr)}</div>` : ''}</div></div>`;
+        : hrBad ? `<div style="color:${RED};font-size:${String(it.hr).length >= 5 ? 23 : 30}px;font-weight:900;line-height:1.05;text-align:center;white-space:nowrap;${pop(ph)}">홈런왕<br>${esc(it.hr)}</div>` : ''}</div></div>`;
   }).join('') + `</div>`;
   if (show === 'role' && s.count) h += `<div class="row" style="gap:40px;justify-content:center;margin-top:30px">${s.count.map(c => `<div class="big" style="font-size:72px;color:${(MVP_ROLE[c.r] || {}).c || ACC};${pop(pAt(c.at))}">${esc(c.t)}</div>`).join('')}</div>`;
   if (s.chips) h += `<div class="row" style="gap:24px;justify-content:center;margin-top:30px">${s.chips.map(c => `<div class="pane" style="border-radius:999px;padding:12px 34px;font-size:52px;font-weight:900;${c.hi ? 'border:4px solid var(--acc);color:var(--acc);' : ''}${pop(pAt(c.at))}">${esc(c.t)}</div>`).join('')}</div>`;
@@ -1842,9 +1854,18 @@ if (EP.vertical) (function () {
     g.ks.forEach(k => Z[k] = { z, cx: (g.L + g.R) / 2, cy: (g.T + g.B) / 2 }); });
   window.__VZ = Z;
   const base = render;
+  const ra = document.createElement('div'); ra.id = 'relArrow';
+  ra.innerHTML = [0, 1].map(i => `<svg class="cv" width="160" height="66" viewBox="0 0 96 40" style="margin-top:-4px"><path d="M10 6 L48 34 L86 6" fill="none" stroke="var(--acc)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>`).join('');
+  document.body.appendChild(ra);
   function vrender(t) {
     let k = 0; while (k < BD.length && t >= BD[k]) k++; k = Math.min(k, SC.length - 1);
     setBody(k); base(t); fixMb(k, false);
+    const sk = SC[k] || {}, st0 = k ? BD[k - 1] : 0;
+    if (sk.relArrow) {   /* 장면 시작 0.3초 뒤 나타나 아래로 통통 튀며, 아래쪽 화살표부터 진해지는 물결 */
+      const a = Math.max(0, Math.min(1, (t - st0 - 0.3) / 0.35)), b = Math.abs(Math.sin((t - st0) * 4.2)) * 16;
+      ra.style.display = 'flex'; ra.style.opacity = a; ra.style.transform = `translateY(${(b + (1 - a) * -30).toFixed(1)}px)`;
+      ra.querySelectorAll('.cv').forEach((e, i) => { e.style.opacity = (0.35 + 0.65 * Math.max(0, Math.sin((t - st0) * 5 - i * 0.9))).toFixed(2); });
+    } else ra.style.display = 'none';
     const q = Z[k] || { z: 0.56, cx: 960, cy: 503 };
     stage.style.transform = `translate(${(ZX - q.cx * q.z).toFixed(1)}px, ${(ZY - q.cy * q.z).toFixed(1)}px) scale(${q.z.toFixed(4)})`;
     document.body.style.background = stage.style.background; stage.style.background = 'transparent';

@@ -210,7 +210,7 @@ st.insertAdjacentHTML('beforeend',`
     ${!GR&&src&&teams[0]&&TH.logos!==false?`<div class="chip" style="left:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[0])}"></div>`:''}
     ${!GR&&src&&teams[1]&&TH.logos!==false?`<div class="chip" style="right:36px;top:36px;width:200px;height:200px;border-radius:48px"><img src="${logo(teams[1])}"></div>`:''}
   </div>
-  <div class="bar" style="background:${c1};top:${Y0+50}px"></div>
+  <div class="bar" style="background:${TH.barColor||c1};top:${Y0+50}px"></div>
   <div class="top" style="top:${Y0+90}px">${nl(TH.top)}</div>
   <div class="bigw" style="color:${cBig};top:${Y0+(String(TH.top||"").trim()?220:100)}px;${POSTER?'font-size:200px;letter-spacing:-9px':''}">${nl(TH.big)}</div></div>
   <div class="brand">야구<b>자판기</b></div>`);
