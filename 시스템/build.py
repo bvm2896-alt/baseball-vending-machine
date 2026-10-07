@@ -149,6 +149,8 @@ def _photo_names(ep):
         if isinstance(x, dict):
             v = x.get('img')
             if isinstance(v, str) and v.strip(): names.add(v.strip())
+            for f in (x.get('faces') or []) if isinstance(x.get('faces'), list) else []:   # 10/8: question·썸네일 faces 는 이름 문자열 목록 — 안 모으면 얼굴 원이 빈칸
+                if isinstance(f, str) and f.strip(): names.add(f.strip())
             for vv in x.values(): walk(vv)
         elif isinstance(x, list):
             for vv in x: walk(vv)
@@ -416,6 +418,8 @@ def prep(ep, ep_path=None):
     io.open(W('narration.txt'), 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
     # 9/26: 콘티 "ttsTempo": 1.2 → 타입캐스트 API 가 직접 1.2배로 말하게(tts.py 가 읽음). 없으면 설정.txt TTS_TEMPO
     io.open(W('tts_tempo.txt'), 'w', encoding='utf-8').write(str(ep.get('ttsTempo') or ''))
+    # 10/7: 콘티 "ttsEmotion" (예 "smart") → tts.py 감정. 없으면 빈 파일 = 기본 normal(스마트 이모션은 사용자가 말할 때만)
+    io.open(W('tts_emotion.txt'), 'w', encoding='utf-8').write(str(ep.get('ttsEmotion') or ''))
     # 9/26: 콘티 "ttsWhole": true → 한 편(구독 멘트 뺀 줄)을 API 한 번으로 이어 읽고 줄별로 자른다(줄마다 억양이 따로 놀지 않게)
     io.open(W('tts_whole.txt'), 'w', encoding='utf-8').write('1' if ep.get('ttsWhole') else '')
     print(f'work/narration.txt {len(lines)}줄')
@@ -549,6 +553,55 @@ def sub_pieces(line):
 def silence(name, sec):
     run(['ffmpeg', '-y', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{sec:.3f}', name])
 
+def compress_pauses(path, pmax, thr_db=-38.0):
+    """10/8 사용자("말과 말 사이에 텀이 너무 길어, 전체적으로 짧게"): 줄 음성(t*.wav) 안의 쉼이 pmax 초보다 길면 가운데를 잘라 pmax 만 남긴다.
+    10ms RMS 가 thr_db 아래인 구간을 쉼으로 본다(줄 앞뒤 쉼은 그대로). 자른 자리마다 5ms 크로스페이드.
+    돌려주는 값 = [(자르기 전 시각, 잘라 낸 길이)] — 호흡 경계(segs) 시각을 같은 만큼 당기는 데 쓴다."""
+    import numpy as np, wave
+    w = wave.open(path); sr = w.getframerate(); ch = w.getnchannels(); sw = w.getsampwidth(); n = w.getnframes()
+    if sw != 2: w.close(); return []
+    x = np.frombuffer(w.readframes(n), dtype=np.int16).astype(np.float32); w.close()
+    if ch > 1: x = x.reshape(-1, ch).mean(axis=1)
+    hop = int(sr * 0.01)
+    if len(x) < hop * 10: return []
+    fr = len(x) // hop
+    rms = np.sqrt(np.mean((x[:fr * hop].reshape(fr, hop) / 32768.0) ** 2, axis=1) + 1e-12)
+    quiet = 20 * np.log10(rms) < thr_db
+    loud = np.nonzero(~quiet)[0]
+    if len(loud) < 2: return []
+    first, last = loud[0], loud[-1]
+    runs, k = [], first
+    while k <= last:
+        if quiet[k]:
+            j = k
+            while j <= last and quiet[j]: j += 1
+            runs.append((k, j)); k = j
+        else: k += 1
+    keep = int(pmax / 0.01)
+    cuts = [(a + keep // 2, b - (keep - keep // 2)) for a, b in runs if b - a > keep]
+    if not cuts: return []
+    xf = int(sr * 0.005); out, prev, rem = [], 0, []
+    for a, b in cuts:
+        a_s, b_s = a * hop, b * hop
+        seg = x[prev:a_s].copy()
+        nxt = x[b_s:b_s + xf].copy()
+        if len(seg) > xf and len(nxt) == xf:
+            r = np.linspace(1, 0, xf, dtype=np.float32); seg[-xf:] = seg[-xf:] * r + nxt * (1 - r); prev = b_s + xf
+        else: prev = b_s
+        out.append(seg); rem.append((a_s / sr, (b_s - a_s) / sr))
+    out.append(x[prev:])
+    y = np.clip(np.concatenate(out), -32768, 32767).astype(np.int16)
+    w = wave.open(path, 'wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(sr); w.writeframes(y.tobytes()); w.close()
+    return rem
+
+def _after_comp(t, rem):
+    """자르기 전 시각 t → 자른 뒤 시각"""
+    d = 0.0
+    for p, r in rem:
+        if p + r <= t: d += r
+        elif p < t: d += t - p
+    return t - d
+
 def render(ep, ep_path):
     # 9/21: 음성 폴더는 콘티 이름으로 정한다 — current.txt(마지막 prep) 를 따르면 다른 편 음성이 붙는다(하현승⑥에 드래프트 편 음성이 들어간 사고)
     io.open(W('current.txt'), 'w', encoding='utf-8').write(ep_key(ep_path))
@@ -561,6 +614,7 @@ def render(ep, ep_path):
         spd = float(ep['speed']); print(f'말 속도: 콘티 지정 {spd:.2f}배')
     # 1) 음성 확인 + 트리밍 (자르기는 atrim 필터로, 속도 조절은 그 다음에 → -to 가 느려진 소리 끝을 잘라먹지 않는다)
     clips, warns, seg_start, seg_rate = [], [], [], []
+    comp = {}   # 10/8: 줄마다 compress_pauses 로 잘라 낸 쉼(자막 경계 보정용)
     retried = set()
     i = 0
     while i < N:
@@ -599,6 +653,10 @@ def render(ep, ep_path):
         # 검수: 잘린 끝이 아직 말소리(-30dB 이상)면 끝을 자르지 않고 다시
         if to < d and end_level(dst) > -30:
             cut(ss, d); warns.append(f'{i:02d} 끝 여운 보존')
+        comp[i] = []
+        if ep.get('pauseMax') and not lines[i].get('rate'):   # 10/8: 줄 안 쉼 줄이기(구독 멘트처럼 rate 지정 줄은 그대로)
+            comp[i] = compress_pauses(dst, float(ep['pauseMax']))
+            if comp[i]: warns.append(f"{i:02d} 쉼 {len(comp[i])}곳 줄임(-{sum(r for _, r in comp[i]):.2f}s)")
         clips.append(dur_of(dst)); seg_start.append(ss); seg_rate.append(rate)
         # 검수: 글자 수 대비 너무 짧으면(말이 잘린 음성) 중단
         syl = len(re.findall(r'[가-힣]', lines[i]['narr'])) or 1
@@ -660,7 +718,7 @@ def render(ep, ep_path):
                 ss_i = seg_start[i]; rate = seg_rate[i]
                 starts_k, acc = [], 0.0
                 for k, d_ in enumerate(durs):
-                    starts_k.append(st[i] + max(0, (acc - ss_i)) / rate); acc += d_ + pause
+                    starts_k.append(st[i] + _after_comp(max(0, (acc - ss_i)) / rate, comp.get(i) or [])); acc += d_ + pause
                 segT[-1] = [round(max(sp_start, x_), 2) for x_ in starts_k]
                 items = []
                 for k, pc in enumerate(pieces):

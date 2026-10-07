@@ -1,6 +1,6 @@
 /* ───── 10/7 롱폼⑧ 「2026 MVP 레이스」 새 인포그래픽 장면: mvp10 ─────
    지난 10년(2016~2025) MVP 열 칸 한 줄: 연도 · 구단 로고 · 이름 → 줄마다 보여 주는 것만 바뀐다(s.show).
-   show: 'role'(투수/타자 배지 + 개수) · 'hr'(그해 홈런왕이 MVP를 놓친 칸에 빨간 표시, 같은 해엔 초록) · 'rank'(팀 정규시즌 순위 배지)
+   show: 'role'(투수/타자 배지 + 개수) · 'hr'(그해 홈런왕이 MVP를 놓친 칸에 빨간 표시, 같은 해엔 초록. 공동 홈런왕처럼 이름이 5자 넘으면 글씨 23px) · 'rank'(팀 정규시즌 순위 배지)
          · 'first'(1위 팀 칸만 강조) · 'pick'(한 해만 크게 + 칩).  extra = 11번째 칸(2026 후보, 점선).
    같은 chain('mvp10') 이면 칸·로고·이름은 그대로 있고 배지·표시만 새로 뜬다(사라졌다 다시 생기지 않음). */
 const MVP_ROLE = { P: { t: '투수', c: '#2F6FD6' }, H: { t: '타자', c: '#E8730C' } };
@@ -25,7 +25,7 @@ SCENE.mvp10 = (lt, s) => {
         role && show === 'role' ? `<div style="background:${role.c};color:#fff;border-radius:999px;padding:6px 18px;font-size:36px;font-weight:900;${pop(pr)}">${role.t}</div>`
         : (show === 'rank' || show === 'first') && it.rank ? `<div style="background:${rankC};color:#fff;border-radius:14px;padding:4px 16px;font-size:40px;font-weight:900;${pop(prk)}">${it.rank}위</div>`
         : hrSame ? `<div style="color:${GREEN};font-size:32px;font-weight:900;line-height:1.05;text-align:center;${pop(ph)}">홈런왕<br>= MVP</div>`
-        : hrBad ? `<div style="color:${RED};font-size:30px;font-weight:900;line-height:1.05;text-align:center;white-space:nowrap;${pop(ph)}">홈런왕<br>${esc(it.hr)}</div>` : ''}</div></div>`;
+        : hrBad ? `<div style="color:${RED};font-size:${String(it.hr).length >= 5 ? 23 : 30}px;font-weight:900;line-height:1.05;text-align:center;white-space:nowrap;${pop(ph)}">홈런왕<br>${esc(it.hr)}</div>` : ''}</div></div>`;
   }).join('') + `</div>`;
   if (show === 'role' && s.count) h += `<div class="row" style="gap:40px;justify-content:center;margin-top:30px">${s.count.map(c => `<div class="big" style="font-size:72px;color:${(MVP_ROLE[c.r] || {}).c || ACC};${pop(pAt(c.at))}">${esc(c.t)}</div>`).join('')}</div>`;
   if (s.chips) h += `<div class="row" style="gap:24px;justify-content:center;margin-top:30px">${s.chips.map(c => `<div class="pane" style="border-radius:999px;padding:12px 34px;font-size:52px;font-weight:900;${c.hi ? 'border:4px solid var(--acc);color:var(--acc);' : ''}${pop(pAt(c.at))}">${esc(c.t)}</div>`).join('')}</div>`;

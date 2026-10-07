@@ -53,7 +53,15 @@ if NO_API: ACCOUNTS = [{'key': '', 'voice': '', 'name': '없음'}]
 ACC = 0   # 지금 쓰는 계정 번호 (크레딧 소진·인증 오류 시 다음으로)
 API_KEY, VOICE = ACCOUNTS[0]['key'], ACCOUNTS[0]['voice']
 
-EMOTION = CFG.get('TTS_EMOTION', 'smart')      # smart | normal | happy | sad | angry | whisper | toneup | tonemid | tonedown
+# 10/7 사용자 규칙: 스마트 이모션은 사용자가 말할 때만 켠다("목소리 너무 이상해. 스마트 이모션 끄고 다시 만들자").
+#   기본은 normal. 설정.txt·환경 변수에 smart 가 있어도 무시하고, 콘티에 "ttsEmotion": "smart" 가 있을 때만 smart.
+#   (회사 PC 는 설정.txt 를 못 읽어 예전 기본값 smart 로 합성됐던 게 원인)
+EMOTION = CFG.get('TTS_EMOTION', 'normal').strip() or 'normal'      # normal | happy | sad | angry | whisper | toneup | tonemid | tonedown (smart 는 콘티로만)
+if EMOTION == 'smart': EMOTION = 'normal'
+try:   # 콘티 ttsEmotion(build prep 이 work\tts_emotion.txt 에 적음)이 있으면 그것이 우선 — smart 는 이 경로로만 켜진다
+    _te = io.open(os.path.join(os.environ.get('KBO_WORK', 'work'), 'tts_emotion.txt'), encoding='utf-8').read().strip()
+    if _te: EMOTION = _te
+except Exception: pass
 INTENSITY = float(CFG.get('TTS_INTENSITY', '1.0'))
 TEMPO = float(CFG.get('TTS_TEMPO', '1.0'))      # 타입캐스트 자체 배속. 줄별 속도 조절은 build.py 가 하므로 보통 1.0
 URL = 'https://api.typecast.ai/v1/text-to-speech'
@@ -113,7 +121,7 @@ def check_audio(path, text):
         return True, ''
 
 def prompt_variants(prev, nxt):
-    """설정.txt 의 TTS_EMOTION 에 따라 prompt 후보를 순서대로 (400 이면 다음 후보로)"""
+    """EMOTION(기본 normal, 콘티 ttsEmotion 만 smart 가능)에 따라 prompt 후보를 순서대로 (400 이면 다음 후보로)"""
     if EMOTION == 'smart':
         return [{'emotion_type': 'smart', 'previous_text': prev, 'next_text': nxt}]
     # 9/26: 설정한 감정이 거부돼도 스마트 이모션으로 몰래 바꾸지 않는다(사용자가 스마트를 끔) → 두 형식 다 거부면 실패
@@ -340,32 +348,33 @@ def trim_long_pauses(path, maxp=None, keep=None):
     print(f'  긴 쉼 {len(inner)}곳 줄임({os.path.basename(path)}: ' + ', '.join(f'{b - a:.2f}s→{keep:.2f}s' for a, b in inner) + ')')
     return len(inner)
 
+BREATH_MIN = float(CFG.get('TTS_BREATH_MIN', '0.15'))   # 10/7 밤 사용자("음성 중간중간 끊김"): 원래 쉼이 이보다 짧은 자리(말 중간 받침소리)엔 쉼을 안 넣는다
 def insert_breaths(path, bounds):
-    """실제 쉼이 감지된 호흡 자리마다 BREATH 초의 무음을 끼워 넣어 '와다다다' 읽는 느낌을 없앤다. 새 경계 목록을 돌려준다"""
-    cuts = [iv for _, iv in bounds[1:] if iv]
+    """실제 쉼(BREATH_MIN 초 이상)이 감지된 호흡 자리마다 BREATH 초를 늘려 '와다다다' 읽는 느낌을 없앤다. 새 경계 목록을 돌려준다.
+    10/7 밤: 완전 무음(anullsrc)을 끼우면 숨소리·잔향까지 뚝 끊겨 '끊김'으로 들림 → 쉼 자리의 원래 소리(방 소리)를 이어 붙여 늘린다."""
+    import numpy as np
+    ok = lambda iv: bool(iv) and (iv[1] - iv[0]) >= BREATH_MIN
+    cuts = [iv for _, iv in bounds[1:] if ok(iv)]
     if not cuts or BREATH <= 0: return [b for b, _ in bounds]
-    wav = path.replace('.mp3', '_w.wav'); sil = path.replace('.mp3', '_b.wav'); lst = path.replace('.mp3', '_b.txt')
-    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', path, '-ar', '44100', '-ac', '1', wav], check=True)
-    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{BREATH:.2f}', sil], check=True)
-    mids = [round((a + b) / 2, 3) for a, b in cuts]
-    pieces, start = [], 0.0
-    for j, m in enumerate(mids + [None]):
-        pc = path.replace('.mp3', f'_p{j}.wav')
-        af = f'atrim=start={start:.3f}' + (f':end={m:.3f}' if m else '') + ',asetpts=PTS-STARTPTS'
-        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-i', wav, '-af', af, pc], check=True)
-        pieces.append(pc); start = m or start
-    with open(lst, 'w', encoding='utf-8') as f:
-        for j, pc in enumerate(pieces):
-            if j: f.write(f"file '{os.path.basename(sil)}'\n")
-            f.write(f"file '{os.path.basename(pc)}'\n")
-    subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-ar', '44100', '-ac', '1', '-b:a', '192k', path], check=True)
-    for f_ in pieces + [wav, sil, lst]:
-        try: os.remove(f_)
-        except Exception: pass
-    # 경계 보정: 각 경계 앞에 끼워 넣은 쉼만큼 뒤로 밀린다
+    sr_ = 44100
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', path, '-f', 'f32le', '-ac', '1', '-ar', str(sr_), '-'], capture_output=True).stdout
+    x = np.frombuffer(raw, dtype=np.float32).copy()
+    if not len(x): return [b for b, _ in bounds]
+    h = int(BREATH * sr_); out, prev = [], 0
+    for a, b in cuts:
+        m = int((a + b) / 2 * sr_)
+        if m - h // 2 < 0 or m + h > len(x): continue
+        out.append(x[prev:m]); out.append(np.concatenate([x[m - h // 2:m], x[m:m + h - h // 2]]))   # 쉼 가운데의 원래 소리를 한 번 더
+        prev = m
+    out.append(x[prev:])
+    y = np.concatenate(out); tmp = path + '.br.mp3'
+    r = subprocess.run(['ffmpeg', '-y', '-v', 'error', '-f', 'f32le', '-ar', str(sr_), '-ac', '1', '-i', '-', '-b:a', '192k', tmp], input=y.tobytes(), capture_output=True)
+    if r.returncode != 0 or not os.path.exists(tmp): return [b for b, _ in bounds]
+    os.replace(tmp, path)
+    # 경계 보정: 각 경계 앞에 늘린 쉼만큼 뒤로 밀린다
     new, n_ins = [], 0
     for b, iv in bounds:
-        if iv: n_ins += 1
+        if ok(iv): n_ins += 1
         new.append(round(b + n_ins * BREATH, 3))
     return new
 
@@ -388,7 +397,7 @@ def synth_line(line, prev, nxt, out, pause=None):
         bounds = seg_bounds(out, segs)
         b = insert_breaths(out, bounds) if pause is None else [x for x, _ in bounds]   # pause=0 이면(후킹 대사) 쉼을 안 넣는다
         durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
-        json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'breaths': sum(1 for _, iv in bounds[1:] if iv)}, open(sj, 'w'))
+        json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'breaths': sum(1 for _, iv in bounds[1:] if iv and iv[1] - iv[0] >= BREATH_MIN)}, open(sj, 'w'))
     except Exception as e:
         print('  구간 추정 실패(자막은 한 덩어리로):', e)
         try: os.remove(sj)
