@@ -1,0 +1,201 @@
+{
+ "1": {
+  "teams": [
+   "KT"
+  ],
+  "img": "누끼/KBO스타일_경기_최원준_투런귀환_0919_KT제공_up_center",
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.68,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "big": "48억 최원준\n가성비 1위",
+  "perLine": true
+ },
+ "2": {
+  "teams": [
+   "삼성"
+  ],
+  "img": "누끼/KBO스타일_경기_최형우_100타점_0918_삼성제공_center",
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.68,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "big": "42살 최형우\n가성비 2위",
+  "perLine": true
+ },
+ "3": {
+  "teams": [
+   "두산"
+  ],
+  "img": "누끼/KBO스타일_경기_이영하_포효_0823_두산제공_center",
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.68,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "big": "52억 이영하\n가성비 3위",
+  "perLine": true
+ },
+ "4": {
+  "teams": [
+   "한화"
+  ],
+  "img": "누끼/KBO스타일_경기_강백호_30호_0908_한화제공_center",
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.8,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "big": "100억 강백호\n가성비 4위",
+  "perLine": true
+ },
+ "5": {
+  "teams": [
+   "KT"
+  ],
+  "img": "누끼/KBO스타일_경기_한승택_세리머니_0915_KT제공_center",
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.68,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "big": "10억 한승택\n가성비 5위",
+  "perLine": true
+ },
+ "6": {
+  "teams": [
+   "KIA"
+  ],
+  "img": "누끼/KBO스타일_경기_김범수_투구_0729_KIA제공_up_center",
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.9,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "big": "20억 김범수\n아쉬운 계약 1위",
+  "perLine": true
+ },
+ "7": {
+  "teams": [
+   "SSG"
+  ],
+  "img": "누끼/KBO스타일_경기_김재환_결승포_1001_SSG제공_center",
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.9,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 960,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "big": "22억 김재환\n아쉬운 계약 2위",
+  "perLine": true
+ },
+ "8": {
+  "teams": [
+   "두산"
+  ],
+  "img": "누끼/KBO스타일_경기_박찬호_타격_0922_두산제공_center",
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.8,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "big": "80억 박찬호\n평가 엇갈린다",
+  "perLine": true
+ },
+ "9": {
+  "teams": [
+   "KT",
+   "KIA"
+  ],
+  "img": "누끼/KBO스타일_경기_김현수_송구_1006_KT제공_center",
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.68,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": true,
+  "noPills": true,
+  "top": "",
+  "big": "KT 최원준·김현수\nvs KIA 김범수·조상우",
+  "perLine": true
+ },
+ "10": {
+  "teams": [
+   "삼성"
+  ],
+  "img": "누끼/KBO스타일_경기_김태훈_투구2_0927_삼성제공_up_center",
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.75,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "big": "조상우·김태훈·조수행\n숨은 가성비 FA",
+  "perLine": true
+ },
+ "11": {
+  "teams": [
+   "KIA"
+  ],
+  "img": "누끼/KBO스타일_경기_이준영_투구_0522_KIA제공_up_center",
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.65,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "big": "최원준·이준영·홍건희\n다쳐서 못 뛴 FA",
+  "perLine": true
+ }
+}

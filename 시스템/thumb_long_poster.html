@@ -1,0 +1,107 @@
+<!doctype html>
+<!-- 야구자판기 롱폼 썸네일 '포스터형(poster)' 1280x720 (2026-10-08 신설, 롱폼⑨ 외국인 선수 재계약)
+     레퍼런스: 축구 결승·8강 포스터 — 선수 경기 사진 누끼를 피라미드로 겹쳐 한 장면(뒷줄 작게·앞줄 크게, 주인공 가운데 맨 앞)
+     구도: 진홍 방사형 빛줄기 + 보케 + 금색 꽃가루 / 선수 묶음(미리 합성한 투명 png, thumb.img) / 아래 어둠 안개 / 금속(크롬) 글씨 두 줄.
+     선수 묶음 png 는 scratchpad comp2.py 방식(머리 크기 맞춤·아래 서서히 투명·같은 방향 그림자·가림 측정)으로 만든다 — 사진 보정은 밝기만 가볍게.
+     콘티 thumb: {"layout":"poster","img":"누끼/그룹_…png","kicker":"","lines":[{"t":"…","c":"w|g","w":폭px,"mt":0}]} -->
+<html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'PB';src:url('__FONT_DIR__/Pretendard-Black.otf')}
+@font-face{font-family:'GM';src:url('__FONT_DIR__/GmarketSansBold.ttf')}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#000}
+#s{position:relative;width:1280px;height:720px;overflow:hidden;
+ background:radial-gradient(ellipse 760px 520px at 50% 34%,#C8283A 0%,#8E1120 32%,#4A0710 62%,#1C0206 100%)}
+#rays{position:absolute;left:-200px;right:-200px;top:-420px;height:1300px;opacity:.20;
+ background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,220,200,.9) 0deg 3deg,rgba(255,220,200,0) 3deg 11deg);
+ -webkit-mask-image:radial-gradient(circle at 50% 50%,#000 0,#000 120px,rgba(0,0,0,.6) 380px,transparent 760px)}
+#flare{position:absolute;left:50%;top:210px;width:900px;height:360px;translate:-50% -50%;
+ background:radial-gradient(ellipse at center,rgba(255,235,210,.55) 0,rgba(255,150,120,.18) 35%,transparent 70%)}
+#fx{position:absolute;inset:0}
+#ppl{position:absolute;left:0;top:0;width:1280px;height:720px;filter:drop-shadow(0 0 10px rgba(255,120,90,.45)) drop-shadow(0 0 30px rgba(255,90,60,.25))}
+#mist{position:absolute;left:0;right:0;bottom:0;height:380px;background:linear-gradient(180deg,rgba(28,2,6,0) 0%,rgba(28,2,6,.55) 38%,rgba(20,1,4,.92) 70%,#120103 100%)}
+#kick{position:absolute;left:0;right:0;top:20px;text-align:center;font-family:'GM';font-size:30px;letter-spacing:10px;color:#FFE7A8;text-shadow:0 0 14px rgba(255,190,90,.55),0 2px 4px rgba(0,0,0,.6)}
+#txt{position:absolute;left:0;right:0;bottom:14px;display:flex;flex-direction:column;align-items:center}
+.ln{position:relative;white-space:nowrap;line-height:1;font-family:'PB';letter-spacing:-3px}
+.ln span{display:block}
+.ln .ex{position:absolute;left:0;top:0;color:#2B0306;transform:translateY(7px);filter:drop-shadow(0 6px 10px rgba(0,0,0,.7))}
+.ln .fc{position:relative;-webkit-background-clip:text;background-clip:text;color:transparent}
+.w .fc{background-image:linear-gradient(180deg,#FFFFFF 0%,#F2F3F6 36%,#A9B0BB 50%,#E3E7EC 60%,#FFFFFF 86%,#D9DDE3 100%)}
+.g .fc{background-image:linear-gradient(180deg,#FFF8D6 0%,#FFE07A 30%,#E7A51E 48%,#9A5E06 52%,#F5C842 66%,#FFF1A8 88%,#E8B33A 100%)}
+.w{filter:drop-shadow(0 0 16px rgba(255,90,80,.35))}
+.g{filter:drop-shadow(0 0 22px rgba(255,190,60,.55))}
+/* 10/10 theme "cl": 챔피언스리그 포스터 느낌(로고는 쓰지 않음) — 남색~검정 밤하늘 + 시안·보라 대각선 빛 + 흰 별 + 차가운 테두리 빛,
+   글씨는 기하학 고딕(Gmarket Sans Bold) 흰색·은색 + 시안 빛. thumb.theme="cl" 일 때만(없으면 위 진홍 그대로) */
+#s.cl{background:radial-gradient(ellipse 900px 520px at 50% 18%,#2140B8 0%,#122580 26%,#09134E 52%,#040928 76%,#01020F 100%)}
+#s.cl #rays{opacity:.10;background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(190,215,255,.9) 0deg 1.5deg,rgba(190,215,255,0) 1.5deg 9deg)}
+#s.cl #flare{top:250px;width:1000px;height:420px;background:radial-gradient(ellipse at center,rgba(210,235,255,.42) 0,rgba(90,140,255,.18) 38%,transparent 70%)}
+#s.cl .beam{position:absolute;width:1600px;height:140px;left:-160px;filter:blur(28px);mix-blend-mode:screen}
+#s.cl #ppl{filter:drop-shadow(0 0 2px rgba(200,230,255,.65)) drop-shadow(0 0 22px rgba(70,140,255,.35))}
+#s.cl #mist{height:360px;background:linear-gradient(180deg,rgba(2,5,25,0) 0%,rgba(2,5,25,.66) 36%,rgba(1,3,16,.95) 66%,#00010A 100%)}
+#s.cl .ln{font-family:'GM';letter-spacing:-1px}
+#s.cl .ln .ex{color:#01041A;transform:translateY(5px)}
+#s.cl .c{letter-spacing:8px}
+#s.cl .c .fc{background-image:linear-gradient(180deg,#FFFFFF 0%,#E8F4FF 55%,#BFE3FF 100%)}
+#s.cl .c{filter:drop-shadow(0 0 10px rgba(0,210,255,.55))}
+#s.cl .s .fc{background-image:linear-gradient(180deg,#FFFFFF 0%,#F4F7FF 30%,#B9C4DA 49%,#7E8BA6 51%,#DCE4F2 64%,#FFFFFF 84%,#C9D3E6 100%)}
+#s.cl .s{filter:drop-shadow(0 0 3px rgba(150,230,255,.9)) drop-shadow(0 0 22px rgba(0,180,255,.55))}
+/* 10/10 사용자 "배경은 저렇게밖에 못해..? 좀 더 화려하게": cl 배경에 경기장 조명 빛기둥 2개·휘어지는 빛 리본(시안→파랑→보라→자홍)·가운데 별빛 폭발·가로 렌즈 플레어·큰 별·은색 꽃가루 */
+#s.cl #deco{position:absolute;inset:0;pointer-events:none}
+#s.cl{background:radial-gradient(ellipse 980px 560px at 50% 30%,#2D55E0 0%,#1834A8 24%,#0D1C6E 46%,#060C3A 70%,#02041A 100%)}
+#s.cl .rule{height:3px;width:620px;margin:10px 0 8px;background:linear-gradient(90deg,transparent,#5FE3FF 25%,#FFFFFF 50%,#5FE3FF 75%,transparent);box-shadow:0 0 12px rgba(0,210,255,.8)}
+</style></head><body><div id="s"><div id="rays"></div><div id="flare"></div><canvas id="fx" width="1280" height="720"></canvas>
+<img id="ppl"><div id="mist"></div><div id="kick"></div><div id="txt"></div></div>
+<script>
+window.__thumbAsync=true;
+const TH=(window.EP&&EP.thumb)||{}, P=(window.EP&&EP.photos)||{};
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const src=n=>{if(!n)return '';if(P[n])return P[n];const k=Object.keys(P).find(x=>x.endsWith(n)||n.endsWith(x));return k?P[k]:''};
+document.getElementById('ppl').src=src(TH.img);
+if(TH.theme==='cl')document.getElementById('s').classList.add('cl');
+if(TH.theme==='cl'){const S=document.getElementById('s');[['-120px','rgba(0,200,255,.30)','-14deg'],['40px','rgba(140,90,255,.26)','11deg'],['230px','rgba(0,170,255,.18)','-6deg']].forEach(([top,col,rot])=>{const b=document.createElement('div');b.className='beam';b.style.top=top;b.style.background='linear-gradient(90deg,transparent,'+col+' 35%,'+col+' 65%,transparent)';b.style.rotate=rot;S.insertBefore(b,document.getElementById('fx'))})}
+if(TH.theme==='cl'){const S=document.getElementById('s');const d=document.createElement('div');d.id='deco';
+ const rib=(p,w,a,bl)=>`<path d="${p}" fill="none" stroke="url(#rg)" stroke-width="${w}" stroke-linecap="round" opacity="${a}" ${bl?`filter="url(#b${bl})"`:''}/>`;
+ const R1='M-120,470 C180,250 520,520 820,300 S1260,120 1420,260', R2='M-140,180 C220,340 520,60 860,210 S1240,420 1420,330', R3='M-100,600 C260,430 640,640 980,470 S1300,360 1400,420';
+ let st='';const star=(x,y,r,a)=>{let p='';for(let k=0;k<10;k++){const ang=-Math.PI/2+k*Math.PI/5,rr=k%2?r*.42:r;p+=(k?'L':'M')+(x+rr*Math.cos(ang)).toFixed(1)+','+(y+rr*Math.sin(ang)).toFixed(1)}return `<path d="${p}Z" fill="#fff" opacity="${a}" filter="url(#b3)"/><path d="${p}Z" fill="#F4FBFF" opacity="${a}"/>`};
+ [[118,92,15,.9],[1168,70,13,.85],[300,40,8,.7],[980,150,9,.7],[60,300,10,.6],[1225,330,11,.7],[640,26,7,.6],[460,170,6,.55],[840,60,6,.55]].forEach(q=>st+=star(...q));
+ let burst='';for(let k=0;k<36;k++){const a=k*10*Math.PI/180,L=(k%3?520:760);burst+=`<line x1="640" y1="250" x2="${(640+L*Math.cos(a)).toFixed(0)}" y2="${(250+L*.62*Math.sin(a)).toFixed(0)}" stroke="#CFE8FF" stroke-width="${k%3?1.4:2.6}" opacity="${k%3?.18:.32}"/>`}
+ d.innerHTML=`<svg width="1280" height="720" viewBox="0 0 1280 720"><defs>
+  <linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#00E5FF"/><stop offset=".35" stop-color="#2F7BFF"/><stop offset=".7" stop-color="#8A4DFF"/><stop offset="1" stop-color="#FF3FD2"/></linearGradient>
+  <linearGradient id="fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".85"/><stop offset=".45" stop-color="#9FE6FF" stop-opacity=".28"/><stop offset="1" stop-color="#5FA8FF" stop-opacity="0"/></linearGradient>
+  <radialGradient id="core" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/><stop offset=".25" stop-color="#BFE9FF" stop-opacity=".55"/><stop offset="1" stop-color="#3C7BFF" stop-opacity="0"/></radialGradient>
+  <radialGradient id="mg" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FF3FD2" stop-opacity=".55"/><stop offset="1" stop-color="#FF3FD2" stop-opacity="0"/></radialGradient>
+  <filter id="b3"><feGaussianBlur stdDeviation="3"/></filter><filter id="b8"><feGaussianBlur stdDeviation="8"/></filter><filter id="b22"><feGaussianBlur stdDeviation="22"/></filter><filter id="b40"><feGaussianBlur stdDeviation="40"/></filter></defs>
+  <ellipse cx="90" cy="640" rx="360" ry="260" fill="url(#mg)"/><ellipse cx="1200" cy="620" rx="380" ry="260" fill="url(#mg)" opacity=".8"/>
+  <g style="mix-blend-mode:screen"><polygon points="-40,-30 140,-30 760,720 260,720" fill="url(#fl)" filter="url(#b22)" opacity=".75"/><polygon points="1140,-30 1320,-30 1020,720 520,720" fill="url(#fl)" filter="url(#b22)" opacity=".75"/>
+  <polygon points="40,-30 90,-30 560,720 420,720" fill="url(#fl)" filter="url(#b8)" opacity=".55"/><polygon points="1190,-30 1240,-30 860,720 720,720" fill="url(#fl)" filter="url(#b8)" opacity=".55"/></g>
+  <g style="mix-blend-mode:screen">${burst}</g>
+  <ellipse cx="640" cy="250" rx="300" ry="170" fill="url(#core)" opacity=".75"/>
+  <g style="mix-blend-mode:screen">${rib(R1,70,.55,40)}${rib(R1,26,.85,8)}${rib(R1,3,1)}${rib(R2,60,.45,40)}${rib(R2,20,.75,8)}${rib(R2,2.5,.95)}${rib(R3,80,.5,40)}${rib(R3,24,.7,8)}${rib(R3,3,.9)}</g>
+  <g style="mix-blend-mode:screen"><rect x="-20" y="176" width="1320" height="3" fill="#E8F8FF" opacity=".9" filter="url(#b3)"/><rect x="140" y="173" width="1000" height="9" fill="#7FDCFF" opacity=".55" filter="url(#b8)"/><ellipse cx="640" cy="178" rx="110" ry="16" fill="#FFFFFF" opacity=".9" filter="url(#b8)"/></g>
+  ${st}</svg>`;
+ /* 사람들에 가려 뒤 배경이 거의 안 보임 → 앞쪽에도: 위 양쪽 조명 번짐(사람 위로 살짝)·아래 글씨 뒤 빛 리본·꽃가루 */
+ const front=document.createElement('div');front.id='deco2';front.style.cssText='position:absolute;inset:0;pointer-events:none';
+ const Rb1='M-80,640 C220,560 460,700 760,600 S1180,520 1380,600', Rb2='M-80,560 C300,660 600,520 900,610 S1220,690 1380,560';
+ let sp='';for(let k=0;k<26;k++){const x=(k*397)%1280,y=40+((k*211)%420),r=6+(k%5)*3;sp+=`<g opacity="${.55+(k%3)*.15}"><line x1="${x-r*2.6}" y1="${y}" x2="${x+r*2.6}" y2="${y}" stroke="#EAF8FF" stroke-width="1.6"/><line x1="${x}" y1="${y-r*2.6}" x2="${x}" y2="${y+r*2.6}" stroke="#EAF8FF" stroke-width="1.6"/><circle cx="${x}" cy="${y}" r="${r*.5}" fill="#fff" filter="url(#c3)"/></g>`}
+ front.innerHTML=`<svg width="1280" height="720" viewBox="0 0 1280 720"><defs>
+  <linearGradient id="rg2" x1="0" x2="1"><stop offset="0" stop-color="#00E5FF"/><stop offset=".4" stop-color="#3D7CFF"/><stop offset=".75" stop-color="#9A4DFF"/><stop offset="1" stop-color="#FF3FD2"/></linearGradient>
+  <radialGradient id="gl" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".9"/><stop offset=".3" stop-color="#9FE6FF" stop-opacity=".35"/><stop offset="1" stop-color="#3C7BFF" stop-opacity="0"/></radialGradient>
+  <filter id="c3"><feGaussianBlur stdDeviation="3"/></filter><filter id="c10"><feGaussianBlur stdDeviation="10"/></filter><filter id="c30"><feGaussianBlur stdDeviation="30"/></filter></defs>
+  <g style="mix-blend-mode:screen"><ellipse cx="40" cy="20" rx="260" ry="150" fill="url(#gl)" opacity=".75"/><ellipse cx="1240" cy="20" rx="260" ry="150" fill="url(#gl)" opacity=".75"/>
+   <path d="${Rb1}" fill="none" stroke="url(#rg2)" stroke-width="70" opacity=".36" filter="url(#c30)"/><path d="${Rb1}" fill="none" stroke="url(#rg2)" stroke-width="16" opacity=".8" filter="url(#c10)"/><path d="${Rb1}" fill="none" stroke="#DFF7FF" stroke-width="2.5" opacity=".9"/>
+   <path d="${Rb2}" fill="none" stroke="url(#rg2)" stroke-width="56" opacity=".28" filter="url(#c30)"/><path d="${Rb2}" fill="none" stroke="url(#rg2)" stroke-width="12" opacity=".7" filter="url(#c10)"/><path d="${Rb2}" fill="none" stroke="#F3E6FF" stroke-width="2" opacity=".8"/>
+   <ellipse cx="80" cy="700" rx="300" ry="120" fill="#FF3FD2" opacity=".25" filter="url(#c30)"/><ellipse cx="1200" cy="700" rx="300" ry="120" fill="#00D5FF" opacity=".25" filter="url(#c30)"/></g></svg>`;   /* 앞쪽 반짝이는 얼굴을 가려서 뺌 */
+ const mist=document.getElementById('mist');mist.parentNode.insertBefore(front,mist.nextSibling);
+ S.insertBefore(d,document.getElementById('fx'))}
+if(TH.kicker)document.getElementById('kick').textContent=TH.kicker; else document.getElementById('kick').remove();
+let sd=7;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+const c=document.getElementById('fx').getContext('2d');
+for(let i=0;i<46;i++){const x=R()*1280,y=R()*430,r=4+R()*16;const g=c.createRadialGradient(x,y,0,x,y,r);const bc=TH.theme==='cl'?'190,215,255':'255,225,190';g.addColorStop(0,'rgba('+bc+','+(.10+R()*.22)+')');g.addColorStop(1,'rgba('+bc+',0)');c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,7);c.fill()}
+for(let i=0;i<90;i++){const x=R()*1280,y=R()*560,w=3+R()*7,h=6+R()*12,a=R()*6.28;c.save();c.translate(x,y);c.rotate(a);if(TH.theme==='cl'){c.restore();const yy=y*.75,r=.8+R()*1.8;c.fillStyle='rgba(235,245,255,'+(.35+R()*.6)+')';c.beginPath();c.arc(x,yy,r,0,7);c.fill();if(R()<.12){const L=7+R()*12;c.strokeStyle='rgba(220,240,255,.75)';c.lineWidth=1.2;c.beginPath();c.moveTo(x-L,yy);c.lineTo(x+L,yy);c.moveTo(x,yy-L);c.lineTo(x,yy+L);c.stroke()}continue}c.fillStyle=R()<.65?'rgba(255,214,110,'+(.35+R()*.5)+')':'rgba(255,250,235,'+(.3+R()*.5)+')';c.fillRect(-w/2,-h/2,w,h);c.restore()}
+if(TH.theme==='cl'){for(let i=0;i<70;i++){const x=R()*1280,y=R()*520,w=2+R()*5,h=5+R()*10;c.save();c.translate(x,y);c.rotate(R()*6.28);c.fillStyle=R()<.5?'rgba(200,240,255,'+(.45+R()*.5)+')':(R()<.5?'rgba(255,120,230,'+(.4+R()*.4)+')':'rgba(255,255,255,'+(.5+R()*.5)+')');c.fillRect(-w/2,-h/2,w,h);c.restore()}}
+const LINES=TH.lines||[], T=document.getElementById('txt');
+LINES.forEach(L=>{if(L.rule){const r=document.createElement('div');r.className='rule';T.appendChild(r);return}const d=document.createElement('div');d.className='ln '+(L.c||'w');d.style.fontSize=(L.s||120)+'px';d.style.marginTop=(L.mt||0)+'px';
+ d.innerHTML='<span class="ex">'+esc(L.t)+'</span><span class="fc">'+esc(L.t)+'</span>';T.appendChild(d)});
+(async()=>{try{await document.fonts.ready}catch(e){}
+ const LL=LINES.filter(x=>!x.rule);document.querySelectorAll('.ln').forEach((d,i)=>{const W=LL[i].w||1190;let s=LL[i].s||120;for(let k=0;k<40;k++){const w=d.querySelector('.fc').getBoundingClientRect().width;if(Math.abs(w-W)<3)break;s=s*W/w;d.style.fontSize=s+'px'}});
+ window.__thumbDone=true})();
+</script></body></html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<!-- 야구자판기 롱폼 썸네일 '야간 구장 + 가격 배지형(tag)' 1280x720 (2026-10-10 신설, 롱폼⑩ FA 돈값 순위)
+     구도: 밤 구장(위 양쪽 조명탑 빛 + 관중석 불빛 보케 + 가운데 뒤 금빛 스포트라이트) / 선수 묶음(tools/tag_comp.py 로 미리 합성한 투명 png, thumb.img —
+     사람마다 밝기를 맞추고 대비·채도는 같은 값으로 가볍게) / 머리 위 계약 금액 금색 배지(thumb.tags, 얼굴·몸을 가리지 않게) / 아래 어둠 + 두꺼운 글씨 두 줄.
+     콘티 thumb: {"layout":"tag","img":"누끼/…png","tags":[{"x":가운데x,"y":위y,"t":"48억","sub":"4년"}],"lines":[{"t":"…","c":"w|y","s":px,"w":목표폭px}]} -->
+<html lang="ko"><head><meta charset="utf-8"><style>
+@font-face{font-family:'PB';src:url('__FONT_DIR__/Pretendard-Black.otf')}
+@font-face{font-family:'GM';src:url('__FONT_DIR__/GmarketSansBold.ttf')}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:720px;overflow:hidden;background:#000}
+#s{position:relative;width:1280px;height:720px;overflow:hidden;background:linear-gradient(180deg,#0B1424 0%,#0A1220 45%,#05080F 100%)}
+#spot{position:absolute;left:50%;top:250px;width:1200px;height:700px;translate:-50% -50%;
+ background:radial-gradient(ellipse at center,rgba(255,196,92,.42) 0%,rgba(255,150,60,.16) 32%,transparent 62%)}
+.tower{position:absolute;top:-60px;width:520px;height:520px;background:radial-gradient(circle at center,rgba(235,245,255,.95) 0,rgba(190,215,255,.45) 7%,rgba(120,160,255,.14) 22%,transparent 50%)}
+#fx{position:absolute;inset:0}
+#ppl{position:absolute;left:0;top:0;width:1280px;height:720px;filter:drop-shadow(0 0 2px rgba(255,236,200,.55)) drop-shadow(0 0 18px rgba(255,190,90,.30))}
+#mist{position:absolute;left:0;right:0;bottom:0;height:320px;background:linear-gradient(180deg,rgba(3,5,10,0) 0%,rgba(3,5,10,.62) 38%,rgba(2,4,8,.94) 70%,#020307 100%)}
+.tag{position:absolute;translate:-50% 0;display:flex;align-items:baseline;gap:6px;white-space:nowrap;padding:8px 24px 9px;border-radius:999px;
+ background:linear-gradient(180deg,#FFF3B8 0%,#FFD24A 45%,#E8A714 100%);box-shadow:0 6px 16px rgba(0,0,0,.55),inset 0 -3px 0 rgba(150,90,0,.35);font-family:'PB';color:#2A1A00}
+.tag .v{font-size:50px;letter-spacing:-2px;line-height:1}
+.tag .u{font-size:26px;font-family:'GM';opacity:.75}
+#txt{position:absolute;left:0;right:0;bottom:18px;display:flex;flex-direction:column;align-items:center}
+.ln{white-space:nowrap;line-height:1.02;font-family:'PB';letter-spacing:-3px}
+.ln.w{color:#fff;text-shadow:0 5px 0 #0A0F1C,0 0 22px rgba(0,0,0,.7)}
+.ln.y{color:#FFD83A;text-shadow:0 7px 0 #3A2600,0 0 30px rgba(255,200,60,.40),0 0 3px #000}
+</style></head><body><div id="s"><div id="spot"></div><div class="tower" style="left:-200px"></div><div class="tower" style="right:-200px"></div>
+<canvas id="fx" width="1280" height="720"></canvas><img id="ppl"><div id="mist"></div><div id="tags"></div><div id="txt"></div></div>
+<script>
+window.__thumbAsync=true;
+const TH=(window.EP&&EP.thumb)||{}, P=(window.EP&&EP.photos)||{};
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const src=n=>{if(!n)return '';if(P[n])return P[n];const k=Object.keys(P).find(x=>x.endsWith(n)||n.endsWith(x));return k?P[k]:''};
+document.getElementById('ppl').src=src(TH.img);
+let sd=29;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+const c=document.getElementById('fx').getContext('2d');
+for(let i=0;i<70;i++){const x=R()*1280,y=60+R()*300,r=3+R()*13;const warm=R()<.55;const g=c.createRadialGradient(x,y,0,x,y,r);
+ g.addColorStop(0,(warm?'rgba(255,214,150,':'rgba(190,215,255,')+(.10+R()*.30)+')');g.addColorStop(1,'rgba(255,255,255,0)');c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,7);c.fill()}
+c.globalCompositeOperation='lighter';
+[[60,0],[1220,0]].forEach(([x0,y0],k)=>{for(let i=0;i<5;i++){const a=(k?Math.PI*.62:Math.PI*.38)+(i-2)*.07;const g=c.createLinearGradient(x0,y0,x0+Math.cos(a)*900,y0+Math.sin(a)*900);
+ g.addColorStop(0,'rgba(200,220,255,.10)');g.addColorStop(1,'rgba(200,220,255,0)');c.strokeStyle=g;c.lineWidth=30+i*8;c.beginPath();c.moveTo(x0,y0);c.lineTo(x0+Math.cos(a)*900,y0+Math.sin(a)*900);c.stroke()}});
+const TG=document.getElementById('tags');
+(TH.tags||[]).forEach(t=>{const d=document.createElement('div');d.className='tag';d.style.left=t.x+'px';d.style.top=t.y+'px';
+ d.innerHTML=(t.sub?'<span class="u">'+esc(t.sub)+'</span>':'')+'<span class="v">'+esc(t.t)+'</span>';TG.appendChild(d)});
+const LINES=TH.lines||[], T=document.getElementById('txt');
+LINES.forEach(L=>{const d=document.createElement('div');d.className='ln '+(L.c||'w');d.style.fontSize=(L.s||110)+'px';d.style.marginTop=(L.mt||0)+'px';d.textContent=L.t;T.appendChild(d)});
+(async()=>{try{await document.fonts.ready}catch(e){}
+ document.querySelectorAll('.ln').forEach((d,i)=>{const W=LINES[i].w;if(!W)return;let s=LINES[i].s||110;for(let k=0;k<40;k++){const w=d.getBoundingClientRect().width;if(Math.abs(w-W)<3)break;s=s*W/w;d.style.fontSize=s+'px'}});
+ window.__thumbDone=true})();
+</script></body></html>
