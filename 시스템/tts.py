@@ -69,6 +69,22 @@ try:   # 9/26: 콘티 ttsTempo(build prep 이 work\tts_tempo.txt 에 적음)가 
     _tt = io.open(os.path.join(os.environ.get('KBO_WORK', 'work'), 'tts_tempo.txt'), encoding='utf-8').read().strip()
     if _tt: TEMPO = float(_tt)
 except Exception: pass
+# 10/8 사용자("완급 조절이 필요하면 타입캐스트에서 1.2배와 1.15배를 섞어서"): 줄마다 타입캐스트 배속을 따로.
+#   build prep 이 work\tts_tempo_lines.txt 에 줄마다 한 줄씩 적는다(빈 줄 = 위 TEMPO). 콘티 ttsTempoSlow(예 1.15)·줄 ttsTempo 에서 나온다.
+#   만든 음성 옆 NN.tempo 에 배속을 남겨, 배속이 바뀐 줄만 다시 합성한다. 렌더(build.py)는 이 모드에서 atempo 를 안 태운다.
+TEMPO_LINES = []
+try:
+    TEMPO_LINES = [(float(x) if x.strip() else None) for x in io.open(os.path.join(os.environ.get('KBO_WORK', 'work'), 'tts_tempo_lines.txt'), encoding='utf-8').read().split('\n')]
+except Exception: TEMPO_LINES = []
+def tempo_of(i):
+    return (TEMPO_LINES[i] if 0 <= i < len(TEMPO_LINES) and TEMPO_LINES[i] else TEMPO)
+def tempo_ok(i, mp3):
+    """줄 모드일 때 이미 만든 음성의 배속이 이번 줄 배속과 같은지(NN.tempo 없으면 예전 편 = 콘티 TEMPO 로 만든 것으로 본다)"""
+    if not any(TEMPO_LINES): return True
+    f = mp3.replace('.mp3', '.tempo')
+    try: made = float(io.open(f, encoding='utf-8').read().strip())
+    except Exception: made = TEMPO
+    return abs(made - tempo_of(i)) < 0.005
 def head(): return {'X-API-KEY': ACCOUNTS[ACC]['key'], 'Content-Type': 'application/json'}
 
 FAILS = {}   # 계정 이름 → 왜 못 썼는지 (마지막에 한 줄로 정리해서 보여준다)
@@ -106,7 +122,7 @@ def err_code(r):
     except Exception: return r.text[:60]
 
 import re
-def check_audio(path, text):
+def check_audio(path, text, tempo=None):
     """길이가 글자 수 대비 비정상이거나 클리핑이 있으면 False"""
     try:
         d = float(subprocess.run(['ffprobe','-v','error','-show_entries','format=duration','-of','csv=p=0',path],capture_output=True,text=True).stdout.strip())
@@ -115,7 +131,7 @@ def check_audio(path, text):
         syl = len(re.findall(r'[가-힣]', text)) or 1
         rate = syl / max(d, 0.1)
         if mx > -0.05: return False, f'클리핑 {mx}dB'   # 음량 정리는 build.py 가 하므로 진짜 클리핑만 재시도
-        if rate > 8.5 * max(1.0, TEMPO) or rate < 2.5: return False, f'길이 이상 {d:.1f}s/{syl}음절'   # 9/26: 타입캐스트 배속만큼 기준도 올림
+        if rate > 8.5 * max(1.0, tempo or TEMPO) or rate < 2.5: return False, f'길이 이상 {d:.1f}s/{syl}음절'   # 9/26: 타입캐스트 배속만큼 기준도 올림
         return True, ''
     except Exception as e:
         return True, ''
@@ -128,8 +144,9 @@ def prompt_variants(prev, nxt):
     return [{'emotion_type': 'preset', 'emotion_preset': EMOTION, 'emotion_intensity': INTENSITY},
             {'emotion_preset': EMOTION, 'emotion_intensity': INTENSITY}]
 
-def synth(text, prev='', nxt='', out_path=None):
+def synth(text, prev='', nxt='', out_path=None, tempo=None):
     out_path = out_path or os.path.join(VDIR, 'out.mp3')
+    tempo = TEMPO if tempo is None else tempo   # 10/8: 줄별 배속(tempo_of) — 없으면 편 전체 TEMPO
     """한 줄 합성. 앞뒤 문장을 같이 보내면 억양이 자연스럽게 이어진다."""
     prompts = prompt_variants(prev, nxt)
     payload = {
@@ -137,7 +154,7 @@ def synth(text, prev='', nxt='', out_path=None):
         'text': text,
         'voice_id': ACCOUNTS[ACC]['voice'],
         'prompt': prompts[0],
-        'output': ({'audio_format': 'mp3', 'audio_tempo': TEMPO} if abs(TEMPO - 1.0) > 0.01 else {'audio_format': 'mp3'}),
+        'output': ({'audio_format': 'mp3', 'audio_tempo': tempo} if abs(tempo - 1.0) > 0.01 else {'audio_format': 'mp3'}),
     }
     pi = 0
     for attempt in range(6 + len(ACCOUNTS)):
@@ -162,7 +179,7 @@ def synth(text, prev='', nxt='', out_path=None):
                     os.remove(tmp)
             else:
                 open(out_path, 'wb').write(r.content)
-            ok, why = check_audio(out_path, text)
+            ok, why = check_audio(out_path, text, tempo)
             if not ok and attempt < 5:
                 print(f'  품질 재시도({why})'); time.sleep(1); continue
             return True
@@ -172,7 +189,7 @@ def synth(text, prev='', nxt='', out_path=None):
                 pi += 1; payload['prompt'] = prompts[pi]; print(f'  감정 형식 재시도({pi})'); continue
             if 'audio_tempo' in payload.get('output', {}):
                 # 9/26: 배속 없이 1.0배로 몰래 만들면 영상이 느려진다 → 멈추고 알린다
-                print(f'  실패 400: 타입캐스트가 배속 {TEMPO} 옵션을 거부했어요 — 1.0배로 대신 만들지 않음: {r.text[:200]}'); return False
+                print(f'  실패 400: 타입캐스트가 배속 {tempo} 옵션을 거부했어요 — 1.0배로 대신 만들지 않음: {r.text[:200]}'); return False
             if 'output' in payload:
                 payload.pop('output'); continue
         if r.status_code in (429, 500, 502, 503):
@@ -227,6 +244,20 @@ def pin_lines(lines, quiet=False):
     return set(idx)
 PAUSE = float(CFG.get('TTS_PAUSE', '0.12'))   # 대사 안의 " / " 표시 자리에서 쉬는 시간(초). 구간 자체의 앞뒤 무음은 잘라내므로 아주 짧게
 
+def _batchim(ch): return '가' <= ch <= '힣' and (ord(ch) - 0xAC00) % 28 != 0
+def tight_join(a, b):
+    """자막 경계 a | b 를 쉼표 없이 이어 읽을지. 목적어(-을/-를)·부사(-하게/-게)로 끝나 뒤 서술어와 한 덩어리인 곳,
+    주어 뒤에 짧은 서술어만 남은 곳('글이 / 올라왔어요'). 주제어(-은/-는) 뒤는 원래대로 쉼표(일부러 쉬는 자리)."""
+    a, b = a.strip(), b.strip()
+    if b.startswith('+'): return True
+    if not a or a.endswith(('?', '!', '.', ',')): return False
+    w = a.split()[-1]; b0 = b.lstrip('+').strip()
+    if w.endswith('를') and len(w) >= 2: return True
+    if w.endswith('을') and len(w) >= 2 and _batchim(w[-2]): return True        # '가을' 같은 말은 빼고(앞 글자 받침 있을 때만 조사)
+    if w.endswith('게') and len(w) >= 3: return True                            # 단순하게·든든하게·김범수에게
+    if re.search(r'[이가도에]$', w) and len(b0.split()) <= 2 and b0.endswith('요') and len(re.findall(r'[가-힣]', b0)) <= 7: return True
+    return False
+
 def tts_text(segs, is_last_q=False):
     """TTS 에 넣을 문장: 호흡 구간(' / ')은 쉼표로, 끝은 마침표/물음표로 → 한 사람이 쭉 읽는 자연스러운 억양.
     (쉼표·마침표 금지 규칙은 화면 자막 얘기고, TTS 입력엔 넣어야 억양이 자연스럽다)"""
@@ -238,9 +269,13 @@ def tts_text(segs, is_last_q=False):
     #   줄 가운데 구간이 '-었다·-했다·-겠다' 같은 서술형 '-다'로 끝나면 쉼표 대신 마침표 → 타입캐스트가 확실히 끊어 읽는다.
     #   ('때마다'·'바다' 같은 말은 받침 있는 어미 앞 글자만 보므로 걸리지 않는다)
     segs = [sg + '.' if k < len(segs) - 1 and re.search(r'[았었였했겠꿨웠쳤났갔왔졌렸봤줬됐섰켰혔렀]다$', sg) else sg for k, sg in enumerate(segs)]
+    # 10/10 사용자("단순하게 / 들어간다고 했어요 — 이렇게 텀을 두는데 텀 없이 말하도록"): 자막을 나눈 자리라도 말이 한 덩어리인 곳은
+    #   쉼표를 넣지 않고 띄어쓰기로만 잇는다 → 타입캐스트가 안 쉰다. 구간 앞 '+' 는 강제로 붙이는 표시(대사가 바뀌어 그 줄만 다시 합성됨).
+    tight = [False] + [tight_join(segs[k - 1], segs[k]) for k in range(1, len(segs))]
+    segs = [sg.lstrip('+').strip() for sg in segs]
     t = ''
     for k, sg in enumerate(segs):
-        t += sg if k == 0 else ((' ' if segs[k - 1].endswith(('?', '!', '.')) else ', ') + sg)
+        t += sg if k == 0 else ((' ' if segs[k - 1].endswith(('?', '!', '.')) or tight[k] else ', ') + sg)
     if not t.endswith(('?', '!', '.')): t += '.'
     return t
 
@@ -378,13 +413,13 @@ def insert_breaths(path, bounds):
         new.append(round(b + n_ins * BREATH, 3))
     return new
 
-def synth_line(line, prev, nxt, out, pause=None):
+def synth_line(line, prev, nxt, out, pause=None, tempo=None):
     """한 줄 합성. ' / ' 로 나뉜 호흡 구간을 따로 만들지 않고 한 문장으로 합성한다(억양이 끊기지 않게).
     그 다음 실제 쉼이 감지된 호흡 자리에만 짧은 쉼(TTS_BREATH)을 끼워 넣고, 경계를 NN.segs.json 에 기록 → build.py 가 자막을 구간별로 바꾼다"""
     segs = [x.strip() for x in line.split('/') if x.strip()]
     text = tts_text(segs) if segs else line
     p_ = [x.strip() for x in prev.split('/') if x.strip()]; n_ = [x.strip() for x in nxt.split('/') if x.strip()]
-    ok = synth(text, tts_text(p_) if p_ else '', tts_text(n_) if n_ else '', out)
+    ok = synth(text, tts_text(p_) if p_ else '', tts_text(n_) if n_ else '', out, tempo=tempo)
     sj = out.replace('.mp3', '.segs.json')
     if not ok: return False
     try: trim_long_pauses(out)   # 10/4: 줄 안의 1초 가까운 멈춤을 0.5초로
@@ -426,9 +461,10 @@ def synth_index(lines, i, out=None):
     prev = lines[i-1] if i > 0 else ''
     nxt = lines[i+1] if i+1 < len(lines) else ''
     out = out or os.path.join(VDIR, f'{i:02d}.mp3')
-    ok = synth_line(lines[i], prev, nxt, out, pause=0 if i == 0 else None)   # 첫 줄(후킹)은 한 호흡
+    ok = synth_line(lines[i], prev, nxt, out, pause=0 if i == 0 else None, tempo=tempo_of(i))   # 첫 줄(후킹)은 한 호흡
     if ok:
         io.open(out.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])   # 어떤 대사로 만든 음성인지 기록(대사 바뀌면 build 가 그 줄만 다시)
+        io.open(out.replace('.mp3', '.tempo'), 'w', encoding='utf-8').write(f'{tempo_of(i):.3f}')   # 10/8: 어떤 배속으로 만든 음성인지
     return ok
 
 # ---------- 9/26: 한 편 통째 합성 (콘티 "ttsWhole": true) ----------
@@ -824,6 +860,7 @@ if __name__ == '__main__':
         if os.path.exists(mp3.replace('.mp3', '.keep')) and os.path.exists(mp3): return True
         if not (os.path.exists(mp3) and os.path.exists(txt)): return False
         if io.open(txt, encoding='utf-8').read().strip() != lines[i].strip(): return False
+        if not tempo_ok(i, mp3): return False   # 10/8: 배속이 바뀐 줄도 다시
         return not (os.path.exists(ff) and os.path.getmtime(txt) < os.path.getmtime(ff))
     if only is not None: todo = sorted(i for i in only if i < len(lines) and i not in PINNED)
     elif whole_mode():
@@ -850,6 +887,10 @@ if __name__ == '__main__':
             if FAILS: print('계정별 결과: ' + ' / '.join(f'{k}: {v}' for k, v in FAILS.items()))
             sys.exit('통 합성 실패 — 줄별로 대신 만들지 않음(억양이 따로 놀아서)')
     print(f'{len(lines)}줄 합성 시작' + (f' (줄 {sorted(only)} 만)' if only else ''))
+    if any(TEMPO_LINES):
+        _tc = {}
+        for i in range(len(lines)): _tc[f'{tempo_of(i):.2f}'] = _tc.get(f'{tempo_of(i):.2f}', 0) + 1
+        print('줄별 배속: ' + ' · '.join(f'{k}배 {v}줄' for k, v in sorted(_tc.items())))
     fail = 0
     reuse = 0
     for i, line in enumerate(lines):
@@ -860,7 +901,7 @@ if __name__ == '__main__':
         if os.path.exists(_ff) and not os.path.exists(mp3.replace('.mp3', '.keep')) and os.path.exists(txt) and os.path.getmtime(txt) < os.path.getmtime(_ff):
             print(f'{i:02d} fresh.flag 이전 음성 → 다시 만듦')
         elif '--fresh' not in sys.argv and only is None and os.path.exists(mp3) and os.path.exists(txt) \
-                and io.open(txt, encoding='utf-8').read().strip() == line.strip():
+                and io.open(txt, encoding='utf-8').read().strip() == line.strip() and tempo_ok(i, mp3):
             reuse += 1; print(f'{i:02d} 재사용 {line}'); continue   # 같은 대사로 이미 만든 음성이 있으면 크레딧 안 씀 (--fresh 면 전부 새로)
         if i in PINNED: print(f'{i:02d} 구독 멘트 고정 음성 → 합성 안 함'); continue
         ok = synth_index(lines, i)

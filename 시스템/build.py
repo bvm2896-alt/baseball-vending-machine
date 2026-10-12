@@ -292,6 +292,13 @@ def photos_data_uri(ep, ep_path=None):
             w_, h_ = int(parts[0]), int(parts[1])
             pf = run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=pix_fmt', '-of', 'csv=p=0', src]).stdout.strip().lower()
             alpha = 1 if re.search(r'^(rgba|bgra|argb|abgr|ya8|ya16|gbrap|pal8|yuva)', pf) else 0   # 투명 배경(누끼) → 템플릿이 흐린 배경 대신 단색 배경에 놓는다
+            if alpha:   # 10/12 사용자 "이미지 비율 다른 거 불편": 알파 채널이 있어도 실제로 투명한 픽셀이 없으면(경기 사진 png) 보통 사진으로 → 카드에 cover 로 꽉 채움
+                try:
+                    from PIL import Image as _Im
+                    _im = _Im.open(src)
+                    if 'A' in _im.getbands() and _im.getchannel('A').getextrema()[0] >= 250: alpha = 0
+                    elif _im.mode == 'P' and 'transparency' not in _im.info: alpha = 0
+                except Exception: pass
             sizes[name] = [w_, h_, alpha]
             if min(w_, h_) < 500: print(f'참고: 사진 "{name}" 해상도 낮음({w_}x{h_}) → 화면에서 흐릿할 수 있음. 900px 이상 권장')
         except Exception: pass
@@ -342,7 +349,8 @@ def logos_data_uri():
 #  고유어(하나·둘·셋…): 경기, 게임 차, 시, 가지, 장 → "스물두 경기", "두 시"; 개·명·번도 한 자리(1~9)는 고유어 → "세 개", "두 번"
 #  한자어(일·이·삼…): 승, 패, 위, 이닝, 회, 년, 월, 일, 분, 초, 억, 달러, 순위, 라운드, 연승/연패, 점수(삼 대 십구), 승률·타율 → "이 승 십 패", "이십사 이닝"
 #  10/1 밤 사용자 정정("서른여덟점이 아니라 삼십팔점", "칠백여든한점 → 칠백팔십일점", "예순세번 → 육십삼번", "여든한개 → 팔십일개"):
-#   **점(득점·실점·득실차·점수)은 항상 한자어**(삼 점, 삼십팔 점), **번은 10 이상이면 한자어**(육십삼 번), **개·명은 20 이상이면 한자어**(팔십일 개, 칠십삼 명). 경고가 뜨면 합성 전에 반드시 고친다.
+#   **점(득점·실점·득실차·점수)은 항상 한자어**(삼 점, 삼십팔 점), **번은 10 이상이면 한자어**(육십삼 번), **개는 20 이상이면 한자어**(팔십일 개). 경고가 뜨면 합성 전에 반드시 고친다.
+#  10/10 사용자 정정(롱폼⑩ "이십이명=스물두명, 이십일명=스물한명"): **명은 1~99 모두 고유어**(스물두 명, 마흔여덟 명). 백 명 이상만 한자어.
 #  10/5 사용자 정정(롱폼⑦ "한 구단 십 명=열 명, 십이 개 구단=열두 개 구단, 십이 명=열두 명"): **개·명의 10~19 는 고유어**(열 명, 열두 개 구단, 열두 명).
 NATIVE = r'(한|두|세|네|다섯|여섯|일곱|여덟|아홉|열\S*|스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*)'
 NATIVE10 = r'(열\S*|스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*|[가-힣]*(여든|아흔|예순|일흔|쉰|마흔|서른|스물|열)[가-힣]*)'
@@ -357,8 +365,10 @@ def narr_check(lines):
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (이 승, 십 패, 삼 위, 삼십팔 점)')
         for m in re.finditer(r'(?<![가-힣])' + NATIVE10 + r' ?(번|장)(?![가-힣])', t):
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (육십삼 번)')
-        for m in re.finditer(r'(?<![가-힣])' + NATIVE20 + r' ?(개|명)(?![가-힣])', t):
-            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (팔십일 개, 칠십삼 명)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE20 + r' ?(개)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (팔십일 개)')
+        for m in re.finditer(r'(?<![가-힣])([이삼사오육칠팔구]십[일이삼사오육칠팔구]?) ?명(?![가-힣])', t):   # 10/10 사용자: 이십이 명=스물두 명, 이십일 명=스물한 명
+            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (스물두 명, 스물한 명, 마흔여덟 명)')
         for m in re.finditer(r'(?<![가-힣])(십[일이삼사오육칠팔구]?) ?(개|명)(?!월|복|단|령|문|인|성|소)', t):   # 10/5: 10~19 개·명은 고유어
             warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (열 명, 열두 개 구단, 열두 명)')
         for m in re.finditer(r'(?<![가-힣])' + SINO + r' ?(경기|게임|가지)(?![가-힣])', t):
@@ -408,16 +418,37 @@ def prep(ep, ep_path=None):
             s3, st_ = os.path.join(src_dir, f'{int(i):02d}.mp3'), os.path.join(src_dir, f'{int(i):02d}.txt')
             if not os.path.exists(s3) or rd(st_) != lines[j]: continue
             if rd(os.path.join(dst_dir, f'{j:02d}.txt')) == lines[j] and os.path.exists(os.path.join(dst_dir, f'{j:02d}.mp3')): continue
-            for ext in ('.mp3', '.txt', '.segs.json'):
+            for ext in ('.mp3', '.txt', '.segs.json', '.tempo'):   # 10/8: .tempo = 그 음성의 타입캐스트 배속
                 f = os.path.join(src_dir, f'{int(i):02d}{ext}')
                 if os.path.exists(f): shutil.copyfile(f, os.path.join(dst_dir, f'{j:02d}{ext}'))
             cp += 1
         print(f'롱폼 음성 재사용: {cp}줄 복사 ({vf["ep"]} → {ep_key(ep_path)})')
+    vr = ep.get('voiceRemap') or []
+    if ep_path and any(x is not None for x in vr):
+        # 10/8 밤: 같은 편 안에서 줄 순서만 바꿨을 때 — 옛 번호의 음성(대사가 같은 것만)을 새 번호로 옮긴다(재합성·크레딧 0).
+        #          먼저 전부 읽어 둔 뒤 쓴다(서로 자리를 바꾸는 줄끼리 덮어쓰지 않게). 이미 옮겨졌으면(새 번호 대사가 같으면) 건너뜀
+        d_ = voice_dir(ep_key(ep_path)); rd = lambda f: io.open(f, encoding='utf-8').read().strip() if os.path.exists(f) else None
+        buf = {}
+        for j, i in enumerate(vr):
+            if i is None or j >= len(lines) or i == j: continue
+            if rd(os.path.join(d_, f'{j:02d}.txt')) == lines[j] and os.path.exists(os.path.join(d_, f'{j:02d}.mp3')): continue
+            if rd(os.path.join(d_, f'{int(i):02d}.txt')) != lines[j] or not os.path.exists(os.path.join(d_, f'{int(i):02d}.mp3')): continue
+            buf[j] = {ext: open(os.path.join(d_, f'{int(i):02d}{ext}'), 'rb').read() for ext in ('.mp3', '.txt', '.segs.json', '.tempo', '.keep')
+                      if os.path.exists(os.path.join(d_, f'{int(i):02d}{ext}'))}
+        for j, files in buf.items():
+            for ext in ('.mp3', '.txt', '.segs.json', '.tempo', '.keep'):
+                f = os.path.join(d_, f'{j:02d}{ext}')
+                if ext in files: open(f, 'wb').write(files[ext])
+                elif os.path.exists(f): os.remove(f)
+        if buf: print(f'줄 순서 변경: 음성 {len(buf)}줄 옮김(재합성 없음)')
     for w_ in narr_check(lines): print('숫자 읽기 경고:', w_)
     for w_ in sub_check(ep): print('자막 숫자 경고:', w_)
     io.open(W('narration.txt'), 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
     # 9/26: 콘티 "ttsTempo": 1.2 → 타입캐스트 API 가 직접 1.2배로 말하게(tts.py 가 읽음). 없으면 설정.txt TTS_TEMPO
     io.open(W('tts_tempo.txt'), 'w', encoding='utf-8').write(str(ep.get('ttsTempo') or ''))
+    # 10/8: 줄별 타입캐스트 배속 — 줄 "ttsTempo" 가 있으면 그것, pace "slow" 면 콘티 "ttsTempoSlow"(예 1.15), 나머지는 빈칸(= ttsTempo).
+    #       이 모드(tempo_mode)에서는 렌더가 pace 배속(atempo)을 안 태운다 → 컷 쇼츠가 같은 음성을 그대로 쓴다
+    io.open(W('tts_tempo_lines.txt'), 'w', encoding='utf-8').write('\n'.join(tempo_lines(ep)))
     # 10/7: 콘티 "ttsEmotion" (예 "smart") → tts.py 감정. 없으면 빈 파일 = 기본 normal(스마트 이모션은 사용자가 말할 때만)
     io.open(W('tts_emotion.txt'), 'w', encoding='utf-8').write(str(ep.get('ttsEmotion') or ''))
     # 9/26: 콘티 "ttsWhole": true → 한 편(구독 멘트 뺀 줄)을 API 한 번으로 이어 읽고 줄별로 자른다(줄마다 억양이 따로 놀지 않게)
@@ -435,7 +466,7 @@ def prep(ep, ep_path=None):
             except Exception: _pk = ''
             _web = [l for l in lines if not (_pk and re.sub(r'[\s/.,!?~·]', '', l) == _pk)]
             if len(_web) != len(lines): print(f'웹 대본: 구독 멘트 {len(lines) - len(_web)}줄 뺌(고정 음성 사용) → zip 파일 {len(_web)}개면 정상')
-            txt = '\n\n'.join(l.replace(' / ', ', ') for l in _web) + '\n'
+            txt = '\n\n'.join(l.replace(' / +', ' ').replace(' / ', ', ') for l in _web) + '\n'   # 10/10: ' / +' = 쉼표 없이 이어 읽는 자리
             io.open(os.path.join(drop, ep_key(ep_path) + '_대본.txt'), 'w', encoding='utf-8').write(txt)
             print(f'대본 저장: {os.path.relpath(os.path.join(drop, ep_key(ep_path) + "_대본.txt"), os.path.join(HERE, ".."))}  (타입캐스트 웹에 붙여 넣고, 받은 mp3 를 같은 폴더에 {ep_key(ep_path)}.mp3 로)')
         except Exception as e: print('대본 저장 실패(무시):', e)
@@ -517,6 +548,18 @@ def gap_after(i, line, n, nxt=None, scene_change=False):
     if scene_change: gap = max(gap, 0.32)
     if i == 0: gap = min(gap, 0.18)   # 후킹 대사 뒤는 뜸 들이지 않고 바로 본론으로
     return round(min(gap * gap_scale(), MAX_GAP), 2)
+
+def tempo_mode(ep):
+    """10/8: 콘티가 줄별 타입캐스트 배속을 쓰는지(ttsTempoSlow 또는 줄 ttsTempo)"""
+    return bool(ep.get('ttsTempoSlow') or any(l.get('ttsTempo') for l in ep.get('lines', [])))
+
+def tempo_lines(ep):
+    if not tempo_mode(ep): return []
+    out = []
+    for l in ep['lines']:
+        t = l.get('ttsTempo') or (ep.get('ttsTempoSlow') if l.get('pace') == 'slow' else None)
+        out.append(f'{float(t):.3f}' if t else '')
+    return out
 
 def pace_of(i, line, n):
     """줄별 말 속도 배율. 기본은 그대로(1.0) — 느리게 하면 답답하다는 피드백. 콘티에 pace: slow|normal|fast 로만 조절"""
@@ -635,7 +678,7 @@ def render(ep, ep_path):
         ss, to = max(0, lead - 0.06), min(d, tail + 0.12)
         dst = VW(f't{i:02d}.wav')
         # 9/26: 줄에 "rate" 가 있으면 콘티 speed 와 상관없이 그 배속(구독 멘트 줄은 1.0 — 본문만 1.2배)
-        rate = float(lines[i]['rate']) if lines[i].get('rate') else spd * pace_of(i, lines[i], N)
+        rate = float(lines[i]['rate']) if lines[i].get('rate') else spd * (1.0 if tempo_mode(ep) else pace_of(i, lines[i], N))   # 10/8: 줄별 배속 모드면 속도는 타입캐스트가 이미 맞춤
         gain = static_gain(src, ss, to)
         def cut(ss, to):
             af = f'atrim=start={ss:.3f}:end={to:.3f},asetpts=PTS-STARTPTS'
