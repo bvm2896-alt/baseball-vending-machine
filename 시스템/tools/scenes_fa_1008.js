@@ -27,7 +27,16 @@ SCENE.tiers = (lt, s) => {
       <div style="display:grid;grid-template-columns:repeat(${cols},${LG + 120}px);gap:14px 6px;justify-content:center">${cells}</div></div>`;
   }).join('') + `</div>`;
   const TS = s.text ? (s.size || 66) : ((CH.find(x => x.text) || {}).size || 66);   /* 비워 둔 칸도 글이 있는 장면과 같은 크기 */
-  if (s.text || anyText) h += `<div class="big gold" style="margin-top:26px;font-size:${TS}px;min-height:${Math.round(TS * 1.3)}px;${!s.text ? 'visibility:hidden' : K && s._prev.text === s.text ? '' : pop(pk(s, s.textAt, .5, seg(lt, .9, .5)))}">${br(s.text || '·')}</div>`;
+  /* 10/13 밤 사용자("텍스트 그냥 한 줄로 쭉 써 놓으니까 눈에 안 들어온다"): chips:[{k,v,at,c}] — 한 줄 글 대신 항목별 칩 카드, 각 칩은 그 말을 하는 호흡에 뜬다 */
+  const anyChips = CH.some(x => x.chips && x.chips.length) || (s.chips && s.chips.length);
+  if (s.chips && s.chips.length) {
+    const pc = s.chips.map((c, i) => { const was = K && (s._prev.chips || []).some(o => o.k === c.k && o.v === c.v); return was ? 1 : pk(s, c.at, .45, seg(lt, .9 + i * .3, .45)); });
+    const col = c => c.c === 'bad' ? RED : c.c === 'good' ? GREEN : c.c === 'navy' ? '#3B4A63' : c.c === 'gray' ? GRAY : ACC;
+    h += `<div class="row" style="margin-top:22px;gap:18px;justify-content:center;align-items:stretch;min-height:132px">` + s.chips.map((c, i) => `<div class="col" style="gap:4px;padding:12px 26px;border-radius:22px;background:#fff;border:4px solid ${col(c)};box-shadow:0 10px 24px rgba(18,22,31,.08);${pop(pc[i])}">
+      <div class="label" style="font-size:28px;font-weight:800;color:${GRAY};white-space:nowrap">${esc(c.k || '')}</div>
+      <div class="num" style="font-size:${c.size || 52}px;font-weight:900;letter-spacing:-1.5px;color:${col(c)};white-space:nowrap;line-height:1.05">${esc(c.v || '')}</div></div>`).join('') + `</div>`;
+  } else if (anyChips && !s.text) h += `<div style="margin-top:22px;min-height:132px;visibility:hidden"></div>`;
+  if (s.text || (anyText && !anyChips)) h += `<div class="big gold" style="margin-top:26px;font-size:${TS}px;min-height:${Math.round(TS * 1.3)}px;${!s.text ? 'visibility:hidden' : K && s._prev.text === s.text ? '' : pop(pk(s, s.textAt, .5, seg(lt, .9, .5)))}">${br(s.text || '·')}</div>`;
   wrapC(h);
 };
 

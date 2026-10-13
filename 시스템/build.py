@@ -147,8 +147,9 @@ def _photo_names(ep):
     names = set()
     def walk(x):
         if isinstance(x, dict):
-            v = x.get('img')
-            if isinstance(v, str) and v.strip(): names.add(v.strip())
+            for kk in ('img', 'img2'):   # 10/13: people 카드 교체 사진(img2) 도 모은다
+                v = x.get(kk)
+                if isinstance(v, str) and v.strip(): names.add(v.strip())
             for f in (x.get('faces') or []) if isinstance(x.get('faces'), list) else []:   # 10/8: question·썸네일 faces 는 이름 문자열 목록 — 안 모으면 얼굴 원이 빈칸
                 if isinstance(f, str) and f.strip(): names.add(f.strip())
             for vv in x.values(): walk(vv)
@@ -363,8 +364,12 @@ def narr_check(lines):
         if re.search(r'\d', t): warns.append(f'{i:02d} 숫자는 한글로 적어 주세요: {t}')
         for m in re.finditer(r'(?<![A-Za-z])(KIA|LG|KT|NC|SSG)(?![A-Za-z])', t):   # 10/13: 영어 팀명은 한글 발음(KIA 를 '케이아이에이'로 읽음)
             warns.append(f'{i:02d} "{m.group(0)}" → 한글 발음으로 (기아/엘지/케이티/엔씨/에스에스지)')
-        for m in re.finditer(NATIVE + r' ?(승|패|위|이닝|회|년|월|일|분|초|억|달러|순위|라운드|점)(?![가-힣])', t):
+        for m in re.finditer(r'(?:^|/ )이 (위|승|패|무|점)', t):   # 10/13 밤 사용자 "2/위가 확정된 — 텀 없애줘": 호흡 첫머리 '이 위'는 지시어 '이'로 읽혀 끊김 → '이위'
+            warns.append(f'{i:02d} "{m.group(0).strip("/ ")}" → 호흡 첫머리 숫자 이는 붙여 쓰기 (이위가)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE + r' (승|패|위|이닝|회|년|월|일|분|초|억|달러|순위|라운드|점|타수|호|루)(?:[을를은는이가에도의로]|이에요|이고|이면|인데|이죠|이라|째|차|으로)?(?![가-힣])', t):   # 10/13 사용자 "열두 승=십이 승": 조사가 붙은 '열두 승을'도 잡는다(점만 고쳤던 걸 전 단위로)
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (이 승, 십 패, 삼 위, 삼십팔 점)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE + r' ?점(?:을|를|은|는|이에요|이고|이면|인데|이죠|이라|이|도|으로|차)?(?![가-힣])', t):   # 10/13 사용자 "세 점=삼 점": 조사가 붙은 '세 점을'도 잡는다
+            warns.append(f'{i:02d} "{m.group(0)}" → 점은 항상 한자어 (삼 점을)')
         for m in re.finditer(r'(?<![가-힣])' + NATIVE10 + r' ?(번|장)(?![가-힣])', t):
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (육십삼 번)')
         for m in re.finditer(r'(?<![가-힣])' + NATIVE20 + r' ?(개)(?![가-힣])', t):
@@ -1198,6 +1203,14 @@ def pick_bgm(ep):
 
 def make_thumb(EP, out):
     """thumb.html 에 데이터 주입 → out (jpg, 2MB 이하)"""
+    # 10/13 밤 사용자 "왜 자꾸 구글 드라이브에 저장이 안 돼?" — 썸네일을 따로 만든 편(롱폼⑫⑬)은 콘티 thumb 이 비어 있어
+    # 결과물 폴더(드라이브)에 썸네일이 안 들어갔다. 콘티 thumbFile(야구자판기\ 기준 경로)이 있으면 그 파일을 그대로 복사한다.
+    tf = str(EP.get('thumbFile') or '').strip()
+    if tf:
+        src = tf if os.path.isabs(tf) else os.path.join(HERE, '..', tf.replace('\\', os.sep).replace('/', os.sep))
+        if os.path.exists(src):
+            os.makedirs(os.path.dirname(out), exist_ok=True); shutil.copyfile(src, out); print('썸네일(따로 만든 파일) 복사:', out); return out
+        print('경고: thumbFile 을 찾을 수 없음:', src)
     if not EP.get('thumb'): return None
     # 야구이슈 편은 화이트 사진형 썸네일(thumb_issue.html), 순위 편은 기존 thumb.html
     ser = str(EP.get('series', '')).strip()

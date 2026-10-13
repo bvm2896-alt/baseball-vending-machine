@@ -40,21 +40,49 @@ VIZ.steps = (lt, s, it, j, W) => {
       <div style="margin-top:16px;background:${c}12;border:4px solid ${c};border-radius:24px;padding:14px 18px;width:100%;box-sizing:border-box;text-align:center;font-size:${k.size || 40}px;font-weight:900;letter-spacing:-1.5px;line-height:1.22;color:${k.c === 'bad' ? VB : k.c === 'good' ? VG : TXT}">${br(k.t || '')}</div></div>`; });
   return h + `</div>`;
 };
+/* 10/13 밤 사용자("잠깐 지나가는 그래프로 보기에는 무슨 그래프인지 한눈에 안 들어와"): 순위 흐름(invert)은 막대 대신 꺾은선 —
+   왼쪽 눈금 'N위'(위가 1위), 날짜마다 점, 점끼리 선이 호흡(at)에 맞춰 이어짐, 점 위에 'N위'. it.bars:true 면 예전 막대 */
+VIZ.rankline = (lt, s, it, j, W) => {
+  const its = it.items || [], NS = Math.max(its.length, it.slots || 0), rs = its.map(k => +k.v || 1);
+  const lo = Math.min(...rs), hi = Math.max(...rs), R = []; for (let r = lo; r <= hi; r++) R.push(r);
+  const AX = 110, CW = Math.min(Math.max(250, Math.floor(820 / Math.max(1, NS))), Math.floor((W - AX) / Math.max(1, NS))), GW = AX + CW * NS, PH = it.ph || Math.max(200, Math.min(260, (R.length - 1) * 70)), T0 = 74;   /* 점이 둘뿐이어도 그림 폭 930 안팎 — 작게 왼쪽에 붙지 않게 */
+  const y = r => T0 + (R.length > 1 ? (r - lo) / (hi - lo) * PH : PH / 2), x = i => AX + CW * (i + .5);
+  const ps = its.map((k, i) => vItemP(s, j, it, k, i, lt, .2));
+  const pvT = vPrev(s, j), pT = it.title ? (pvT && pvT.title === it.title ? 1 : pk(s, it.titleAt, .4, seg(lt, .1, .4))) : 0;
+  let h = it.title ? `<div class="badge" style="background:${VN};font-size:32px;padding:8px 22px;${pop(pT)}">${esc(it.title)}</div>` : '';
+  let svg = R.map(r => `<line x1="${AX - 10}" x2="${GW}" y1="${y(r)}" y2="${y(r)}" stroke="#DCE2EA" stroke-width="3" stroke-dasharray="${r === 1 ? '0' : '8 10'}"/>`).join('');
+  its.forEach((k, i) => { if (!i) return; const q = eo(c01(ps[i] * 1.3)); if (q <= 0) return;
+    const x1 = x(i - 1), y1 = y(rs[i - 1]), x2 = x1 + (x(i) - x1) * q, y2 = y1 + (y(rs[i]) - y1) * q;
+    svg += `<line x1="${x1}" y1="${y1}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${vcol(k.c)}" stroke-width="9" stroke-linecap="round"/>`; });
+  its.forEach((k, i) => { const q = c01(ps[i] * 1.6 - (i ? .5 : 0)); if (q <= 0) return;
+    svg += `<circle cx="${x(i)}" cy="${y(rs[i])}" r="${(20 * eo(q)).toFixed(1)}" fill="${vcol(k.c)}" stroke="#fff" stroke-width="6"/>`; });
+  h += `<div style="position:relative;width:${GW}px;height:${T0 + PH + 70}px">
+    ${R.map(r => `<div style="position:absolute;left:0;width:${AX - 22}px;text-align:right;top:${y(r) - 20}px;font-size:32px;font-weight:800;color:${r === 1 ? ACC : GRAY};white-space:nowrap">${r}위</div>`).join('')}
+    <svg style="position:absolute;left:0;top:0;overflow:visible" width="${GW}" height="${T0 + PH + 70}">${svg}</svg>
+    ${its.map((k, i) => { const q = c01(ps[i] * 1.6 - (i ? .5 : 0));
+      return `<div class="num" style="position:absolute;left:${x(i) - CW / 2}px;width:${CW}px;text-align:center;top:${y(rs[i]) - 82}px;font-size:52px;font-weight:900;letter-spacing:-2px;color:${vcol(k.c)};white-space:nowrap;${pop(q)}">${esc(k.vt || k.v + '위')}</div>
+        <div style="position:absolute;left:${x(i) - CW / 2}px;width:${CW}px;text-align:center;top:${T0 + PH + 22}px;font-size:32px;font-weight:800;color:#6A7382;white-space:nowrap;opacity:${c01(q * 2)}">${br(k.x || '')}</div>`; }).join('')}
+  </div>`;
+  return h;
+};
 VIZ.trend = (lt, s, it, j, W) => {
+  if (it.invert && !it.bars) return VIZ.rankline(lt, s, it, j, W);
   /* slots: 막대 자리 수(뒤 장면에서 막대가 늘어도 앞 막대가 안 움직이게) · mx: 높이 기준값(묶음에서 같게) · title: 위 작은 배지 */
-  const its = it.items || [], mx = it.mx || Math.max(...its.map(k => +k.v || 0), 1e-9), BH = it.bh || 230, BW = 190, GAP = it.gap || 200;
+  const its = it.items || [], mx0 = it.mx || Math.max(...its.map(k => +k.v || 0), 1e-9), BH = it.bh || 230, BW = 190, GAP = it.gap || 70;
+  /* 10/13 사용자 "2위에서 4위로 떨어진 건데 그래프는 올라가는 것처럼 보여": invert=true(순위)면 1위가 가장 높은 막대 — 높이값 = (최대 순위 + 1 − 순위) */
+  const HV = k => it.invert ? (mx0 + 1 - (+k.v || 0)) : (+k.v || 0), mx = it.invert ? Math.max(...its.map(HV), 1e-9) : mx0;
   const ps = its.map((k, i) => vItemP(s, j, it, k, i, lt, .2)), NS = Math.max(its.length, it.slots || 0);
   const tot = NS * BW + (NS - 1) * GAP;
   const pvT = vPrev(s, j), pT = it.title ? (pvT && pvT.title === it.title ? 1 : pk(s, it.titleAt, .4, seg(lt, .1, .4))) : 0;
   let h = it.title ? `<div class="badge" style="background:${VN};font-size:32px;padding:8px 22px;${pop(pT)}">${esc(it.title)}</div>` : '';
   h += `<div style="position:relative;width:${W}px;height:${BH + 150}px">`;
   const x0 = it.left ? 20 : (W - tot) / 2 - (it.delta || it.dslot ? 60 : 0), top = 70;
-  its.forEach((k, i) => { const p = ps[i], hh = Math.max(.16, (+k.v || 0) / mx) * BH * eo(p), c = vcol(k.c), x = x0 + i * (BW + GAP);
+  its.forEach((k, i) => { const p = ps[i], hh = Math.max(.16, HV(k) / mx) * BH * eo(p), c = vcol(k.c), x = x0 + i * (BW + GAP);
     h += `<div style="position:absolute;left:${x}px;top:${top + BH - hh}px;width:${BW}px;height:${hh.toFixed(1)}px;border-radius:20px 20px 6px 6px;background:${c};opacity:${c01(p * 2)}"></div>
       <div class="num" style="position:absolute;left:${x + BW / 2 - (BW + GAP - 20) / 2}px;width:${BW + GAP - 20}px;text-align:center;top:${top + BH - hh - 10}px;transform:translateY(-100%);white-space:nowrap;font-size:${it.vfs || (String(k.vt || k.v).length > 5 ? 50 : 62)}px;font-weight:900;letter-spacing:-2px;color:${c};opacity:${c01(p * 2 - .6)}">${esc(k.vt || k.v)}</div>
       <div style="position:absolute;left:${x - 50}px;width:${BW + 100}px;text-align:center;top:${top + BH + 14}px;font-size:34px;font-weight:800;color:#6A7382;white-space:nowrap;opacity:${c01(p * 2)}">${br(k.x || '')}</div>`; });
   if (its.length >= 2) { const a = its.length - 2, b = its.length - 1, p = ps[b], xa = x0 + a * (BW + GAP) + BW + 18, xb = x0 + b * (BW + GAP) - 18;
-    const ya = top + BH - Math.max(.16, (+its[a].v || 0) / mx) * BH + 34, yb = top + BH - Math.max(.16, (+its[b].v || 0) / mx) * BH + 34,   /* 10/10: 화살표는 막대 윗부분 높이로(위 숫자와 안 겹치게) */ q = c01((p - .3) * 1.6), c = vcol(it.dc);
+    const ya = top + BH - Math.max(.16, HV(its[a]) / mx) * BH + 34, yb = top + BH - Math.max(.16, HV(its[b]) / mx) * BH + 34,   /* 10/10: 화살표는 막대 윗부분 높이로(위 숫자와 안 겹치게) */ q = c01((p - .3) * 1.6), c = vcol(it.dc);
     const xe = xa + (xb - xa) * eo(q), ye = ya + (yb - ya) * eo(q), ang = Math.atan2(yb - ya, xb - xa);
     h += `<svg style="position:absolute;left:0;top:0;overflow:visible" width="${W}" height="${BH + 150}"><path d="M${xa},${ya} L${xe.toFixed(1)},${ye.toFixed(1)}" stroke="${c}" stroke-width="10" stroke-linecap="round" stroke-dasharray="2 18"/>
       ${q > .9 ? `<path d="M${(xb - 34 * Math.cos(ang - .5)).toFixed(1)},${(yb - 34 * Math.sin(ang - .5)).toFixed(1)} L${xb},${yb} L${(xb - 34 * Math.cos(ang + .5)).toFixed(1)},${(yb - 34 * Math.sin(ang + .5)).toFixed(1)}" stroke="${c}" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/>` : ''}</svg>`;
@@ -137,7 +165,8 @@ function vizW(it, W) {
   if (it.w) return it.w;
   const n = (it.items || []).length;
   if (it.type === 'steps') { const NS = Math.max(it.slots || 0, n); return Math.min(W, NS * (NS <= 2 ? 440 : NS === 3 ? 370 : NS === 4 ? 295 : 236)); }
-  if (it.type === 'trend') { const NS = Math.max(n, it.slots || 0); return Math.min(W, NS * 190 + (NS - 1) * (it.gap || 200) + (it.delta || it.dslot ? 340 : 120)); }
+  if (it.type === 'trend' && it.invert && !it.bars) { const NS = Math.max(n, it.slots || 0); return Math.min(W, 110 + NS * Math.max(250, Math.floor(820 / Math.max(1, NS)))); }   /* 10/13 밤: 순위 꺾은선 */
+  if (it.type === 'trend') { const NS = Math.max(n, it.slots || 0); return Math.min(W, NS * 190 + (NS - 1) * (it.gap || 70) + (it.delta || it.dslot ? 340 : 120)); }
   if (it.type === 'split') return Math.min(W, 960);
   if (it.type === 'meter') return Math.min(W, 1000);
   if (it.type === 'branch') return Math.min(W, (it.lw || 380) + 160 + 520);
@@ -164,7 +193,9 @@ for (const ty of ['profile', 'speech']) {
       const st0 = lr0.querySelector(':scope > .t > .col > .st'); if (st0) { st0.style.width = 'auto'; st0.style.justifyContent = 'center'; st0.style.marginTop = '30px'; st0.style.maxWidth = '1040px'; [...st0.children].forEach(c => c.style.flex = '0 0 auto'); lr0.after(st0);   /* 칩 넷 이상이면 두 줄로(박찬호 칩 넷이 한 줄 1170px → 화면 작아짐) */ } } }
     if (!s.viz) return;
     const col = document.querySelector('#body .lr > .t > .col'); if (!col) return;
-    const W = s.vw || 1180;
+    /* 10/13 밤 사용자("너무 오른쪽으로 치우쳐 · 조율해 줘"): 사진/로고 칸 + 그림이 화면 폭(1780)을 넘으면 가운데 맞춤이 안 돼 오른쪽 끝에 붙었다 → 그림 폭을 남은 자리만큼으로 줄인다 */
+    let W = s.vw || 1180;
+    if (!EP.vertical) { const lrA = col.closest('.lr'), phA = lrA && lrA.firstElementChild; if (phA && phA !== col.closest('.t')) W = Math.min(W, Math.max(720, 1760 - phA.offsetWidth - 70)); }
     const d = document.createElement('div'); d.className = 'vzw'; d.style.cssText = `display:flex;flex-direction:column;gap:22px;align-items:flex-start;margin-top:4px`;
     d.innerHTML = vizHTML(lt, s, W);
     const vfOf = (x, d) => { if (x.vizFirst != null) return !!x.vizFirst; const P = x._prev;
