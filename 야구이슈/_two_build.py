@@ -33,6 +33,12 @@ if not sys.argv[1:]:
     for p in EPS:
         try: stem, fp = _fp(p)
         except Exception: _keep.append(p); continue
+        try:   # 10/13 사용자 "레이예스편은 올렸어, 생성 안 되게": 콘티에 "done": true(올린 편) 면 run_daily 처럼 건너뜀
+            _e = json.load(io.open(p, encoding='utf-8-sig'))
+            if _e.get('done'): print('done 표시(올린 편) → 건너뜀:', os.path.basename(p)); continue
+            if _e.get('hold'): print('hold 표시(잠시 보류) → 건너뜀:', os.path.basename(p)); continue   # 10/13 사용자 "1번만 다시 만들어지게"
+
+        except Exception: pass
         if (_reg.get(stem) or {}).get('hash') == fp: print('이미 만든 편이라 건너뜀(같은 콘티):', os.path.basename(p))
         else: _keep.append(p)
     EPS = _keep

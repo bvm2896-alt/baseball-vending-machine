@@ -72,8 +72,8 @@ const PP=document.getElementById('ppl');
  /* 아래 투명: 큰 얼굴은 턱 아래 0.7~1.5 머리 높이에서, 몸은 마지막 fade px 에서 */
  const fy=TH.fadeY, fe=TH.fadeEnd||720, top=p.y-cy;
  const chinPx=p.chin*s, m=(fy!=null&&!head)?`linear-gradient(180deg,#000 0,#000 ${Math.max(0,fy-top)}px,rgba(0,0,0,.35) ${Math.max(0,(fy+fe)/2-top)}px,transparent ${Math.max(1,fe-top)}px)`:head?`linear-gradient(180deg,#000 0,#000 ${chinPx+H*.15}px,rgba(0,0,0,.55) ${chinPx+H*.5}px,transparent ${chinPx+H*.95}px)`:`linear-gradient(180deg,#000 0,#000 calc(100% - ${p.fade||150}px),transparent 100%)`;
- const grade=p.grade||(head?'saturate(.62) contrast(1.16) brightness(1.02)':'saturate(.78) contrast(1.12) brightness(1.04)');
- const glow=head?'drop-shadow(0 0 2px rgba(255,255,255,.95)) drop-shadow(0 0 6px rgba(200,230,255,.8)) drop-shadow(0 0 30px rgba(90,160,255,.6))':'drop-shadow(0 0 2px rgba(220,240,255,.95)) drop-shadow(0 0 18px rgba(90,160,255,.6)) drop-shadow(14px 18px 22px rgba(0,0,0,.65))';
+ const grade=p.raw?'none':p.grade||(head?'saturate(.62) contrast(1.16) brightness(1.02)':'saturate(.78) contrast(1.12) brightness(1.04)');
+ const glow=p.raw?'drop-shadow(14px 18px 22px rgba(0,0,0,.55))':head?'drop-shadow(0 0 2px rgba(255,255,255,.95)) drop-shadow(0 0 6px rgba(200,230,255,.8)) drop-shadow(0 0 30px rgba(90,160,255,.6))':'drop-shadow(0 0 2px rgba(220,240,255,.95)) drop-shadow(0 0 18px rgba(90,160,255,.6)) drop-shadow(14px 18px 22px rgba(0,0,0,.65))';   /* 10/12 raw:true = 색 보정·흰 테두리 빛 없이 사진 그대로(그림자만) */
  d.style.cssText+=`;-webkit-mask-image:${m};mask-image:${m};filter:${glow}`;
  im.style.cssText=`width:${Math.round(im.naturalWidth?im.naturalWidth*s:0)}px;filter:${grade}`;
  im.onload=()=>{im.style.width=Math.round(im.naturalWidth*s)+'px'};

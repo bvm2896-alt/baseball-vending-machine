@@ -361,6 +361,8 @@ def narr_check(lines):
     warns = []
     for i, t in enumerate(lines):
         if re.search(r'\d', t): warns.append(f'{i:02d} 숫자는 한글로 적어 주세요: {t}')
+        for m in re.finditer(r'(?<![A-Za-z])(KIA|LG|KT|NC|SSG)(?![A-Za-z])', t):   # 10/13: 영어 팀명은 한글 발음(KIA 를 '케이아이에이'로 읽음)
+            warns.append(f'{i:02d} "{m.group(0)}" → 한글 발음으로 (기아/엘지/케이티/엔씨/에스에스지)')
         for m in re.finditer(NATIVE + r' ?(승|패|위|이닝|회|년|월|일|분|초|억|달러|순위|라운드|점)(?![가-힣])', t):
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (이 승, 십 패, 삼 위, 삼십팔 점)')
         for m in re.finditer(r'(?<![가-힣])' + NATIVE10 + r' ?(번|장)(?![가-힣])', t):
@@ -697,8 +699,9 @@ def render(ep, ep_path):
         if to < d and end_level(dst) > -30:
             cut(ss, d); warns.append(f'{i:02d} 끝 여운 보존')
         comp[i] = []
-        if ep.get('pauseMax') and not lines[i].get('rate'):   # 10/8: 줄 안 쉼 줄이기(구독 멘트처럼 rate 지정 줄은 그대로)
-            comp[i] = compress_pauses(dst, float(ep['pauseMax']))
+        pm = lines[i].get('pauseMax', ep.get('pauseMax'))   # 10/13: 줄에 pauseMax 를 주면 그 줄만 다르게(훅 "돋았습니다.. / " 텀은 남기게)
+        if pm and not lines[i].get('rate'):   # 10/8: 줄 안 쉼 줄이기(구독 멘트처럼 rate 지정 줄은 그대로)
+            comp[i] = compress_pauses(dst, float(pm))
             if comp[i]: warns.append(f"{i:02d} 쉼 {len(comp[i])}곳 줄임(-{sum(r for _, r in comp[i]):.2f}s)")
         clips.append(dur_of(dst)); seg_start.append(ss); seg_rate.append(rate)
         # 검수: 글자 수 대비 너무 짧으면(말이 잘린 음성) 중단

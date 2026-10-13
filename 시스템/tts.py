@@ -268,7 +268,7 @@ def tts_text(segs, is_last_q=False):
     #   seg_bounds 가 '했'과 '다' 사이 파열음 틈(0.17초)을 호흡 자리로 잡아 "강했 / 다한화는" 이 됨):
     #   줄 가운데 구간이 '-었다·-했다·-겠다' 같은 서술형 '-다'로 끝나면 쉼표 대신 마침표 → 타입캐스트가 확실히 끊어 읽는다.
     #   ('때마다'·'바다' 같은 말은 받침 있는 어미 앞 글자만 보므로 걸리지 않는다)
-    segs = [sg + '.' if k < len(segs) - 1 and re.search(r'[았었였했겠꿨웠쳤났갔왔졌렸봤줬됐섰켰혔렀]다$', sg) else sg for k, sg in enumerate(segs)]
+    segs = [sg + '.' if k < len(segs) - 1 and re.search(r'[았었였했겠꿨웠쳤났갔왔졌렸봤줬됐섰켰혔렀]다$|니다$', sg) else sg for k, sg in enumerate(segs)]   # 10/13: '-습니다' 로 끝나는 구간도 마침표(사용자 '소름이 쫙 돋았습니다.. / ' 텀)
     # 10/10 사용자("단순하게 / 들어간다고 했어요 — 이렇게 텀을 두는데 텀 없이 말하도록"): 자막을 나눈 자리라도 말이 한 덩어리인 곳은
     #   쉼표를 넣지 않고 띄어쓰기로만 잇는다 → 타입캐스트가 안 쉰다. 구간 앞 '+' 는 강제로 붙이는 표시(대사가 바뀌어 그 줄만 다시 합성됨).
     tight = [False] + [tight_join(segs[k - 1], segs[k]) for k in range(1, len(segs))]
@@ -461,7 +461,7 @@ def synth_index(lines, i, out=None):
     prev = lines[i-1] if i > 0 else ''
     nxt = lines[i+1] if i+1 < len(lines) else ''
     out = out or os.path.join(VDIR, f'{i:02d}.mp3')
-    ok = synth_line(lines[i], prev, nxt, out, pause=0 if i == 0 else None, tempo=tempo_of(i))   # 첫 줄(후킹)은 한 호흡
+    ok = synth_line(lines[i], prev, nxt, out, pause=0 if (i == 0 and '/' not in lines[i]) else None, tempo=tempo_of(i))   # 첫 줄(후킹)은 한 호흡 — 10/13 사용자: 훅에 ' / ' 를 직접 넣었으면 그 자리엔 쉼을 준다
     if ok:
         io.open(out.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(lines[i])   # 어떤 대사로 만든 음성인지 기록(대사 바뀌면 build 가 그 줄만 다시)
         io.open(out.replace('.mp3', '.tempo'), 'w', encoding='utf-8').write(f'{tempo_of(i):.3f}')   # 10/8: 어떤 배속으로 만든 음성인지

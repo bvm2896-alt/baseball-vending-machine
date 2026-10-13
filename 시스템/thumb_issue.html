@@ -234,6 +234,14 @@ for(const sel of ['.top','.bigw']){
     if(over>0&&phEl&&!TH.ph&&!GR){ const d=Math.min(over, Math.max(0, PH_H-PH_MIN));
       if(d>0){ phEl.style.height=(PH_H+CUT_LIFT-d)+'px'; for(const q of ['.bar','.top','.bigw']){ const x=document.querySelector(q); if(x) x.style.top=(parseFloat(x.style.top)-d)+'px'; } } }
     for(let i=0;i<40&&e.getBoundingClientRect().bottom>SAFE_BOTTOM;i++){ for(const sp of sps){ sp.style.fontSize=(parseFloat(sp.style.fontSize)*0.96).toFixed(1)+'px'; } }   // 안전 영역(아래 1440) 안에 들어갈 때까지 전체 비율 축소
+    /* 10/9 사용자 "썸네일에서 폭은 최대한 넓게 — 네일처럼 두 글자라 폭에 맞추면 너무 커지는 줄은 띄어쓰기(자간)로 폭을 최대한 활용" →
+       크기를 다 정한 뒤 폭 920 에 못 미치는 줄은 글자 사이를 벌려 920 을 채운다(마지막 글자 뒤 여백은 margin 으로 지움). thumb.spread:false 면 끔 */
+    if(TH.spread!==false) for(const sp of sps){ const t=sp.textContent, n=[...t].length; if(n<2) continue;
+      const w0=sp.getBoundingClientRect().width, f=parseFloat(sp.style.fontSize)||parseFloat(getComputedStyle(sp).fontSize);
+      if(w0>=920*0.985) continue;
+      let ls=Math.min((920-w0)/(n-1), f*0.9);
+      sp.style.letterSpacing=ls.toFixed(1)+'px'; sp.style.marginRight=(-ls).toFixed(1)+'px';
+      for(let k=0;k<20&&sp.getBoundingClientRect().width-ls>920;k++){ ls-=2; sp.style.letterSpacing=ls.toFixed(1)+'px'; sp.style.marginRight=(-ls).toFixed(1)+'px'; } }
     continue;
   }
   let fs=parseFloat(getComputedStyle(e).fontSize);
@@ -252,6 +260,10 @@ for(const sel of ['.top','.bigw']){
   }
 }
 // 사진+글 덩어리를 세로 가운데(살짝 위)로 — 쇼츠 피드에서 가운데가 보이므로
+/* 10/9 밤 사용자 "글자가 잘 안 보인다" → thumb.halo(px): 큰 글씨 둘레에 흰 빛 테두리(사진 위에 겹친 글씨도 또렷하게). 기본 꺼짐 */
+if(TH.halo){ const h=+TH.halo||14, b=document.querySelector('.bigw'); if(b) b.style.textShadow=[0.35,0.6,1,1.6].map(k=>`0 0 ${Math.round(h*k)}px rgba(255,255,255,${k<1?1:0.9})`).join(',')+`,0 0 ${Math.round(h*0.25)}px #fff`; }
+/* 10/13 사용자 "소형준 검은색 서브텍스트 잘 안 보인다" → 윗줄(top)도 같은 흰 빛 테두리(halo 가 켜져 있으면 자동, thumb.topHalo 로 따로) */
+if(TH.halo||TH.topHalo){ const h=+(TH.topHalo||TH.halo)||14, t=document.querySelector('.top'); if(t) t.style.textShadow=[0.35,0.6,1,1.6].map(k=>`0 0 ${Math.round(h*k)}px rgba(255,255,255,${k<1?1:0.9})`).join(',')+`,0 0 ${Math.round(h*0.25)}px #fff`; if(TH.topColor&&t) t.style.color=TH.topColor; }
 const big=document.querySelector('.bigw'), blk=document.getElementById('blk');
 /* SAFE_BOTTOM 은 맨 위(const GR 줄)로 옮김 */   // 9/28: 쇼츠 목록(격자)에서 아래 약 20%가 조회수 띠에 가려진다(사용자 캡처) → 글자는 1500px 위에서 끝나야 한다. 넘치면 사진+글 덩어리를 통째로 줄인다
 if(big&&blk){ const bottom=big.getBoundingClientRect().bottom, top=340;
