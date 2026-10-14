@@ -352,6 +352,7 @@ def logos_data_uri():
 #  10/1 밤 사용자 정정("서른여덟점이 아니라 삼십팔점", "칠백여든한점 → 칠백팔십일점", "예순세번 → 육십삼번", "여든한개 → 팔십일개"):
 #   **점(득점·실점·득실차·점수)은 항상 한자어**(삼 점, 삼십팔 점), **번은 10 이상이면 한자어**(육십삼 번), **개는 20 이상이면 한자어**(팔십일 개). 경고가 뜨면 합성 전에 반드시 고친다.
 #  10/10 사용자 정정(롱폼⑩ "이십이명=스물두명, 이십일명=스물한명"): **명은 1~99 모두 고유어**(스물두 명, 마흔여덟 명). 백 명 이상만 한자어.
+#  10/14 사용자 정정(WC 쇼츠 "십일번=열한번"): **번의 10~19 는 고유어**(열 번, 열한 번). 20 이상은 그대로 한자어(육십삼 번).
 #  10/5 사용자 정정(롱폼⑦ "한 구단 십 명=열 명, 십이 개 구단=열두 개 구단, 십이 명=열두 명"): **개·명의 10~19 는 고유어**(열 명, 열두 개 구단, 열두 명).
 NATIVE = r'(한|두|세|네|다섯|여섯|일곱|여덟|아홉|열\S*|스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*)'
 NATIVE10 = r'(열\S*|스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*|[가-힣]*(여든|아흔|예순|일흔|쉰|마흔|서른|스물|열)[가-힣]*)'
@@ -370,8 +371,12 @@ def narr_check(lines):
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (이 승, 십 패, 삼 위, 삼십팔 점)')
         for m in re.finditer(r'(?<![가-힣])' + NATIVE + r' ?점(?:을|를|은|는|이에요|이고|이면|인데|이죠|이라|이|도|으로|차)?(?![가-힣])', t):   # 10/13 사용자 "세 점=삼 점": 조사가 붙은 '세 점을'도 잡는다
             warns.append(f'{i:02d} "{m.group(0)}" → 점은 항상 한자어 (삼 점을)')
-        for m in re.finditer(r'(?<![가-힣])' + NATIVE10 + r' ?(번|장)(?![가-힣])', t):
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE10 + r' ?(장)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (십이 장)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE20 + r' ?(번)(?![가-힣])', t):   # 10/14: 번은 20 이상만 한자어(육십삼 번)
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (육십삼 번)')
+        for m in re.finditer(r'(?<![가-힣])(십[일이삼사오육칠팔구]?) ?번(?!째|지|호|타)', t):   # 10/14 사용자 "십일번=열한번": 번 10~19 는 고유어
+            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (열한 번, 열 번)')
         for m in re.finditer(r'(?<![가-힣])' + NATIVE20 + r' ?(개)(?![가-힣])', t):
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (팔십일 개)')
         for m in re.finditer(r'(?<![가-힣])([이삼사오육칠팔구]십[일이삼사오육칠팔구]?) ?명(?![가-힣])', t):   # 10/10 사용자: 이십이 명=스물두 명, 이십일 명=스물한 명
@@ -860,6 +865,9 @@ def render(ep, ep_path):
     out, thumb_path, yt_path = out_paths(ep, ep_path)
     if DRAFT: out = out[:-4] + '_검수.mp4'
     os.makedirs(os.path.dirname(out), exist_ok=True)
+    # 10/13 밤 사용자 "왜 자꾸 구글 드라이브에 저장이 안 돼?" — 예전엔 mp4 를 드라이브 폴더에 바로 쓰고, 엔딩 카드를 붙이며 한 번 더 덮어써서
+    # 드라이브가 올리는 도중에 파일이 바뀌어 '이름 (숫자).mp4' 충돌 사본이 생겼다 → work\ 에서 다 만든 뒤 마지막에 한 번만 복사한다.
+    final_out = out; out = W('final_out.mp4')
     name = os.path.splitext(os.path.basename(ep_path))[0]
     bgm = pick_bgm(ep)
     if bgm:
@@ -876,6 +884,10 @@ def render(ep, ep_path):
         run(['ffmpeg', '-y', '-i', W('silent.mp4'), '-i', W('narration.wav'), '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], check=True)
     if is_long(ep) and not ep.get('vertical'): append_endcard(EP, out)   # 9/20: 롱폼은 끝에 어두운 엔딩 카드(유튜브 최종 화면 자리)
     d = dur_of(out)
+    tmp_copy = final_out + '.part'
+    shutil.copyfile(out, tmp_copy)
+    if os.path.exists(final_out): os.remove(final_out)
+    os.replace(tmp_copy, final_out); out = final_out   # 드라이브엔 완성된 파일이 한 번만 들어간다
     thumb = make_thumb(EP, thumb_path)
     write_youtube_txt(ep, yt_path, d)
     srt_path = yt_path.replace('_유튜브.txt', '_자막.srt')
@@ -1164,9 +1176,14 @@ def write_youtube_txt(ep, path, dur=0):
     desc = re.sub(r'\n*📊 이 영상의 숫자\n(?:•[^\n]*\n?)+', '\n', desc)   # 옛 콘티의 숫자 목록은 빼고(9/15)
     desc = re.sub(r'\n+(?:#\S+\s*)+$', '', desc).strip()   # 설명 끝 해시태그 줄은 [해시태그] 칸으로
     # 9/30 사용자 지시: 사진 출처는 맨 밑([태그] 아래 한 줄 띄고)으로 옮기고, '재생목록: …' 줄은 쓰지 않는다
-    _dl = desc.split('\n')
-    credits = [re.sub(r'^\s*사진\s*(?:출처)?\s*[:：]\s*', '사진 출처: ', l).strip() for l in _dl if re.match(r'\s*사진\s*(?:출처)?\s*[:：]', l)]
-    desc = re.sub(r'\n{3,}', '\n\n', '\n'.join(l for l in _dl if not re.match(r'\s*(?:사진\s*(?:출처)?|재생목록)\s*[:：]', l))).strip()
+    # 10/14 사용자 지시: '기록: …'(기록·자료 출처)도 사진 출처처럼 맨 밑으로 따로 뺀다. 한 줄에 '기록: … 사진: …'이 붙어 있으면 둘로 나눈다.
+    _dl = []
+    for l in desc.split('\n'):
+        m = re.match(r'(\s*(?:기록|자료|기록\s*출처|자료\s*출처)\s*[:：].*?)[.。]?\s*(사진\s*(?:출처)?\s*[:：].*)$', l)
+        _dl += [m.group(1).rstrip(' .'), m.group(2)] if m else [l]
+    rec = [re.sub(r'^\s*(?:기록|자료)\s*(?:출처)?\s*[:：]\s*', '기록 출처: ', l).strip() for l in _dl if re.match(r'\s*(?:기록|자료)\s*(?:출처)?\s*[:：]', l)]
+    credits = rec + [re.sub(r'^\s*사진\s*(?:출처)?\s*[:：]\s*', '사진 출처: ', l).strip() for l in _dl if re.match(r'\s*사진\s*(?:출처)?\s*[:：]', l)]
+    desc = re.sub(r'\n{3,}', '\n\n', '\n'.join(l for l in _dl if not re.match(r'\s*(?:사진\s*(?:출처)?|재생목록|기록\s*(?:출처)?|자료\s*(?:출처)?)\s*[:：]', l))).strip()
     hashtags = y.get('hashtags') or []
     if not hashtags:   # 콘티에 없으면 태그로 만든다(띄어쓰기 제거)
         stag = {'야구이슈': '#야구이슈', '야구분석': '#야구분석'}.get(str(ep.get('series', '')), '#야구순위')
