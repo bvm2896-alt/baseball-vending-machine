@@ -41,6 +41,8 @@ PHO_KB26 = "경기/곽빈_포효0823_두산제공"
 PHO_KB_PROF = "카드/곽빈_MVP_프로필"
 PHO_CRS_PROF = "카드/FA9_카라스코"
 PHO_SJY = "경기/손주영_포효_LG제공"
+PHO_SJYU = "경기/손주영_포효_LG제공_상체"
+PHO_KB26U = "경기/곽빈_포효0823_두산제공_상체"
 PHO_BEN = "경기/벤자민_박수_두산제공"
 PHO_JS_LAST = "상황별/잠실_LG두산_마지막맞대결_1007_동아"
 PHO_JS_SUB = "상황별/잠실주경기장_대체구장공사_뉴스1"
@@ -52,7 +54,7 @@ A_lines = [
    "와일드카드에서 5위가|4위를 꺾고 올라간 건|딱 한 번이에요|그때 무너진 팀이\n두산이었어요", holdAfter=0.3),
  L("와일드카드 결정전은 / 사 위가 한 번만 이기거나 / 비겨도 올라가고 / 오 위는 두 번을 다 이겨야 해요",
    "와일드카드 결정전은|4위가 한 번만\n이기거나|비겨도 올라가고|5위는 두 번을\n다 이겨야 해요"),
- L("이천십오 년부터 지난해까지 십일 번 중에 / 오 위가 첫 경기를 이긴 건 네 번 / 두 번 다 이긴 건 / 이천이십사 년 케이티 한 번뿐이에요",
+ L("이천십오 년부터 지난해까지 열한 번 중에 / 오 위가 첫 경기를 이긴 건 네 번 / 두 번 다 이긴 건 / 이천이십사 년 케이티 한 번뿐이에요",
    "2015년부터 지난해까지\n11번 중에|5위가 첫 경기를\n이긴 건 4번|두 번 다 이긴 건|2024년 KT\n한 번뿐이에요"),
  L("그해 사 위가 두산이었고 / 첫 경기 선발은 / 십오 승으로 공동 다승왕에 오른 / 곽빈이었어요",
    "그해 4위가\n두산이었고|첫 경기 선발은|15승으로\n공동 다승왕에 오른|곽빈이었어요"),
@@ -90,18 +92,16 @@ A_scenes = [
    {"y": "2021", "t": "5위 키움 · 1차전 승", "sub": "2차전 패 → 두산 진출"},
    {"y": "2024", "t": "5위 KT · 2연승", "sub": "역대 첫 업셋", "hi": True},
    {"y": "2025", "t": "5위 NC · 1차전 승", "sub": "2차전 패 → 삼성 진출"}]},
- {"type": "people", "startLine": 3, "title": "2024 와일드카드 1차전 · 두산 선발", "items": [
-   {"img": PHO_KB24, "name": "곽빈", "team": "두산", "note": "2024 15승 · 공동 다승왕", "focus": "60% 15%"}]},
+ {"type": "photo", "startLine": 3, "img": PHO_KB24, "h": 760, "fit": "cover", "focus": "55% 30%", "tag": "2024 와일드카드 1차전 · 두산 선발", "text": "곽빈\n2024 15승 · 공동 다승왕", "size": 76},
  {"type": "photo", "startLine": 4, "img": PHO_KB24_SAD, "h": 700, "focus": "55% 20%", "tag": "2024.10.2 · 와일드카드 1차전", "text": "1이닝 5안타 2볼넷\n4실점 강판", "size": 80},
  {"type": "tally", "startLine": 5, "cont": True, "head": {"txt": "2024 와일드카드 결정전"},
   "rows": [{"team": "두산", "n": 2, "nLabel": "2024 4위", "slots": ["l", "l"], "sub": ["1차전", "2차전"], "vs": ["KT", "KT"], "at": [0, 1], "count": [{"t": "0승 2패", "at": 1}]},
            {"team": "KT", "n": 2, "nLabel": "2024 5위", "slots": ["w", "w"], "sub": ["1차전", "2차전"], "vs": ["두산", "두산"], "at": [0, 1], "count": [{"t": "4-0\n1-0", "at": 1}]}],
   "result": {"txt": "와일드카드에서 떨어진 첫 4위", "team": "두산", "at": 2}, "note": False},
- {"type": "people", "startLine": 6, "title": "벤자민 · 2024 KT → 2026 두산", "items": [
-   {"img": PHO_BEN, "name": "벤자민", "team": "두산", "note": "2024 KT로 7이닝 무실점\n2026 두산", "focus": "50% 15%"}]},
+ {"type": "photo", "startLine": 6, "img": PHO_BEN, "h": 760, "fit": "cover", "focus": "62% 20%", "tag": "벤자민 · 2024 KT → 2026 두산", "text": "2024 KT로 7이닝 무실점\n지금은 두산", "size": 72},
  {"type": "stand", "startLine": 7, "rows": [
    {"team": "LG", "r": "4위", "w": 78, "d": 1, "l": 65, "at": 2, "hi": True}, {"team": "두산", "r": "5위", "w": 73, "d": 5, "l": 66, "at": 0}],
-  "gaps": [{"label": "10월 14일 잠실 · 와일드카드", "at": 1, "color": "#12161F"}]},
+  "gaps": [{"label": "10월 14일 잠실 · 와일드카드", "at": 2, "color": "#12161F"}]},
  {"type": "people", "startLine": 8, "title": "와일드카드 1차전 선발", "items": [
    {"img": PHO_KB_PROF, "name": "곽빈", "team": "두산", "note": "두산 선발", "focus": "50% 12%"},
    {"img": PHO_CRS_PROF, "name": "카라스코", "team": "LG", "note": "LG 선발", "focus": "50% 12%"}]},
@@ -110,10 +110,8 @@ A_scenes = [
    {"y": "2023", "t": "3⅔이닝 5실점"},
    {"y": "2024", "t": "1이닝 4실점"},
    {"y": "2026", "t": "10월 14일 · 4번째", "hi": True}], "rh": 140, "text": "포스트시즌 통산 6경기 · 0승", "size": 60},
- {"type": "people", "startLine": 10, "title": "곽빈 · 2026 정규시즌", "items": [
-   {"img": PHO_KB26, "name": "곽빈", "team": "두산", "note": "평균자책점 2.24 · 197탈삼진\nLG전 평균자책점 1.96", "focus": "50% 15%"}], "asof": "정규시즌 최종"},
- {"type": "people", "startLine": 11, "title": "LG 마무리 손주영", "items": [
-   {"img": PHO_SJY, "name": "손주영", "team": "LG", "note": "31세이브 · 목 담 증세\n와일드카드 명단 제외", "bad": True, "focus": "50% 15%"}]},
+ {"type": "photo", "startLine": 10, "img": PHO_KB26U, "h": 760, "fit": "cover", "focus": "50% 20%", "tag": "곽빈 · 2026 정규시즌", "text": "평균자책점 2.24 · 탈삼진 197\nLG전 평균자책점 1.96", "size": 64},
+ {"type": "photo", "startLine": 11, "img": PHO_SJYU, "h": 760, "fit": "cover", "focus": "50% 25%", "tag": "LG 마무리 손주영 · 31세이브", "text": "목 담 증세로\n와일드카드 명단 제외", "size": 72},
  {"type": "tally", "startLine": 12, "head": {"team": "LG", "txt": "10월 14일 잠실 · 와일드카드"},
   "rows": [{"team": "LG", "n": 2, "nLabel": "4위", "slots": ["w", ""], "sub": ["기본 1승", "1차전"], "at": 0, "count": [{"t": "이기거나\n비기면 끝", "at": 0}]},
            {"team": "두산", "n": 2, "nLabel": "5위", "slots": ["", ""], "sub": ["1차전", "2차전"], "at": 1, "count": [{"t": "2승 필요", "at": 1}]}],
@@ -159,24 +157,21 @@ B_lines = [
    "잠실의 마지막 가을을|더 길게 이어 갈 팀은|LG일까요?|두산일까요?", gapAfter=0.5),
  CTA,
 ]
+PS_ITEMS = [{"y": "1993", "team": "LG", "t": "준PO"}, {"y": "1998", "team": "LG", "t": "준PO"},
+  {"y": "2000", "team": "두산", "t": "PO"}, {"y": "2013", "team": "두산", "t": "PO"}, {"y": "2020", "team": "두산", "t": "준PO"}, {"y": "2021", "team": "두산", "t": "준PO"},
+  {"y": "2026", "t": "와일드카드", "hi": True}]   # 10/14 영상 검수: 글자 연표가 작고 위에 몰림 → 연도 타일(이긴 팀 로고)
 B_scenes = [
  {"type": "photo", "startLine": 0, "img": PHO_JS_LAST, "h": 560, "fit": "cover", "focus": "50% 50%", "tag": "10월 7일 · 정규시즌 마지막 잠실 더비", "text": "마지막 가을야구\n첫 경기 LG vs 두산", "size": 84},
  {"type": "vtime", "startLine": 1, "title": "잠실야구장", "items": [
    {"y": "1982", "t": "개장"}, {"y": "2026", "t": "마지막 시즌 · 철거", "hi": True}, {"y": "2032", "t": "같은 자리 돔구장", "sub": "3만 석 이상"}]},
  {"type": "matchup", "startLine": 2, "left": "LG", "right": "두산", "tag": "1986년부터 · MBC·OB 시절", "text": "한 지붕\n두 가족", "size": 130},
  {"type": "photo", "startLine": 3, "img": PHO_JS_SUB, "h": 620, "fit": "cover", "focus": "50% 50%", "tag": "잠실 주경기장 · 대체 구장 공사", "text": "2027~2031\n다섯 시즌", "size": 84},
- {"type": "vtime", "startLine": 4, "title": "LG vs 두산 · 가을야구 맞대결", "show": 2, "rh": 88, "reserve": True, "text": "2026 정규시즌 LG 11승 1무 4패", "size": 50, "textHide": True, "items": [
-   {"y": "1993", "t": "준PO · LG 승"}, {"y": "1998", "t": "준PO · LG 승"},
-   {"y": "2000", "t": "PO · 두산 승"}, {"y": "2013", "t": "PO · 두산 승"}, {"y": "2020", "t": "준PO · 두산 승"}, {"y": "2021", "t": "준PO · 두산 승"},
-   {"y": "2026", "t": "와일드카드 · 처음", "hi": True}]},
- {"type": "vtime", "startLine": 5, "cont": True, "newFrom": 2, "show": 6, "title": "LG vs 두산 · 가을야구 맞대결", "rh": 88, "reserve": True, "text": "2026 정규시즌 LG 11승 1무 4패", "size": 50, "textHide": True, "items": [
-   {"y": "1993", "t": "준PO · LG 승"}, {"y": "1998", "t": "준PO · LG 승"},
-   {"y": "2000", "t": "PO · 두산 승"}, {"y": "2013", "t": "PO · 두산 승"}, {"y": "2020", "t": "준PO · 두산 승"}, {"y": "2021", "t": "준PO · 두산 승"},
-   {"y": "2026", "t": "와일드카드 · 처음", "hi": True}]},
- {"type": "vtime", "startLine": 6, "cont": True, "newFrom": 6, "show": 7, "title": "LG vs 두산 · 가을야구 맞대결", "rh": 88, "reserve": True, "items": [
-   {"y": "1993", "t": "준PO · LG 승"}, {"y": "1998", "t": "준PO · LG 승"},
-   {"y": "2000", "t": "PO · 두산 승"}, {"y": "2013", "t": "PO · 두산 승"}, {"y": "2020", "t": "준PO · 두산 승"}, {"y": "2021", "t": "준PO · 두산 승"},
-   {"y": "2026", "t": "와일드카드 · 처음", "hi": True}], "text": "2026 정규시즌 LG 11승 1무 4패", "size": 50},
+ {"type": "psgrid", "startLine": 4, "title": "LG vs 두산 · 가을 맞대결 7번째", "items": PS_ITEMS, "at": [2, 2.5, 99, 99, 99, 99, 99],
+  "text": "2026 정규시즌 LG 11승 1무 4패", "textHide": True},
+ {"type": "psgrid", "startLine": 5, "cont": True, "title": "LG vs 두산 · 가을 맞대결 7번째", "items": PS_ITEMS, "at": [-1, -1, 1, 1, 2, 2, 99],
+  "text": "2026 정규시즌 LG 11승 1무 4패", "textHide": True},
+ {"type": "psgrid", "startLine": 6, "cont": True, "title": "LG vs 두산 · 가을 맞대결 7번째", "items": PS_ITEMS, "at": [-1, -1, -1, -1, -1, -1, 0],
+  "text": "2026 정규시즌 LG 11승 1무 4패", "textAt": 1},
  {"type": "tally", "startLine": 7, "head": {"txt": "와일드카드 결정전 · 10월 14일 잠실"},
   "rows": [{"team": "LG", "n": 2, "nLabel": "4위", "slots": ["w", ""], "sub": ["기본 1승", "1차전"], "at": 0, "count": [{"t": "이기거나\n비기면 끝", "at": 0}]},
            {"team": "두산", "n": 2, "nLabel": "5위", "slots": ["", ""], "sub": ["1차전", "2차전"], "at": 3, "count": [{"t": "2승 필요", "at": 3}]}],

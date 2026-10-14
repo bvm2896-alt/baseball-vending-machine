@@ -912,6 +912,26 @@ function drawSub(t) {
      cont:true 면 앞 장면과 이어져(사라졌다 나타나지 않음) newFrom 부터만 새로 나온다. hi 칸은 강조색.
    gauge: 기준선을 채우는 막대 — "한 번에 채우기 vs 여러 대회를 모아 채우기". {title, rows:[{label, segs:[{t, v, hi}]}], line:{label}, text}
    post: SNS 글 카드 — 줄이 하나씩 올라온다. {img, name, date, lines:[..], hiLast, text} (특정 앱 모양을 흉내 내지 않는 일반 글 카드) */
+/* 10/14 psgrid: 연도 타일(연도·이긴 팀 로고·라운드). 항목 at = 호흡(음수면 앞 장면에서 이미 보임, 50 이상이면 자리만), 줄바꿈해도 안 움직임.
+   {title, items:[{y, team, t, hi}], at:[...], cols, text, textAt} */
+SCENE.psgrid = (lt, s) => {
+  const its = s.items || [], cols = s.cols || 4, W = 200, G = 18, same = s.cont && s._same;
+  let h = s.title ? `<div class="title gold" style="font-size:58px;font-weight:900;margin-bottom:30px;${same ? '' : pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
+  h += `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:${G}px;width:${cols * W + (cols - 1) * G}px">`;
+  its.forEach((it, i) => {
+    const at = (s.at || [])[i];
+    const vis = at == null ? seg(lt, .2 + i * .15, .4) : at < 0 ? 1 : at >= 50 ? 0 : bp(s, at, .4);
+    const hi = it.hi === true, t = it.team ? T(it.team) : null;
+    const logo = t ? chip(t, 'M', 'width:120px;height:120px;border-radius:26px') : `<div style="width:120px;height:120px;border-radius:26px;border:5px dashed var(--acc);display:flex;align-items:center;justify-content:center;font-size:74px;font-weight:900;color:var(--acc)">?</div>`;
+    h += `<div class="pane col" style="width:${W}px;border-radius:28px;padding:18px 0 16px;gap:10px;${hi ? 'border-color:var(--acc);border-width:4px;' : ''}${at >= 50 ? 'visibility:hidden;' : (at < 0 ? '' : `opacity:${c01(vis * 1.4)};transform:translateY(${(1 - eo(vis)) * 30}px) scale(${.9 + .1 * eo(vis)})`)}">
+      <div class="num" style="font-size:54px;font-weight:900;line-height:1;color:${hi ? 'var(--acc)' : TXT}">${esc(it.y)}</div>
+      ${logo}
+      <div class="label" style="font-size:30px;font-weight:800;color:${hi ? 'var(--acc)' : GRAY};white-space:nowrap">${esc(it.t || '')}</div></div>`;
+  });
+  h += `</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:34px;font-size:${s.size || 64}px;${s.textHide ? 'visibility:hidden' : pop(s.textAt != null ? bp(s, s.textAt, .5) : seg(lt, .6, .5))}">${br(s.text)}</div>`;
+  B(h);
+};
 SCENE.vtime = (lt, s) => {
   /* 10/14: rh(줄 높이) · reserve(묶음 전체 칸 높이를 미리 잡아 이어 그릴 때 안 움직임) · textHide(아래 글 자리만) */
   const its = s.items || [], n = Math.min(its.length, s.show || its.length), NEW = s.newFrom ?? 0, RH = s.rh || (n >= 5 ? 150 : 176), CP = RH < 120, NB = s.reserve ? its.length : n;
@@ -930,7 +950,7 @@ SCENE.vtime = (lt, s) => {
         ${it.sub ? `<div class="label" style="font-size:30px;color:${GRAY};text-align:left;margin-top:6px">${br(it.sub)}</div>` : ''}</div></div>`;
   });
   h += `</div>`;
-  if (s.text) h += `<div class="big gold" style="margin-top:${CP ? 20 : 30}px;font-size:${s.size || 72}px;${s.textHide ? 'visibility:hidden' : pop(seg(lt, .4 + (n - NEW) * .35, .5))}">${br(s.text)}</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:${CP ? 20 : 30}px;font-size:${s.size || 72}px;${s.textHide ? 'visibility:hidden' : pop(s.textAt != null ? bp(s, s.textAt, .5) : seg(lt, .4 + (n - NEW) * .35, .5))}">${br(s.text)}</div>`;   /* 10/14: textAt = 그 말을 하는 호흡에 */
   B(h);
 };
 SCENE.gauge = (lt, s) => {
@@ -973,6 +993,7 @@ SCENE.post = (lt, s) => {
 };
 
 const MOTION = {
+  psgrid: s => 1.2,
   vtime: s => { const n = Math.min((s.items || []).length, s.show || 99); return .45 + (n - (s.newFrom || 0)) * .35 + .3 + (s.text ? .5 : 0); },
   gauge: s => .3 + (s.rows || []).reduce((a, r) => a + (r.segs || []).length * .45 + .25, 0) + (s.text ? .5 : 0),
   post: s => .5 + (s.lines || []).length * .32 + .3 + (s.text ? .5 : 0),
