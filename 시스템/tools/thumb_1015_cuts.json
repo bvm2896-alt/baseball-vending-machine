@@ -1,0 +1,98 @@
+{
+ "1": {
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.5,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "perLine": true,
+  "teams": [
+   "LG"
+  ],
+  "img": "누끼/KBO스타일_경기_박해민_주먹_LG제공_center",
+  "big": "LG 4-1 두산\n박해민 호수비",
+  "color": "#D6002A"
+ },
+ "2": {
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.68,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "perLine": true,
+  "teams": [
+   "KIA"
+  ],
+  "img": "누끼/KBO스타일_경기_김도영_45호_주루_1012_KIA제공_center",
+  "big": "김도영 LG전\n홈런 4개",
+  "color": "#1D4ED8"
+ },
+ "3": {
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.9,
+  "cutoutLift": 250,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.7,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "perLine": true,
+  "teams": [
+   "KIA",
+   "LG"
+  ],
+  "img": "누끼/그룹_컷3_네일_톨허스트",
+  "big": "네일 vs 톨허스트\n1차전 승자는?",
+  "color": "#7C3AED"
+ },
+ "4": {
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.68,
+  "cutoutLift": 180,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.62,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "perLine": true,
+  "teams": [
+   "KIA"
+  ],
+  "img": "누끼/KBO스타일_경기_전상현_투구_1012_KIA제공_center",
+  "big": "전상현 마무리\n10월 무피안타",
+  "color": "#059669"
+ },
+ "5": {
+  "halo": 18,
+  "cutout": true,
+  "cutoutCrop": 0.8,
+  "cutoutLift": 200,
+  "cutoutOverlap": 330,
+  "cutoutFade": 0.66,
+  "ph": 1000,
+  "logos": false,
+  "noPills": true,
+  "top": "",
+  "perLine": true,
+  "teams": [
+   "KIA"
+  ],
+  "img": "누끼/KBO스타일_경기_올러_포효_0412_뉴스1_center",
+  "big": "KIA 3승 1패\n준플레이오프 예상",
+  "color": "#EA580C"
+ }
+}

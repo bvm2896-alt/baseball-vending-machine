@@ -371,6 +371,10 @@ def narr_check(lines):
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (이 승, 십 패, 삼 위, 삼십팔 점)')
         for m in re.finditer(r'(?<![가-힣])' + NATIVE + r' ?점(?:을|를|은|는|이에요|이고|이면|인데|이죠|이라|이|도|으로|차)?(?![가-힣])', t):   # 10/13 사용자 "세 점=삼 점": 조사가 붙은 '세 점을'도 잡는다
             warns.append(f'{i:02d} "{m.group(0)}" → 점은 항상 한자어 (삼 점을)')
+        for m in re.finditer(r'[영일이삼사오육칠팔구십] 점 [영일이삼사오육칠팔구공]{1,3}(?![가-힣]*\s*(차|을|를|이|으로))', t):   # 10/15 사용자: 소수점은 '쩜'(사쩜이사), '사 점 이사' 금지
+            warns.append(f'{i:02d} "{m.group(0)}" → 소수점은 쩜으로 붙여 (사쩜이사)')
+        for m in re.finditer(r'(?<![가-힣])(영|일|이|삼|한|두|세) ?(스트라이크|볼)(?![가-힣])', t):   # 10/15 사용자 "이스트라이크 → 투스트라이크": 볼카운트는 영어 수사
+            warns.append(f'{i:02d} "{m.group(0)}" → 볼카운트는 영어 수사로 (투 스트라이크, 쓰리 볼)')
         for m in re.finditer(r'(?<![가-힣])' + NATIVE10 + r' ?(장)(?![가-힣])', t):
             warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (십이 장)')
         for m in re.finditer(r'(?<![가-힣])' + NATIVE20 + r' ?(번)(?![가-힣])', t):   # 10/14: 번은 20 이상만 한자어(육십삼 번)
@@ -927,7 +931,16 @@ def chunk_plan(EP, total, fps, scale, cw, ch, tpl_raw, font_sig=''):
             j = k
             while j > 0 and SC[j - 1].get('type') == 'profile' and SC[j - 1].get('img') == sc.get('img'): j -= 1
             while j < len(SC) and SC[j].get('type') == 'profile' and SC[j].get('img') == sc.get('img'): run_.append(SC[j]); j += 1
-        fp = hashlib.sha1((G + json.dumps([sc, nb, run_, subs_txt, segT_n, f1 - f0, k == len(BD)], ensure_ascii=False, sort_keys=True)).encode('utf-8')).hexdigest()[:20]
+        # 10/15 사용자 "같은 장면에 항목이 추가되는데 왜 작아져?" — 세로 템플릿은 이어지는 묶음(cont·같은 chain) 전체로 확대 비율을 정하는데,
+        # 지문엔 앞 3·뒤 1 장면만 있어 묶음 뒤쪽이 바뀌면 앞 장면 조각은 옛 비율로 재사용됐다(컷5 1~3번 크고 4·5번 작음). 묶음 전체를 지문에 넣는다.
+        def _link(a_, b_):
+            return bool(b_.get('cont')) or (b_.get('chain') is not None and b_.get('chain') == a_.get('chain')) or \
+                (a_.get('type') == b_.get('type') and a_.get('type') in ('profile', 'speech', 'pstat') and (a_.get('img') == b_.get('img') or a_.get('name') == b_.get('name')))
+        g0 = g1 = min(k, len(SC) - 1) if SC else 0
+        while g0 > 0 and _link(SC[g0 - 1], SC[g0]): g0 -= 1
+        while g1 + 1 < len(SC) and _link(SC[g1], SC[g1 + 1]): g1 += 1
+        grp = SC[g0:g1 + 1] if g1 > g0 else []
+        fp = hashlib.sha1((G + json.dumps([sc, nb, run_, subs_txt, segT_n, f1 - f0, k == len(BD)] + ([grp] if grp else []), ensure_ascii=False, sort_keys=True)).encode('utf-8')).hexdigest()[:20]
         warm = [round(edges[j + 1] - 1.0 / fps, 4) for j in (k - 3, k - 2, k - 1) if j >= 0]
         plan.append({'k': k, 't0': t0, 't1': t1, 'n': f1 - f0, 'fp': fp, 'nums': nums, 'warm': warm})
     return plan
@@ -1009,6 +1022,9 @@ def append_endcard(EP, out):
        endcard.html → png → 본편과 같은 코덱(h264 High/Level/픽셀형식/60fps, aac 44.1k mono)으로 12초를 만들고 concat 으로 재인코딩 없이 이어 붙인다."""
     sec = float(cfg_get('ENDCARD_SEC', '12'))
     if sec <= 0 or not os.path.exists('endcard.html'): return out
+    if EP.get('totalSec'):   # 10/15 사용자 "마지막 화면을 늘려서 8분 1초로 — 중간광고": 콘티 totalSec 이 있으면 전체 길이가 그 값이 되도록 엔딩 카드를 늘린다(줄이진 않음)
+        want = float(EP['totalSec']) - dur_of(out)
+        if want > sec: print(f'엔딩 카드 {sec:.0f}초 → {want:.1f}초(전체 {float(EP["totalSec"]):.1f}초에 맞춤)'); sec = want
     html = io.open('endcard.html', encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
     html = html.replace('<script>', '<script>window.EP=' + json.dumps({'lines': EP.get('lines', []), 'endTop': EP.get('endTop')}, ensure_ascii=False) + ';</script><script>', 1)
     io.open(W('render_endcard.html'), 'w', encoding='utf-8').write(html)

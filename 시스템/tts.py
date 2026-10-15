@@ -313,7 +313,7 @@ def seg_bounds(path, segs, NONE=0.08, GAPB=0.5):
     w = [r + 1.0 for r in raw]; W = sum(w); ov = total / W   # +1: 구간 끝 음절은 늘어진다
     def pen(sp_, k0, k1):
         rr = sp_ / sum(raw[k0:k1])
-        return 0.0 if 0.08 <= rr <= 0.175 else 1.0
+        return 0.0 if 0.06 <= rr <= 0.175 else 1.0   # 10/15: 1.2배 합성(ttsTempo 1.2)은 음절당 0.065~0.075초 — 0.08 하한이면 맞는 쉼을 버리고 경계를 한 칸씩 밀었다(컷5 자막 밀림)
     @functools.lru_cache(None)
     def best(k, i, s0):
         ws = sum(w[k + 1:]); r = (total - s0) / ws

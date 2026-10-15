@@ -22,7 +22,7 @@ function ffArgs(fps, W, H, out) {
 
 async function worker(browser, idx, from, to, fps, scale, W, H, out, quality, onProgress) {
   const p = await browser.newPage({ viewport: { width: CW, height: CH }, deviceScaleFactor: scale });
-  await p.goto('file://' + path.join(WORK, 'render.html')); await p.waitForTimeout(900);
+  await p.goto('file://' + path.join(WORK, 'render.html')); await p.waitForTimeout(300); await p.waitForFunction(() => window.__ready !== false, null, { timeout: 15000 }).catch(() => {});   /* 10/15: 템플릿이 글꼴을 다 불러오고 첫 측정을 끝낼 때까지(window.__ready) 기다린다 — 조각마다 크기가 달라지던 것 */
   const ff = spawn('ffmpeg', ffArgs(fps, W, H, out), { stdio: ['pipe', 'ignore', 'pipe'] });
   let err = null, errText = ''; ff.on('error', e => { err = e; }); ff.stdin.on('error', e => { err = err || e; });
   ff.stderr.on('data', d => { errText += d.toString(); if (errText.length > 4000) errText = errText.slice(-4000); });
@@ -64,7 +64,7 @@ async function chunkMode(jobsFile) {
     const b = await chromium.launch(opts);
     try {
       const p = await b.newPage({ viewport: { width: CW, height: CH }, deviceScaleFactor: scale });
-      await p.goto('file://' + path.join(WORK, 'render.html')); await p.waitForTimeout(900);
+      await p.goto('file://' + path.join(WORK, 'render.html')); await p.waitForTimeout(300); await p.waitForFunction(() => window.__ready !== false, null, { timeout: 15000 }).catch(() => {});   /* 10/15: 템플릿이 글꼴을 다 불러오고 첫 측정을 끝낼 때까지(window.__ready) 기다린다 — 조각마다 크기가 달라지던 것 */
       await p.evaluate(() => { window.__NOPROG = true; });
       if (accent == null) accent = await p.evaluate(() => getComputedStyle(document.getElementById('progBar')).backgroundColor);
       for (const w of (job.warm || [])) await p.evaluate(t => window.render(t), w);
