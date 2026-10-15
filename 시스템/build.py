@@ -1052,7 +1052,11 @@ def write_chapters(ep, st, yt_path):
         rows.append(f'{ts(t)} {c.get("title", "")}'.rstrip())
     try: cur = io.open(yt_path, encoding='utf-8').read()
     except Exception: cur = ''
-    io.open(yt_path, 'w', encoding='utf-8').write(cur.rstrip() + '\n\n[챕터 — 설명란 맨 아래에 그대로 붙여넣기]\n' + '\n'.join(rows) + '\n')
+    # 10/14 사용자 지시: 챕터는 머리말([챕터 — …]) 없이 해시태그 줄 바로 밑에 챕터 줄만 넣는다([태그] 칸 위)
+    cur = re.sub(r'\n*\[챕터[^\n]*\](?:\n[^\n]+)*', '', cur).rstrip()
+    i = cur.find('\n\n[태그]')
+    out = (cur[:i] + '\n\n' + '\n'.join(rows) + cur[i:]) if i >= 0 else (cur + '\n\n' + '\n'.join(rows))
+    io.open(yt_path, 'w', encoding='utf-8').write(out.rstrip() + '\n')
     print('챕터', len(rows), '개')
     return rows
 

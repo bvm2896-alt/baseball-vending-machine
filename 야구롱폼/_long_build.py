@@ -67,7 +67,8 @@ for x in todo:
         print(f"  {i:02d}  {l.get('narr', '').replace(' / ', ' ')}{tag}")
 print('=' * 70)
 print('  위 대본이 맞는지 보고 결정하세요. 이미 만든 줄·구독 멘트는 다시 합성하지 않습니다(tts 가 편마다 새로 만들 글자 수를 한 번 더 보여 줌).')
-a = input('이대로 만들까요? (Enter 또는 y = 시작, 그 외 = 취소) ').strip().lower()
+# 10/14: KBO_YES=1(롱폼검수_자동.cmd)이면 묻지 않고 시작 — Claude 가 PC 를 클릭만으로 돌릴 때(사용자 지시 "너가 컴퓨터 조작해서 영상 만들고 검수까지")
+a = '' if os.environ.get('KBO_YES') else input('이대로 만들까요? (Enter 또는 y = 시작, 그 외 = 취소) ').strip().lower()
 if a not in ('', 'y', 'ㅛ'): sys.exit('취소했습니다')
 for x in todo:
     print('\n' + '#' * 70 + f'\n# {os.path.basename(x)}\n' + '#' * 70)

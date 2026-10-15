@@ -63,7 +63,13 @@
       g += `<div style="position:absolute;left:${x(d.y) - R}px;top:${AX + 4 - R}px;width:${R * 2}px;height:${R * 2}px;border-radius:50%;background:${cc};border:6px solid #fff;box-shadow:0 6px 16px rgba(18,22,31,.25);${pop(q)}"></div>`;
       if (d.label) g += `<div class="badge" style="position:absolute;left:${x(d.y)}px;top:${AX - R - 14}px;translate:-50% -100%;background:${cc};font-size:${d.big ? 40 : 36}px;line-height:1.15;padding:8px 18px;white-space:nowrap;text-align:center;${pop(q)}">${br(d.label)}</div>`; });
     let lines = '', cards = '';
-    all.forEach(it => { const k = key(it), ps = pos[k], cur = (s.items || []).find(z => key(z) === k); if (!cur) return;
+    all.forEach(it => { const k = key(it), ps = pos[k], cur = (s.items || []).find(z => key(z) === k);
+      /* 10/14 롱폼⑭ 검수(빈 축 5초): s.ghost = 아직 안 나온 구단 자리를 흐린 회색 로고로 먼저 보여 주고, 말할 때 진짜 카드가 떨어지며 회색은 사라진다 */
+      if (s.ghost && !had.has(k)) { const gq = cur ? pk(s, cur.at, .55, 0) : 0, gop = .28 * eo(seg(lt, .15, .6)) * (1 - c01(gq * 3));
+        if (gop > .005) { const gtop = AX - 70 - CH - ps.r * (CH + 26);
+          const glogos = tms(it).map(tn => LOGO[T(tn).code] ? `<img src="${LOGO[T(tn).code]}" style="width:${LG}px;height:${LG}px;object-fit:contain;filter:grayscale(1)">` : '').join('');
+          cards += `<div style="position:absolute;left:${ps.p}px;top:${gtop}px;translate:-50% 0;width:${ps.w}px;display:flex;justify-content:center;opacity:${gop.toFixed(3)}"><div style="display:flex;gap:8px;padding:4px 8px;border-radius:20px;border:5px dashed #AAB2BF">${glogos}</div></div>`; } }
+      if (!cur) return;
       const old = had.has(k), q = old ? 1 : pk(s, cur.at, .55, seg(lt, .3, .55)), c = x(it.y);
       const col = cur.c === 'bad' ? RED : cur.c === 'good' ? GREEN : cur.c === 'gold' ? '#E8A100' : '#3B4A63';
       const top = AX - 70 - CH - ps.r * (CH + 26), dy = (1 - eo(q)) * -140, op = c01(q * 2), lq = c01((q - .6) * 2.5);

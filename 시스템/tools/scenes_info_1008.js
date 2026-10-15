@@ -150,7 +150,11 @@ VIZ.branch = (lt, s, it, j, W) => {
 };
 VIZ.stamp = (lt, s, it, j, W) => {
   const pv = vPrev(s, j), p = pv && jeq(pv, it) ? 1 : pk(s, it.at, .35, seg(lt, .25, .35)), c = vcol(it.c || 'bad');
-  return `<div style="display:inline-block;transform:rotate(${it.rot ?? -6}deg) scale(${(1.8 - .8 * eo(p)).toFixed(3)});opacity:${c01(p * 3)};border:10px solid ${c};border-radius:24px;padding:10px 36px;color:${c};font-size:${it.size || 76}px;font-weight:900;letter-spacing:-2px;background:#ffffffd0;white-space:nowrap;margin:10px 0 0 10px">${esc(it.t || '')}</div>`;
+  const one = (x, cc, sc, op, pos) => `<div style="${pos}display:inline-block;transform:rotate(${x.rot ?? -6}deg) scale(${sc.toFixed(3)});opacity:${op.toFixed(3)};border:10px solid ${cc};border-radius:24px;padding:10px 36px;color:${cc};font-size:${x.size || 76}px;font-weight:900;letter-spacing:-2px;background:#ffffffd0;white-space:nowrap;margin:10px 0 0 10px">${esc(x.t || '')}</div>`;
+  /* 10/14 사용자(김응용 '2년 연속 꼴찌' → '계약 끝까지 · 재계약 없음'): 앞 장면 같은 자리에 다른 도장이 있었으면 그 도장은 새 도장이 찍힐 때까지 그대로 있다가 바뀐다 */
+  const old = pv && pv.type === 'stamp' && !jeq(pv, it) ? pv : null;
+  if (!old) return one(it, c, 1.8 - .8 * eo(p), c01(p * 3), '');
+  return `<div style="position:relative;display:inline-block">${one(it, c, 1.8 - .8 * eo(p), c01(p * 3), '')}${one(old, vcol(old.c || 'bad'), 1, 1 - c01(p * 3), 'position:absolute;left:0;top:0;')}</div>`;
 };
 VIZ.duo = (lt, s, it, j, W) => {
   const its = it.items || [];
@@ -196,7 +200,7 @@ for (const ty of ['profile', 'speech']) {
     /* 10/13 밤 사용자("너무 오른쪽으로 치우쳐 · 조율해 줘"): 사진/로고 칸 + 그림이 화면 폭(1780)을 넘으면 가운데 맞춤이 안 돼 오른쪽 끝에 붙었다 → 그림 폭을 남은 자리만큼으로 줄인다 */
     let W = s.vw || 1180;
     if (!EP.vertical) { const lrA = col.closest('.lr'), phA = lrA && lrA.firstElementChild; if (phA && phA !== col.closest('.t')) W = Math.min(W, Math.max(720, 1760 - phA.offsetWidth - 70)); }
-    const d = document.createElement('div'); d.className = 'vzw'; d.style.cssText = `display:flex;flex-direction:column;gap:22px;align-items:flex-start;margin-top:4px`;
+    const d = document.createElement('div'); d.className = 'vzw'; d.style.cssText = `display:flex;flex-direction:column;gap:22px;align-items:flex-start;margin-top:4px;position:relative;z-index:5`;   /* 10/14 사용자(한대화 '계약 마지막 해' 도장이 아래 기록 카드 뒤에 깔림): 그림·도장 묶음은 기록 카드보다 앞에 */
     d.innerHTML = vizHTML(lt, s, W);
     const vfOf = (x, d) => { if (x.vizFirst != null) return !!x.vizFirst; const P = x._prev;
       if (d < 30 && P && P._cid === x._cid && ['profile', 'speech'].includes(P.type)) return P.viz ? (!(P.stats || []).length || vfOf(P, d + 1)) : false;
