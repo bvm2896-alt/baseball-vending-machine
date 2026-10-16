@@ -1,0 +1,218 @@
+{
+  "date": "2026-09-23",
+  "source": "naver-sports-kbo-teamrank",
+  "standings": [
+    {
+      "rank": 1,
+      "code": "KT",
+      "team": "KT",
+      "winRate": 0.627,
+      "gameBehind": 0,
+      "games": 130,
+      "win": 79,
+      "lose": 47,
+      "draw": 4,
+      "streak": "3승",
+      "avg": 0.282,
+      "era": 4.21,
+      "recent5": [
+        "무",
+        "패",
+        "승",
+        "승",
+        "승"
+      ]
+    },
+    {
+      "rank": 2,
+      "code": "SS",
+      "team": "삼성",
+      "winRate": 0.597,
+      "gameBehind": 3.5,
+      "games": 132,
+      "win": 77,
+      "lose": 52,
+      "draw": 3,
+      "streak": "1승",
+      "avg": 0.277,
+      "era": 4.23,
+      "recent5": [
+        "패",
+        "승",
+        "패",
+        "패",
+        "승"
+      ]
+    },
+    {
+      "rank": 3,
+      "code": "LG",
+      "team": "LG",
+      "winRate": 0.577,
+      "gameBehind": 6,
+      "games": 131,
+      "win": 75,
+      "lose": 55,
+      "draw": 1,
+      "streak": "7승",
+      "avg": 0.267,
+      "era": 4.81,
+      "recent5": [
+        "승",
+        "승",
+        "승",
+        "승",
+        "승"
+      ]
+    },
+    {
+      "rank": 4,
+      "code": "HT",
+      "team": "KIA",
+      "winRate": 0.555,
+      "gameBehind": 9,
+      "games": 130,
+      "win": 71,
+      "lose": 57,
+      "draw": 2,
+      "streak": "3승",
+      "avg": 0.272,
+      "era": 4.29,
+      "recent5": [
+        "승",
+        "패",
+        "승",
+        "승",
+        "승"
+      ]
+    },
+    {
+      "rank": 5,
+      "code": "OB",
+      "team": "두산",
+      "winRate": 0.516,
+      "gameBehind": 14,
+      "games": 133,
+      "win": 66,
+      "lose": 62,
+      "draw": 5,
+      "streak": "1승",
+      "avg": 0.265,
+      "era": 3.77,
+      "recent5": [
+        "승",
+        "무",
+        "패",
+        "패",
+        "승"
+      ]
+    },
+    {
+      "rank": 6,
+      "code": "NC",
+      "team": "NC",
+      "winRate": 0.465,
+      "gameBehind": 20.5,
+      "games": 129,
+      "win": 59,
+      "lose": 68,
+      "draw": 2,
+      "streak": "8패",
+      "avg": 0.27,
+      "era": 4.72,
+      "recent5": [
+        "패",
+        "패",
+        "패",
+        "패",
+        "패"
+      ]
+    },
+    {
+      "rank": 7,
+      "code": "SK",
+      "team": "SSG",
+      "winRate": 0.453,
+      "gameBehind": 22,
+      "games": 133,
+      "win": 58,
+      "lose": 70,
+      "draw": 5,
+      "streak": "1패",
+      "avg": 0.258,
+      "era": 5.2,
+      "recent5": [
+        "승",
+        "승",
+        "승",
+        "승",
+        "패"
+      ]
+    },
+    {
+      "rank": 8,
+      "code": "LT",
+      "team": "롯데",
+      "winRate": 0.445,
+      "gameBehind": 23,
+      "games": 130,
+      "win": 57,
+      "lose": 71,
+      "draw": 2,
+      "streak": "4승",
+      "avg": 0.271,
+      "era": 4.8,
+      "recent5": [
+        "패",
+        "승",
+        "승",
+        "승",
+        "승"
+      ]
+    },
+    {
+      "rank": 9,
+      "code": "HH",
+      "team": "한화",
+      "winRate": 0.425,
+      "gameBehind": 25.5,
+      "games": 131,
+      "win": 54,
+      "lose": 73,
+      "draw": 4,
+      "streak": "8패",
+      "avg": 0.274,
+      "era": 5.23,
+      "recent5": [
+        "무",
+        "패",
+        "패",
+        "패",
+        "패"
+      ]
+    },
+    {
+      "rank": 10,
+      "code": "WO",
+      "team": "키움",
+      "winRate": 0.344,
+      "gameBehind": 36.5,
+      "games": 135,
+      "win": 45,
+      "lose": 86,
+      "draw": 4,
+      "streak": "6패",
+      "avg": 0.242,
+      "era": 5.33,
+      "recent5": [
+        "패",
+        "패",
+        "무",
+        "패",
+        "패"
+      ]
+    }
+  ],
+  "sourceUrl": "https://m.sports.naver.com/kbaseball/record/kbo?category=kbo&tab=teamRank",
+  "fetchedAt": "2026-09-23T02:23:32.909Z"
+}

@@ -71,9 +71,9 @@
     B(`<div class="col" style="width:100%;align-items:center">${ttl(lt, s, K)}<div style="position:relative;width:${W}px;height:${H}px;margin-top:${ln ? 56 : 0}px">${h}</div>${anyTxt ? (s.text ? big(s, pr && pr.text === s.text) : `<div class="big" style="font-size:${s.size || 64}px;margin-top:18px;visibility:hidden">·</div>`) : ''}</div>`);
   };
 
-  /* ── faces ── 인물 2~4명 카드(틀 없는 사진) + 이름 + 큰 글(note) + 말풍선(say). {"items":[{"img","name","team","role","note","at","say","sayAt"}],"title"} */
+  /* ── faces ── 인물 2~5명 카드(5명 = 카드 폭 290, 10/16 훅에 김호령 추가)(틀 없는 사진) + 이름 + 큰 글(note) + 말풍선(say). {"items":[{"img","name","team","role","note","at","say","sayAt"}],"title"} */
   SCENE.faces = (lt, s) => {
-    const its = s.items || [], n = its.length, W = n >= 4 ? 340 : n === 3 ? 380 : its.some(x => x.say) ? 360 : 430, H = Math.round(W / .774);
+    const its = s.items || [], n = its.length, W = n >= 5 ? 290 : n >= 4 ? 340 : n === 3 ? 380 : its.some(x => x.say) ? 360 : 430, H = Math.round(W / .774);
     const one = (x, i) => { const p = P(s, x.at ?? i * .25, .5), q = x.say ? P(s, x.sayAt ?? 50, .5) : 0, src = photoSrc(x.img);
       return `<div class="col" style="align-items:center;gap:0;width:${W + 40}px;${rise(p, 30)}">
         <div style="position:relative;width:${W}px;height:${H}px;border-radius:30px;overflow:hidden;background:#E9EDF3;box-shadow:0 24px 54px rgba(18,22,31,.24)">${src ? faceImg(src, x, '50% 12%') : ''}</div>
@@ -86,6 +86,7 @@
   };
 
   /* ── pricerows ── 정리 표 */
+  /* 10/16: 100억 점선이 '55~75억' 숫자를 가로지름 → 숫자 z-index 3 + 숫자 뒤에 배경색 칸(빛 테두리만으론 글자 틈으로 점선이 보였다), 점선 z-index 1 */
   SCENE.pricerows = (lt, s) => {
     const MX = s.max || 150, LW = 440, W = s.w || 1120, px = v => v / MX * W, rows = s.rows || [], pr = prevOf(s, 'pricerows'), RH = rows.length > 6 ? 86 : 100;
     const had = r => pr && (pr.rows || []).some(o => o.name === r.name && !o.hide);
@@ -99,11 +100,11 @@
         <div style="position:relative;width:${W}px;height:${RH}px">
           ${[0, 25, 50, 75, 100, 125, 150].filter(v => v <= MX).map(v => `<div style="position:absolute;left:${px(v)}px;top:0;bottom:0;border-left:2px solid #EEF1F5"></div>`).join('')}
           <div style="position:absolute;left:${px(r.from)}px;top:${RH / 2 - 24}px;width:${((px(r.to) - px(r.from)) * e).toFixed(1)}px;height:48px;border-radius:24px;background:${c};opacity:.92"></div>
-          <div class="num" style="position:absolute;left:${px(r.to) + 18}px;top:${RH / 2 - 34}px;font-size:54px;font-weight:900;letter-spacing:-2px;color:${c};white-space:nowrap;opacity:${c01((q - .5) * 3)}">${esc(r.label || `${r.from}~${r.to}억`)}</div></div></div>`;
+          <div class="num" style="position:absolute;z-index:3;left:${px(r.to) + 18}px;top:${RH / 2 - 34}px;font-size:54px;font-weight:900;letter-spacing:-2px;color:${c};white-space:nowrap;opacity:${c01((q - .5) * 3)};background:#F2F4F8;padding:0 10px;margin-left:-10px;border-radius:12px;box-shadow:0 0 8px 4px #F2F4F8">${esc(r.label || `${r.from}~${r.to}억`)}</div></div></div>`;
     });
     const ln = s.line || (((CHAINS[s._cid] || []).map(j => SC[j]).find(x => x && x.line)) || {}).line;
     if (ln) { const q = s.line ? (pr && pr.line ? 1 : P(s, ln.at ?? 0, .5)) : 0;
-      h += `<div style="position:absolute;left:${LW + px(ln.v) - 3}px;top:-10px;width:6px;height:${rows.length * RH + 20}px;background:repeating-linear-gradient(${RED} 0 14px,transparent 14px 24px);opacity:${c01(q * 1.5)}"></div>
+      h += `<div style="position:absolute;z-index:1;left:${LW + px(ln.v) - 3}px;top:-10px;width:6px;height:${rows.length * RH + 20}px;background:repeating-linear-gradient(${RED} 0 14px,transparent 14px 24px);opacity:${c01(q * 1.5)}"></div>
         <div style="position:absolute;left:${LW + px(ln.v)}px;top:${rows.length * RH + 16}px;translate:-50% 0;${pp(q)}">${PL(esc(ln.label), RED, 32)}</div>`; }
     h += `</div>`;
     const K = pr && pr.title === s.title;

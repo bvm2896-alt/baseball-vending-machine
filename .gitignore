@@ -5,7 +5,7 @@ token*.json
 # work / intermediate / outputs
 node_modules/
 work/
-data/
+# data/ : 10/16 from now saved too (everything except videos)
 out/
 옛날/
 frames/
@@ -39,3 +39,5 @@ busy.txt
 시스템/야구이슈/
 시스템/야구순위/
 sheet*.png
+# 10/16: local backup made when the other PC cleaned git history
+_깃정리_백업/

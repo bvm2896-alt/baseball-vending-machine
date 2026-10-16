@@ -11,7 +11,7 @@ _t = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_t)
 TEXT = [x[0] for x in _t.LINES] + ['__CTA__']
 
 CTA_LINE = {"narr": END, "sub": "채널 구독하고\n매일 야구 이슈 받아보세요!", "rate": 1.0}
-BAD_A = re.compile(r'(\d+만|\d+월|\b한|\b두|\b세|\b첫|\d+억|(?:^| )다|(?:^| )못|(?:^| )안)$'); BAD_B = re.compile(r'^(달러|일|명|개|경기|원|타수|안타)')
+BAD_A = re.compile(r'(\d+만|\d+월|\b한|\b두|\b세|\b첫|\d+억|(?:^| )다|(?:^| )못|(?:^| )안|(?:^| )만|(?:^| )(?:이번|지난|다음|올|그))$'); BAD_B = re.compile(r'^(건 |것 |수 |때 |중 |구단|달러|일|명|개|경기|원|타수|안타|\d+(?:푼|리)(?![가-힣]*할))')   # 10/16: '2할 4푼 | 7리'·'만 | 34살'·'꾸준했던 | 건'·'열 개 | 구단' 처럼 한 덩어리가 두 줄로 갈라지지 않게
 def wrap2(t):
     w = wrap(t)
     if '\n' not in w: return w

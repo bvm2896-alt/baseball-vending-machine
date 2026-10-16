@@ -1,0 +1,114 @@
+{
+  "fetchedAt": "2026-09-23T02:24:20.275Z",
+  "days": {
+    "2026-09-23": [
+      {
+        "teams": [
+          "KIA",
+          "두산"
+        ],
+        "away": "KIA",
+        "home": "두산",
+        "awayStarter": "올러",
+        "homeStarter": "잭로그",
+        "time": "",
+        "stadium": "잠실",
+        "starters": [
+          "올러",
+          "잭로그"
+        ],
+        "status": "예정",
+        "score": null,
+        "raw": "예정 KIA 올러 두산 홈 잭로그 경기 엔드 바로가기"
+      },
+      {
+        "teams": [
+          "롯데",
+          "한화"
+        ],
+        "away": "롯데",
+        "home": "한화",
+        "awayStarter": "박세웅",
+        "homeStarter": "박준영",
+        "time": "",
+        "stadium": "대전",
+        "starters": [
+          "박세웅",
+          "박준영"
+        ],
+        "status": "예정",
+        "score": null,
+        "raw": "예정 롯데 박세웅 한화 홈 박준영 경기 엔드 바로가기"
+      },
+      {
+        "teams": [
+          "NC",
+          "KT"
+        ],
+        "away": "NC",
+        "home": "KT",
+        "awayStarter": "라일리",
+        "homeStarter": "로건",
+        "time": "",
+        "stadium": "수원",
+        "starters": [
+          "라일리",
+          "로건"
+        ],
+        "status": "예정",
+        "score": null,
+        "raw": "예정 NC 라일리 KT 홈 로건 경기 엔드 바로가기"
+      }
+    ],
+    "2026-09-24": [
+      {
+        "teams": [
+          "롯데",
+          "LG"
+        ],
+        "away": "롯데",
+        "home": "LG",
+        "awayStarter": "",
+        "homeStarter": "",
+        "time": "",
+        "stadium": "잠실",
+        "starters": [],
+        "status": "예정",
+        "score": null,
+        "raw": "예정 롯데 LG 홈 경기 엔드 바로가기"
+      },
+      {
+        "teams": [
+          "NC",
+          "KT"
+        ],
+        "away": "NC",
+        "home": "KT",
+        "awayStarter": "",
+        "homeStarter": "",
+        "time": "",
+        "stadium": "수원",
+        "starters": [],
+        "status": "예정",
+        "score": null,
+        "raw": "예정 NC KT 홈 경기 엔드 바로가기"
+      },
+      {
+        "teams": [
+          "삼성",
+          "SSG"
+        ],
+        "away": "삼성",
+        "home": "SSG",
+        "awayStarter": "",
+        "homeStarter": "",
+        "time": "",
+        "stadium": "인천",
+        "starters": [],
+        "status": "예정",
+        "score": null,
+        "raw": "예정 삼성 SSG 홈 경기 엔드 바로가기"
+      }
+    ]
+  }
+}

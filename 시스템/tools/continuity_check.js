@@ -20,7 +20,7 @@ const { chromium } = require(path.join(__dirname, '..', 'node_modules', 'playwri
     for (const k in cur) if (prev[k] && !st0[k] && prev[k].length === 1 && cur[k].length === 1) msgs.push(`다시 뜸 ${k.startsWith('img') ? '사진' : '"' + k.slice(4, 20) + '"'}`);
     for (const k in cur) { if (!prev[k] || prev[k].length !== 1 || cur[k].length !== 1) continue;
       const [a] = prev[k], [c] = cur[k], d = Math.max(Math.abs(a[0] - c[0]), Math.abs(a[1] - c[1]), Math.abs(a[2] - c[2]), Math.abs(a[3] - c[3]));
-      if (d > 6) msgs.push(`${k.startsWith('img') ? '사진' : '"' + k.slice(4, 20) + '"'} ${d.toFixed(0)}px`); }
+      if (d > +(process.env.TH || 6)) msgs.push(`${k.startsWith('img') ? '사진' : '"' + k.slice(4, 20) + '"'} ${d.toFixed(0)}px`); }
     if (msgs.length) { bad++; console.log(`장면 ${i - 1}→${i}: ` + msgs.slice(0, 5).join(' | ')); }
     prev = cur;
   }
