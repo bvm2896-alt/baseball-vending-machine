@@ -1,0 +1,2 @@
+SUCCESS: The scheduled task "yagu_auto_tonight" was successfully deleted.
+ERROR: The system cannot find the file specified.

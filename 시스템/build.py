@@ -530,7 +530,7 @@ def static_gain(f, ss, to):
         m = re.search(r'mean_volume: ([\-\d.]+)', r.stderr)
         if not m: return 0.0
         lv = float(m.group(1))
-    return round(max(-6.0, min(9.0, TARGET_MEAN - lv)), 2)
+    return round(max(-6.0, min(4.0, TARGET_MEAN - lv)), 2)   # 10/18 23:16 사용자 '음성 깨짐' — 이득 상한 +9 → +4dB(리미터가 덜 눌러 찌그러짐 감소)
 
 def end_level(f, ms=30):
     """파일 마지막 ms 구간의 평균 음량(dB). 말이 잘렸으면 크게 나온다"""
@@ -706,7 +706,7 @@ def render(ep, ep_path):
             if abs(rate - 1.0) > 0.01: af += f',atempo={rate:.3f}'
             # 음량은 줄마다 '고정 이득'으로만 맞춘다(loudnorm 같은 동적 정규화는 짧은 클립의 앞뒤 음량을 출렁이게 해 기계음처럼 들림)
             # + 앞뒤 12ms 페이드(딱 끊기는 소리 방지)
-            af += f',volume={gain:.2f}dB,alimiter=limit=0.89:attack=3:release=40:level=false,aresample=44100,afade=t=in:d=0.012,areverse,afade=t=in:d=0.012,areverse'   # 10/4: 피크는 리미터(-1dB)로
+            af += f',volume={gain:.2f}dB,alimiter=limit=0.89:attack=6:release=90:level=false,aresample=44100,afade=t=in:d=0.012,areverse,afade=t=in:d=0.012,areverse'   # 10/4: 피크는 리미터(-1dB)로
             run(['ffmpeg', '-y', '-i', src, '-af', af, '-ar', '44100', '-ac', '1', dst], check=True)
         cut(ss, to)
         # 검수: 잘린 끝이 아직 말소리(-30dB 이상)면 끝을 자르지 않고 다시
@@ -827,12 +827,27 @@ def render(ep, ep_path):
     # 10/2: 그래픽카드 없는 PC(회사)는 2K 에서 크롬 GPU 가 죽는다 → 한 번 죽으면 work\no_gpu.flag 를 남기고, 그 PC 는 다음부터 처음부터 GPU 없이 그린다
     #       (work\ 는 깃에 안 올라가므로 그래픽카드 있는 집 PC 는 영향 없음. 다시 GPU 로 그리려면 이 파일을 지우면 된다)
     NOGPU_FLAG = W('no_gpu.flag')
+    # 10/18 23:03 사용자: "집 PC 에서는 그 파일 절대 무슨 일이 있어도 안 생기게 해" — 그래픽카드(NVIDIA·AMD)가 있는 PC 는 표시 파일을 만들지도 따르지도 않고, 있으면 지운다
+    def _has_dgpu():
+        try:
+            import subprocess as _sp
+            o = _sp.run(['powershell', '-NoProfile', '-Command', '(Get-CimInstance Win32_VideoController).Name -join ";"'], capture_output=True, text=True, timeout=15).stdout
+            return any(k in o.upper() for k in ('NVIDIA', 'GEFORCE', 'RTX', 'GTX', 'RADEON', 'AMD'))
+        except Exception: return False
+    HAS_DGPU = _has_dgpu()
+    if HAS_DGPU:
+        for _f in {NOGPU_FLAG, os.path.join('work', 'no_gpu.flag')}:
+            try:
+                if os.path.exists(_f): os.remove(_f); print('그래픽카드 있는 PC — GPU 끄기 표시 파일 지움:', _f)
+            except Exception: pass
     # 10/2 2차: 회사 PC 는 GPU 를 꺼도 크롬 여러 개로 동시에 찍으면 터졌고(Unable to capture screenshot), 크롬 1개일 때만 끝까지 갔다 → 표시가 있는 PC 는 동시작업 1
     def _mark_no_gpu():
         fenv['FRAME_NO_GPU'] = '1'; fenv['FRAME_WORKERS'] = '1'
+        if HAS_DGPU: print('그래픽카드 있는 PC — 이번 렌더만 GPU 없이 이어서, 표시 파일은 만들지 않음'); return
         try: io.open(NOGPU_FLAG, 'w', encoding='utf-8').write('이 PC 는 GPU 없이 그린다(10/2 build.py 가 GPU 오류 뒤 자동으로 만듦). 지우면 다시 GPU 로 그림.\n')
         except Exception: pass
-    if os.path.exists(NOGPU_FLAG): fenv['FRAME_NO_GPU'] = '1'; fenv['FRAME_WORKERS'] = '1'; print('이 PC 는 GPU 없이 크롬 1개로 그립니다(work\\no_gpu.flag) — 조각은 다 그린 것부터 저장')
+    # 10/18 23:02 사용자: 집 PC 는 GPU 가 있다 — 빈(0바이트) 표시 파일은 무시. GPU 오류 뒤 자동으로 만든(글이 든) 표시만 따른다
+    if not HAS_DGPU and os.path.exists(NOGPU_FLAG) and os.path.getsize(NOGPU_FLAG) > 0: fenv['FRAME_NO_GPU'] = '1'; fenv['FRAME_WORKERS'] = '1'; print('이 PC 는 GPU 없이 크롬 1개로 그립니다(work\\no_gpu.flag) — 조각은 다 그린 것부터 저장')
     r = None
     if is_long(ep) and cfg_get('CHUNK_CACHE', '1') != '0':
         # 10/1: 롱폼은 장면 조각으로 그리고, 지난번과 똑같은 조각은 다시 찍지 않는다(바뀐 장면만 새로)
@@ -1020,7 +1035,7 @@ def append_endcard(EP, out):
     """롱폼 mp4 끝에 어두운 엔딩 카드(설정 ENDCARD_SEC, 기본 12초)를 붙인다(9/20 사용자 지시).
        유튜브 '최종 화면'(구독·다음 영상)은 마지막 5~20초에 얹히는데, 본편 위에 얹히면 화면을 가린다 → 본편 뒤에 빈 화면을 둔다.
        endcard.html → png → 본편과 같은 코덱(h264 High/Level/픽셀형식/60fps, aac 44.1k mono)으로 12초를 만들고 concat 으로 재인코딩 없이 이어 붙인다."""
-    sec = float(cfg_get('ENDCARD_SEC', '12'))
+    sec = float(EP.get('endcardSec') or cfg_get('ENDCARD_SEC', '12'))   # 10/17 사용자: 엔딩은 보통 10초(8분 살짝 모자랄 때만 totalSec 으로 늘림)
     if sec <= 0 or not os.path.exists('endcard.html'): return out
     if EP.get('totalSec'):   # 10/15 사용자 "마지막 화면을 늘려서 8분 1초로 — 중간광고": 콘티 totalSec 이 있으면 전체 길이가 그 값이 되도록 엔딩 카드를 늘린다(줄이진 않음)
         want = float(EP['totalSec']) - dur_of(out)
@@ -1060,9 +1075,11 @@ def write_chapters(ep, st, yt_path):
         t = max(0.0, float(t)); m = int(t // 60); s_ = int(t % 60)
         return f'{m}:{s_:02d}'
     rows, prev = [], -99.0
+    intro = ep.get('introChapter')   # 10/18 검수: 첫 챕터 앞에 머리말(훅)이 있으면 '0:00 <머리말>' 을 따로 두고 첫 챕터는 실제 시작 시각으로
+    if intro: rows.append(f'0:00 {intro}'); prev = 0.0
     for i, c in enumerate(ch):
         k = int(c.get('from', 0))
-        t = 0.0 if i == 0 else float(st[k]) if k < len(st) else prev + 10
+        t = 0.0 if (i == 0 and not intro) else float(st[k]) if k < len(st) else prev + 10
         if i and t < prev + 10: t = prev + 10
         prev = t
         rows.append(f'{ts(t)} {c.get("title", "")}'.rstrip())

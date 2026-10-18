@@ -8,5 +8,5 @@ set SYS=
 for /d %%D in (*) do if exist "%%D\run_daily.py" set SYS=%%D
 if "%SYS%"=="" (echo run_daily.py not found ^& pause ^& exit /b)
 cd /d "%SYS%"
-python -X utf8 "%~dp0_long_build.py" --cuts %*
+python -X utf8 tools\long_build.py --cuts %*
 pause
