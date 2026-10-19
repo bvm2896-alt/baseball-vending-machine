@@ -888,7 +888,16 @@ SCENE.toc = (lt, s) => {
   if (on < 0) {
     const T = (EP.segT || [])[s.startLine] || [], first = s.itemFrom ?? 1;
     for (let i = 0; i < n; i++) vis[i] = seg(lt, .1 + i * .12, .4);            /* 칸은 첫 호흡 동안 차례로 올라온다 */
-    if (T.length > first) {
+    /* 10/20 사용자: 목차를 말할 때 그 칸에 불이 — s.itemSeg[i] = i번째 칸이 켜지는 호흡 위치(1.46 = 2번째 호흡의 46% 지점), null 이면 안 켬 */
+    const AT = x => { if (x == null) return null; const k = Math.floor(x), f = x - k, a = T[k]; if (a == null) return null; const b2 = T[k + 1]; return b2 == null ? a : a + f * (b2 - a); };
+    if (s.itemSeg && T.length) {
+      for (let i = 0; i < n; i++) {
+        const t0 = AT(s.itemSeg[i]), t1 = i + 1 < n ? AT(s.itemSeg[i + 1]) : null;
+        if (t0 == null) continue;
+        const up = c01((NOW - t0 + .08) / .25), down = t1 == null ? 0 : c01((NOW - t1 + .08) / .25);
+        hiA[i] = up * (1 - down);
+      }
+    } else if (T.length > first) {
       for (let i = 0; i < n; i++) {
         const t0 = T[first + i], t1 = T[first + i + 1];
         if (t0 == null) continue;
@@ -2760,7 +2769,10 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
     }).join('');
     const mid = `<div class="col" style="align-items:center;gap:0">${body}</div>`;
     if (EP.vertical) { B(`<div class="col" style="width:100%;align-items:center">${ttl(lt, s, 20)}<div class="row" style="gap:60px;align-items:center;flex-wrap:nowrap;margin-bottom:24px">${sideP(L, 0)}<div style="font-size:60px;font-weight:900;font-style:italic;color:#C3CAD6">vs</div>${sideP(R, .12)}</div>${mid}${big(lt, s)}</div>`); return; }
-    B(`<div class="col" style="width:100%;align-items:center">${ttl(lt, s, 20)}<div class="row" style="gap:30px;align-items:center;flex-wrap:nowrap">${sideP(L, 0)}${mid}${sideP(R, .12)}</div>${big(lt, s)}</div>`);
+    /* 10/20 사용자 "흰 글자 한 줄로 쭉 늘어놓으니 가독성이 떨어져" — s.chips: 날짜(작게) + 결과(크게·색) 칸을 나란히, 말하는 호흡(at)에 하나씩 */
+    const chips = (s.chips || []).map(c => `<div style="${ppop(bp(s, c.at ?? 0, .5))};display:flex;flex-direction:column;align-items:center;gap:6px;min-width:400px;padding:22px 40px;border-radius:28px;background:#22151A;border:5px solid ${c.c || '#3D262B'}">
+      <div style="font-size:38px;font-weight:800;color:#BCA9A2;white-space:nowrap">${esc(c.d)}</div><div style="font-size:72px;font-weight:900;letter-spacing:-2px;color:${c.tc || '#F4EDE4'};white-space:nowrap">${esc(c.v)}</div></div>`).join('');
+    B(`<div class="col" style="width:100%;align-items:center">${ttl(lt, s, 20)}<div class="row" style="gap:30px;align-items:center;flex-wrap:nowrap">${sideP(L, 0)}${mid}${sideP(R, .12)}</div>${chips ? `<div class="row" style="gap:60px;margin-top:34px;flex-wrap:nowrap;justify-content:center">${chips}</div>` : ''}${big(lt, s)}</div>`);
   };
 
   /* ── abdots ── {"type":"abdots","left":{투수},"right":{타자 또는 팀},"total":"10타수 1안타","totalAt":2,
@@ -2848,15 +2860,20 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
       const keep = C_ && PG[k] && J({ ...PG[k], at: 0 }) === J({ ...g, at: 0 }), p = keep ? 1 : bp(s, g.at ?? 0, .5), c = g.win && g.win !== '?' ? TC(s, g.win) : '#BFC7D4';
       const glow = g.glow ? `<div style="position:absolute;left:8px;right:8px;top:-14px;bottom:-14px;border-radius:34px;background:${TC(s, g.glow)}18;border:5px solid ${TC(s, g.glow)};${C_ && PG[k] && PG[k].glow === g.glow ? '' : `opacity:${c01(bp(s, g.glowAt ?? g.at ?? 0, .5) * 1.6)}`}"></div>` : '';
       const res = g.off ? `<div style="width:170px;height:170px;border-radius:50%;border:6px dashed #D5DAE2;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;color:#B0B8C6;text-align:center;line-height:1.2">안 열림</div>`
+        : g.win && !keep && p <= 0 ? `<div style="width:170px;height:170px;border-radius:50%;border:6px dashed #D5DAE2"></div>`   /* 10/20: 결과를 말하기 전엔 빈 원 */
         : g.win === '?' ? `<div style="width:170px;height:170px;border-radius:50%;border:7px dashed #9AA3B2;display:flex;align-items:center;justify-content:center;font-size:96px;font-weight:900;color:#9AA3B2;${ppop(p)}">?</div>`
         : g.win && g.maybe ? `<div style="position:relative;width:170px;height:170px;border-radius:50%;background:#fff;border:7px dashed ${c};display:flex;align-items:center;justify-content:center;${ppop(p)}"><div style="opacity:.45">${LOGOI(g.win, 110)}</div><div style="position:absolute;right:-14px;top:-14px;width:64px;height:64px;border-radius:50%;background:#12161F;color:#fff;font-size:44px;font-weight:900;display:flex;align-items:center;justify-content:center">?</div></div>`   /* 10/18: maybe = 가정(예측과 다른 경우)은 점선·흐린 로고·물음표 */
         : g.win ? `<div style="width:170px;height:170px;border-radius:50%;background:#fff;border:8px solid ${c};display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px ${c}44;${ppop(p)}">${LOGOI(g.win, 118)}</div>`
+        : g.who && photoSrc(g.who.img) ? (() => { const q = keep ? 1 : bp(s, g.who.at ?? 0, .5), w = g.who;   /* 10/20 사용자 "나레이션에서 말하는 거에 맞춰 원 안에 선수 프로필" — 빈 원 안에 그 경기 선발 얼굴(w: 그린 폭·왼쪽·위 px, 170 원 기준) */
+            return `<div style="position:relative;width:170px;height:170px"><div style="position:absolute;inset:0;border-radius:50%;border:6px dashed #D5DAE2;opacity:${(1 - c01(q * 1.6)).toFixed(3)}"></div>
+              <div style="position:absolute;inset:0;border-radius:50%;overflow:hidden;background:#2A1A1E;border:7px solid ${TC(s, w.team || 'KIA')};box-shadow:0 14px 30px rgba(0,0,0,.4);${ppop(q)}"><img src="${photoSrc(w.img)}" style="position:absolute;left:${w.l}px;top:${w.t}px;width:${w.w}px;height:auto;max-width:none"></div></div>`; })()
         : `<div style="width:170px;height:170px;border-radius:50%;border:6px dashed #D5DAE2"></div>`;
+      const whoName = g.who && g.who.name ? `<div style="${keep ? '' : ppop(bp(s, (g.who.at ?? 0) + .1, .5))}">${pill(esc(g.who.name), TC(s, g.who.team || 'KIA'), 34, 'padding:6px 22px')}</div>` : '';
       return `<div class="col" style="position:relative;width:${SW}px;align-items:center;gap:14px;opacity:${g.off ? .55 : 1}">${glow}
         <div style="position:relative;font-size:44px;font-weight:900">${esc(g.n)}</div>
         <div class="row" style="position:relative;gap:8px;align-items:center;font-size:36px;font-weight:800;color:#3B4A63;flex-wrap:nowrap">${LOGOI(g.home, 52)}<span>${esc(g.venue)}</span></div>
         <div style="position:relative;margin-top:6px">${res}</div>
-        <div style="position:relative;height:56px">${g.tag ? `<div style="${ppop(p)}">${pill(esc(g.tag), '#12161F', 30, 'padding:6px 20px')}</div>` : ''}</div></div>`; }).join('') + `</div>`;
+        <div style="position:relative;height:56px">${g.tag ? `<div style="${ppop(p)}">${pill(esc(g.tag), '#12161F', 30, 'padding:6px 20px')}</div>` : whoName}</div></div>`; }).join('') + `</div>`;
     if (s.brace) { const b = s.brace, p = C_ && s._prev.brace && s._prev.brace.label === b.label ? 1 : bp(s, b.at ?? 50, .5), c = TC(s, b.team || 'LG');
       h += `<div style="position:relative;left:${b.from * SW + 20}px;width:${(b.to - b.from + 1) * SW - 40}px;margin-top:4px;opacity:${c01(p * 1.6)}"><div style="height:24px;border:6px solid ${c};border-top:none;border-radius:0 0 18px 18px"></div>
         <div style="text-align:center;margin-top:14px;${ppop(p)}">${pill(esc(b.label), c, 42, 'padding:8px 28px')}</div></div>`; }
@@ -2889,6 +2906,20 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
           return `<div class="row" style="gap:18px;align-items:center;flex-wrap:nowrap;opacity:${c01(q * 2)}"><div style="width:${V ? 170 : 200}px;font-size:${V ? 34 : 38}px;font-weight:800;color:#3B4A63;white-space:nowrap">${esc(x.x)}</div>
             <div style="width:${(x.v / mx * BWm * eo(q)).toFixed(1)}px;height:${V ? 50 : 58}px;border-radius:0 29px 29px 0;background:${c}"></div>
             <div class="num" style="font-size:${V ? 54 : 64}px;font-weight:900;letter-spacing:-2px;color:${c};white-space:nowrap">${esc(x.vt)}</div></div>`; }).join('') + `</div>`; }
+      /* 10/20 사용자 "3이닝 3실점·6이닝 2실점 같은 건 글로만 때우지 말고 이해되기 쉽게" — ip: 경기마다 이닝 칸(던진 만큼 채움) + 실점 빨간 공 + 삼진 K 칸
+         {type:'ip', items:[{d:'9월 6일 광주', ip:3, r:3, k:13, at, hi}]} — ip 는 소수(9⅓ = 9.333) */
+      if (z.type === 'ip') { const its = z.items || [];
+        return `<div class="col" style="gap:30px;align-items:flex-start">` + its.map(x => { const q = had(z) ? 1 : bp(s, x.at ?? 0, .45), nb = Math.max(9, Math.ceil(x.ip - 1e-6)), BW = nb > 9 ? 44 : 50;
+          const boxes = Array.from({ length: nb }, (_, i) => { const f = Math.max(0, Math.min(1, x.ip - i)), g = c01(q * (nb + 3) / 1.6 - i * .55) * f;
+            return `<div style="position:relative;width:${BW}px;height:${BW}px;border-radius:10px;border:3px solid #4A2E33;background:#1C0F12;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:${(g * 100).toFixed(1)}%;background:#FFC93C"></div>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:${BW * .44}px;font-weight:900;color:${g > .5 ? '#3A2414' : '#6B5459'}">${i + 1}</div></div>`; }).join('');
+          const balls = Array.from({ length: x.r || 0 }, (_, i) => `<div style="width:34px;height:34px;border-radius:50%;background:#FF5A63;box-shadow:0 0 14px rgba(255,90,99,.6);${ppop(c01(q * 2.2 - .9 - i * .12))}"></div>`).join('');
+          const ks = x.k ? `<div class="row" style="gap:6px;align-items:center;flex-wrap:nowrap;margin-top:6px">${Array.from({ length: x.k }, (_, i) => `<div style="width:30px;height:38px;border-radius:7px;background:#8A93A6;color:#14080A;font-size:24px;font-weight:900;display:flex;align-items:center;justify-content:center;${ppop(c01(q * 2.4 - 1.2 - i * .06))}">K</div>`).join('')}<div style="margin-left:14px;font-size:40px;font-weight:900;color:#F4EDE4;white-space:nowrap;opacity:${c01(q * 2 - 1.6)}">삼진 ${x.k}개</div></div>` : '';
+          const ipTxt = (() => { const w = Math.floor(x.ip + 1e-6), fr = Math.round((x.ip - w) * 3); return w + (fr ? (fr === 1 ? '⅓' : '⅔') : '') + '이닝'; })();
+          return `<div class="col" style="gap:10px;align-items:flex-start;opacity:${c01(q * 3)};transform:translateY(${((1 - c01(q * 2)) * 20).toFixed(1)}px)">
+            <div style="font-size:34px;font-weight:800;color:${GRAY};white-space:nowrap">${esc(x.d)}</div>
+            <div class="row" style="gap:6px;align-items:center;flex-wrap:nowrap">${boxes}<div style="margin-left:16px;font-size:44px;font-weight:900;color:#FFC93C;white-space:nowrap">${ipTxt}</div></div>
+            <div class="row" style="gap:10px;align-items:center;flex-wrap:nowrap">${balls}<div style="margin-left:${x.r ? 8 : 0}px;font-size:44px;font-weight:900;color:#FF5A63;white-space:nowrap;opacity:${c01(q * 2 - 1)}">${x.r ? x.r + '실점' : '무실점'}</div></div>${ks}</div>`; }).join('') + `</div>`; }
       if (z.type === 'steps') { const its = z.items || [];
         return `<div class="col" style="gap:${its.length > 3 ? 8 : 16}px;align-items:flex-start;position:relative">` + its.map((x, k) => { const q = had(z) ? 1 : bp(s, x.at ?? 0, .45), c = colOf(x.c);
           return `<div class="row" style="gap:20px;align-items:center;flex-wrap:nowrap;${rise(q, 20)}"><div style="width:${V ? 170 : 210}px;font-size:${V ? 32 : 36}px;font-weight:800;color:${GRAY};white-space:nowrap">${esc(x.d)}</div>
@@ -3187,7 +3218,83 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
       ${extra}</g></g>`;
     return o.inner ? g : `<svg viewBox="-10 -20 220 250" width="100%" height="100%" style="overflow:visible">${g}</svg>`;
   }
-  const mang = (mood, t) => crit('tiger', mood, t);
+  /* 10/20 01:17 사용자 "캐릭터는 (그림 그대로 말고) 새로 만들어서 표정도 바뀌게, 대신 비슷한 느낌으로" →
+     채널 오리지널 꼬마 호랑이 '망냥이 2'(굵은 검정 외곽선·큰 머리 스티커 그림체). 구단 로고·글자 없음. 가슴 번호 17 = 우승 확률 17%.
+     mood: idle·cheer·cry·calc·faint·shock·think·wave·love·sweat */
+  const mang = (mood, t) => {
+    const O = '#1A1210', SK = '#F8C253', SK2 = '#1A1210', CR = '#FFF4E2', RD = '#E8213B', PK = '#FF8FA3', W = 4.5;
+    const blink = (t % 3.3) < 0.12 && !['faint', 'shock', 'love', 'cheer', 'cry'].includes(mood);
+    const bob = { cheer: -Math.abs(Math.sin(t * 6)) * 16, love: -Math.abs(Math.sin(t * 3)) * 8, shock: -6 }[mood] ?? Math.sin(t * 2.2) * 3;
+    const tilt = { faint: 14 + Math.sin(t * 1.5) * 3, shock: Math.sin(t * 40) * 2, cry: Math.sin(t * 6) * 2, think: -6 + Math.sin(t * 1.6) * 2, wave: Math.sin(t * 3) * 3 }[mood] ?? Math.sin(t * 1.7) * 2.5;
+    /* 팔 각도(어깨 기준, 0 = 아래로) */
+    let aL = 18, aR = -18;
+    if (mood === 'cheer') { aL = 150 + Math.sin(t * 12) * 14; aR = -150 - Math.sin(t * 12) * 14; }
+    else if (mood === 'wave') aR = -140 + Math.sin(t * 9) * 26;
+    else if (mood === 'cry') { aL = 28 + Math.sin(t * 10) * 4; aR = -28 - Math.sin(t * 10) * 4; }
+    else if (mood === 'calc') { aL = 60; aR = -60; }
+    else if (mood === 'shock') { aL = 110; aR = -110; }
+    else if (mood === 'think') aR = -130;
+    else if (mood === 'love') { aL = 95; aR = -95; }
+    const arm = (x, ang) => `<g transform="rotate(${ang.toFixed(1)} ${x} 196)"><rect x="${x - 11}" y="190" width="22" height="46" rx="11" fill="${SK}" stroke="${O}" stroke-width="${W}"/><path d="M${x - 9} 214 l9 3 M${x + 9} 214 l-9 3 M${x - 9} 224 l8 2" stroke="${O}" stroke-width="3.5" stroke-linecap="round"/><circle cx="${x}" cy="234" r="11" fill="${CR}" stroke="${O}" stroke-width="${W}"/></g>`;
+    /* 몸: 흰 유니폼 + 빨간 목둘레·소매 + 번호 17, 짧은 다리 */
+    const body = `<rect x="76" y="246" width="20" height="26" rx="9" fill="${SK}" stroke="${O}" stroke-width="${W}"/><rect x="104" y="246" width="20" height="26" rx="9" fill="${SK}" stroke="${O}" stroke-width="${W}"/>
+      <path d="M66 210 L66 250 Q100 262 134 250 L134 210 Z" fill="${SK}" stroke="${O}" stroke-width="${W}" stroke-linejoin="round"/>
+      <path d="M62 196 Q62 176 100 176 Q138 176 138 196 L137 230 Q100 240 63 230 Z" fill="#FFFFFF" stroke="${O}" stroke-width="${W}" stroke-linejoin="round"/>
+      <path d="M84 178 Q100 192 116 178" fill="none" stroke="${RD}" stroke-width="6" stroke-linecap="round"/>
+      <path d="M64 220 Q100 230 136 220" fill="none" stroke="${RD}" stroke-width="5"/>`;   /* 10/20 사용자 "유니폼에 17 없애" */
+    /* 귀: 둥근 귀 + 분홍 속귀 */
+    const ears = `<circle cx="44" cy="52" r="20" fill="${SK}" stroke="${O}" stroke-width="${W}"/><circle cx="44" cy="55" r="10" fill="${CR}"/>
+      <circle cx="156" cy="52" r="20" fill="${SK}" stroke="${O}" stroke-width="${W}"/><circle cx="156" cy="55" r="10" fill="${CR}"/>`;
+    /* 얼굴: 큰 둥근 머리 + 크림색 볼·입 둘레 + 이마 줄무늬 3개 + 볼 줄무늬 */
+    const head = `<ellipse cx="100" cy="104" rx="72" ry="66" fill="${SK}" stroke="${O}" stroke-width="${W}"/>
+      <path d="M29 96 l22 6 l-21 4 z M30 114 l20 5 l-19 5 z" fill="${O}"/>
+      <path d="M171 96 l-22 6 l21 4 z M170 114 l-20 5 l19 5 z" fill="${O}"/>
+      <path d="M58 128 Q66 110 100 112 Q134 110 142 128 Q138 158 100 160 Q62 158 58 128 Z" fill="${CR}"/>`;
+    /* 꼬리: 몸 뒤 오른쪽으로 말려 올라간 줄무늬 꼬리 */
+    const tail = `<path d="M128 240 Q170 244 172 210 Q174 188 160 182" fill="none" stroke="${O}" stroke-width="${16 + W * 2}" stroke-linecap="round"/>
+      <path d="M128 240 Q170 244 172 210 Q174 188 160 182" fill="none" stroke="${SK}" stroke-width="16" stroke-linecap="round"/>
+      <path d="M150 236 l4 12 M166 222 l12 4 M170 202 l12 -2" stroke="${O}" stroke-width="5" stroke-linecap="round"/>`;
+    /* 모자: 앞으로 쓴 빨간 야구모자 + 흰 야구공 마크, 챙은 오른쪽 */
+    const cap = `<g transform="translate(100 56) scale(.8) translate(-100 -56)"><path d="M50 58 Q54 22 100 20 Q146 22 150 58 Q100 46 50 58 Z" fill="${RD}" stroke="${O}" stroke-width="${W}" stroke-linejoin="round"/>
+      <circle cx="100" cy="38" r="10" fill="#fff" stroke="${O}" stroke-width="3"/><path d="M95 32 q4 6 0 12 M105 32 q-4 6 0 12" fill="none" stroke="${RD}" stroke-width="2"/></g>`;   /* 10/20 사용자 "모자는 좀 작게" → 80% */
+    /* 눈 */
+    const EX = [74, 126], EY = 104;
+    let eyes;
+    if (blink) eyes = EX.map(x => `<path d="M${x - 10} ${EY} q10 5 20 0" fill="none" stroke="${O}" stroke-width="5" stroke-linecap="round"/>`).join('');
+    else if (mood === 'cheer' || mood === 'wave') eyes = EX.map(x => `<path d="M${x - 11} ${EY + 4} q11 -15 22 0" fill="none" stroke="${O}" stroke-width="5.5" stroke-linecap="round"/>`).join('');
+    else if (mood === 'love') eyes = EX.map(x => `<path d="M${x} ${EY + 10} l-12 -12 a7 7 0 0 1 12 -7 a7 7 0 0 1 12 7 z" fill="${RD}" stroke="${O}" stroke-width="2.5" transform="scale(${(1 + .1 * Math.sin(t * 8)).toFixed(3)})" transform-origin="${x} ${EY}"/>`).join('');
+    else if (mood === 'cry') eyes = EX.map((x, k) => `<path d="M${x - 11} ${EY - 2} q11 9 22 0" fill="none" stroke="${O}" stroke-width="5" stroke-linecap="round"/><path d="M${x + (k ? -12 : -2)} ${EY - 16} l${k ? -10 : 10} 6" stroke="${O}" stroke-width="4" stroke-linecap="round"/>`).join('');
+    else if (mood === 'faint') eyes = EX.map(x => `<path d="M${x - 8} ${EY - 8} l16 16 M${x + 8} ${EY - 8} l-16 16" stroke="${O}" stroke-width="5" stroke-linecap="round"/>`).join('');
+    else { const r = mood === 'shock' ? 15 : 13, lx = mood === 'think' ? -3 : mood === 'calc' ? Math.sin(t * 4) * 2 : 0, ly = mood === 'think' ? -4 : mood === 'calc' ? 3 : 0;
+      eyes = EX.map(x => `<ellipse cx="${x}" cy="${EY}" rx="${r}" ry="${r + 2}" fill="${O}"/><circle cx="${x + 4 + lx}" cy="${EY - 5 + ly}" r="${mood === 'shock' ? 3.5 : 5}" fill="#fff"/><circle cx="${x - 4 + lx}" cy="${EY + 5 + ly}" r="2.2" fill="#fff"/>`).join(''); }
+    /* 눈썹: 감정에 따라 */
+    const brow = { sweat: 'M60 84 l22 -6 M140 84 l-22 -6', cry: 'M60 82 l22 -7 M140 82 l-22 -7', think: 'M62 82 l20 2 M118 78 l20 -4', shock: 'M60 78 q12 -8 24 -2 M116 76 q12 -6 24 2', calc: 'M62 84 l20 -3 M138 84 l-20 -3', cheer: 'M60 76 q11 -9 22 -3 M118 73 q11 -6 22 3', wave: 'M60 76 q11 -9 22 -3 M118 73 q11 -6 22 3', love: 'M60 74 q11 -9 22 -3 M118 71 q11 -6 22 3', faint: 'M60 80 q6 -5 11 0 q6 5 11 0 M118 80 q6 -5 11 0 q6 5 11 0' }[mood] || 'M60 80 q11 -7 22 -3 M118 77 q11 -4 22 3';   /* 10/20 사용자 "기본은 왜 눈썹이 없어 — 없는 것 다" */
+    const brows = brow ? `<path d="${brow}" fill="none" stroke="${O}" stroke-width="6.5" stroke-linecap="round"/>` : '';
+    /* 코·입 */
+    const nose = `<path d="M90 118 q10 -5 20 0 q-3 9 -10 10 q-7 -1 -10 -10 z" fill="#E8607A" stroke="${O}" stroke-width="3" stroke-linejoin="round"/>`;
+    const mouth = ({ cheer: `<path d="M84 134 q16 22 32 0 z" fill="#B3263A" stroke="${O}" stroke-width="3"/><path d="M92 142 q8 6 16 0" fill="${PK}"/>`,
+      wave: `<path d="M86 134 q14 16 28 0" fill="none" stroke="${O}" stroke-width="4" stroke-linecap="round"/>`,
+      love: `<path d="M86 134 q14 14 28 0" fill="none" stroke="${O}" stroke-width="4" stroke-linecap="round"/>`,
+      cry: `<path d="M86 146 q14 -12 28 0" fill="none" stroke="${O}" stroke-width="4" stroke-linecap="round"/>`,
+      shock: `<ellipse cx="100" cy="142" rx="9" ry="12" fill="#B3263A" stroke="${O}" stroke-width="3"/>`,
+      sweat: `<path d="M88 142 q6 -5 12 0 q6 5 12 0" fill="none" stroke="${O}" stroke-width="4" stroke-linecap="round"/>`,
+      faint: `<path d="M88 142 q6 -5 12 0 q6 5 12 0" fill="none" stroke="${O}" stroke-width="4" stroke-linecap="round"/>`,
+      think: `<path d="M92 140 l16 -2" stroke="${O}" stroke-width="4" stroke-linecap="round"/>`,
+      calc: `<path d="M92 139 q8 5 16 0" fill="none" stroke="${O}" stroke-width="4" stroke-linecap="round"/>` })[mood]
+      || `<path d="M100 128 v5 M100 133 q-8 8 -14 2 M100 133 q8 8 14 2" fill="none" stroke="${O}" stroke-width="4" stroke-linecap="round"/>`;
+    const blush = ['cheer', 'love', 'wave', 'idle'].includes(mood) || !mood ? `<ellipse cx="56" cy="126" rx="10" ry="6" fill="${PK}" opacity=".7"/><ellipse cx="144" cy="126" rx="10" ry="6" fill="${PK}" opacity=".7"/>` : '';
+    /* 감정 효과 */
+    let ex = '';
+    if (mood === 'cry') for (let i = 0; i < 3; i++) { const p = (t * 1.6 + i / 3) % 1; [70, 130].forEach((x, k) => { ex += `<path d="M${x + (k ? 6 : -6) * p * 3} ${112 + p * 60} q-6 10 0 14 q6 -4 0 -14z" fill="#6EC6FF" opacity="${(1 - p).toFixed(2)}"/>`; }); }
+    if (mood === 'sweat' || mood === 'shock') { const p = (t * 1.2) % 1; ex += `<path d="M170 ${56 + p * 30} q-9 15 0 19 q9 -4 0 -19z" fill="#8ED6FF" stroke="${O}" stroke-width="2" opacity="${(1 - p * .8).toFixed(2)}"/>`; }
+    if (mood === 'think') for (let i = 0; i < 3; i++) { const q = .5 + .5 * Math.sin(t * 3 - i); ex += `<circle cx="${172 + i * 12}" cy="${30 - i * 14}" r="${4 + i * 3}" fill="#fff" stroke="${O}" stroke-width="2.5" opacity="${q.toFixed(2)}"/>`; }
+    if (mood === 'love') for (let i = 0; i < 3; i++) { const p = (t * .8 + i / 3) % 1; ex += `<text x="${40 + i * 60}" y="${40 - p * 50}" font-size="${22 + i * 4}" fill="${RD}" opacity="${(1 - p).toFixed(2)}">♥</text>`; }
+    if (mood === 'cheer') for (let i = 0; i < 4; i++) { const a = t * 2 + i * 1.57, r = 96 + Math.sin(t * 5 + i) * 6; ex += `<text x="${(100 + Math.cos(a) * r).toFixed(0)}" y="${(130 + Math.sin(a) * r * .7).toFixed(0)}" font-size="22" text-anchor="middle" fill="${GOLD}" opacity="${(.5 + .5 * Math.sin(t * 7 + i)).toFixed(2)}">✦</text>`; }
+    if (mood === 'faint') for (let i = 0; i < 3; i++) { const a = t * 3 + i * 2.1; ex += `<text x="${(100 + Math.cos(a) * 56).toFixed(0)}" y="${(22 + Math.sin(a) * 12).toFixed(0)}" font-size="20" text-anchor="middle" fill="${GOLD}">★</text>`; }
+    if (mood === 'calc') { const d = ['1', '17', '17%'][Math.floor(t * 2) % 3]; ex += `<g transform="translate(64 190) rotate(-6)"><rect width="72" height="56" rx="9" fill="#2E3440" stroke="${O}" stroke-width="3"/><rect x="6" y="6" width="60" height="18" rx="4" fill="#B8F5C8"/><text x="62" y="21" font-size="15" font-weight="900" text-anchor="end" fill="#1F3B28" font-family="monospace">${d}</text>${[0, 1, 2].map(c => [0, 1].map(r => `<rect x="${8 + c * 20}" y="${30 + r * 12}" width="14" height="8" rx="2" fill="${(Math.floor(t * 8) % 6) === c + r * 3 ? GOLD : '#7A8394'}"/>`).join('')).join('')}</g>`; }
+    const g = `<g transform="translate(0 ${bob.toFixed(1)}) rotate(${tilt.toFixed(1)} 100 250)"><g transform="translate(0 -16)">${arm(66, aL)}${arm(134, aR)}${body}</g>${ears}${head}${cap}${brows}${eyes}${blush}${nose}${mouth}${ex}</g>`;
+    return `<svg viewBox="-10 -14 220 300" width="100%" height="100%" style="overflow:visible">${g}</svg>`;
+  };
   window.mangSVG = mang;
 
   /* ── ② 효과 ───────────────────────────────────────────── */
@@ -3229,8 +3336,8 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
     const n = s.dreamNo, tt = s.dreamTitle || '';
     return `<div style="position:absolute;inset:0;background:radial-gradient(circle at 50% 46%, rgba(186,160,255,${(.35 * grow * op).toFixed(2)}), rgba(30,20,60,${(.45 * grow * op).toFixed(2)}) 70%)"></div>${trail}
       <div style="position:absolute;inset:0;transform:scale(${sc.toFixed(3)});transform-origin:960px 520px;opacity:${op.toFixed(2)}">${cloud}
-        <div style="position:absolute;left:0;right:0;top:${360}px;text-align:center;font-weight:900;color:#7A5BD8;font-size:46px;letter-spacing:-1px">✦ 생각만 해도 행복한 ✦</div>
-        <div style="position:absolute;left:0;right:0;top:${420}px;text-align:center;font-weight:900;color:${KIA};font-size:170px;letter-spacing:-6px;line-height:1">망상 ${n}경기</div>
+        <div style="position:absolute;left:0;right:0;top:${360}px;text-align:center;font-weight:900;color:#7A5BD8;font-size:46px;letter-spacing:-1px">${esc(s.dreamTop || '✦ 생각만 해도 행복한 ✦')}</div>
+        <div style="position:absolute;left:0;right:0;top:${420 + ((s.dreamLabel || '').length > 7 ? 18 : 0)}px;text-align:center;font-weight:900;color:${KIA};font-size:${(s.dreamLabel || '').length > 7 ? 140 : 170}px;letter-spacing:-6px;line-height:1">${esc(s.dreamLabel || ('망상 ' + n + '경기'))}</div>
         <div style="position:absolute;left:0;right:0;top:${590}px;text-align:center;font-weight:800;color:#12161F;font-size:52px;letter-spacing:-1.5px">${esc(tt)}</div></div>`;
   }
 
@@ -3245,7 +3352,9 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
 .card .l,.gray{color:#BCA9A2}.photo{background:#2A1A1E;border-color:#4A2E33;box-shadow:0 18px 50px rgba(0,0,0,.5)}
 .st>div{background:#22151A;border-color:#3D262B}.st>div i{color:#BCA9A2}
 .chip{background:radial-gradient(circle,#FFF8EE 0%,#EFDFCC 100%);box-shadow:0 0 0 4px rgba(255,201,60,.30),0 10px 26px rgba(0,0,0,.45)}.chip img{padding:9%;box-sizing:border-box}
-#sub span{background:rgba(10,4,6,.92);box-shadow:0 0 0 3px rgba(255,201,60,.35)}`;
+#sub span{background:rgba(10,4,6,.92);box-shadow:0 0 0 3px rgba(255,201,60,.35)}
+.title.gold,.chaptitle .kk{color:#FF5A63}
+#vtitle .l{color:#F4EDE4}#vtitle .l.a{color:#FF5A63}#vtitle .bs{color:#BCA9A2}html.vert #hdr{border-bottom-color:#3D262B}`;   /* 10/20 사용자 '가운데 빨간 글씨가 번진 것처럼' — 진한 빨강(#EA0029)은 어두운 배경에서 밝기 차가 작아 영상 압축 때 번진다 → 밝은 빨강 */
     document.head.appendChild(st);
     const RP = [[/background:\s*#12161F/gi, 'background:#3A1218'], [/solid #12161F/gi, 'solid #F4EDE4'], [/background:\s*#fff(fff)?\b/gi, 'background:#22151A'],
       [/#E3E7EE/gi, '#3D262B'], [/#E9EDF3/gi, '#2A1A1E'], [/#F4F6FA/gi, '#1A0D10'], [/#6A7382/gi, '#BCA9A2'], [/#C9D0DB/gi, '#6E5A5E'], [/#D5DBE5/gi, '#4A3338'],
@@ -3280,10 +3389,22 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
   window.__mangFx = function (t, s, lt) {
     let ov = document.getElementById('mangOv');
     if (!ov) { ov = document.createElement('div'); ov.id = 'mangOv'; ov.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:5;overflow:hidden';
-      const st = document.getElementById('stage'), sub = document.getElementById('sub'); st.insertBefore(ov, sub); sub.style.zIndex = 6; sub.style.right = '300px'; sub.style.left = '300px'; }
+      const st = document.getElementById('stage'), sub = document.getElementById('sub');
+      /* 10/20 컷 쇼츠(세로): #sub 가 body 로 옮겨져 있고 장면(#stage)은 장면마다 확대·이동된다 → 덧그림은 body 에 1080x1920 좌표로 */
+      if (EP.vertical) { ov.style.cssText = 'position:absolute;left:0;top:0;width:1080px;height:1920px;pointer-events:none;z-index:5;overflow:hidden'; document.body.appendChild(ov); sub.style.zIndex = 6; sub.style.position = 'absolute'; }
+      else { st.insertBefore(ov, sub); sub.style.zIndex = 6; sub.style.right = '300px'; sub.style.left = '300px'; } }
     let h = darkStage(t);
-    [].concat(s.fx || []).forEach(k => { h += fxHTML(k, lt); });
-    if (s.dreamNo) h += dreamHTML(s, lt);
+    /* 10/20 사용자 "아직 누가 이긴다고 말도 안 했는데 폭죽이… 캐릭터도 벌써 2승 1패!" — s.revealAt(호흡 번호): 결과를 말하는 그 호흡에서 폭죽·말풍선·표정이 같이 나온다 */
+    const rv = (() => { if (s.revealAt == null) return null; const sg = (EP.segT || [])[s.startLine] || []; if (!sg.length) return null;
+      const i = Math.floor(s.revealAt), f = s.revealAt - i, a0 = sg[i] ?? sg[sg.length - 1], a1 = sg[i + 1] ?? a0 + 1.2; return a0 + (a1 - a0) * f; })();
+    const fl = rv == null ? lt : t - rv;
+    if (fl >= 0) [].concat(s.fx || []).forEach(k => { h += fxHTML(k, fl); });
+    let hd = s.dreamNo ? dreamHTML(s, lt) : '';
+    if (EP.vertical) {   /* 세로: 가로 1920x1080 좌표 효과를 0.5625배로 줄여 위아래 3칸에 깔고, 구름은 장면 칸(650~1320) 위에 */
+      const T_ = (y, x) => `<div style="position:absolute;left:0;top:${y}px;width:1920px;height:1080px;transform:scale(.5625);transform-origin:0 0">${x}</div>`;
+      h = T_(0, h) + T_(607, h) + T_(1214, h) + (hd ? T_(681, hd) : ''); hd = '';
+    }
+    h += hd;
     /* 요소 애니메이션: 사진·로고가 살짝 둥실 */
     document.querySelectorAll('#body .photo, #body .chip').forEach((el, i) => { el.style.translate = `0 ${(Math.sin(t * 1.8 + i * 1.3) * 5).toFixed(1)}px`; });
     const bonk = s.bonk;
@@ -3303,15 +3424,42 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
       h += `${say2}<div style="position:absolute;left:${cx}px;top:${cy}px;width:236px;height:268px;filter:drop-shadow(0 10px 16px rgba(0,0,0,.35))">${crit(TEAM_SP[s.crew] || 'lion', s.crewMood || 'idle', t + 1.3)}</div>`;
     }
     if (EP.mascot !== false && s.mood !== 'none' && !bonk) {
-      const mood = s.mood || 'idle', ent = c01((t - 0.2) / .6), x = 1668, y = 800 + (1 - e3(ent)) * 300;
-      const say = s.say ? `<div style="position:absolute;left:${x - 330}px;top:${y - 40}px;width:330px;display:flex;justify-content:flex-end;${pop(seg(lt, .25, .35))}"><div style="background:#fff;border:4px solid #12161F;border-radius:26px;padding:12px 26px;font-size:40px;font-weight:900;letter-spacing:-1px;color:#12161F;white-space:nowrap;box-shadow:0 8px 0 rgba(18,22,31,.15)">${esc(s.say)}</div></div>` : '';
-      h += `${say}<div style="position:absolute;left:${x}px;top:${y}px;width:236px;height:268px;filter:drop-shadow(0 10px 16px rgba(18,22,31,.25))">${mang(mood, t)}</div>`;
+      const before = rv != null && t < rv, mood = before ? (s.preMood || 'think') : (s.mood || 'idle'), ent = c01((t - 0.2) / .6), VV = !!EP.vertical, x = VV ? 838 : 1668, y = VV ? 120 - (1 - e3(ent)) * 300 : 800 + (1 - e3(ent)) * 300;   /* 세로: 오른쪽 위(머리줄과 제목 사이) */
+      const say = s.say && !before ? `<div style="position:absolute;left:${x - 330}px;top:${VV ? y + 150 : y - 40}px;width:330px;display:flex;justify-content:flex-end;${pop(rv == null ? seg(lt, .25, .35) : seg(t - rv, 0, .35))}"><div style="background:#fff;border:4px solid #12161F;border-radius:26px;padding:12px 26px;font-size:40px;font-weight:900;letter-spacing:-1px;color:#12161F;white-space:nowrap;box-shadow:0 8px 0 rgba(18,22,31,.15)">${esc(s.say)}</div></div>` : '';
+      h += `${say}<div style="position:absolute;left:${x}px;top:${y}px;width:236px;height:268px;filter:drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(0 10px 16px rgba(0,0,0,.45))">${mang(mood, t)}</div>`;
     }
     ov.innerHTML = h;
   };
 
   /* ── ④ 새 장면 ───────────────────────────────────────── */
   /* mscore: 전광판. s.left·s.right(팀), s.score "5 : 2", s.tag, s.text, s.win('L'|'R') */
+  /* 10/20 00:49 사용자 "이건 굳이 카드 안에 없어도 될거같아" — 경고 문구를 사진 카드 없이 배경 위 글로 */
+  SCENE.warn = (lt, s) => {
+    const a = e3(cl((lt - .05) / .4, 0, 1)), b = e3(cl((lt - .25) / .5, 0, 1)), c = e3(cl((lt - .5) / .5, 0, 1));
+    B(`<div class="col" style="width:100%;align-items:center;text-align:center;gap:0">
+      <div style="font-weight:900;color:#E5484D;font-size:54px;letter-spacing:24px;padding-left:24px;opacity:${a.toFixed(3)}">WARNING</div>
+      <div style="margin-top:28px;width:${Math.round(560 * a)}px;height:4px;background:#C70125"></div>
+      <div data-keep="1" style="margin-top:58px;font-weight:900;color:#F4EDE4;font-size:108px;line-height:1.28;letter-spacing:-3px;opacity:${b.toFixed(3)};transform:translateY(${((1 - b) * 24).toFixed(1)}px)">본 영상은 채널 주인장의<br>망상임을 알려드립니다</div>
+      <div style="margin-top:44px;font-weight:800;color:#BDB2AC;font-size:48px;letter-spacing:-1px;opacity:${c.toFixed(3)}">※ 경기 결과는 모두 예측이에요</div>
+      <div style="margin-top:46px;width:${Math.round(560 * c)}px;height:4px;background:#C70125"></div></div>`);
+  };
+  /* mups: 선발 맞대결 두 쌍(10/20 사용자 "누구 대 누구 말하는데 사진은 대니엘밖에 — 다 나오게").
+     s.pairs = [{tag, at, l:{img,name,team,focus}, r:{img,name,team,focus}, notes:[{t, at}]}] — 말하는 호흡(at)에 그 쌍이 뜬다 */
+  SCENE.mups = (lt, s) => {
+    const P = k => { const b = brP(s, k, .45); return b == null ? 1 : b; };
+    const TCc = t => t === 'KIA' ? KIA : t === 'KT' ? '#3A3A44' : t === '삼성' ? '#074CA1' : '#6A7382';
+    const card = (x, q) => { const src = photoSrc(x.img);
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="position:relative;width:250px;height:320px;border-radius:26px;overflow:hidden;background:#2A1A1E;border:5px solid ${TCc(x.team)};box-shadow:0 18px 44px rgba(0,0,0,.5)">${src ? `<img src="${src}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:${x.focus || '50% 15%'}">` : ''}</div>
+        <div style="font-size:52px;font-weight:900;letter-spacing:-2px;color:#F4EDE4;white-space:nowrap">${esc(x.name)}</div></div>`; };
+    const cols = (s.pairs || []).map(pr => { const q = P(pr.at ?? 0);
+      const notes = (pr.notes || []).map(n => `<div style="font-size:40px;font-weight:900;color:${n.hi ? '#FF5A63' : '#F4EDE4'};letter-spacing:-1px;white-space:nowrap;${pop(P(n.at))}">${esc(n.t)}</div>`).join('');
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:22px;opacity:${c01(q * 1.6).toFixed(3)};transform:translateY(${((1 - e3(q)) * 40).toFixed(1)}px)">
+        <span style="display:inline-block;background:#3D262B;color:#F4EDE4;font-size:40px;font-weight:900;padding:8px 30px;border-radius:999px;white-space:nowrap">${esc(pr.tag)}</span>
+        <div style="display:flex;align-items:center;gap:26px">${card(pr.l, q)}<div style="font-size:56px;font-weight:900;color:#BCA9A2;margin-bottom:60px">VS</div>${card(pr.r, q)}</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-height:110px">${notes}</div></div>`; }).join('');
+    B(`<div style="display:flex;justify-content:center;align-items:flex-start;gap:150px;width:100%">${cols}</div>`);
+  };
   SCENE.mscore = (lt, s) => {
     const [a, b] = String(s.score || '0 : 0').split(':').map(x => parseInt(x)), stop = .55 + .35;
     const roll = (v, d) => { const p = c01((lt - .3 - d) / .6); if (p >= 1) return v; return Math.floor((lt * 23 + d * 7) % 10); };
@@ -3356,7 +3504,7 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
     const chips = st.map((x, i) => { const on = i <= k; return `<div style="display:flex;flex-direction:column;align-items:center;gap:10px;opacity:${on ? 1 : .35};${pop(seg(lt, (x.at ?? i * .8), .4))}">${sideChip(x.team, 'M')}<div style="font-size:40px;font-weight:900;color:#12161F">${esc(x.label)}</div><div style="font-size:48px;font-weight:900;color:${on ? KIA : '#6A7382'}">× ${x.pass}%</div></div>`; }).join('<div style="font-size:60px;color:#C9D0DB;font-weight:900;margin-top:40px">→</div>');
     B(`<div class="col" style="width:100%;align-items:center;gap:44px">${s.title ? `<div class="badge" style="background:#12161F;font-size:34px">${esc(s.title)}</div>` : ''}${bat}<div class="row" style="gap:34px;align-items:flex-start">${chips}</div></div>`);
   };
-  Object.assign(MOTION, { mscore: () => 1.8, dice: () => 2.2, gauge: s => .9 + (s.steps || []).length * .8 });
+  Object.assign(MOTION, { mups: () => 1.2, warn: () => 1.1, mscore: () => 1.8, dice: () => 2.2, gauge: s => .9 + (s.steps || []).length * .8 });
 })();
 /* @@MANG1019END */
 function render(t) {

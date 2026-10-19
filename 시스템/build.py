@@ -832,8 +832,10 @@ def render(ep, ep_path):
         try:
             import subprocess as _sp
             o = _sp.run(['powershell', '-NoProfile', '-Command', '(Get-CimInstance Win32_VideoController).Name -join ";"'], capture_output=True, text=True, timeout=15).stdout
+            _GPU_NAME[0] = ', '.join(x.strip() for x in o.split(';') if any(k in x.upper() for k in ('NVIDIA', 'GEFORCE', 'RTX', 'GTX', 'RADEON', 'AMD')))
             return any(k in o.upper() for k in ('NVIDIA', 'GEFORCE', 'RTX', 'GTX', 'RADEON', 'AMD'))
         except Exception: return False
+    _GPU_NAME = ['']
     HAS_DGPU = _has_dgpu()
     if HAS_DGPU:
         for _f in {NOGPU_FLAG, os.path.join('work', 'no_gpu.flag')}:
@@ -848,6 +850,13 @@ def render(ep, ep_path):
         except Exception: pass
     # 10/18 23:02 사용자: 집 PC 는 GPU 가 있다 — 빈(0바이트) 표시 파일은 무시. GPU 오류 뒤 자동으로 만든(글이 든) 표시만 따른다
     if not HAS_DGPU and os.path.exists(NOGPU_FLAG) and os.path.getsize(NOGPU_FLAG) > 0: fenv['FRAME_NO_GPU'] = '1'; fenv['FRAME_WORKERS'] = '1'; print('이 PC 는 GPU 없이 크롬 1개로 그립니다(work\\no_gpu.flag) — 조각은 다 그린 것부터 저장')
+    # 10/20 00:43 사용자: "배치파일 누르면 gpu로 할 때 gpu로 한다고 나오게 해줘 앞으로" — 렌더 시작 때 어떤 방식으로 그리는지 크게 알린다
+    def _mode_banner(when):
+        if fenv.get('FRAME_NO_GPU') == '1': msg = 'GPU 없이(CPU) 그립니다 — 느림'
+        elif HAS_DGPU: msg = 'GPU(그래픽카드' + (': ' + _GPU_NAME[0] if _GPU_NAME[0] else '') + ')로 그립니다'
+        else: msg = '내장 그래픽으로 그립니다(그래픽카드 없음)'
+        print('=' * 60); print(f'  [{when}] {msg}'); print('=' * 60)
+    _mode_banner('렌더 시작')
     r = None
     if is_long(ep) and cfg_get('CHUNK_CACHE', '1') != '0':
         # 10/1: 롱폼은 장면 조각으로 그리고, 지난번과 똑같은 조각은 다시 찍지 않는다(바뀐 장면만 새로)
@@ -870,6 +879,7 @@ def render(ep, ep_path):
     if r.returncode != 0: print('프레임 렌더 1차 실패 → 동시작업 1 로 다시:\n' + ((r.stderr or '') + '\n' + (r.stdout or ''))[-1200:])
     elif r.stdout: print((r.stdout or '').strip().splitlines()[-1])
     vd = dur_of(W('silent.mp4')) if os.path.exists(W('silent.mp4')) else 0.0
+    if fenv.get('FRAME_NO_GPU') == '1': _mode_banner('렌더 중 바뀜')
     if r.returncode != 0 or vd < total * 0.95:
         # 조각 파일을 동시에 쓰다 깨진 경우(OneDrive 동기화 폴더에서 가끔) → 한 번 더, 이번엔 조각 없이 한 번에 그린다
         print(f'경고: 무음 영상이 깨졌거나 짧음({vd:.1f}s / {total:.1f}s) → GPU 끄고 한 번 더 그립니다(동시작업 1)')
