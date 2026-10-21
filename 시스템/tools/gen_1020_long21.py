@@ -27,7 +27,7 @@ def stp(d, t, at=0, c=None, **k): return dict(d=d, t=t, at=at, **({"c": c} if c 
 def vstamp(t, at=0, c="gold", **k): return dict(type="stamp", t=t, at=at, c=c, **k)
 RED, GOLD, GRAY, NAVY = "#E5484D", "#E8A100", "#8A93A3", "#3B4A63"
 C, K = '카드/P21_', 'KBO프로필/'
-IMG = {None: None, "손아섭A": C + "손아섭_홈런", "손아섭B": C + "손아섭_스윙", "손아섭C": C + "손아섭_질주", "손아섭D": C + "손아섭_인사", "손아섭P": K + "손아섭_2026두산",
+IMG = {None: None, "손아섭A": C + "손아섭_홈런", "손아섭B": C + "손아섭_스윙", "손아섭C": C + "손아섭_질주", "손아섭D": C + "손아섭_인사", "손아섭P": K + "손아섭_2026두산", "손아섭H1": C + "손아섭_한화2025", "손아섭H2": C + "손아섭_한화KS",
        "김명신A": C + "김명신_역투", "김명신B": C + "김명신_2017복귀", "김명신P": K + "김명신_2026두산",
        "정재훈": C + "정재훈_단장", "김태룡": C + "김태룡", "김원형": C + "김원형_박수"}
 def pv(img, name, sub, viz=(), stats=(), **k): return S(0, "pstat", img=IMG[img], team=k.pop("team", "두산"), name=name, sub=sub, viz=list(viz), stats=list(stats), noCenter=True, **k)
@@ -37,7 +37,7 @@ def steps(title, items, **k): return S(0, "steps", title=title, items=[dict(date
 # 11명 얼굴판(포지션별) — 1·13줄
 POS = [("김명신", "투수"), ("박강민", "투수"), ("김지윤", "투수"), ("장우진", "투수"), ("이기석", "투수"), ("백승우", "투수"),
        ("김민혁", "내야수"), ("지강혁", "내야수"), ("이종혁", "내야수"), ("손아섭", "외야수"), ("양현진", "외야수")]
-def prof(n): return {"백승우": K + "백승우_두산", "이종혁": None}.get(n, K + n + "_2026두산")
+def prof(n): return {"백승우": K + "백승우_두산"}.get(n, K + n + "_2026두산")
 def F11(**k): return S(0, "facegrid", title="두산 · 재계약 불가 11명", cols=6, card=True, chain="f11", profile=True,
                        items=[dict(name=n, img=prof(n), team="두산", pos=p, **({"at": 0.2 + i * 0.05} if not k.get("cont") else {})) for i, (n, p) in enumerate(POS)], **k)
 # 나머지 9명 — 43~51줄
@@ -73,16 +73,15 @@ SC.append(pv("손아섭A", "손아섭", "2024년 6월 20일 · 잠실 두산전"
 SC.append(S(0, "bars", title="손아섭 · 시즌 안타", items=[dict(label="2021년", value=173, unit="개", at=0), dict(label="2022년", value=152, unit="개", at=0),
                                                        dict(label="2023년", value=187, unit="개", at=0), dict(label="2024년 · 무릎 부상", value=95, unit="개", at=2, hi=True)],
              max=200, text="2010년부터 14년 연속 100안타 → 끊김", textAt=3.2, size=52))                                               # L18
-SC.append(pv(None, "손아섭", "2025년 → 2026년", [vsteps([stp("2025년 7월", "NC → 한화 트레이드", 1.0)])], chain="s19", team="한화"))             # L19
-SC.append(pv(None, "손아섭", "2025년 → 2026년", [vsteps([stp("2025년 7월", "NC → 한화 트레이드", -1), stp("그 겨울 FA", "다른 구단 제안 없음", 0.5, c="bad"),
+SC.append(pv("손아섭H1", "손아섭", "2025년 → 2026년", [vsteps([stp("2025년 7월", "NC → 한화 트레이드", 1.0)])], chain="s19", team="한화"))             # L19
+SC.append(pv("손아섭H1", "손아섭", "2025년 → 2026년", [vsteps([stp("2025년 7월", "NC → 한화 트레이드", -1), stp("그 겨울 FA", "다른 구단 제안 없음", 0.5, c="bad"),
                                                          stp("2026년 2월 5일", "한화와 1년 1억 원", 2.4)])], chain="s19", cont=True, team="한화"))      # L20
-SC.append(pv(None, "손아섭", "2026년 한화", [vsteps([stp("3월 28일 개막전", "대타 한 타석", 1.0), stp("3월 30일", "2군행", 2.0, c="bad")])], chain="s21", team="한화"))   # L21
-SC.append(pv(None, "손아섭", "2026년 한화 → 두산", [vsteps([stp("3월 28일 개막전", "대타 한 타석", -1), stp("3월 30일", "2군행", -1, c="bad"),
+SC.append(pv("손아섭H2", "손아섭", "2026년 한화", [vsteps([stp("3월 28일 개막전", "대타 한 타석", 1.0), stp("3월 30일", "2군행", 2.0, c="bad")])], chain="s21", team="한화"))   # L21
+SC.append(pv("손아섭H2", "손아섭", "2026년 한화 → 두산", [vsteps([stp("3월 28일 개막전", "대타 한 타석", -1), stp("3월 30일", "2군행", -1, c="bad"),
                                                           stp("4월 14일 트레이드", "두산이 이교훈 + 현금 1억 5천만 원", 1.0, c="good")])], chain="s21", cont=True, team="한화"))   # L22
 SC.append(sp("손아섭A", "손아섭", "두산 데뷔전 · 4월 14일 인천 SSG전", [bb("", "홈런 · 2타점", 1.2, src=True), bb("경기 뒤", "“너무 야구가\n하고 싶었다”", 3.6)]))   # L23
 SC.append(pv("손아섭C", "손아섭", "두산 · 4월", [], [st("그 뒤 10경기", "32타수 3안타", 0.2, hi=True), st("4월 29일", "2군행", 2.0)]))           # L24
-SC.append(pv("손아섭B", "손아섭", "두산 · 5월", [], [st("5월 14일 복귀 뒤", "6경기 중 4경기 멀티히트", 0.3), st("5월 21일 친정 NC전", "1회 결승 적시타 · 1대0", 2.6, hi=True)]))   # L25
-SC.append(sp("김원형", "김원형", "두산 감독 · 5월 21일 NC전 뒤", [bb("", "“설렁설렁 안 하고 열심히 한다는\n자체가 귀감”", 0.6), bb("", "OSEN 5월 22일", 99, src=True)]))   # L26
+SC.append(pv("손아섭B", "손아섭", "두산 · 5월", [], [st("5월 14일 복귀 뒤", "6경기 중 4경기 멀티히트", 0.3), st("5월 21일 전 소속팀 NC전", "1회 결승 적시타 · 1대0", 2.6, hi=True)]))   # L25
 SC.append(pv("손아섭C", "손아섭", "2026년 두산 · 1군 말소", [vsteps([stp("4월 29일", "1번째", 0.1), stp("6월 21일", "2번째", 1.0), stp("7월 31일", "3번째", 1.4, c="bad")])]))   # L27
 SC.append(pv("손아섭B", "손아섭", "2026년 1군 · KBO 기록", [], [st("경기", "54경기", 0.1), st("타율", "2할 3푼 6리", 0.6, hi=True), st("홈런", "1개", 1.2)]))   # L28
 _HR = [dict(label="최형우", team="삼성", value=2734, unit="개", at=0.3), dict(label="김현수", team="KT", value=2691, unit="개", at=2.0), dict(label="손아섭", team="두산", value=2655, unit="개", at=0, hi=True)]
@@ -100,24 +99,24 @@ SC.append(S(0, "bars", title="김명신 · 시즌 홀드", items=[dict(label="20
              max=26, text="2023년 리그 홀드 3위", textAt=3.0, size=60))                                                             # L38
 SC.append(S(0, "bars", title="김명신 · 평균자책점", items=[dict(label="2022년", value=3.62, dec=2, at=0), dict(label="2023년", value=3.65, dec=2, at=0), dict(label="2024년", value=9.37, dec=2, at=1.0, hi=True)], max=10, text="1군 · 2025년 8경기 → 2026년 3경기", textAt=2.0, size=56))   # L39
 SC.append(pv("김명신B", "김명신", "통산 · KBO 기록", [], [st("경기", "297경기", 0.1), st("승리", "15승", 1.0), st("홀드", "45홀드", 1.2, hi=True)]))   # L40
-SC.append(sp("김명신A", "김명신", "방출 뒤 SNS · SPOTV 10월 20일 보도", [bb("", "“두산 베어스 김명신은 끝일지 몰라도\n야구선수 김명신은 조금 더 이어가 볼 생각”", 0.6)]))   # L41
+SC.append(sp("김명신A", "김명신", "방출 뒤 SNS · SPOTV·스포탈코리아 10월 20일 보도", [bb("", "“두산 베어스 김명신은 끝일지 몰라도\n야구선수 김명신은 조금 더 이어가 볼 생각”", 0.6)]))   # L41
 SC.append(pv("김명신A", "김명신", "33살 · 오른손 투수", [], [st("2026년 2군", "31경기", 1.0), st("2군 평균자책점", "3.35", 2.0, hi=True)]))   # L42
 # ── 4막 · 나머지 9명 ──
 SC.append(F9())                                                                                                              # L43
 SC.append(F9(hi=("박강민",), text="박강민 · 29살 · 2군 25경기 평균자책점 3.93"))                                                # L44
 SC.append(F9(hi=("김지윤",), text="김지윤 · 22살 · 2군 15경기 평균자책점 7.38", textAt=1.0))                                   # L45
 SC.append(F9(hi=("장우진",), text="장우진 · 22살 · 2023년 3라운드 · 북일고"))                                                    # L46
-SC.append(F9(hi=("이기석",), text="이기석 · 24살 왼손 · 2군 4승 무패 평균자책점 6.52", textAt=1.0))                              # L47
+SC.append(F9(hi=("이기석",), text="이기석 · 24살 왼손 · 부산과기대 첫 프로 진출 기수", textAt=1.0))                              # L47
 SC.append(F9(hi=("백승우",), text="백승우 · 26살 · 2023년 7라운드 · 데뷔전 1이닝 무실점", textAt=1.0))                         # L48
 SC.append(F9(hi=("김민혁",), text="김민혁 · 1군 통산 120경기 홈런 9개 · 올해 1군 0경기", textAt=1.0))                            # L49
 SC.append(F9(hi=("지강혁",), text="지강혁 · KT 방출 → 독립리그 → 두산 육성선수", textAt=1.0))                                     # L50
-SC.append(F9(hi=("이종혁", "양현진"), text="이종혁 · 올해 육성선수 / 양현진 · 2021년 10라운드", textAt=0.6))                       # L51
+SC.append(F9(hi=("이종혁", "양현진"), text="이종혁 · 내야수 / 양현진 · 2021년 10라운드", textAt=0.6))                       # L51
 # ── 5막 · 다른 구단과 두산의 겨울 ──
 _RL = [dict(label="롯데", team="롯데", value=16, unit="명", at=0.6), dict(label="두산", team="두산", value=11, unit="명", at=0.6, hi=True), dict(label="삼성", team="삼성", value=10, unit="명", at=0.6),
        dict(label="SSG", team="SSG", value=8, unit="명", at=0.6), dict(label="키움", team="키움", value=8, unit="명", at=0.6), dict(label="한화", team="한화", value=6, unit="명", at=0.6)]
-SC.append(S(0, "bars", title="재계약 불가 · 10월 20일 기준", items=_RL, max=16, chain="b52", text="6개 구단 · 모두 59명", textAt=1.8, size=56))   # L52
-SC.append(S(0, "bars", title="재계약 불가 · 10월 20일 기준", items=_RL, max=16, chain="b52", cont=True, text="SSG 박종훈도 방출", textAt=2.0, size=56))   # L53
-SC.append(S(0, "tiles", title="아직 명단 발표 전", items=[dict(team=t, k="10월 20일", v="발표 전", at=0.1 + i * 0.25) for i, t in enumerate(["NC", "KT", "LG", "KIA"])]))   # L54
+SC.append(S(0, "bars", title="재계약 불가 · 10월 21일 기준", items=_RL, max=16, chain="b52", text="6개 구단 · 모두 59명", textAt=1.8, size=56))   # L52
+SC.append(S(0, "bars", title="재계약 불가 · 10월 21일 기준", items=_RL, max=16, chain="b52", cont=True, text="SSG 박종훈도 방출", textAt=2.0, size=56))   # L53
+SC.append(S(0, "tiles", title="아직 명단 발표 전", items=[dict(team=t, k="10월 21일", v="발표 전", at=0.1 + i * 0.25) for i, t in enumerate(["NC", "KT", "LG", "KIA"])]))   # L54
 SC.append(sp("정재훈", "정재훈", "두산 새 단장", [bb("2027년부터", "잠실 떠나 임시 구장", 0.2, src=True), bb("첫 소감", "“변화를 두려워하지 않고”", 2.4)]))   # L55
 SC.append(S(0, "question", text="손아섭\n다른 팀에서 다시 뛸까?", img=IMG["손아섭D"], size=96))                                   # L56
 
@@ -131,24 +130,24 @@ for j, t in enumerate(TEXT):
 lines.append(dict(CTA_LINE))
 
 CH = [{"key": "10월 19일 두산", "title": "10월 19일, 두산이 바꾼 것", "from": 5, "to": 12},
-      {"key": "손아섭", "title": "손아섭 · 2655안타", "from": 13, "to": 33},
-      {"key": "김명신", "title": "김명신 · 10년 원클럽", "from": 34, "to": 41},
-      {"key": "나머지 9명", "title": "나머지 9명", "from": 42, "to": 50},
-      {"key": "다른 구단", "title": "다른 구단과 두산의 겨울", "from": 51, "to": 55}]
+      {"key": "손아섭", "title": "손아섭 · 2655안타", "from": 13, "to": 32},
+      {"key": "김명신", "title": "김명신 · 10년 원클럽", "from": 33, "to": 40},
+      {"key": "나머지 9명", "title": "나머지 9명", "from": 41, "to": 49},
+      {"key": "다른 구단", "title": "다른 구단과 두산의 겨울", "from": 50, "to": 54}]
 
 TAGS = ["두산 방출", "손아섭 방출", "손아섭", "두산 베어스", "재계약 불가", "방출 명단", "김명신", "정재훈 단장", "김태룡 단장", "두산 단장 교체", "프로야구 방출",
         "2026 방출", "박강민", "김지윤", "장우진", "이기석", "백승우", "김민혁", "지강혁", "이종혁", "양현진", "통산 최다안타", "최형우", "김현수", "프로야구", "KBO", "야구자판기"]
 DESC = ("두산 베어스가 10월 19일 선수 11명에게 재계약 불가를 통보했어요. 명단에는 통산 2655안타의 손아섭과 10년 동안 두산에서만 뛴 김명신이 있어요. 같은 날 두산은 16년 동안 팀을 맡은 김태룡 단장을 구단 자문으로 옮기고 정재훈 운영팀장을 새 단장으로 선임했어요.\n\n"
         "손아섭은 4월 14일 한화에서 트레이드로 두산에 왔지만 올해 1군 54경기 타율 2할 3푼 6리, 홈런 1개에 그쳤고 6개월 만에 팀을 떠나게 됐어요. 통산 안타는 최형우·김현수에 이어 역대 3위예요.\n\n"
         "재계약 불가 11명: 투수 김명신·박강민·김지윤·장우진·이기석·백승우 / 내야수 김민혁·지강혁·이종혁 / 외야수 손아섭·양현진\n\n"
-        "10월 20일 기준 6개 구단(롯데 16명·두산 11명·삼성 10명·SSG 8명·키움 8명·한화 6명)이 모두 59명에게 재계약 불가를 알렸어요. NC·KT·LG·KIA 명단도 나오는 대로 구단별로 정리해 드릴게요.\n\n"
+        "10월 21일 기준 6개 구단(롯데 16명·두산 11명·삼성 10명·SSG 8명·키움 8명·한화 6명)이 모두 59명에게 재계약 불가를 알렸어요. NC·KT·LG·KIA 명단도 나오는 대로 구단별로 정리해 드릴게요.\n\n"
         "여러분은 손아섭이 다른 팀에서 다시 뛸 수 있다고 보시나요? 댓글로 남겨 주세요.\n\n"
-        "기록: KBO 기록실(10월 20일 조회). 기사: 머니투데이·마이데일리·뉴스핌·재경일보·국제뉴스·스포츠월드(10/19), SPOTV·OSEN(10/20), OSEN(4/15·5/21·5/22), 엑스포츠뉴스(4/14), 스포츠경향(4/14·5/3), 스포츠동아(10/19), 일간스포츠(10/15)\n"
-        "사진: 두산 베어스 제공, 스포츠조선, 오마이뉴스, 스포티비뉴스, 구단 공식 프로필")
+        "기록: KBO 기록실(10월 20일 조회). 기사: 머니투데이·마이데일리·뉴스핌·재경일보·국제뉴스·스포츠월드(10/19), SPOTV·스포탈코리아·OSEN(10/20), OSEN(4/15·5/21·5/22), 엑스포츠뉴스(4/14), 스포츠경향(4/14·5/3), 스포츠동아(10/19), 일간스포츠(10/15)\n"
+        "사진: 두산 베어스 제공, 스포츠조선, 오마이뉴스, 스포티비뉴스, 구단 공식 프로필, 마이데일리(한화 이글스 제공), MK스포츠, KBO(이종혁), OSEN(썸네일)")
 SOURCE = "사실 출처 = 프로젝트 claude/1020-롱폼21-두산방출-근거모음.md (기사 본문 + KBO 기록실 10/20 직접 대조)."
 
-EP = {"introChapter": "오프닝", "date": "2026-10-20", "gameDate": "2026-10-20", "series": "야구롱폼", "focusTeam": "두산", "speed": 1.0, "ttsApi": True, "ttsTempo": 1.25, "ttsTempoSlow": 1.2,
-      "rev": "1020-long21-v1", "topic": "두산방출", "endcardSec": 10,
+EP = {"introChapter": "오프닝", "date": "2026-10-20", "gameDate": "2026-10-20", "series": "야구롱폼", "focusTeam": "두산", "speed": 1.0, "ttsApi": True, "ttsTempo": 1.3, "ttsTempoSlow": 1.3,
+      "rev": "1020-long21-v3", "topic": "두산방출", "endcardSec": 10,
       "gapScale": 0.85, "pauseMax": 0.3, "ttsCharsOk": 8000,
       "chapters": CH, "lines": lines, "scenes": scenes, "thumb": {}, "thumbFile": "선수이미지/상황별/썸네일_롱폼21_두산방출.jpg", "mascot": False, "source": SOURCE,
       "youtube": {"title": "두산 방출 11명 | 2655안타 손아섭도 6개월 만에 떠났다, 김명신까지 #두산 #손아섭 #방출",
@@ -156,8 +155,8 @@ EP = {"introChapter": "오프닝", "date": "2026-10-20", "gameDate": "2026-10-20
                   "hashtags": ["#두산베어스", "#손아섭", "#방출", "#김명신", "#재계약불가", "#프로야구", "#KBO", "#야구자판기"]}}
 
 if __name__ == '__main__':
-    SLOW = {0, 33, 55}
-    HOLD = {0: 0.35, 3: 0.35, 4: 0.35, 12: 0.35, 33: 0.4, 41: 0.35, 50: 0.35, 54: 0.35}
+    SLOW = set()   # 10/21 API 크레딧 소진 → 타입캐스트 웹 zip(한 배속)으로 녹음, 줄별 배속 없음
+    HOLD = {0: 0.35, 3: 0.35, 4: 0.35, 12: 0.35, 32: 0.4, 40: 0.35, 49: 0.35, 53: 0.35}
     for i, l in enumerate(EP['lines'][:-1]):
         if i in SLOW: l['pace'] = 'slow'
         if i in HOLD: l['gapAfter'] = HOLD[i]
