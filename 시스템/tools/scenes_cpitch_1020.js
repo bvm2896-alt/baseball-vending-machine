@@ -90,12 +90,12 @@
     const rp = started ? e3(cl((after - .15) / .35, 0, 1)) : 0;
     const badge = rp > 0 ? `<div style="position:absolute;right:26px;top:84px;padding:8px 26px;border-radius:999px;font-size:40px;font-weight:900;letter-spacing:-1px;color:#fff;
         background:${pn.res === 'hit' ? '#E5484D' : '#2F6FED'};opacity:${cl(rp * 1.4, 0, 1).toFixed(3)};transform:scale(${(.8 + .2 * rp).toFixed(3)})">${pn.res === 'hit' ? '딱! 정타' : '헛스윙'}</div>` : '';
-    const gapTxt = pr.gap && pr.gap.panel === pn.i && pr.gapP > 0 ? `<div style="position:absolute;left:24px;top:80px;padding:5px 16px;border-radius:14px;background:rgba(8,12,22,.86);white-space:nowrap;font-size:24px;font-weight:900;color:#FFD43B;letter-spacing:-1px;opacity:${cl(pr.gapP * 1.4, 0, 1).toFixed(3)}">${esc(pr.gap.text)}</div>` : '';
+    const gapTxt = pr.gap && pr.gap.panel === pn.i && pr.gapP > 0 ? `<div style="position:absolute;left:22px;top:236px;padding:8px 16px;border-radius:14px;background:rgba(8,12,22,.9);border:2px solid #FFD43B;white-space:nowrap;font-size:28px;line-height:1.25;font-weight:900;color:#FFD43B;letter-spacing:-1px;opacity:${cl(pr.gapP * 1.4, 0, 1).toFixed(3)}">${br(pr.gap.text)}</div>` : '';
     const tagP = pn.tagP;
     return `<div data-nodark="1" style="position:relative;flex:0 0 ${W}px;width:${W}px;height:${Hh}px;border-radius:30px;overflow:hidden;box-shadow:0 18px 44px rgba(0,0,0,.35);opacity:${cl(tagP * 1.5, 0, 1).toFixed(3)};transform:translateY(${((1 - e3(tagP)) * 30).toFixed(1)}px)">
         <svg viewBox="0 0 ${W} ${Hh}" width="${W}" height="${Hh}" style="position:absolute;inset:0">${svg}</svg>
         <div style="position:absolute;left:24px;top:22px;padding:6px 24px;border-radius:999px;background:${pn.hi ? '#C8102E' : 'rgba(255,255,255,.16)'};color:#fff;font-size:38px;font-weight:900;letter-spacing:-1px;white-space:nowrap">${esc(pn.tag)}</div>
-        ${badge}${gapTxt}${true ? '<div style="position:absolute;left:28px;top:78px;font-size:20px;font-weight:700;color:rgba(255,255,255,.5)">※ 이해를 돕는 단순화 그림</div>' : ''}</div>`;
+        ${badge}${gapTxt}</div>`;
   }
   SCENE.cpitch = (lt, s) => {
     const P = (k, d, off = 0, fb = 0) => { if (k == null) return null; const b = brP(s, k, d, off); return b == null ? c01((lt - (fb + off)) / d) : b; };
