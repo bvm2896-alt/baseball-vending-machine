@@ -686,6 +686,7 @@ function Bp(h) {
   el.style.height = `${Math.ceil(hh * k)}px`;
 }
 SCENE.facegrid = (lt, s) => {
+  const oneTeam = !s.nameLogo && new Set((s.items || []).map(x => x.team || '')).size <= 1;   /* 10/21 밤 사용자 "선수들 이름 옆에 로고는 빼줘": 한 팀 얼굴판은 이름 옆 로고를 안 붙인다(여러 팀이 섞일 때만, 또는 nameLogo:true) */
   /* 10/18 사용자 "뚝 끊기면서 갑자기 카드가 커진다": 같은 묶음에서 뒤 장면에 나올 사람은 앞 장면부터 '?' 빈 원으로 자리를 잡고, 뒤에 나올 글도 자리를 잡아 둔다 → 원 크기·위치가 묶음 내내 같다 */
   const CHf = (CHAINS[s._cid] || [s._k]).map(j => SC[j]).filter(x => x && x.type === 'facegrid' && (x.title || '') === (s.title || ''));
   const own = s.items || [], ownN = new Set(own.map(x => x.name)), fut = [];
@@ -712,9 +713,9 @@ SCENE.facegrid = (lt, s) => {
     let runN = 0; if (runSt) for (let j = i; j < Math.min(items.length, r0 + cols) && items[j].pos === it.pos; j++) runN++;
     const POSL = runSt ? `<div style="position:absolute;left:10px;top:0;width:${runN * cw - 20}px;height:46px;border-radius:23px;background:#2B3445;color:#fff;display:flex;align-items:center;justify-content:center;font-size:29px;font-weight:900;letter-spacing:-1px;white-space:nowrap;z-index:2;${!K && it.ph ? pop(seg(lt, T0, .4)) : ''}">${esc(it.pos)}</div>` : '';
     h += `<div class="col" style="width:${cw}px;gap:6px;align-items:center;position:relative;${hasPos ? 'padding-top:58px;' : ''}${(K && !isNew) || it.ph || isNew ? '' : pop(p)};${it.dim ? 'filter:grayscale(1);opacity:.45' : ''}">${POSL}
-      ${logoOnly ? `<div style="width:${d}px;height:${d}px;display:flex;align-items:center;justify-content:center"><img src="${LOGO[t.code]}" style="width:${Math.round(d * .92)}px;height:${Math.round(d * .92)}px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(18,22,31,.18))"></div>`
+      ${logoOnly && s.card ? `<div style="position:relative;width:${d}px;height:${Math.round(d * 1.25)}px"><div style="position:absolute;inset:0;border-radius:22px;overflow:hidden;border:${hi ? 6 : 4}px solid ${hi ? 'var(--acc)' : '#fff'};box-shadow:0 8px 22px rgba(18,22,31,.16);background:#F4F6FA;display:flex;align-items:center;justify-content:center"><img src="${LOGO[t.code]}" style="width:${Math.round(d * .72)}px;height:${Math.round(d * .72)}px;object-fit:contain"></div></div>` /* 10/20 밤 검수(왼손 7명인데 테두리 5개): 사진 없는 칸도 카드 모드면 같은 테두리 카드 */ : logoOnly ? `<div style="width:${d}px;height:${d}px;display:flex;align-items:center;justify-content:center"><img src="${LOGO[t.code]}" style="width:${Math.round(d * .92)}px;height:${Math.round(d * .92)}px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(18,22,31,.18))"></div>`
       : `<div style="position:relative;width:${d}px;height:${s.card ? Math.round(d * 1.25) : d}px"><div style="position:absolute;inset:0;border-radius:${s.card ? '22px' : '50%'};overflow:hidden;border:${hi ? 6 : 4}px solid ${hi ? 'var(--acc)' : '#fff'};box-shadow:0 8px 22px rgba(18,22,31,.16);background:#E9EDF3">${it.ph ? QM : isNew ? `${QM}<div style="position:absolute;inset:0;${pop(p)}">${face}</div>` : face}</div>${it.say ? miniBubble(it.say, sp, 't', n > 6 ? 30 : 34, it.sayColor || ACC) : ''}</div>`}
-      <div class="row" style="gap:6px;align-items:center;${it.ph ? 'visibility:hidden' : isNew ? `opacity:${c01(p * 1.6).toFixed(3)}` : ''}">${t && (src || it.ph) ? chip(t, 'S') : ''}<div class="title" style="font-size:${n > 12 ? 30 : cols >= 5 ? 33 : 36}px;font-weight:900;white-space:nowrap;letter-spacing:${cols >= 5 ? -1.5 : 0}px;${it.ph ? 'visibility:hidden' : ''}">${esc(it.name || '')}</div></div></div>`;
+      <div class="row" style="gap:6px;align-items:center;${it.ph ? 'visibility:hidden' : isNew ? `opacity:${c01(p * 1.6).toFixed(3)}` : ''}">${t && (src || it.ph) && !oneTeam ? chip(t, 'S') : ''}<div class="title" style="font-size:${n > 12 ? 30 : cols >= 5 ? 33 : 36}px;font-weight:900;white-space:nowrap;letter-spacing:${cols >= 5 ? -1.5 : 0}px;${it.ph ? 'visibility:hidden' : ''}">${esc(it.name || '')}</div></div></div>`;
   });
   h += '</div>';
   if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 64}px;${K && s._prev.text === s.text ? '' : pop(pk(s, s.textAt, .5, seg(lt, (K ? .1 : T0 + n * step + .3), .5)))}">${br(s.text)}</div>`;
@@ -761,13 +762,13 @@ SCENE.bars = (lt, s) => {
   h += `<div class="col" style="width:1500px;gap:${big ? 24 : n <= 4 ? 14 : 10}px;align-items:stretch">`;
   const K = s._same, PVN = K ? (s._prev.items || []).filter(x => !x.hide).length : 0;   /* 10/1 밤: cont 면 앞 장면 막대는 그대로 / 10/7 밤: 새로 붙는 막대만 뜬다 */
   /* 10/13 밤 사용자("숫자들 위치가 통일돼 있지 않고 들쑥날쑥"): 숫자 칸 폭을 묶음 전체에서 가장 긴 숫자(+단위) 기준으로 고정 → 막대 끝·숫자 끝이 모든 줄에서 같은 세로선 */
-  const estN = it => { if (it.note) return [...String(it.note)].length * NS * .72 * .95; const v = Number(it.value) || 0, t = Number.isInteger(v) ? String(v) : v.toFixed(it.dec ?? 2);
+  const estN = it => { if (it.note) return [...String(it.note)].length * NS * .72 * .95; const v = Number(it.value) || 0, t = (Number.isInteger(v) && it.dec == null) ? String(v) : v.toFixed(it.dec ?? 2);
     return [...t].reduce((w, ch) => w + (ch === '.' ? NS * .3 : NS * .6), 0) + (it.unit ? [...String(it.unit)].length * NS * .45 + 6 : 0); };
   const MIXN = chB.length > 1 && chB.some(q => (q.items || []).some(x => x.note)) && chB.some(q => (q.items || []).some(x => !x.note && !x.hide));   /* 10/18: 숫자 칸(큰 글씨)과 note 칸(작은 글씨)이 섞인 묶음은 줄 높이를 숫자 기준으로 고정 → 줄이 위로 안 당겨짐 */
   const NUMW = Math.max(big ? 260 : 220, Math.ceil(Math.max(...(lngB.items || items).concat(items, ...chB.map(q => (q.items || []).filter(x => !x.hide))).map(estN))) + 12);
   items.forEach((it, i) => {
     const KI = K && i < PVN, p0 = KI ? 1 : seg(lt, .3 + i * (big ? .3 : .2), .7), p = KI ? 1 : pk(s, it.at, .7, p0), v = (Number(it.value) || 0), fN = Math.min(1, v / (it.max || mx)) * eo(p), pv = KI ? (s._prev.items || [])[i] : null, MO = !!(pv && pv.label === it.label && (pv.value !== it.value || pv.note !== it.note || pv.unit !== it.unit)), mq = MO ? seg(lt, .1, .6) : 1, f0 = MO ? Math.min(1, (Number(pv.value) || 0) / (pv.max || s._prev.max || Math.max(...(s._prev.items || []).map(x => Number(x.value) || 0), 1))) : 0, f = MO ? f0 + (fN - f0) * eo(mq) : fN, hi = it.hi === true;   /* 10/18 사용자(같은 4명 · 다른 기록): cont 로 이어지는 같은 사람 줄은 사진·이름 그대로, 막대만 앞 장면 길이에서 새 길이로, 숫자만 새로 뜬다(MO) */
-    const shown = Number.isInteger(v) ? Math.round(v * eo(p)) : (v * eo(p)).toFixed(it.dec ?? 2), c = hi ? ACC : (it.color || '#9AA3B2');
+    const shown = (Number.isInteger(v) && it.dec == null) ? Math.round(v * eo(p)) : (v * eo(p)).toFixed(it.dec ?? 2), c = hi ? ACC : (it.color || '#9AA3B2');
     const LG = big ? 110 : n <= 4 ? 90 : 60;   /* 10/1 밤 사용자 "로고를 넣을 거면 크게" */
     h += `<div class="pane" style="display:flex;align-items:center;gap:30px;border-radius:26px;padding:${PAD}px 36px;${it.hide ? 'visibility:hidden;' : KI ? '' : rise(pk(s, it.at, .4, seg(lt, .2 + i * (big ? .3 : .2), .4)), 30)};${hi ? 'border-color:var(--acc);' : ''}">
       <div style="width:${big ? 430 : 380}px;flex:0 0 auto;display:flex;align-items:center;gap:16px">${it.img && photoSrc(it.img) ? `<div style="width:${LG}px;height:${LG}px;border-radius:50%;overflow:hidden;position:relative;flex:0 0 auto;border:5px solid ${it.team ? (TEAMCOL[(T(it.team) || {}).code] || '#3B4A63') : '#3B4A63'};box-sizing:border-box">${faceImg(photoSrc(it.img), it, '50% 14%')}</div>` : it.team && LOGO[(T(it.team) || {}).code] ? `<div class="chip" style="width:${LG}px;height:${LG}px"><img src="${LOGO[T(it.team).code]}"></div>` : ''}<div class="title" style="font-size:${LS}px;font-weight:900;text-align:left;line-height:1.12">${br(it.label || '')}${it.sub ? `<div style="margin-top:6px;font-size:${Math.round(LS * .7)}px;font-weight:800;letter-spacing:-1px;color:${hi ? 'var(--acc)' : '#3B4A63'}">${esc(it.sub)}</div>` : ''}</div></div>
@@ -3423,7 +3424,7 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
       const say2 = s.crewSay ? `<div style="position:absolute;left:${cx + 214}px;top:${cy - 40}px;${pop(seg(lt, .35, .35))}"><div style="background:#fff;border:4px solid #12161F;border-radius:26px;padding:12px 26px;font-size:40px;font-weight:900;letter-spacing:-1px;color:#12161F;white-space:nowrap">${esc(s.crewSay)}</div></div>` : '';
       h += `${say2}<div style="position:absolute;left:${cx}px;top:${cy}px;width:236px;height:268px;filter:drop-shadow(0 10px 16px rgba(0,0,0,.35))">${crit(TEAM_SP[s.crew] || 'lion', s.crewMood || 'idle', t + 1.3)}</div>`;
     }
-    if (EP.mascot !== false && s.mood !== 'none' && !bonk) {
+    if (EP.mascot === true && s.mood !== 'none' && !bonk) {   /* 10/21 밤 사용자 "호랑이는 이제 지워 캐릭터" → 콘티에 mascot: true 일 때만 */
       const before = rv != null && t < rv, mood = before ? (s.preMood || 'think') : (s.mood || 'idle'), ent = c01((t - 0.2) / .6), VV = !!EP.vertical, x = VV ? 838 : 1668, y = VV ? 120 - (1 - e3(ent)) * 300 : 800 + (1 - e3(ent)) * 300;   /* 세로: 오른쪽 위(머리줄과 제목 사이) */
       const say = s.say && !before ? `<div style="position:absolute;left:${x - 330}px;top:${VV ? y + 150 : y - 40}px;width:330px;display:flex;justify-content:flex-end;${pop(rv == null ? seg(lt, .25, .35) : seg(t - rv, 0, .35))}"><div style="background:#fff;border:4px solid #12161F;border-radius:26px;padding:12px 26px;font-size:40px;font-weight:900;letter-spacing:-1px;color:#12161F;white-space:nowrap;box-shadow:0 8px 0 rgba(18,22,31,.15)">${esc(s.say)}</div></div>` : '';
       h += `${say}<div style="position:absolute;left:${x}px;top:${y}px;width:236px;height:268px;filter:drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(0 10px 16px rgba(0,0,0,.45))">${mang(mood, t)}</div>`;
@@ -3507,6 +3508,319 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
   Object.assign(MOTION, { mups: () => 1.2, warn: () => 1.1, mscore: () => 1.8, dice: () => 2.2, gauge: s => .9 + (s.steps || []).length * .8 });
 })();
 /* @@MANG1019END */
+/* @@CPITCH1020 10/20 밤 롱폼 「준PO 3차전 리뷰 · PO 1차전」 — 사용자 "왜 왼손타자가 카라스코한테 강한지 애니메이션같은걸로 보여주면 더 이해가 잘 되고 직관적".
+   tools/inject_cpitch_1020.py 가 template_long.html·template_long_v.html 의 function render 앞에 넣는다(이 파일을 고치면 다시 주입).
+   cpitch: 포수 시점 체인지업 궤적 두 칸.
+     s.panels = [{tag, brk(옆으로 휘는 정도 0~1), res:'miss'|'hit', at(이 줄 호흡 번호) | done:true(이미 끝난 모습) | 없음(? 자리)}]
+     s.gap = {panel, text, at}  — 노린 곳과 실제 공 사이 화살표 글(예: '약 16cm 덜 휨')
+     s.stats = {title, rows:[{k, v(숫자), at, hi}], src, at} — 아래 띠(헛스윙률 비교)
+   어두운 판을 장면 안에 직접 그려서 밝은/어두운 테마 어느 쪽에서도 같은 모습이다.
+   근거: 야구공작소 카라스코 스카우팅 리포트 — 체인지업 수평 변화량 리그 평균 대비 -6.4인치(≈16cm), 좌타자 상대 헛스윙률 11.1%·우타자 42.9%. */
+(function () {
+  const cl = (v, a, b) => Math.max(a, Math.min(b, v)), e3 = x => 1 - Math.pow(1 - cl(x, 0, 1), 3);
+  const W = 760, Hh = 500;
+  /* 포수 시점(화면 오른쪽 = 왼손 타자 타석). 오른손 투수의 체인지업은 투수 팔 쪽(화면 왼쪽 = 왼손 타자 바깥쪽)으로 휜다 */
+  const R = [372, 128], G = [418, 384], PIV = [612, 318];   /* 놓는 곳 · 타자가 노린 곳(휘지 않았을 때 도착점) · 방망이 축(손) */
+  const ZX = 296, ZY = 196, ZW = 214, ZH = 236;
+  const BAT0 = -62, BAT1 = -196, BATL = 290;                /* 방망이 각도: 시작(위·오른쪽) → 끝(존을 가로질러 왼쪽 아래) */
+  const PDUR = 1.05, SW0 = .72;                             /* 공이 오는 시간(초) · 스윙 시작 u */
+  const pathAt = (u, E) => { const b = Math.pow(u, 2.6);
+    return [R[0] + (G[0] - R[0]) * u + (E[0] - G[0]) * b, R[1] + (G[1] - R[1]) * u + (E[1] - G[1]) * b]; };
+  const endOf = brk => [G[0] - 190 * brk, G[1] + 30 * brk];   /* brk 1 = 보통 체인지업(크게 바깥으로) */
+  function batter(ang, alpha) {
+    const a = ang * Math.PI / 180, bx = PIV[0] + Math.cos(a) * BATL, by = PIV[1] + Math.sin(a) * BATL;
+    return `<g opacity="${alpha}"><line x1="${PIV[0]}" y1="${PIV[1]}" x2="${bx.toFixed(1)}" y2="${by.toFixed(1)}" stroke="#E9C58F" stroke-width="15" stroke-linecap="round"/>
+      <line x1="${PIV[0]}" y1="${PIV[1]}" x2="${(PIV[0] + Math.cos(a) * 70).toFixed(1)}" y2="${(PIV[1] + Math.sin(a) * 70).toFixed(1)}" stroke="#1B1B1B" stroke-width="10" stroke-linecap="round"/></g>`;
+  }
+  /* 10/20 23:30 사용자 "재현 그림으로"(실루엣 금지 규칙) — 왼손 타자를 사람처럼 그린 그림(실제 구단 유니폼·로고 없음, 포수 시점: 홈플레이트 쪽=화면 왼쪽을 보고 선다) */
+  const bodyFig = k => `<defs>
+      <linearGradient id="jz${k}" x1="0" x2="1"><stop offset="0" stop-color="#F4F5F7"/><stop offset=".65" stop-color="#DADDE3"/><stop offset="1" stop-color="#A9AFBA"/></linearGradient>
+      <linearGradient id="pt${k}" x1="0" x2="1"><stop offset="0" stop-color="#F6F6F4"/><stop offset="1" stop-color="#B9BDC4"/></linearGradient>
+      <radialGradient id="hm${k}" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#4A5A82"/><stop offset=".55" stop-color="#1E2A4A"/><stop offset="1" stop-color="#0E1528"/></radialGradient>
+      <linearGradient id="sk${k}" x1="0" x2="1"><stop offset="0" stop-color="#E9B993"/><stop offset="1" stop-color="#B9825E"/></linearGradient></defs>
+    <ellipse cx="648" cy="496" rx="92" ry="10" fill="rgba(0,0,0,.35)"/>
+    <path d="M672 404 q30 22 32 46 l-8 40 h-22 l4 -38 q-10 -18 -30 -30z" fill="url(#pt${k})" stroke="#8E949E" stroke-width="2"/>
+    <path d="M630 404 q-28 18 -36 44 l2 42 h22 l-2 -40 q10 -16 32 -28z" fill="url(#pt${k})" stroke="#8E949E" stroke-width="2"/>
+    <rect x="590" y="460" width="26" height="30" rx="5" fill="#1E2A4A"/><rect x="676" y="460" width="24" height="30" rx="5" fill="#1E2A4A"/>
+    <path d="M582 486 h40 q4 8 -4 10 h-38 q-6 -4 2 -10z" fill="#111"/><path d="M670 486 h38 q6 8 -2 10 h-38 q-4 -4 2 -10z" fill="#111"/>
+    <path d="M626 266 q22 -12 56 -2 q10 40 0 96 l-4 46 h-50 l-6 -48 q-8 -50 4 -92z" fill="url(#jz${k})" stroke="#8E949E" stroke-width="2"/>
+    <path d="M654 262 v146" stroke="#1E2A4A" stroke-width="3" opacity=".55"/>
+    <rect x="624" y="398" width="58" height="12" rx="3" fill="#1E2A4A"/>
+    <path d="M638 232 q10 -4 22 0 l-2 34 h-18z" fill="url(#sk${k})"/>
+    <path d="M622 272 q-22 8 -20 34" stroke="url(#jz${k})" stroke-width="22" stroke-linecap="round" fill="none"/>
+    <path d="M602 304 q2 10 10 14" stroke="url(#sk${k})" stroke-width="15" stroke-linecap="round" fill="none"/>
+    <path d="M684 274 q20 18 8 42 q-30 8 -70 4" stroke="url(#jz${k})" stroke-width="20" stroke-linecap="round" fill="none"/>
+    <path d="M660 318 q-26 4 -44 0" stroke="url(#sk${k})" stroke-width="14" stroke-linecap="round" fill="none"/>
+    <ellipse cx="644" cy="214" rx="24" ry="27" fill="url(#sk${k})"/>
+    <path d="M622 210 q-2 -36 30 -40 q38 0 42 34 q2 22 -10 32 l-10 2 q-4 -20 -22 -22 q-16 -2 -30 -6z" fill="url(#hm${k})"/>
+    <path d="M626 200 q-20 2 -30 10 q14 2 30 -2z" fill="#0E1528"/>
+    <path d="M666 214 q14 2 16 22 l-14 6 q-4 -14 -2 -28z" fill="#16203A"/>
+    <path d="M636 186 q14 -10 30 -6" stroke="rgba(255,255,255,.45)" stroke-width="4" stroke-linecap="round" fill="none"/>`;
+  const gloves = `<circle cx="${PIV[0]}" cy="${PIV[1]}" r="13" fill="#E8E8E8" stroke="#1E2A4A" stroke-width="3"/>`;
+  const zone = `<rect x="${ZX}" y="${ZY}" width="${ZW}" height="${ZH}" fill="rgba(255,255,255,.05)" stroke="#FFFFFF" stroke-width="4" rx="4"/>
+      <path d="M${ZX + ZW / 3} ${ZY}v${ZH}M${ZX + 2 * ZW / 3} ${ZY}v${ZH}M${ZX} ${ZY + ZH / 3}h${ZW}M${ZX} ${ZY + 2 * ZH / 3}h${ZW}" stroke="rgba(255,255,255,.22)" stroke-width="2"/>
+      <path d="M${ZX - 6} 474h${ZW + 12}v12l-${(ZW + 12) / 2} 22l-${(ZW + 12) / 2} -22z" fill="#F4F1EA" opacity=".9"/>`;
+  function panel(pn, q, pr) {
+    /* q: 0~ (이 칸이 시작한 뒤 초 단위 진행) — null 이면 아직 안 던짐 */
+    const E = endOf(pn.brk), started = q != null;
+    const u = started ? cl(q / PDUR, 0, 1) : 0;
+    const sw = started ? e3(cl((u - SW0) / (1 - SW0), 0, 1)) : 0;
+    const after = started ? Math.max(0, q - PDUR) : 0;
+    let svg = `<defs><radialGradient id="cpg${pn.i}" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="#22324D"/><stop offset="1" stop-color="#0C1424"/></radialGradient></defs>
+      <rect width="${W}" height="${Hh}" fill="url(#cpg${pn.i})"/><ellipse cx="${W / 2}" cy="${Hh + 40}" rx="${W * .62}" ry="120" fill="#4A3424" opacity=".55"/>
+      <circle cx="${R[0]}" cy="${R[1]}" r="10" fill="rgba(255,255,255,.25)"/><text x="${R[0] + 20}" y="${R[1] + 8}" font-size="22" font-weight="800" fill="rgba(255,255,255,.55)" text-anchor="start">투수</text>
+      ${zone}${bodyFig(pn.i)}`;
+    /* 노린 곳(휘지 않았을 때 갈 길) — 점선 */
+    const gl = started ? cl(u * 1.4, 0, 1) : 0;
+    if (started) svg += `<path d="M${R[0]} ${R[1]} L${G[0]} ${G[1]}" stroke="rgba(255,255,255,.35)" stroke-width="4" stroke-dasharray="10 12" opacity="${gl.toFixed(2)}"/>`;
+    /* 방망이: 스윙 잔상 */
+    const ang = BAT0 + (BAT1 - BAT0) * sw;
+    if (sw > 0 && sw < 1) for (let k = 3; k >= 1; k--) svg += batter(BAT0 + (BAT1 - BAT0) * Math.max(0, sw - k * .09), (.12 * (4 - k)).toFixed(2));
+    svg += batter(ang, 1) + gloves;
+    /* 공 궤적 점 + 공 */
+    if (started) {
+      const n = 16;
+      for (let k = 0; k <= n; k++) { const uu = k / n; if (uu > u) break; const [x, y] = pathAt(uu, E);
+        svg += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(3 + 7 * uu * uu).toFixed(1)}" fill="${pn.res === 'hit' ? '#FFB020' : '#5EC8FF'}" opacity="${(.25 + .5 * uu).toFixed(2)}"/>`; }
+      let [bx, by] = pathAt(u, E), br_ = 6 + 20 * u * u;
+      if (pn.res === 'hit' && after > 0) { const f = e3(after / .7); bx = E[0] + (560 - E[0]) * f; by = E[1] + (70 - E[1]) * f; br_ = 26 - 18 * f; }
+      if (pn.res === 'hit' && after > .7) {} else if (!(pn.res === 'miss' && after > .5)) svg += `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${br_.toFixed(1)}" fill="#FFFFFF" stroke="#D4362F" stroke-width="3"/>`;
+      else svg += `<circle cx="${E[0]}" cy="${E[1]}" r="26" fill="#FFFFFF" stroke="#D4362F" stroke-width="3"/>`;
+      if (pn.res === 'hit' && after > 0 && after < .55) { const p = after / .55;
+        svg += `<g transform="translate(${E[0]} ${E[1]}) scale(${(.6 + .8 * e3(p)).toFixed(2)})" opacity="${(1 - p * .8).toFixed(2)}"><path d="M0 -70 L16 -22 L66 -30 L28 4 L54 48 L6 26 L-22 66 L-24 18 L-70 8 L-30 -16 L-46 -60 L-8 -30z" fill="#FFD43B"/></g>`; }
+      /* 노린 곳 ↔ 실제 공 사이 화살표 */
+      if (after > .35) { const p = e3((after - .35) / .4), x0 = G[0], x1 = x0 + (E[0] - x0) * p, y = Math.max(G[1], E[1]) + 52;
+        svg += `<g opacity="${cl(p * 1.5, 0, 1).toFixed(2)}"><circle cx="${G[0]}" cy="${G[1]}" r="26" fill="none" stroke="#FFD43B" stroke-width="5" stroke-dasharray="8 7"/><text x="${G[0] - 8}" y="${G[1] - 40}" font-size="26" font-weight="900" fill="#FFD43B" text-anchor="middle">노린 곳</text>
+          <line x1="${x0}" y1="${y}" x2="${x1.toFixed(1)}" y2="${y}" stroke="${pn.res === 'hit' ? '#FFB020' : '#5EC8FF'}" stroke-width="6"/>
+          ${Math.abs(E[0] - x0) > 40 ? `<path d="M${x1.toFixed(1)} ${y} l18 -12 v24z" fill="${pn.res === 'hit' ? '#FFB020' : '#5EC8FF'}"/>` : ''}</g>`; }
+    } else {
+      svg += `<text x="${W / 2}" y="${Hh / 2 + 30}" font-size="150" font-weight="900" fill="rgba(255,255,255,.18)" text-anchor="middle">?</text>`;
+    }
+    /* 결과 배지 */
+    const rp = started ? e3(cl((after - .15) / .35, 0, 1)) : 0;
+    const badge = rp > 0 ? `<div style="position:absolute;right:26px;top:84px;padding:8px 26px;border-radius:999px;font-size:40px;font-weight:900;letter-spacing:-1px;color:#fff;
+        background:${pn.res === 'hit' ? '#E5484D' : '#2F6FED'};opacity:${cl(rp * 1.4, 0, 1).toFixed(3)};transform:scale(${(.8 + .2 * rp).toFixed(3)})">${pn.res === 'hit' ? '딱! 정타' : '헛스윙'}</div>` : '';
+    const gapTxt = pr.gap && pr.gap.panel === pn.i && pr.gapP > 0 ? `<div style="position:absolute;left:22px;top:236px;padding:8px 16px;border-radius:14px;background:rgba(8,12,22,.9);border:2px solid #FFD43B;white-space:nowrap;font-size:28px;line-height:1.25;font-weight:900;color:#FFD43B;letter-spacing:-1px;opacity:${cl(pr.gapP * 1.4, 0, 1).toFixed(3)}">${br(pr.gap.text)}</div>` : '';
+    const tagP = pn.tagP;
+    return `<div data-nodark="1" style="position:relative;flex:0 0 ${W}px;width:${W}px;height:${Hh}px;border-radius:30px;overflow:hidden;box-shadow:0 18px 44px rgba(0,0,0,.35);opacity:${cl(tagP * 1.5, 0, 1).toFixed(3)};transform:translateY(${((1 - e3(tagP)) * 30).toFixed(1)}px)">
+        <svg viewBox="0 0 ${W} ${Hh}" width="${W}" height="${Hh}" style="position:absolute;inset:0">${svg}</svg>
+        <div style="position:absolute;left:24px;top:22px;padding:6px 24px;border-radius:999px;background:${pn.hi ? '#C8102E' : 'rgba(255,255,255,.16)'};color:#fff;font-size:38px;font-weight:900;letter-spacing:-1px;white-space:nowrap">${esc(pn.tag)}</div>
+        ${badge}${gapTxt}</div>`;
+  }
+  SCENE.cpitch = (lt, s) => {
+    const P = (k, d, off = 0, fb = 0) => { if (k == null) return null; const b = brP(s, k, d, off); return b == null ? c01((lt - (fb + off)) / d) : b; };
+    const T = k => { if (k == null) return null; const segs = (EP.segT || [])[s.startLine] || [];   /* 그 호흡이 시작한 뒤 지난 초 */
+      const i = Math.floor(k), t0 = segs[i] != null ? segs[i] : (k * 1.6); const lo = (segs.length ? NOW - t0 : lt - k * 1.6); return lo < 0 ? null : lo; };
+    const pans = (s.panels || []).map((pn, i) => {
+      const o = Object.assign({ i }, pn);
+      o.tagP = pn.enterAt == null ? 1 : P(pn.enterAt, .45);
+      return o; });
+    const gapP = s.gap ? (s.gap.at == null ? 1 : P(s.gap.at, .45, .2)) : 0;
+    const pr = { gap: s.gap, gapP };
+    const html = pans.map(pn => panel(pn, pn.done ? 99 : (pn.at == null ? null : T(pn.at)), pr)).join('');
+    const st = s.stats || {}, sp = s.stats ? (st.at == null ? 1 : P(st.at, .45)) : 0;
+    const rows = (st.rows || [{ k: '', v: 0 }, { k: '', v: 0 }]).map(r => { const p = r.at == null ? sp : P(r.at, .7);
+      return `<div style="display:flex;align-items:center;gap:14px;opacity:${c01(p * 2).toFixed(3)}"><span style="font-size:34px;font-weight:900;color:#E6EBF3;white-space:nowrap">${esc(r.k)}</span>
+        <div style="position:relative;width:160px;height:30px;border-radius:15px;background:rgba(255,255,255,.12);overflow:hidden"><div style="height:100%;width:${(r.v / (st.max || 50) * 100 * e3(p)).toFixed(1)}%;border-radius:15px;background:${r.hi ? '#E5484D' : '#2F6FED'}"></div></div>
+        <span class="num" style="font-size:46px;font-weight:900;color:${r.hi ? '#FF6B6B' : '#FFFFFF'};width:130px">${(r.v * e3(p)).toFixed(1)}%</span></div>`; }).join('');
+    const strip = `<div data-nodark="1" style="display:flex;align-items:center;justify-content:center;gap:36px;flex:0 0 auto;width:1560px;height:108px;border-radius:26px;background:#0F1828;opacity:${cl(sp * 1.5, 0, 1).toFixed(3)}">
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:34px;font-weight:900;color:#FFD43B;white-space:nowrap">${esc(st.title || '')}</span><span style="font-size:22px;font-weight:700;color:#9AA6B8;white-space:nowrap">${esc(st.src || '')}</span></div>
+        ${rows}</div>`;
+    B(`<div class="col" style="width:100%;align-items:center;gap:24px"><div class="row" style="gap:40px;flex-wrap:nowrap">${html}</div>${strip}</div>`);
+  };
+  Object.assign(MOTION, { cpitch: () => 2.4 });
+})();
+/* @@CPITCH1020END */
+/* @@HR1021 10/21 새벽 롱폼㉒ — 사용자 "이런 애니메이션(다이아몬드)만 쓰니까 너무 질리는데 다른걸로 바꿔봐 더 재미있게".
+   tools/inject_hr_1021.py 가 template_long.html·template_long_v.html 의 function render 앞에 넣는다(이 파일을 고치면 다시 주입).
+   공통: 중계 화면 같은 점수 띠(bug) — {inn, score:[원정, 홈], outs, bases:[1루,2루,3루](이름|null), away, home}
+   hrcam: 홈런 트래커(옆에서 본 밤 구장, 공 궤적·비거리·불꽃) + 왼쪽 선수 사진
+     {img, name, team, bug, launchAt(호흡 번호·소수 가능), dist('145m'|없음), dir('center'|'lc'), burst('솔로 홈런'), runners:['하주석',...], scoreTo:[7,0]}
+   rally: 플레이 카드 릴레이 — 카드가 한 장씩 뒤집히며 결과 도장, 점수 띠의 주자·아웃·점수가 같이 바뀐다
+     {bug, plays:[{name, img, team, res, kind:'out'|'on'|'run', at, bases, outs, score, rbi}]} */
+(function () {
+  /* 로고·팀색은 다른 묶음 안에만 있어서 여기서 다시 둔다 */
+  const LOGOI = (n, px, st = '') => `<img src="${LOGO[(T(n) || {}).code] || ''}" style="width:${px}px;height:${px}px;object-fit:contain;display:block;${st}">`;
+  const TCOL = n => { const c = TEAMCOL[(T(n) || {}).code] || '#6A7382'; return c === '#4A4A4A' ? '#12161F' : c; };
+  const TXT = typeof window.TXT !== 'undefined' ? window.TXT : '#12161F';
+  const cl = (v, a, b) => Math.max(a, Math.min(b, v)), e3 = x => 1 - Math.pow(1 - cl(x, 0, 1), 3), eob = t => { t = cl(t, 0, 1); const c = 1.70158; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+  /* 호흡 k(소수 가능)가 시작한 뒤 지난 초. 아직이면 null */
+  const TT = (s, k) => { if (k == null) return 99; const segs = (EP.segT || [])[s.startLine] || [];
+    if (!segs.length) return null; const i = Math.floor(k), f = k - i, t0 = segs[i] ?? segs[segs.length - 1], t1 = segs[i + 1] ?? (t0 + 1.5);
+    const d = NOW - (t0 + (t1 - t0) * f); return d < 0 ? null : d; };
+  const card = (img, w, h, extra = '') => { const src = photoSrc(img);
+    return `<div style="position:relative;width:${w}px;height:${h}px;flex:0 0 auto;border-radius:26px;overflow:hidden;background:#1A2234;box-shadow:0 22px 50px rgba(10,14,24,.35);${extra}">${src ? faceImg(src, {}, '50% 14%') : ''}</div>`; };
+  /* 점수 띠 */
+  function bug(b, sc, outs, bases, pulse = 0, plus = '') {
+    const base = (on, x, y) => `<rect x="${x - 13}" y="${y - 13}" width="26" height="26" rx="4" transform="rotate(45 ${x} ${y})" fill="${on ? '#FFC93C' : 'rgba(255,255,255,.14)'}" stroke="${on ? '#FFE08A' : 'rgba(255,255,255,.35)'}" stroke-width="2.5"/>`;
+    const dots = [0, 1, 2].map(i => `<span style="width:20px;height:20px;border-radius:50%;background:${i < outs ? '#FF5A63' : 'rgba(255,255,255,.18)'};display:inline-block"></span>`).join('');
+    const num = (v, i) => `<span class="num" style="font-size:54px;font-weight:900;color:#fff;min-width:44px;text-align:center;display:inline-block;transform:scale(${i === 0 ? 1 + .25 * pulse : 1})">${v}</span>`;
+    return `<div data-nodark="1" style="position:relative;display:flex;align-items:center;gap:26px;height:88px;padding:0 30px;border-radius:44px;background:#0F1626;box-shadow:0 14px 34px rgba(10,14,24,.30);flex:0 0 auto">
+      <div style="display:flex;align-items:center;gap:14px">${LOGOI(b.away || 'KIA', 54)}${num(sc[0], 0)}<span style="font-size:40px;font-weight:900;color:#5F6B80">:</span>${num(sc[1], 1)}${LOGOI(b.home || 'LG', 54)}</div>
+      <div style="width:2px;height:52px;background:rgba(255,255,255,.18)"></div>
+      <div style="font-size:38px;font-weight:900;color:#FFD43B;white-space:nowrap">${esc(b.inn || '')}</div>
+      <svg width="92" height="70" viewBox="0 0 92 70">${base(!!bases[1], 46, 18)}${base(!!bases[2], 18, 46)}${base(!!bases[0], 74, 46)}</svg>
+      <div style="display:flex;gap:8px;align-items:center"><span style="font-size:26px;font-weight:900;color:#9AA6B8;margin-right:4px">OUT</span>${dots}</div>
+      ${plus ? `<div style="position:absolute;left:96px;top:-46px;font-size:52px;font-weight:900;color:#FFD43B;text-shadow:0 4px 14px rgba(0,0,0,.45);opacity:${cl(pulse * 3, 0, 1)};transform:translateY(${((1 - pulse) * 16).toFixed(1)}px)">${esc(plus)}</div>` : ''}</div>`;
+  }
+  /* ── hrcam v2 (10/21 사용자 "공 날아가는거밖에 없는거야? 더 재미가 없어졌는데") ──
+     투구 → 스윙(딱!·번쩍·흔들림) → 카메라가 공을 따라감(배경이 흘러감·비거리 숫자) → 담장 넘김(관중 들썩·불꽃 3번·꽃가루·글자 쾅)
+     → 작은 다이아몬드에서 주자들이 한 명씩 홈으로 들어오고 점수가 1점씩 오른다 */
+  const PW = 1180, PH = 540, GY = 452, HOME = 170, FENCE = 1960, WW = 2520;
+  const R0 = (seed => { let r = seed; return () => (r = (r * 9301 + 49297) % 233280) / 233280; });
+  const FANS = (() => { const r = R0(11), o = []; for (let i = 0; i < 420; i++) { const x = 2000 + r() * 520, top = 300 - (x - 2000) * .36, y = top + 10 + r() * (GY - top - 14);
+      o.push([x, y, 2.2 + r() * 2.6, r() < .5 ? '#C70125' : r() < .5 ? '#FFD43B' : '#E6EBF3', r() * 6.28]); } return o; })();
+  const CONF = (() => { const r = R0(5), o = []; for (let i = 0; i < 70; i++) o.push([r() * PW, -40 - r() * 260, 6 + r() * 7, ['#FFD43B', '#FF5A63', '#5BD08A', '#6FA8FF', '#FFFFFF'][i % 5], r() * 6.28, .6 + r() * .8]); return o; })();
+  function figure(x, ang, team, alpha = 1) {   /* 옆에서 본 타자(오른쪽 = 투수 쪽). ang = 방망이 각도(도) */
+    const a = ang * Math.PI / 180, hx = x + 26, hy = GY - 88, bx = hx + Math.cos(a) * 92, by = hy + Math.sin(a) * 92;
+    return `<g opacity="${alpha}"><ellipse cx="${x + 10}" cy="${GY + 4}" rx="46" ry="7" fill="rgba(0,0,0,.35)"/>
+      <path d="M${x - 8} ${GY} L${x + 4} ${GY - 52} L${x + 18} ${GY - 52} L${x + 40} ${GY}" stroke="#E9ECF1" stroke-width="15" stroke-linecap="round" fill="none"/>
+      <rect x="${x - 6}" y="${GY - 112}" width="34" height="64" rx="15" fill="#1B2238"/><rect x="${x - 6}" y="${GY - 64}" width="34" height="8" fill="${TCOL(team)}"/>
+      <circle cx="${x + 12}" cy="${GY - 128}" r="17" fill="#E3B48E"/><path d="M${x - 6} ${GY - 130} a18 18 0 0 1 36 0 h10 v5 h-46z" fill="${TCOL(team)}"/>
+      <line x1="${x + 8}" y1="${GY - 100}" x2="${hx}" y2="${hy}" stroke="#1B2238" stroke-width="11" stroke-linecap="round"/>
+      <line x1="${hx}" y1="${hy}" x2="${bx.toFixed(1)}" y2="${by.toFixed(1)}" stroke="#E9C58F" stroke-width="10" stroke-linecap="round"/><circle cx="${hx}" cy="${hy}" r="7" fill="#F4F4F4"/></g>`;
+  }
+  function pitcher(x) { return `<g><ellipse cx="${x}" cy="${GY + 2}" rx="60" ry="9" fill="#B98B5B"/>
+      <path d="M${x - 14} ${GY} L${x - 4} ${GY - 44} L${x + 8} ${GY - 44} L${x + 20} ${GY}" stroke="#D9DDE4" stroke-width="12" stroke-linecap="round" fill="none"/>
+      <rect x="${x - 12}" y="${GY - 96}" width="28" height="56" rx="12" fill="#D9DDE4"/><circle cx="${x + 2}" cy="${GY - 110}" r="14" fill="#E3B48E"/><path d="M${x - 13} ${GY - 112} a15 15 0 0 1 30 0 h-30z" fill="#2B2F3A"/>
+      <line x1="${x - 4}" y1="${GY - 86}" x2="${x - 34}" y2="${GY - 70}" stroke="#D9DDE4" stroke-width="9" stroke-linecap="round"/></g>`; }
+  const BASES = [[110, 196], [194, 112], [110, 28], [26, 112], [110, 196]];   /* 홈 → 1루 → 2루 → 3루 → 홈 (인셋 안 좌표) */
+  const onPath = p => { const i = Math.min(3, Math.floor(p)), f = Math.min(1, p - i), a = BASES[i], b = BASES[i + 1]; return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f]; };
+  SCENE.hrcam = (lt, s) => {
+    const b = s.bug || {}, land = s.dir === 'lc' ? [2210, 300] : [2290, 270], apexY = s.dir === 'lc' ? 62 : 46;
+    /* 발사 순간 기준 시각(발사 전이면 음수) — 투구가 발사 0.5초 전부터 보이게 */
+    const segs = (EP.segT || [])[s.startLine] || [], k_ = s.launchAt || 0, i_ = Math.floor(k_), f_ = k_ - i_;
+    const t0_ = segs.length ? (segs[i_] ?? segs[segs.length - 1]) + (((segs[i_ + 1] ?? ((segs[i_] ?? 0) + 1.5)) - (segs[i_] ?? 0)) * f_) : null;
+    const tRaw = t0_ == null ? null : NOW - t0_, t = tRaw == null ? -9 : tRaw, PITCH = .5, FL = 1.9, L = FL + .02;
+    const pre = t;
+    const u = cl(t / FL, 0, 1), flying = t > 0, landed = t > L;
+    const at = v => [HOME + 30 + (land[0] - HOME - 30) * v, (1 - v) * (1 - v) * (GY - 92) + 2 * v * (1 - v) * (apexY * 2 - (GY - 92 + land[1]) / 2) + v * v * land[1]];
+    /* 투구: 발사 0.5초 전부터(이 호흡 시작 전이면 화면 밖) */
+    const tPitch = t + PITCH; const pitchU = cl(tPitch / PITCH, 0, 1);
+    const [bx0, by0] = flying ? at(u) : [560 - 26 + (HOME + 30 - 560 + 26) * pitchU, GY - 110 + 18 * pitchU];
+    const camX = cl(bx0 - 420, 0, WW - PW) * (flying ? 1 : 0), X = x => x - camX;
+    const shake = t > 0 && t < .3 ? Math.sin(t * 90) * 8 * (1 - t / .3) : landed && t < L + .45 ? Math.sin(t * 80) * 10 * (1 - (t - L) / .45) : 0;
+    const swing = t < -.12 ? -128 : t < 0 ? -128 + (133 * (t + .12) / .12) : t < .3 ? 5 - 70 * (t / .3) : -65;
+    const excite = cl((u - .78) * 5, 0, 1), fx = landed ? t - L : -1;
+    let trail = ''; if (flying) { const n = 48, pts = []; for (let i = 0; i <= n; i++) { const [x, y] = at(u * i / n); pts.push(X(x).toFixed(1) + ',' + y.toFixed(1)); }
+      trail = `<polyline points="${pts.join(' ')}" fill="none" stroke="url(#trl2)" stroke-width="10" stroke-linecap="round"/><polyline points="${pts.join(' ')}" fill="none" stroke="#FFF6D0" stroke-width="2.5" opacity=".9"/>`; }
+    const lights = [260, 820, 1380, 1940, 2500].map(x => { const sx = x - camX * .45; return `<circle cx="${sx}" cy="40" r="120" fill="url(#hlit2)" opacity=".5"/><rect x="${sx - 34}" y="18" width="68" height="26" rx="4" fill="#F4F1E2"/><rect x="${sx - 3}" y="44" width="6" height="120" fill="#36425E"/>`; }).join('');
+    const stripes = Array.from({ length: 18 }, (_, i) => `<rect x="${X(i * 150)}" y="${GY}" width="75" height="${PH - GY}" fill="#fff" opacity=".045"/>`).join('');
+    const fans = FANS.map(([x, y, r, c, ph]) => `<circle cx="${X(x).toFixed(1)}" cy="${(y - Math.abs(Math.sin(t * 13 + ph)) * 9 * excite).toFixed(1)}" r="${r.toFixed(1)}" fill="${c}" opacity=".8"/>`).join('');
+    const boom = (k, dx, dy, col) => { const q = cl((fx - k * .32) / 1.0, 0, 1); if (q <= 0 || q >= 1) return '';
+      const cx = X(land[0] + dx), cy = land[1] - 70 + dy; return Array.from({ length: 20 }, (_, i) => { const a = i / 20 * 6.283, r1 = 18 + 92 * e3(q), r0 = Math.max(0, r1 - 40);
+        return `<line x1="${(cx + Math.cos(a) * r0).toFixed(1)}" y1="${(cy + Math.sin(a) * r0).toFixed(1)}" x2="${(cx + Math.cos(a) * r1).toFixed(1)}" y2="${(cy + Math.sin(a) * r1).toFixed(1)}" stroke="${i % 2 ? col : '#FFFFFF'}" stroke-width="5" stroke-linecap="round" opacity="${(1 - q).toFixed(2)}"/>`; }).join(''); };
+    const conf = fx > 0 ? CONF.map(([x, y0, sz, c, ph, sp]) => { const y = y0 + fx * 260 * sp; if (y > PH + 20) return ''; return `<rect x="${(x + Math.sin(fx * 3 + ph) * 26).toFixed(1)}" y="${y.toFixed(1)}" width="${sz}" height="${(sz * .55).toFixed(1)}" fill="${c}" transform="rotate(${((fx * 300 + ph * 57) % 360).toFixed(0)} ${x.toFixed(1)} ${y.toFixed(1)})"/>`; }).join('') : '';
+    const svg = `<svg width="${PW}" height="${PH}" viewBox="0 0 ${PW} ${PH}" style="display:block">
+      <defs><linearGradient id="hsky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#060B1A"/><stop offset=".7" stop-color="#14254A"/><stop offset="1" stop-color="#1F3A66"/></linearGradient>
+        <radialGradient id="hlit2"><stop offset="0" stop-color="#FFF7D6" stop-opacity=".9"/><stop offset="1" stop-color="#FFF7D6" stop-opacity="0"/></radialGradient>
+        <linearGradient id="trl2" x1="0" x2="1"><stop offset="0" stop-color="#FFD43B" stop-opacity=".05"/><stop offset="1" stop-color="#FFD43B" stop-opacity=".95"/></linearGradient>
+        <linearGradient id="hgr2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2E8B4E"/><stop offset="1" stop-color="#1D6A39"/></linearGradient></defs>
+      <rect width="${PW}" height="${PH}" fill="url(#hsky2)"/>${lights}
+      <path d="M${X(2000)} 300 L${X(WW)} ${300 - (WW - 2000) * .36} L${X(WW)} ${GY} L${X(2000)} ${GY} Z" fill="#101A30"/>${fans}
+      <rect x="0" y="${GY}" width="${PW}" height="${PH - GY}" fill="url(#hgr2)"/>${stripes}
+      <ellipse cx="${X(420)}" cy="${GY + 30}" rx="330" ry="34" fill="#B98B5B" opacity=".85"/>
+      <rect x="${X(FENCE)}" y="${GY - 74}" width="34" height="74" fill="#0F4D2C"/><rect x="${X(FENCE)}" y="${GY - 80}" width="34" height="8" fill="#FFD43B"/>
+      ${pitcher(X(560))}
+      <path d="M${X(HOME) - 24} ${GY + 2} h48 l-8 14 h-32 z" fill="#F4F4F4"/>
+      ${figure(X(HOME - 46), swing, s.team || 'KIA')}
+      ${t > -.02 && t < .22 ? `<g opacity="${(1 - t / .22).toFixed(2)}">${Array.from({ length: 12 }, (_, i) => { const a = i / 12 * 6.283, r = 22 + 60 * (t / .22); return `<line x1="${X(HOME + 30)}" y1="${GY - 92}" x2="${(X(HOME + 30) + Math.cos(a) * r).toFixed(1)}" y2="${(GY - 92 + Math.sin(a) * r).toFixed(1)}" stroke="#FFF6D0" stroke-width="6" stroke-linecap="round"/>`; }).join('')}</g>` : ''}
+      ${trail}
+      ${flying && !landed ? `<ellipse cx="${X(bx0).toFixed(1)}" cy="${GY + 6}" rx="${(16 - 8 * Math.sin(u * Math.PI)).toFixed(1)}" ry="5" fill="rgba(0,0,0,.35)"/>` : ''}
+      ${t > -PITCH && !landed ? `<circle cx="${X(bx0).toFixed(1)}" cy="${by0.toFixed(1)}" r="28" fill="#FFE9A0" opacity="${flying ? .3 : 0}"/><circle cx="${X(bx0).toFixed(1)}" cy="${by0.toFixed(1)}" r="${flying ? 14 : 9}" fill="#FFFFFF" stroke="#E5484D" stroke-width="2.5" opacity="${tPitch > 0 ? 1 : 0}"/>` : ''}
+      ${boom(0, 0, 0, '#FFD43B')}${boom(1, -150, 40, '#FF5A63')}${boom(2, 120, -10, '#6FA8FF')}
+      ${conf}
+      ${t > 0 && t < .12 ? `<rect width="${PW}" height="${PH}" fill="#FFFFFF" opacity="${(.55 * (1 - t / .12)).toFixed(2)}"/>` : ''}
+    </svg>`;
+    const ddak = t > 0 && t < .9 ? `<div style="position:absolute;left:${X(HOME) + 40}px;top:${GY - 250}px;font-size:96px;font-weight:900;color:#FFFFFF;letter-spacing:-3px;-webkit-text-stroke:4px #C70125;transform:rotate(-10deg) scale(${(.5 + .5 * eob(cl(t / .25, 0, 1))).toFixed(3)});opacity:${cl((.9 - t) / .3, 0, 1).toFixed(2)}">딱!</div>` : '';
+    const distTxt = s.dist ? `${Math.round((parseInt(s.dist, 10) || 0) * e3(u))}m` : '';
+    const distBox = s.dist ? `<div style="position:absolute;right:26px;top:20px;display:flex;flex-direction:column;align-items:flex-end;opacity:${flying ? 1 : 0}"><span style="font-size:28px;font-weight:900;color:#9AA6B8">비거리</span><span class="num" style="font-size:90px;font-weight:900;letter-spacing:-3px;color:#FFD43B;line-height:1">${distTxt}</span></div>` : '';
+    const over = u > .8 && !landed ? `<div style="position:absolute;left:50%;top:22px;transform:translateX(-50%);font-size:50px;font-weight:900;color:#FFFFFF;white-space:nowrap;opacity:${cl((u - .8) * 6, 0, 1).toFixed(2)}">넘어간다!</div>` : '';
+    const burstP = landed ? cl((fx - .02) / .45, 0, 1) : 0;
+    const burst = s.burst ? `<div style="position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-4deg) scale(${burstP <= 0 ? .4 : (.4 + .6 * eob(burstP)).toFixed(3)});opacity:${cl(burstP * 2, 0, 1).toFixed(2)};font-size:140px;font-weight:900;letter-spacing:-5px;color:#FFD43B;white-space:nowrap;text-shadow:0 8px 0 #A3001B, 0 18px 40px rgba(0,0,0,.6)">${esc(s.burst)}</div>` : '';
+    /* 주자 돌기 */
+    const RN = s.runners || [], bs = b.bases || [null, null, null], SEG = .34, T0 = L + .25;
+    const startOf = n => { const k = bs.indexOf(n); return k < 0 ? 0 : k + 1; };
+    const posOf = n => landed ? Math.min(4, startOf(n) + Math.max(0, (fx - .25) / SEG)) : startOf(n);
+    const arrived = RN.map(n => posOf(n) >= 4), got = arrived.filter(Boolean).length;
+    const lastIn = RN.reduce((m, n) => posOf(n) >= 4 ? Math.max(m, T0 + (4 - startOf(n)) * SEG) : m, -1), pulse = lastIn > 0 ? Math.max(0, 1 - (t - lastIn) / .4) : 0;
+    const inP = landed ? cl((fx - .05) / .3, 0, 1) : 0;
+    const inset = RN.length ? `<div style="position:absolute;left:22px;top:22px;width:220px;height:224px;border-radius:22px;background:rgba(6,10,20,.78);border:2px solid rgba(255,255,255,.18);opacity:${inP.toFixed(2)}">
+      <svg width="220" height="224" viewBox="0 0 220 224"><path d="M110 196 L194 112 L110 28 L26 112 Z" fill="#2E8B4E" stroke="#C7A06A" stroke-width="5"/>
+        ${BASES.slice(1, 4).map(([x, y]) => `<rect x="${x - 10}" y="${y - 10}" width="20" height="20" transform="rotate(45 ${x} ${y})" fill="#F4F4F4"/>`).join('')}<path d="M99 192 h22 l-4 9 h-14z" fill="#F4F4F4"/>
+        ${RN.map((n, i) => { const p = posOf(n); if (p >= 4) return ''; const [x, y] = onPath(p); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="13" fill="${startOf(n) === 0 ? '#FFD43B' : '#FF5A63'}" stroke="#fff" stroke-width="3"/>`; }).join('')}</svg>
+      <div style="position:absolute;left:0;right:0;bottom:-44px;text-align:center;font-size:32px;font-weight:900;color:#FFD43B;white-space:nowrap;text-shadow:0 2px 6px rgba(0,0,0,.6)">${got ? got + '명 홈인' : ''}</div></div>` : '';
+    const chips = RN.length ? `<div style="position:absolute;left:26px;bottom:20px;display:flex;gap:12px">${RN.map((n, i) => { const p = arrived[i] ? cl((t - (T0 + (4 - startOf(n)) * SEG)) / .3, 0, 1) : 0;
+      return `<div style="display:flex;align-items:center;gap:8px;height:54px;padding:0 20px;border-radius:27px;background:#C70125;color:#fff;font-size:31px;font-weight:900;white-space:nowrap;opacity:${cl(p * 2, 0, 1).toFixed(2)};transform:translateY(${((1 - e3(p)) * 18).toFixed(1)}px)">${esc(n)} <span style="color:#FFD43B">홈인</span></div>`; }).join('')}</div>` : '';
+    const sc0 = (b.score || [0, 0]).slice();
+    const basesNow = landed ? [0, 1, 2].map(k => { const n = bs[k]; return n && posOf(n) < 4 ? n : null; }) : bs;
+    const panel = `<div data-nodark="1" style="position:relative;width:${PW}px;height:${PH}px;border-radius:30px;overflow:hidden;flex:0 0 auto;box-shadow:0 24px 54px rgba(10,14,24,.32);transform:translate(${shake.toFixed(1)}px,${(shake * .5).toFixed(1)}px)">${svg}${ddak}${distBox}${over}${burst}${inset}${chips}</div>`;
+    const PWc = 418, PHc = Math.round(PWc / .774);
+    const left = `<div style="position:relative;flex:0 0 auto">${card(s.img, PWc, PHc)}<div style="position:absolute;left:0;right:0;bottom:0;height:150px;border-radius:0 0 26px 26px;background:linear-gradient(180deg,rgba(10,14,24,0),rgba(10,14,24,.88))"></div>
+      <div style="position:absolute;left:24px;bottom:20px;display:flex;align-items:center;gap:12px">${LOGOI(s.team || 'KIA', 54)}<b style="font-size:60px;font-weight:900;letter-spacing:-2px;color:#fff;white-space:nowrap">${esc(s.name || '')}</b></div></div>`;
+    B(`<div class="col" style="width:100%;align-items:center;gap:22px">${bug(b, [sc0[0] + got, sc0[1]], b.outs || 0, basesNow, pulse, got ? `+${got}` : '')}
+      <div class="row" style="gap:34px;flex-wrap:nowrap;align-items:center">${left}${panel}</div></div>`);
+  };
+  /* ── rally ── */
+  SCENE.rally = (lt, s) => {
+    const b = s.bug || {}, pl = s.plays || [];
+    const P = pl.map(x => { const tt = TT(s, x.at); return tt == null ? 0 : cl(tt / .55, 0, 1); });
+    let cur = -1; P.forEach((p, i) => { if (p >= .5) cur = i; });
+    const st = cur < 0 ? { score: b.score || [0, 0], outs: b.outs || 0, bases: b.bases || [null, null, null] } : pl[cur];
+    const runP = cur >= 0 && pl[cur].kind === 'run' ? P[cur] : 0;
+    const CW = 262, CH = Math.round(CW / .774);
+    const cards = pl.map((x, i) => { const p = P[i], ang = (1 - e3(p)) * 88, out = x.kind === 'out', run = x.kind === 'run';
+      const col = out ? '#5F6B80' : run ? '#E8A100' : '#C70125';
+      return `<div class="col" style="align-items:center;gap:12px;flex:0 0 auto;opacity:${cl(p * 3, 0, 1).toFixed(2)};transform:perspective(900px) rotateY(${ang.toFixed(1)}deg) translateY(${run ? -10 * e3(p) : 0}px)">
+        <div style="position:relative">${card(x.img, CW, CH, `${out ? 'filter:grayscale(.85) brightness(.85);' : ''}${run ? `outline:7px solid #FFC93C;box-shadow:0 0 0 7px #FFC93C, 0 24px 60px rgba(232,161,0,.55);` : ''}`)}
+          <div style="position:absolute;left:50%;bottom:16px;transform:translateX(-50%) rotate(-5deg) scale(${p <= 0 ? 1.5 : (1.5 - .5 * e3(cl(p * 1.4 - .3, 0, 1))).toFixed(3)});opacity:${cl(p * 2 - .5, 0, 1).toFixed(2)};border:6px solid ${col};background:rgba(255,255,255,.94);color:${col};border-radius:16px;padding:4px 16px;font-size:${run ? 40 : 36}px;font-weight:900;white-space:nowrap">${esc(x.res)}</div></div>
+        <b style="font-size:46px;font-weight:900;letter-spacing:-1.5px;white-space:nowrap;color:${out ? '#5F6B80' : TXT}">${esc(x.name)}</b></div>`; });
+    const arrows = cards.map((c, i) => i < cards.length - 1 ? c + `<div style="flex:0 0 auto;font-size:44px;font-weight:900;color:${P[i + 1] > .3 ? '#C70125' : '#C9D2E0'};margin-top:-60px">›</div>` : c).join('');
+    const pulse = runP > 0 ? Math.sin(runP * Math.PI) : 0;
+    B(`<div class="col" style="width:100%;align-items:center;gap:40px">${bug(b, st.score, st.outs, st.bases, pulse, runP > 0 ? (pl[cur].rbi || '+1') : '')}
+      <div class="row" style="gap:14px;flex-wrap:nowrap;align-items:center">${arrows}</div></div>`);
+  };
+
+  /* ── plog ── 투수 기록판(10/21 사용자 "투수들 투구 기록도 나오면 재미있을거같은데 애니메이션이랑"): 왼쪽 사진 + 오른쪽 어두운 기록판
+     {img, name, team, sub, stamp:{t, at}, blocks:[{type:'inn', ip, tag1, at} | {type:'pitch', n, at, k} | {type:'k', n, at} | {type:'runs', n, at} | {type:'zero', k, at} | {type:'line', items:[[k,v,hi]], at}]} — KBO 박스스코어 */
+  SCENE.plog = (lt, s) => {
+    const RW = 1040, tc = TCOL(s.team || 'KIA');
+    const Pr = (k, d) => { const tt = TT(s, k); return tt == null ? 0 : cl(tt / d, 0, 1); };
+    const lab = (t, op = 1) => `<div style="font-size:30px;font-weight:900;color:#9AA6B8;white-space:nowrap;opacity:${op}">${esc(t)}</div>`;
+    const blk = z => { const p = Pr(z.at, z.type === 'pitch' ? 1.6 : z.type === 'inn' ? 1.2 : z.type === 'k' ? 1.1 : .6), op = cl(p * 4, 0, 1).toFixed(2);
+      if (z.type === 'inn') { const nb = Math.max(5, Math.ceil(z.ip - 1e-6)), wh = Math.floor(z.ip + 1e-6), fr = Math.round((z.ip - wh) * 3);
+        const txt = wh + (fr ? (fr === 1 ? '⅓' : '⅔') : '') + '이닝';
+        const bx = Array.from({ length: nb }, (_, i) => { const f = cl(z.ip - i, 0, 1), g = cl(p * (nb + 1) - i, 0, 1) * f;
+          return `<div class="col" style="align-items:center;gap:6px"><div style="position:relative;width:66px;height:66px;border-radius:12px;border:3px solid #2C3A55;background:#0A1120;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:${(g * 100).toFixed(1)}%;background:linear-gradient(180deg,#FFD866,#F2B705)"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:${g > .5 ? '#3A2414' : '#4F5D78'}">${i + 1}</div></div>
+            ${i === 0 && z.tag1 ? `<div style="font-size:24px;font-weight:900;color:#5BD08A;white-space:nowrap;opacity:${cl(p * 3 - .5, 0, 1).toFixed(2)}">${esc(z.tag1)}</div>` : `<div style="height:${z.tag1 ? 30 : 0}px"></div>`}</div>`; }).join('');
+        return `<div class="col" style="gap:10px;align-items:flex-start;opacity:${op}">${lab('이닝')}<div class="row" style="gap:10px;align-items:flex-start;flex-wrap:nowrap">${bx}<div class="num" style="margin-left:18px;font-size:66px;font-weight:900;color:#FFD43B;white-space:nowrap;line-height:66px">${txt}</div></div></div>`; }
+      if (z.type === 'pitch') { const PER = 26, n = z.n, sh = Math.round(n * e3(p));
+        const dots = Array.from({ length: n }, (_, i) => `<span style="width:20px;height:20px;border-radius:50%;display:inline-block;background:${i < sh ? '#F4F1E2' : 'rgba(255,255,255,.08)'};${i < sh ? 'box-shadow:inset -3px -3px 0 rgba(199,1,37,.35)' : ''};transform:scale(${i === sh - 1 ? 1.35 : 1})"></span>`).join('');
+        return `<div class="col" style="gap:10px;align-items:flex-start;opacity:${op}">${lab(z.k || '투구 수')}<div class="row" style="gap:24px;align-items:center;flex-wrap:nowrap"><div style="display:grid;grid-template-columns:repeat(${PER},20px);gap:6px">${dots}</div><div class="num" style="font-size:72px;font-weight:900;color:#FFFFFF;white-space:nowrap">${sh}<span style="font-size:36px;color:#9AA6B8"> 구</span></div></div></div>`; }
+      if (z.type === 'k') { const ks = Array.from({ length: z.n }, (_, i) => { const q = cl(p * (z.n + 2) / 1.4 - i * .7, 0, 1);
+          return `<div style="width:56px;height:68px;border-radius:12px;background:#E5484D;color:#fff;font-size:44px;font-weight:900;display:flex;align-items:center;justify-content:center;opacity:${cl(q * 2, 0, 1).toFixed(2)};transform:scale(${q <= 0 ? .4 : (.4 + .6 * eob(q)).toFixed(3)}) rotate(${((1 - e3(q)) * -12).toFixed(1)}deg)">K</div>`; }).join('');
+        return `<div class="col" style="gap:10px;align-items:flex-start;opacity:${op}">${lab('삼진')}<div class="row" style="gap:8px;align-items:center;flex-wrap:nowrap">${ks || `<div class="num" style="font-size:66px;font-weight:900;color:#5F6B80">0개</div>`}${z.n ? `<div class="num" style="margin-left:14px;font-size:66px;font-weight:900;color:#FF6B6B;white-space:nowrap">${z.n}개</div>` : ''}</div></div>`; }
+      if (z.type === 'runs') { const bs = Array.from({ length: z.n }, (_, i) => { const q = cl(p * 3 - i * .35, 0, 1);
+          return `<div style="width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FF8A90,#E5222E);box-shadow:0 0 18px rgba(255,90,99,.55);opacity:${cl(q * 2, 0, 1).toFixed(2)};transform:scale(${q <= 0 ? .3 : (.3 + .7 * eob(q)).toFixed(3)})"></div>`; }).join('');
+        return `<div class="col" style="gap:10px;align-items:flex-start;opacity:${op}">${lab('실점')}<div class="row" style="gap:10px;align-items:center;flex-wrap:nowrap">${bs}<div class="num" style="margin-left:14px;font-size:66px;font-weight:900;color:#FF6B6B;white-space:nowrap">${z.n}점</div></div></div>`; }
+      if (z.type === 'zero') return `<div class="row" style="gap:28px;align-items:center;flex-wrap:nowrap;opacity:${op}"><div class="col" style="gap:0;align-items:flex-start">${lab(z.k)}<div class="num" style="font-size:150px;font-weight:900;letter-spacing:-6px;color:#5BD08A;line-height:1;transform:scale(${p <= 0 ? 1.6 : (1.6 - .6 * e3(p)).toFixed(3)});transform-origin:left center">0<span style="font-size:60px">개</span></div></div>
+          <div style="border:7px solid #5BD08A;color:#5BD08A;border-radius:18px;padding:6px 22px;font-size:46px;font-weight:900;white-space:nowrap;transform:rotate(-6deg) scale(${cl(p * 2 - .6, 0, 1) <= 0 ? 1.5 : (1.5 - .5 * e3(cl(p * 2 - .6, 0, 1))).toFixed(3)});opacity:${cl(p * 3 - 1.2, 0, 1).toFixed(2)}">${esc(z.stamp || '')}</div></div>`;
+      if (z.type === 'line') return `<div class="row" style="gap:46px;align-items:flex-end;flex-wrap:nowrap;opacity:${z.items.some(x => x[3] != null) ? 1 : op}">${(z.items || []).map(([k, v, hi, ia], i) => { const q = ia == null ? cl(p * 3 - i * .4, 0, 1) : Pr(ia, .5);
+          return `<div class="col" style="gap:0;align-items:flex-start;opacity:${cl(q * 2, 0, 1).toFixed(2)};transform:translateY(${((1 - e3(q)) * 16).toFixed(1)}px)">${lab(k)}<div class="num" style="font-size:62px;font-weight:900;color:${hi ? '#FF6B6B' : '#FFFFFF'};white-space:nowrap">${esc(v)}</div></div>`; }).join('')}</div>`;
+      return ''; };
+    const sp = s.stamp ? Pr(s.stamp.at, .45) : 0;
+    const head = `<div class="row" style="gap:18px;align-items:center;justify-content:flex-start;flex-wrap:nowrap;width:100%">${LOGOI(s.team || 'KIA', 60)}<b style="font-size:64px;font-weight:900;letter-spacing:-2px;color:#fff;white-space:nowrap">${esc(s.name || '')}</b>
+      <span style="font-size:30px;font-weight:900;color:#0F1626;background:${tc === '#12161F' ? '#E6EBF3' : '#FFD43B'};border-radius:22px;padding:6px 18px;white-space:nowrap">${esc(s.sub || '')}</span>
+      ${s.stamp ? `<div style="position:absolute;right:48px;bottom:64px;border:6px solid #FFD43B;color:#FFD43B;border-radius:16px;padding:4px 18px;font-size:40px;font-weight:900;white-space:nowrap;transform:rotate(-4deg) scale(${sp <= 0 ? 1.5 : (1.5 - .5 * e3(sp)).toFixed(3)});opacity:${cl(sp * 1.6, 0, 1).toFixed(2)}">${esc(s.stamp.t)}</div>` : ''}</div>`;
+    const PWc = 480, PHc = 640;
+    const board = `<div data-nodark="1" class="col" style="width:${RW}px;height:${PHc}px;box-sizing:border-box;padding:30px 44px;border-radius:30px;background:linear-gradient(160deg,#141E33,#0B1222);box-shadow:0 24px 54px rgba(10,14,24,.32);gap:20px;position:relative;align-items:flex-start;justify-content:flex-start;flex:0 0 auto">${head}<div style="width:100%;height:2px;background:rgba(255,255,255,.12)"></div>${(s.blocks || []).map(blk).join('')}
+      <div style="position:absolute;right:30px;bottom:18px;font-size:22px;font-weight:700;color:#5F6B80">기록: KBO 박스스코어</div></div>`;
+    B(`<div class="row" style="width:100%;gap:40px;justify-content:center;align-items:center;flex-wrap:nowrap">${card(s.img, PWc, PHc)}${board}</div>`);
+  };
+  Object.assign(MOTION, { plog: () => 2.4, hrcam: () => 4.6, rally: s => .6 + (s.plays || []).length * .5 });
+})();
+/* @@HR1021END */
 function render(t) {
   prepAll();
   let k = 0; while (k < BD.length && t >= BD[k]) k++;
