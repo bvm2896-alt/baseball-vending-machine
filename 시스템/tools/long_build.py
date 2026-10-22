@@ -5,6 +5,7 @@
 #       특정 날짜는 인자로: python _long_build.py 2026-09-18
 # 10/2: 롱폼을 쪼갠 컷 쇼츠(YYYY-MM-DD_롱폼컷N.json, "vertical": true)도 같이 만든다 — 롱폼을 먼저, 그다음 컷(컷은 롱폼 음성을 가져다 쓴다).
 #       이미 같은 내용으로 만든 편(work\long_built.json 에 콘티 지문이 같은 것)은 건너뛴다. 검수판(KBO_DRAFT)과 최종판은 따로 센다.
+# 10/22 밤 사용자 "롱폼만들기 하면 삼성이랑 롯데 같이 만들어지게": 가장 늦은 날짜의 롱폼 콘티(_롱폼.json·_롱폼2.json…)를 전부, 이름 순서로 만든다(이미 만든 편은 건너뜀).
 # 합성 전에 어떤 콘티를 만드는지 보여 주고 Enter(y)를 받아야 시작한다.
 # 10/2 밤 사용자 "롱폼만들기 말고 롱폼_숏츠만들기 배치파일을 하나 더" → 두 버튼으로 나눈다.
 #       --long : 롱폼만 (롱폼만들기.cmd·롱폼검수.cmd)
@@ -25,7 +26,7 @@ MODE = 'long' if '--long' in args else 'cuts' if '--cuts' in args else 'both'
 args = [a for a in args if a not in ('--long', '--cuts')]
 iscut = lambda c: re.match(r'\d{4}-\d{2}-\d{2}_롱폼컷\d+\.json$', os.path.basename(c)) and load(c).get('vertical')
 cutkey = lambda c: (os.path.basename(c)[:10], int(re.search(r'컷(\d+)', os.path.basename(c)).group(1)))
-p = None
+p = None; longs = []
 if MODE == 'cuts':
     cuts = sorted((c for c in glob.glob('episodes/*.json') if iscut(c)), key=cutkey)
     if args: cuts = [c for c in cuts if args[0] in os.path.basename(c)]
@@ -39,18 +40,23 @@ else:
                 if re.match(r'\d{4}-\d{2}-\d{2}_롱폼', os.path.basename(x)) and not iscut(x) and load(x).get('chapters'))
     if args: ps = [x for x in ps if args[0] in os.path.basename(x)]
     if not ps: sys.exit('만들 롱폼 콘티가 없습니다 (episodes\\YYYY-MM-DD_롱폼.json)')
-    # 10/18 밤: 같은 날 롱폼이 둘 이상이면(_롱폼.json·_롱폼2.json) 가장 늦은 날짜 중 가장 최근에 고친 콘티를 만든다(이름 순서로 고르면 방금 고친 편이 아닌 다른 편을 만들었음)
-    p = max(ps, key=lambda x: (os.path.basename(x)[:10], os.path.getmtime(x))); ep = load(p)
+    # 10/22 밤: 가장 늦은 날짜의 롱폼 콘티를 전부(이름 순서: _롱폼 → _롱폼2 → …) 만든다. 이미 같은 내용으로 만든 편은 건너뛴다.
+    last = max(os.path.basename(x)[:10] for x in ps)
+    longs = sorted((x for x in ps if os.path.basename(x)[:10] == last),
+                   key=lambda x: int((re.search(r'_롱폼(\d*)\.json$', os.path.basename(x)).group(1) or 1) if re.search(r'_롱폼(\d*)\.json$', os.path.basename(x)) else 99))
+    p = longs[0]
+    stems = {os.path.splitext(os.path.basename(x))[0] for x in longs}
     cuts = [] if MODE == 'long' else sorted(
         (c for c in glob.glob('episodes/*.json')
-         if iscut(c) and (load(c).get('voiceFrom') or {}).get('ep') == os.path.splitext(os.path.basename(p))[0]), key=cutkey)
-    todo = ([] if done(p) else [p]) + [c for c in cuts if not done(c)]
+         if iscut(c) and (load(c).get('voiceFrom') or {}).get('ep') in stems), key=cutkey)
+    todo = [x for x in longs if not done(x)] + [c for c in cuts if not done(c)]
     if not todo:
-        sys.exit(f'다 만들어져 있어요({DRAFT}판): {os.path.basename(p)}' + (f' + 컷 {len(cuts)}편' if cuts else '') + ' — 콘티를 고치면 다시 만듭니다')
+        sys.exit(f'다 만들어져 있어요({DRAFT}판): ' + ', '.join(os.path.basename(x) for x in longs) + (f' + 컷 {len(cuts)}편' if cuts else '') + ' — 콘티를 고치면 다시 만듭니다')
 
 print('=' * 70)
 print(f'이번에 만들 것({DRAFT}판):', ', '.join(os.path.basename(x) for x in todo))
-if p and p not in todo: print(f'  (롱폼 {os.path.basename(p)} 은 이미 만들어져 있어 건너뜀)')
+for x in (longs if MODE != 'cuts' else []):
+    if x not in todo: print(f'  (롱폼 {os.path.basename(x)} 은 이미 만들어져 있어 건너뜀)')
 if MODE == 'cuts':
     skip = [c for c in cuts if c not in todo]
     if skip: print('  (이미 만들어져 있어 건너뜀: ' + ', '.join(os.path.basename(c) for c in skip) + ')')
@@ -58,7 +64,7 @@ if MODE == 'cuts':
 for x in todo:
     e = load(x); L = e.get('lines', [])
     print('=' * 70)
-    print(('롱폼: ' if x == p else '컷 쇼츠: ') + x)
+    print(('롱폼: ' if x in longs else '컷 쇼츠: ') + x)
     print('  제목:', (e.get('youtube') or {}).get('title', '')[:80])
     print('  줄 수:', len(L), ' / 타입캐스트 API' if e.get('ttsApi') else ' / 음성 zip', f" / 말 속도 {e.get('speed')}배" if e.get('vertical') else '')
     ch = {c.get('from'): c for c in e.get('chapters', [])}
@@ -67,6 +73,12 @@ for x in todo:
         if i in ch: print(f"\n[챕터] {ch[i].get('title', '')}  ({ch[i].get('from')}~{ch[i].get('to')}줄)")
         tag = '' if not e.get('vertical') else ('  [롱폼 %02d번 음성]' % vf[i] if i < len(vf) and vf[i] is not None else '  [새 줄]')
         print(f"  {i:02d}  {l.get('narr', '').replace(' / ', ' ')}{tag}")
+# 10/23 사용자("카드가 너무 늦게 떠서 나오자마자 다음 장면으로 넘어가"): 음성 zip 이 있으면 늦게 뜨는 글·카드(1.5초 미만 보임)를 먼저 잰다
+for x in todo:
+    if load(x).get('vertical'): continue
+    zp = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '야구롱폼', '음성', os.path.basename(x)[:-5] + '.zip')
+    if os.path.exists(zp):
+        print(f'  [늦게 뜨는 글 검사] {os.path.basename(x)}'); subprocess.call([sys.executable, '-X', 'utf8', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'late_check.py'), x, zp])
 print('=' * 70)
 print('  위 대본이 맞는지 보고 결정하세요. 이미 만든 줄·구독 멘트는 다시 합성하지 않습니다(tts 가 편마다 새로 만들 글자 수를 한 번 더 보여 줌).')
 # 10/14: KBO_YES=1(롱폼검수_자동.cmd)이면 묻지 않고 시작 — Claude 가 PC 를 클릭만으로 돌릴 때(사용자 지시 "너가 컴퓨터 조작해서 영상 만들고 검수까지")
@@ -76,7 +88,7 @@ for x in todo:
     print('\n' + '#' * 70 + f'\n# {os.path.basename(x)}\n' + '#' * 70)
     for c in (['build.py', 'prep', x], ['tts.py'], ['build.py', 'render', x]):
         r = subprocess.call([sys.executable, '-X', 'utf8'] + c, env=dict(os.environ, KBO_ASK='1'))   # tts.py 가 글자 수 초과·계정 전환 때 여기 콘솔에서 묻는다
-        if r: sys.exit(f'{os.path.basename(x)} 에서 멈췄어요 — 위 오류를 Claude 에게 보여 주세요' + (' (롱폼이 안 끝나서 컷 쇼츠는 만들지 않았어요)' if x == p else ''))
+        if r: sys.exit(f'{os.path.basename(x)} 에서 멈췄어요 — 위 오류를 Claude 에게 보여 주세요' + (' (이 롱폼이 안 끝나서 뒤의 편·컷 쇼츠는 만들지 않았어요)' if x in longs else ''))
     built[f'{DRAFT}|{os.path.basename(x)}'] = fp(x)
     os.makedirs('work', exist_ok=True); json.dump(built, io.open(BUILT, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
 print(f'\n완료({DRAFT}판): ' + ', '.join(os.path.basename(x) for x in todo))

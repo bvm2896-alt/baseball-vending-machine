@@ -105,7 +105,7 @@ _RL = [dict(label="롯데", team="롯데", value=16, unit="명", at=0.6, hi=True
 SC.append(S(0, "bars", title="재계약 불가 · 10월 20일 기준", items=_RL, max=16, chain="b39", text="6개 구단 · 모두 59명", textAt=1.8, size=56))   # 39
 SC.append(S(0, "bars", title="재계약 불가 · 10월 20일 기준", items=_RL, max=16, chain="b39", cont=True, text="두산 11명엔 손아섭도", textAt=1.6, size=56))   # 40
 SC.append(S(0, "tiles", title="아직 명단 발표 전", items=[dict(team=t, k="10월 22일", v="발표 전", at=0.1 + i * 0.25) for i, t in enumerate(["NC", "KT", "LG", "KIA"])]))   # 41
-SC.append(S(0, "question", text="최충연\n다른 팀에서 다시?", img=IMG["최롯투"], size=96))                                       # 42
+SC.append(S(0, "question", text="최충연\n다른 팀에서 다시?", img=IMG["최롯"], size=96))   # 10/22 밤 사용자 "마지막 사진 장난하냐" → 흐린 투구 확대 컷 대신 얼굴 정면 사진(R1 때문에 프로필은 못 씀)                                       # 42
 
 N = len(TEXT)
 assert len(SC) == N, (N, len(SC))
@@ -134,7 +134,7 @@ DESC = ("롯데 자이언츠가 10월 7일 선수 16명(투수 8명·야수 8명
 SOURCE = "사실 출처 = 프로젝트 claude/1022-롱폼24-롯데방출-근거모음.md (기사 본문 2곳 이상 + KBO 선수 조회 생년)."
 
 EP = {"introChapter": "오프닝", "date": "2026-10-22", "gameDate": "2026-10-22", "series": "야구롱폼", "focusTeam": "롯데", "speed": 1.0, "ttsApi": True, "ttsTempo": 1.3, "ttsTempoSlow": 1.3,
-      "rev": "1022-long24-v2", "topic": "롯데방출", "endcardSec": 10,
+      "rev": "1022-long24-v3", "topic": "롯데방출", "endcardSec": 10,
       "gapScale": 0.85, "pauseMax": 0.3, "ttsCharsOk": 8000,
       "chapters": CH, "lines": lines, "scenes": scenes, "thumb": {}, "thumbFile": "선수이미지/상황별/썸네일_롱폼24_롯데방출.jpg", "mascot": False, "source": SOURCE,
       "youtube": {"title": "롯데 방출 16명 | 2억 주고 데려온 금메달리스트 최충연도 떠났다 #롯데 #최충연 #방출",

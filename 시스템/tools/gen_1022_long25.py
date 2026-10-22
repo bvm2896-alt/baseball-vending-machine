@@ -127,7 +127,7 @@ DESC = ("삼성 라이온즈가 플레이오프를 엿새 앞둔 10월 19일 선
 SOURCE = "사실 출처 = 프로젝트 claude/1022-롱폼25-삼성방출-근거모음.md (기사 본문 2곳 이상 + KBO 기록실)."
 
 EP = {"introChapter": "오프닝", "date": "2026-10-22", "gameDate": "2026-10-22", "series": "야구롱폼", "focusTeam": "삼성", "speed": 1.0, "ttsApi": True, "ttsTempo": 1.3, "ttsTempoSlow": 1.3,
-      "rev": "1022-long25-v1", "topic": "삼성방출", "endcardSec": 10,
+      "rev": "1022-long25-v2", "topic": "삼성방출", "endcardSec": 10,
       "gapScale": 0.85, "pauseMax": 0.3, "ttsCharsOk": 8000,
       "chapters": CH, "lines": lines, "scenes": scenes, "thumb": {}, "thumbFile": "선수이미지/상황별/썸네일_롱폼25_삼성방출.jpg", "mascot": False, "source": SOURCE,
       "youtube": {"title": "삼성 방출 10명 | 13연패 끊은 1라운더 허윤동도 떠났다 #삼성 #허윤동 #방출",

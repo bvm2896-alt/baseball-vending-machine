@@ -2896,7 +2896,7 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
      {"type":"pstat","img","team","name","sub","viz":[…],"stats":[{"k","v","at","hi"}],"text","textAt"} — viz·stats 형식은 profile 과 같다 */
   SCENE.pstat = (lt, s) => {
     const V = !!EP.vertical, PW = V ? 320 : 480, PH_ = Math.round(PW / .774), RW = V ? 1000 : 1000, BWm = V ? 430 : 560, NF = V ? 100 : 108;   /* 10/21 사용자(컷 쇼츠 글씨 너무 작아 안 읽힘): 세로는 사진+이름 위, 기록·그림은 아래 전체 폭 — 화면 배율이 0.6 → 0.85 로 커진다 */
-    const pr = s._prev && s._prev.type === 'pstat' ? s._prev : null, J = x => JSON.stringify(x);
+    const pr = s._prev && s._prev.type === 'pstat' ? s._prev : null, J = x => JSON.stringify(x, (k, v) => (k === 'at' || k === 'hi') ? undefined : v);   /* 10/23: 이어지는 장면은 새 칸만 뜬다 */
     const keepP = !!(pr && ((photoSrc(pr.img) && photoSrc(pr.img) === photoSrc(s.img)) || (!s.img && pr.team === s.team && !pr.img)));
     const keepN = !!(pr && pr.name === s.name), had = x => pr && [...(pr.viz || []), ...(pr.stats || [])].some(y => J(y) === J(x));
     const P = (x, d = .5) => had(x) ? 1 : bp(s, x.at ?? 0, d);
@@ -2928,7 +2928,7 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
             <div style="font-size:34px;font-weight:800;color:${GRAY};white-space:nowrap">${esc(x.d)}</div>
             <div class="row" style="gap:6px;align-items:center;flex-wrap:nowrap">${boxes}<div style="margin-left:16px;font-size:44px;font-weight:900;color:#FFC93C;white-space:nowrap">${ipTxt}</div></div>
             <div class="row" style="gap:10px;align-items:center;flex-wrap:nowrap">${balls}<div style="margin-left:${x.r ? 8 : 0}px;font-size:44px;font-weight:900;color:#FF5A63;white-space:nowrap;opacity:${c01(q * 2 - 1)}">${x.r ? x.r + '실점' : '무실점'}</div></div>${ks}</div>`; }).join('') + `</div>`; }
-      if (z.type === 'steps') { const its = z.items || [];
+      if (z.type === 'steps') { const its = z.items || [], nS = Math.max(its.length, ...CHN(s, 'pstat').filter(x => x.name === s.name).map(x => Math.max(0, ...(x.viz || []).filter(y => y.type === 'steps').map(y => (y.items || []).length))));   /* 10/23 사용자("한 줄이 생기려고 위 글이 갑자기 작아져 — 처음부터 작아진 크기로"): 같은 묶음의 가장 많은 줄 수로 글 크기·간격을 처음부터 고정 */
         /* 10/21 사용자(세로 컷 "날짜랑 내용 정렬 똑바로 맞춰"): 날짜 칸 폭·글씨 크기를 같은 사람 묶음 전체에서 하나로 — 날짜는 왼쪽 맞춤 한 줄, 점은 한 세로줄, 내용은 같은 크기 */
         const allI = V ? CHN(s, 'pstat').filter(x => x.name === s.name).flatMap(x => (x.viz || []).filter(w => w.type === 'steps').flatMap(w => w.items || [])) : its;
         const sDW = V ? Math.ceil(Math.max(180, ...allI.map(y => TW(y.d, 40, 800)))) + 30 : 210;
@@ -2936,13 +2936,13 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
         const sSplit = t => { t = String(t).replace(/\n/g, ' '); if (TW(t, sTB, 900) <= sTA) return [t]; const w = t.split(' '); let best = null;
           for (let k = 1; k < w.length; k++) { const A = w.slice(0, k).join(' '), Bq = w.slice(k).join(' '), m = Math.max(TW(A, sTB, 900), TW(Bq, sTB, 900)); if (!best || m < best[0]) best = [m, [A, Bq]]; } return best ? best[1] : [t]; };
         const sTF = V ? Math.floor(Math.min(sTB, ...allI.flatMap(y => sSplit(y.t).map(l => sTB * sTA / Math.max(1, TW(l, sTB, 900)))))) : 0;   /* 긴 내용은 뜻 단위로 두 줄(글씨를 줄이지 않고) */
-        return `<div class="col" style="gap:${its.length > 3 ? 8 : 16}px;align-items:flex-start;position:relative">` + its.map((x, k) => { const q = had(z) ? 1 : bp(s, x.at ?? 0, .45), c = colOf(x.c);
+        return `<div class="col" style="gap:${nS > 3 ? 8 : 16}px;align-items:flex-start;position:relative">` + its.map((x, k) => { const q = had(z) ? 1 : bp(s, x.at ?? 0, .45), c = colOf(x.c);
           if (V) return `<div class="row" style="gap:20px;align-items:center;flex-wrap:nowrap;${rise(q, 20)}"><div style="width:${sDW}px;flex:0 0 ${sDW}px;text-align:left;font-size:40px;font-weight:800;color:${GRAY};white-space:nowrap">${esc(x.d)}</div>
             <div style="width:26px;height:26px;border-radius:50%;background:${c};flex:0 0 auto"></div>
             <div style="font-size:${sTF}px;font-weight:900;letter-spacing:-1.5px;line-height:1.15;color:${x.c ? c : TXT};white-space:nowrap">${sSplit(x.t).map(esc).join('<br>')}</div></div>`;
           return `<div class="row" style="gap:20px;align-items:center;flex-wrap:nowrap;${rise(q, 20)}"><div style="width:${V ? Math.max(230, ...its.map(y => TW(y.d, 40, 800) + 6)) : 210}px;flex:0 0 auto;font-size:${V ? 40 : 36}px;font-weight:800;color:${GRAY};white-space:nowrap">${esc(x.d)}</div>
             <div style="width:26px;height:26px;border-radius:50%;background:${c};flex:0 0 auto"></div>
-            <div style="font-size:${its.length > 3 ? (V ? 48 : 46) : (V ? 56 : 54)}px;font-weight:900;letter-spacing:-1.5px;color:${x.c ? c : TXT};${V ? 'white-space:normal;max-width:700px;line-height:1.15;word-break:keep-all' : 'white-space:nowrap'}">${br(String(x.t).replace(/\n/g, ' '))}</div></div>`; }).join('') + `</div>`; }
+            <div style="font-size:${nS > 3 ? (V ? 48 : 46) : (V ? 56 : 54)}px;font-weight:900;letter-spacing:-1.5px;color:${x.c ? c : TXT};${V ? 'white-space:normal;max-width:700px;line-height:1.15;word-break:keep-all' : 'white-space:nowrap'}">${br(String(x.t).replace(/\n/g, ' '))}</div></div>`; }).join('') + `</div>`; }
       if (z.type === 'stamp') { const q = P(z, .45), c = z.c === 'bad' ? RED : z.c === 'good' ? GREEN : '#E8A100';
         return `<div style="display:inline-block;border:8px solid ${c};color:${c};border-radius:22px;padding:10px 30px;font-size:${Math.min(z.size || 60, V ? 64 : 60)}px;font-weight:900;letter-spacing:-2px;white-space:nowrap;opacity:${c01(q * 1.6)};transform:rotate(-3deg) scale(${q <= 0 ? 1.6 : 1.6 - .6 * eo(q)})">${esc(z.t)}</div>`; }
       if (z.type === 'quote') { const q = P(z, .45), SRC = !!z.src, qc = SRC ? '#8A97AD' : '#3B4A63';

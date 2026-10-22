@@ -8,7 +8,7 @@
  "ttsApi": true,
  "ttsTempo": 1.3,
  "ttsTempoSlow": 1.3,
- "rev": "1022-long24-v2",
+ "rev": "1022-long24-v3",
  "topic": "롯데방출",
  "endcardSec": 10,
  "gapScale": 0.85,
@@ -2012,7 +2012,7 @@
    "type": "question",
    "startLine": 47,
    "text": "최충연\n다른 팀에서 다시?",
-   "img": "카드/P24_최충연_롯데투구",
+   "img": "카드/P24_최충연_롯데",
    "size": 96
   }
  ],
