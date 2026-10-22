@@ -63,12 +63,13 @@ SC.append(S(0, "bars", title="박종훈 · 두 자릿수 승리", items=[dict(la
                                                       dict(label="2020년", value=13, unit="승", at=1.6)], max=15, text="두 자릿수 승리 3번", textAt=2.6, size=56))   # 12
 SC.append(pv("박SK", "박종훈", "2018년 SK", [vstamp("한국시리즈 우승", 1.0, "gold", size=52)], [st("정규시즌", "14승 8패", 0)]))      # 13
 SC.append(pv("박국대", "박종훈", "대한민국 대표팀", [vsteps([stp("2018년", "아시안게임 금메달", 0.8, c="good"), stp("2019년", "프리미어12", 2.0)])]))   # 14
-SC.append(S(0, "steps", title="박종훈 · 2021년", items=[dict(date="6월", text="팔꿈치 인대 접합 수술", at=0.6), dict(date="12월", text="5년 65억 · 국내 첫 비FA 다년계약", hide=True)], chain="t15"))                                     # 15
-SC.append(steps("박종훈 · 2021년", [("6월", "팔꿈치 인대 접합 수술", 0, False), ("12월", "5년 65억 · 국내 첫 비FA 다년계약", 0.6, True)], chain="t15", cont=True))   # 16
-SC.append(S(0, "tiles", title="비FA 다년계약", items=[dict(team="SSG", k="언제", v="FA 되기 전", at=0.2), dict(team="SSG", k="무엇을", v="여러 해 계약\n미리 묶기", at=1.2),
-                                                   dict(team="SSG", k="박종훈", v="5년 65억", at=2.4)]))                           # 17
+SC.append(pv("박D", "박종훈", "2021년", [vsteps([stp("6월", "팔꿈치 인대 접합 수술", 0.6, c="bad")])], chain="t15"))   # 15
+SC.append(pv("박D", "박종훈", "2021년", [vsteps([stp("6월", "팔꿈치 인대 접합 수술", -1, c="bad"), stp("12월", "5년 65억 · 국내 첫 비FA 다년계약", 0.6, c="good")])], chain="t15", cont=True))   # 16
+SC.append(S(0, "contracts", title="박종훈 · 비FA 다년계약", **{"from": 2020.6, "to": 2027.4}, ticks=[2021, 2022, 2023, 2024, 2025, 2026, 2027],
+             rows=[dict(name="박종훈", role="2021년 12월 계약", img="KBO프로필/박종훈_SSG", focus="50% 8%", a=2022, b=2027, tag="5년 65억")],
+             label="FA 되기 전에 미리 5년", labelAt=1.0, profile=True))                                                           # 17
 SC.append(pv("박KS", "박종훈", "2022년 한국시리즈 3차전", [vsteps([stp("8회 무사 2루", "구원 등판", 0.3), stp("1이닝", "무실점", 2.0, c="good")])],
-             [st("그해 SSG", "통합 우승", 5.0, hi=True)]))                                                                        # 18
+             [st("그해 SSG", "통합 우승", 4.0, hi=True)]))                                                                        # 18
 _ERA = [dict(label="2022년", value=6.00, dec=2, at=0.3), dict(label="2023년", value=6.19, dec=2, at=0.6), dict(label="2024년", value=6.94, dec=2, at=0.9), dict(label="2025년", value=7.11, dec=2, at=1.2)]
 SC.append(S(0, "bars", title="박종훈 · 1군 평균자책점", items=_ERA, max=8, chain="b19", text="수술 뒤 4년", textAt=1.0, size=52))                                          # 19
 SC.append(S(0, "bars", title="박종훈 · 1군 평균자책점", items=_ERA, max=8, chain="b19", cont=True, text="4년 합계 44경기 6승 17패 · 6.38", textAt=0.3, size=52))   # 20
@@ -76,11 +77,11 @@ SC.append(S(0, "bars", title="박종훈 · 1군 평균자책점", items=[dict(x,
              text="2025년 1군 5경기 · 7.11", textAt=0.3, size=52))                                                                 # 21
 SC.append(pv("박D", "박종훈", "2026년", [], [st("1군", "0경기", 0.3, hi=True), st("2군", "21경기 · 평균자책점 3.51", 2.0)]))           # 22
 SC.append(pv("박D", "박종훈", "10월 10일", [vstamp("서로 합의해 계약 해지", 1.2, "bad", size=46)]))                                  # 23
-SC.append(sp(None, "SSG 랜더스", "10월 10일 구단 설명", [bb("공로", "두 번의 우승 기여", 0.4, src=True), bb("이유", "새 팀 찾을 시간", 2.4, src=True)]))   # 24
+SC.append(sp(None, "SSG 랜더스", "10월 10일 구단 설명", [bb("공로", "두 번의 우승 기여", 0.4, src=True), bb("이유", "새 팀 찾을 시간", 1.0, src=True)]))   # 24
 SC.append(pv("박D", "박종훈", "통산 · KBO 기록", [], [st("경기", "245경기", 0.1), st("승패", "72승 79패", 0.8), st("평균자책점", "4.85", 1.6, hi=True)]))   # 25
-SC.append(pv("박D", "박종훈", "1991년생", [], [st("지금", "35살", 0.1), st("은퇴 대신", "현역 연장", 1.2, hi=True), st("몸 상태", "아픈 곳 없음", 2.6)]))   # 26
+SC.append(pv("박D", "박종훈", "1991년생", [], [st("지금", "35살", 0.1), st("은퇴 대신", "현역 연장", 1.0, hi=True), st("몸 상태", "아픈 곳 없음", 2.0)]))   # 26
 SC.append(sp("박D", "박종훈", "10월 21일 기준", [bb("관심 보인 구단", "기사 없음", 0.4, src=True)]))                                 # 27
-SC.append(pv("박D", "박종훈", "제 생각", [], [st("선발 자리", "약속받기 어려움", 2.4), st("잠수함 불펜", "적은 몸값으로 기회", 6.0, hi=True)]))   # 28
+SC.append(pv("박D", "박종훈", "제 생각", [], [st("선발 자리", "약속받기 어려움", 2.0), st("잠수함 불펜", "적은 몸값으로 기회", 4.0, hi=True)]))   # 28
 # ── 3막 · 나머지 7명 ──
 SC.append(F7(hi=("석정우",), text="올해 1군에 오른 선수 · 석정우 1명", textAt=1.0))                                                  # 29
 SC.append(F7(hi=("김성민",), text="김성민 · 2020년 2차 2라운드 · 2군 평균자책점 11.74", textAt=0.8))                                 # 30
@@ -90,8 +91,8 @@ SC.append(F7(hi=("한지헌",), text="한지헌 · 경희대 얼리 드래프트
 SC.append(F7(hi=("박정빈",), text="박정빈 · 2021년 2차 5라운드 · 2군 43경기 타율 2할 4푼 5리", textAt=0.8))                        # 34
 SC.append(F7(hi=("석정우",), text="석정우 · 2022년 육성선수 · 1군 3경기 · 2군 타율 2할 4푼 3리", textAt=0.8))                     # 35
 # ── 4막 · SSG의 겨울과 다른 구단 ──
-SC.append(steps("SSG의 겨울", [("10월 10일", "8명 재계약 불가", 0, False), ("10월 15일", "박정권 2군 감독 계약 종료", 1.4, False), ("10월 16일", "아빌라 최대 2년 재계약", 3.4, True)]))   # 36
-SC.append(pv("아빌라", "아빌라", "SSG 외국인 투수 · 2026년", [], [st("경기", "14경기", 0.1), st("승패", "9승 2패", 0.6), st("평균자책점", "1.44", 1.4, hi=True)]))   # 37
+SC.append(pv(None, "SSG 랜더스", "이번 겨울", [vsteps([stp("10월 10일", "8명 재계약 불가", 0.1), stp("10월 15일", "박정권 2군 감독 계약 종료", 1.0), stp("10월 16일", "아빌라 최대 2년 재계약", 2.0, c="good")])]))   # 36
+SC.append(pv("아빌라", "아빌라", "SSG 외국인 투수 · 2026년", [], [st("경기", "14경기", 0.1), st("승패", "9승 2패", 0.4), st("평균자책점", "1.44", 1.0, hi=True)]))   # 37
 _RL = [dict(label="롯데", team="롯데", value=16, unit="명", at=0.6), dict(label="두산", team="두산", value=11, unit="명", at=0.6), dict(label="삼성", team="삼성", value=10, unit="명", at=0.6),
        dict(label="SSG", team="SSG", value=8, unit="명", at=0.6, hi=True), dict(label="키움", team="키움", value=8, unit="명", at=0.6), dict(label="한화", team="한화", value=6, unit="명", at=0.6)]
 SC.append(S(0, "bars", title="재계약 불가 · 10월 21일 기준", items=_RL, max=16, chain="b38", text="6개 구단 · 모두 59명", textAt=1.8, size=56))   # 38
@@ -114,7 +115,7 @@ CH = [{"key": "SSG의 10월", "title": "SSG의 10월", "from": 5, "to": 8},
       {"key": "다른 구단", "title": "SSG의 겨울과 다른 구단", "from": 36, "to": 40}]
 
 TAGS = ["SSG 방출", "박종훈 방출", "박종훈", "SSG 랜더스", "재계약 불가", "방출 명단", "비FA 다년계약", "잠수함 투수", "프로야구 방출", "2026 방출",
-        "김성민", "김준영", "안현서", "이승훈", "한지헌", "박정빈", "석정우", "아빌라", "이숭용", "손아섭 방출", "프로야구", "KBO", "야구자판기"]
+        "김성민", "김준영", "안현서", "이승훈", "한지헌", "박정빈", "석정우", "아빌라", "손아섭 방출", "프로야구", "KBO", "야구자판기"]
 DESC = ("SSG 랜더스가 10월 10일 선수 8명에게 재계약 불가를 통보했어요. 명단에는 2018년과 2022년 두 번의 우승을 함께한 잠수함 투수 박종훈이 있어요.\n\n"
         "박종훈은 2021년 12월 국내 첫 비FA 다년계약(5년 65억 원)을 맺었지만, 2022년부터 2025년까지 1군 44경기 6승 17패 평균자책점 6.38에 그쳤고 계약 마지막 해인 올해는 1군에 오르지 못했어요. 통산 245경기 72승 79패 평균자책점 4.85.\n\n"
         "재계약 불가 8명: 투수 박종훈·김성민·김준영·안현서·이승훈·한지헌 / 내야수 석정우 / 외야수 박정빈\n\n"
@@ -125,7 +126,7 @@ DESC = ("SSG 랜더스가 10월 10일 선수 8명에게 재계약 불가를 통�
 SOURCE = "사실 출처 = 프로젝트 claude/1021-롱폼23-SSG방출-근거모음.md (기사 본문 + KBO 기록실 10/21 직접 대조)."
 
 EP = {"introChapter": "오프닝", "date": "2026-10-21", "gameDate": "2026-10-21", "series": "야구롱폼", "focusTeam": "SSG", "speed": 1.0, "ttsApi": True, "ttsTempo": 1.3, "ttsTempoSlow": 1.3,
-      "rev": "1021-long23-v1", "topic": "SSG방출", "endcardSec": 10,
+      "rev": "1021-long23-v5b", "topic": "SSG방출", "endcardSec": 10,
       "gapScale": 0.85, "pauseMax": 0.3, "ttsCharsOk": 8000,
       "chapters": CH, "lines": lines, "scenes": scenes, "thumb": {}, "thumbFile": "선수이미지/상황별/썸네일_롱폼23_SSG방출.jpg", "mascot": False, "source": SOURCE,
       "youtube": {"title": "SSG 방출 8명 | 5년 65억 박종훈도 떠났다, 우승 두 번의 잠수함 #SSG #박종훈 #방출",
