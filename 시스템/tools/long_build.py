@@ -75,8 +75,9 @@ for x in todo:
         print(f"  {i:02d}  {l.get('narr', '').replace(' / ', ' ')}{tag}")
 # 10/23 사용자("카드가 너무 늦게 떠서 나오자마자 다음 장면으로 넘어가"): 음성 zip 이 있으면 늦게 뜨는 글·카드(1.5초 미만 보임)를 먼저 잰다
 for x in todo:
-    if load(x).get('vertical'): continue
-    zp = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '야구롱폼', '음성', os.path.basename(x)[:-5] + '.zip')
+    vf = (load(x).get('voiceFrom') or {}).get('ep') if load(x).get('vertical') else None   # 10/23: 컷 쇼츠는 롱폼 음성 zip 으로 잰다
+    if load(x).get('vertical') and not vf: continue
+    zp = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '야구롱폼', '음성', (vf or os.path.basename(x)[:-5]) + '.zip')
     if os.path.exists(zp):
         print(f'  [늦게 뜨는 글 검사] {os.path.basename(x)}'); subprocess.call([sys.executable, '-X', 'utf8', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'late_check.py'), x, zp])
 print('=' * 70)

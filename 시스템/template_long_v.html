@@ -424,6 +424,11 @@ SCENE.big = (lt, s) => {
 SCENE.photo = (lt, s) => {
   const H0 = s.h || 680, vis = PH(s, H0, seg(lt, 0, .5));
   if (!vis) return SCENE.big(lt, { text: (s.tag ? s.tag + '\n' : '') + (s.text || ''), size: Math.min(s.size || 120, 112) });
+  if (EP.vertical && s.text) {   /* 10/23: 세로 컷에서 사진 옆(LR) 글씨가 깨알이 됐다(「잠실야구장 마지막 경기」) → 10/21 질문 장면처럼 사진 위, 큰 글씨 아래 */
+    const vv = PH(s, s.vh || 400, seg(lt, 0, .5));   /* 본문 높이 676 안에 사진 + 두 줄 글씨 */
+    B(`<div class="col" style="width:100%;align-items:center;gap:44px"><div style="width:920px">${vv}</div><div class="mega gold" style="font-size:${s.vsize || 96}px;text-align:center;line-height:1.15;${pop(seg(lt, .08, .5))}">${br(s.text)}</div></div>`);
+    return;
+  }
   B(LR(vis, s.text ? `<div class="mega gold" style="font-size:${s.size ? Math.round(s.size * .95) : 112}px;${pop(seg(lt, .08, .5))};transform-origin:left center">${br(s.text)}</div>` : '', false, phW(s, H0)));
 };
 

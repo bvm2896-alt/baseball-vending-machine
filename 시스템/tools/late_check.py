@@ -45,7 +45,10 @@ def main(ep_path, zp=None):
     ep = json.load(open(ep_path, encoding='utf-8'))
     lines, scenes = ep['lines'], ep['scenes']
     N = len(scenes)
-    D = durs_from_zip(zp, N) if zp else [None] * N
+    vf = (ep.get('voiceFrom') or {}).get('lines')
+    if zp and vf:   # 컷 쇼츠: 롱폼 음성 zip 을 주면 voiceFrom 줄 번호로 길이를 가져온다(새 줄은 어림)
+        LD = durs_from_zip(zp, max(x for x in vf if x is not None) + 1); D = [LD[x] if x is not None else None for x in vf]
+    else: D = durs_from_zip(zp, N) if zp else [None] * N
     gap = [float(l.get('gapAfter') or 0.25) for l in lines]
     bad = 0
     for j, sc in enumerate(scenes):
