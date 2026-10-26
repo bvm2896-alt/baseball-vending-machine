@@ -93,7 +93,10 @@ def out_paths(ep, ep_path):
     key = stem.rsplit('_', 1)[-1] if '_' in stem else stem
     date = game_date(ep)
     series = series_of(ep, ep_path)
-    if series == '야구롱폼': date = datetime.date.today().isoformat()   # 10/1 사용자: "롱폼은 만든 날짜로 폴더 생기게" (숏폼은 그대로 경기 날짜)
+    if series == '야구롱폼':   # 10/1 사용자: "롱폼은 만든 날짜로 폴더 생기게" (숏폼은 그대로 경기 날짜)
+        # 10/25 사용자("파일 또 따로 만들지 말고 롱폼검수 누르면 생성되게 — 수정본을 생성하는 거잖아"): 다음 날 고쳐 다시 만들어도 새 날짜 폴더를 만들지 않고
+        #       처음 만든 날(콘티 파일 이름 앞 날짜 = 만든 날) 폴더의 같은 파일을 덮어쓴다
+        m_ = re.match(r'(\d{4}-\d{2}-\d{2})_', os.path.basename(ep_path)); date = m_.group(1) if m_ else datetime.date.today().isoformat()
     if os.path.abspath(OUT_ROOT) == os.path.abspath(os.path.join(HERE, '..', '영상')):
         d = os.path.abspath(os.path.join(HERE, '..', series, '영상', date))       # 드라이브 없을 때: 야구자판기\<시리즈>\영상\날짜
     else:
@@ -104,7 +107,11 @@ def out_paths(ep, ep_path):
 # 구단 코드 → KBO_logos 폴더의 파일 이름
 LOGO_FILES = {'HT': '기아', 'SS': '삼성', 'LG': 'LG', 'OB': '두산', 'KT': 'KT',
               'NC': 'NC', 'LT': '롯데', 'SK': 'SSG', 'HH': '한화', 'WO': '키움',
-              'KBO': 'KBO'}   # 9/27: 리그 엠블럼(KBO 공식 로고 페이지) — 썸네일 teams:["KBO"]
+              'KBO': 'KBO_공식',   # 10/25 사용자 "KBO 공식 로고가 아닌데": 리그 타이틀 엠블럼(신한 SOL) → KBO 공식 워드마크(위키미디어 공용 'Korea Baseball Organization - 2022 wordmark', 퍼블릭 도메인)
+              # 10/24 롱폼㉙: 메이저리그 로고(mlbstatic.com 공식 SVG) — 콘티에서 '샌디에이고'·'다저스' 등 한글 이름으로 쓴다(템플릿 ALIAS)
+              'NPB': 'NPB_공식',   # 10/25 사용자 "일본 구단도 NPB 로 바꿔야지" — 위키미디어 공용 'NPB logo.svg'(퍼블릭 도메인)
+              'MLB': 'MLB_MLB', 'SD': 'MLB_샌디에이고', 'LAD': 'MLB_다저스', 'SF': 'MLB_샌프란시스코', 'CHC': 'MLB_컵스', 'PIT': 'MLB_피츠버그',
+              'MIN': 'MLB_미네소타', 'NYY': 'MLB_양키스', 'TOR': 'MLB_토론토', 'KC': 'MLB_캔자스시티', 'DET': 'MLB_디트로이트', 'MIA': 'MLB_마이애미'}   # 9/27: 리그 엠블럼(KBO 공식 로고 페이지) — 썸네일 teams:["KBO"]
 LOGO_DIRS = [os.path.join(HERE, '..', 'KBO_logos'), os.path.join(HERE, 'KBO_logos'), os.path.join(HERE, 'logos')]
 
 # 야구이슈 편 사진: 콘티 장면의 img("김도영_번트.jpg" 또는 확장자 없이 "김도영_번트")를 아래 순서로 찾는다.
@@ -334,10 +341,10 @@ def logos_data_uri():
     out = {}
     for code, name in LOGO_FILES.items():
         for d in LOGO_DIRS:
-            for ext in ('.webp', '.png', '.PNG', '.jpg'):
+            for ext in ('.webp', '.png', '.PNG', '.jpg', '.svg'):
                 p = os.path.join(d, name + ext)
                 if os.path.exists(p):
-                    mime = 'image/webp' if ext == '.webp' else 'image/png' if ext.lower() == '.png' else 'image/jpeg'
+                    mime = 'image/webp' if ext == '.webp' else 'image/png' if ext.lower() == '.png' else 'image/svg+xml' if ext == '.svg' else 'image/jpeg'
                     out[code] = f'data:{mime};base64,' + base64.b64encode(open(p, 'rb').read()).decode()
                     break
             if code in out: break
@@ -1239,6 +1246,7 @@ def write_youtube_txt(ep, path, dur=0):
     # 9/30 사용자 지시: 해시태그는 [해시태그] 머리글 없이 설명 맨 밑에 한 줄 띄고 → [설명] 칸을 통째로 복사하면 해시태그까지 한 번에
     body = ['[제목]', title_with_date(ep), '', '[설명]', desc, '', ' '.join(hashtags), '', '[태그]  (유튜브 태그 칸에 그대로)', ', '.join(y.get('tags', []))]
     if credits: body += [''] + credits
+    if y.get('pinned'): body += ['', '[고정 댓글]  (영상 올린 뒤 댓글로 달고 고정)', y['pinned']]   # 10/24 롱폼㉙ 검수: 게시 전 고정 댓글 문안까지 준비
     io.open(path, 'w', encoding='utf-8').write('\n'.join(body) + '\n')
 
 def cfg_get(k, default=''):

@@ -19,7 +19,7 @@ DRAFT = '검수' if os.environ.get('KBO_DRAFT') else '최종'
 BUILT = os.path.join('work', 'long_built.json')
 try: built = json.load(io.open(BUILT, encoding='utf-8'))
 except Exception: built = {}
-def done(p): return built.get(f'{DRAFT}|{os.path.basename(p)}') == fp(p)
+def done(p): return DRAFT != '검수' and built.get(f'{DRAFT}|{os.path.basename(p)}') == fp(p)   # 10/25 사용자 "롱폼검수 누르면 생성되게": 검수판은 같은 콘티여도 늘 다시 만든다(음성은 바뀐 줄만 합성)
 
 args = sys.argv[1:]
 MODE = 'long' if '--long' in args else 'cuts' if '--cuts' in args else 'both'
@@ -44,6 +44,18 @@ else:
     last = max(os.path.basename(x)[:10] for x in ps)
     longs = sorted((x for x in ps if os.path.basename(x)[:10] == last),
                    key=lambda x: int((re.search(r'_롱폼(\d*)\.json$', os.path.basename(x)).group(1) or 1) if re.search(r'_롱폼(\d*)\.json$', os.path.basename(x)) else 99))
+    # 10/24: 날짜가 바뀌어도 '검수판만 만들고 최종판을 아직 안 만든' 롱폼(최근 3일)은 함께 만든다 — 기아 방출(10/23) 최종판이 다음 날 새 콘티에 밀려 빠지지 않게
+    if DRAFT == '최종' and not args:
+        import datetime
+        # 10/25: 검수판을 그대로 올린 편은 최종판을 만들지 않는다(work\long_uploaded.txt 에 콘티 파일 이름 한 줄씩)
+        UPLOADED = {'2026-10-23_롱폼3.json'}
+        try: UPLOADED |= {l.strip() for l in open(os.path.join('work', 'long_uploaded.txt'), encoding='utf-8') if l.strip()}
+        except OSError: pass
+        lim = (datetime.date.fromisoformat(last) - datetime.timedelta(days=3)).isoformat()
+        pend = [x for x in ps if x not in longs and os.path.basename(x)[:10] >= lim
+                and built.get(f'검수|{os.path.basename(x)}') and not built.get(f'최종|{os.path.basename(x)}')
+                and os.path.basename(x) not in UPLOADED]
+        longs = pend + longs
     p = longs[0]
     stems = {os.path.splitext(os.path.basename(x))[0] for x in longs}
     cuts = [] if MODE == 'long' else sorted(
@@ -80,6 +92,9 @@ for x in todo:
     zp = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '야구롱폼', '음성', (vf or os.path.basename(x)[:-5]) + '.zip')
     if os.path.exists(zp):
         print(f'  [늦게 뜨는 글 검사] {os.path.basename(x)}'); subprocess.call([sys.executable, '-X', 'utf8', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'late_check.py'), x, zp])
+# 10/24 사용자("상황에 따라 읽는 방식이 다른데 이런걸 내가 하나하나 다 지적할 수 없어"): 합성 전에 숫자 읽기(칠번 좌익수·세 명·스물다섯 살 등)를 검사해 보여 준다
+# 10/24 사용자 "뭘 멈춰 진행계속 하고 그 부분만 나한테 검수받아" → 멈추지 않고 목록만 보여 준다(Claude 가 콘티를 넣기 전에 이미 0 으로 만든다)
+subprocess.call([sys.executable, '-X', 'utf8', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'read_check.py'), '--warn'] + todo)
 print('=' * 70)
 print('  위 대본이 맞는지 보고 결정하세요. 이미 만든 줄·구독 멘트는 다시 합성하지 않습니다(tts 가 편마다 새로 만들 글자 수를 한 번 더 보여 줌).')
 # 10/14: KBO_YES=1(롱폼검수_자동.cmd)이면 묻지 않고 시작 — Claude 가 PC 를 클릭만으로 돌릴 때(사용자 지시 "너가 컴퓨터 조작해서 영상 만들고 검수까지")

@@ -20,11 +20,11 @@
 """
 import json, re, sys
 
-STUDIO_DIRS = ('KBO프로필/', '국가대표프로필/', '일본대표/')
+STUDIO_DIRS = ('KBO프로필/', '국가대표프로필/', '일본대표/', 'MLB/')   # 10/24: MLB/ = MLB 공식 헤드샷(프로필 사진)
 STUDIO = {'카드/최원준_MVP_상체', '카드/FA9_염경엽', '카드/FA9_이범호', '카드/FA9_카라스코', '카드/R13_케네디_2026LG', '카드/T12_이범호', '카드/T12_임찬규', '카드/R13_임찬규'}   # 10/18 눈 검수로 찾은 흰 배경 스튜디오 카드
 PROFILE_CARD = re.compile(r'^카드/G18P_')   # 10/18 요약판용 구단 프로필(누끼·같은 배경) — profile=True 장면 전용          # 확인된 스튜디오(검은 배경·미디어데이) 카드 — 새로 찾으면 여기에 더한다
 CENTER_FIX = {'소형준': '카드/G18_소형준_B'}   # 원본이 한쪽에 치우친 선수 → 이 카드만(얼굴 정면·가운데, 10/18 교체)
-CIRCLE_OK = {'카드/G18원_선동열'}   # 프로필이 없는 옛 선수(1989년 사진)
+CIRCLE_OK = {'카드/G18원_선동열', '카드/P29P_김하성'}   # 10/25: 김하성 샌디에이고 시절(2020 포스팅) 장면 — 그 시절 구단 프로필이 없어 얼굴 가운데 자른 샌디에이고 사진(사진 시절 일치 9/28)   # 프로필이 없는 옛 선수(1989년 사진)
 BANNED = re.compile(r'소형준_투구|R13_소형준')   # 10/18 사용자 "소형준 이 사진 절대 쓰지마. 앞으로도" — 얼굴이 왼쪽 아래 구석에 나오는 투구 사진(원본·카드 전부)
 EMOJI_BAN = re.compile('[\U0001F9E4\U0001F3CF⚾\U0001F94E]')   # 🧤 🏏 ⚾ 🥎
 AUTO_RESERVE = {'facegrid', 'faceoff', 'pstat'}   # 템플릿이 묶음 전체를 보고 자리를 미리 잡는 종류
@@ -48,6 +48,8 @@ def check(ep):
             if key in ('img',) or p.endswith('.img') or re.search(r'\.imgs\[\d+\]$', p):
                 isprof = v.startswith(STUDIO_DIRS) or v in STUDIO or bool(PROFILE_CARD.search(v))
                 circle = s.get('type') in ('facegrid', 'bars') and not s.get('whole') and not s.get('card') and re.search(r'^\.?items\[\d+\]\.img$', p)
+                circle = circle or (s.get('type') == 'pstat' and re.search(r'viz\[\d+\]\.items\[\d+\]\.img$', p) and any(z.get('type') == 'mini' for z in s.get('viz', [])))
+                circle = circle or s.get('type') == 'feecalc'   # 10/25: 이적료 계산 장면의 얼굴은 전부 작은 원 → 프로필만   # 10/25: pstat 안 작은 얼굴 원(mini)도 원 → 프로필만
                 if circle:   # 10/18 밤 사용자 "원 안에 사진은 프로필 사진으로 넣어줘"(얼굴이 빗나간 경기 사진 원 금지) — 원 안은 구단 프로필(G18P_), 프로필이 없는 옛 선수만 예외
                     if not PROFILE_CARD.search(v) and v not in CIRCLE_OK: bad.append((i, 'R1 원 안은 프로필 사진', f'{p} = {v}'))
                 elif s.get('profile'):

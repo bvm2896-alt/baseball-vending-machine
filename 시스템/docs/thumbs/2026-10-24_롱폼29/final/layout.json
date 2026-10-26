@@ -1,0 +1,113 @@
+{
+ "kind": "long",
+ "title": [
+  {
+   "text": "MLB 누가 갈까",
+   "box": [
+    133,
+    986,
+    2421,
+    1300
+   ],
+   "clipped": false
+  }
+ ],
+ "sub": [
+  {
+   "text": "하단 불투명 띠(제목 받침)",
+   "box": [
+    0,
+    1150,
+    2560,
+    1440
+   ]
+  }
+ ],
+ "people": [
+  {
+   "name": "안우진",
+   "z": 1,
+   "row": "L",
+   "side": "L",
+   "hero": false,
+   "kind": "경기",
+   "head_w": 162,
+   "upscale": 0.618,
+   "src": "cut/A0_c.png",
+   "credit": "키움 히어로즈 제공(스포츠경향)",
+   "mask": "opt/B7/masks/안우진.png"
+  },
+  {
+   "name": "곽빈",
+   "z": 1,
+   "row": "R",
+   "side": "R",
+   "hero": false,
+   "kind": "경기",
+   "head_w": 172,
+   "upscale": 0.702,
+   "src": "cut/G14_c.png",
+   "credit": "두산 베어스 제공",
+   "mask": "opt/B7/masks/곽빈.png"
+  },
+  {
+   "name": "김주원",
+   "z": 2,
+   "row": "L",
+   "side": "L",
+   "hero": false,
+   "kind": "경기",
+   "head_w": 190,
+   "upscale": 0.974,
+   "src": "cut/J_card_c.png",
+   "credit": "NC 다이노스",
+   "mask": "opt/B7/masks/김주원.png"
+  },
+  {
+   "name": "김도영",
+   "z": 2,
+   "row": "R",
+   "side": "R",
+   "hero": false,
+   "kind": "경기",
+   "head_w": 178,
+   "upscale": 0.456,
+   "src": "cut/KD_c.png",
+   "credit": "스포츠조선",
+   "mask": "opt/B7/masks/김도영.png"
+  },
+  {
+   "name": "노시환",
+   "z": 3,
+   "row": "F",
+   "side": "C",
+   "hero": true,
+   "kind": "경기",
+   "head_w": 265,
+   "upscale": 1.233,
+   "src": "cut/N_st_c.png",
+   "credit": "스포츠투데이",
+   "mask": "opt/B7/masks/노시환.png"
+  },
+  {
+   "name": "원태인",
+   "z": 3,
+   "row": "F",
+   "side": "C",
+   "hero": true,
+   "kind": "경기",
+   "head_w": 300,
+   "upscale": 1.049,
+   "src": "cut/W_s2_c.png",
+   "credit": "starnews(스타뉴스)",
+   "mask": "opt/B7/masks/원태인.png"
+  }
+ ],
+ "meta": {
+  "structure": "R22 U자 양날개",
+  "font": "KBO Dia Gothic",
+  "color": "#ff5a1f 주황",
+  "bg": "밝은 종이 + 주황 빛",
+  "lookOut": true
+ }
+}
