@@ -2951,10 +2951,12 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
     const keepN = !!(pr && pr.name === s.name), had = x => keepN && [...(pr.viz || []), ...(pr.stats || [])].some(y => J(y) === J(x));   /* 10/24 검수(롱폼㉙ S116): 다른 사람 카드의 같은 값 칸을 '이미 보인 것'으로 잡아 미리 뜨던 문제 — 같은 사람일 때만 */
     const P = (x, d = .5) => (x.at ?? 0) >= 50 ? 0 : had(x) ? 1 : bp(s, x.at ?? 0, d);   /* 10/24: 자리만 잡은 칸(at≥50)은 앞 장면과 같아도 숨김 */
     const tc = s.team ? TCOL(s.team) : ACC, colOf = c => c === 'bad' ? RED : c === 'good' ? GREEN : c === 'gold' ? '#E8A100' : (c || '#3B4A63');
+    /* 10/28 검수(롱폼㉜ '이유 하나, / 최형우예요'): s.imgAt = 사진·이름이 그 호흡에 뜬다(이름을 말하기 전에 먼저 뜨지 않게) */
+    const IA = s.imgAt != null && !keepP && !keepN ? c01(bp(s, s.imgAt, .5)) : null;
     /* @@PSTAT1025 ① */ const xfade = !keepP && keepN && pr && photoSrc(pr.img) && photoSrc(s.img);
     const photo = xfade ? `<div style="flex:0 0 auto;position:relative">${NP({ img: pr.img, team: pr.team, focus: pr.focus }, PW, PH_)}<div style="position:absolute;left:0;top:0;opacity:${c01(seg(lt, 0, .6)).toFixed(3)}">${NP({ img: s.img, team: s.team, focus: s.focus }, PW, PH_)}</div></div>`
-      : `<div style="flex:0 0 auto;${keepP ? '' : rise(seg(lt, 0, .5), 40)}">${NP({ img: s.img, team: s.team, focus: s.focus }, PW, PH_)}</div>`;
-    const head = `<div style="${keepN ? '' : pop(seg(lt, .05, .45))};transform-origin:left center"><div data-keep="1" style="font-size:${NF}px;font-weight:900;letter-spacing:-4px;line-height:1.05;white-space:nowrap">${esc(s.name || '')}</div>
+      : `<div style="flex:0 0 auto;${keepP ? '' : rise(IA ?? seg(lt, 0, .5), 40)}">${NP({ img: s.img, team: s.team, focus: s.focus }, PW, PH_)}</div>`;
+    const head = `<div style="${keepN ? '' : pop(IA ?? seg(lt, .05, .45))};transform-origin:left center"><div data-keep="1" style="font-size:${NF}px;font-weight:900;letter-spacing:-4px;line-height:1.05;white-space:nowrap">${esc(s.name || '')}</div>
       ${s.sub ? `<div style="margin-top:12px">${pill(esc(s.sub), tc, V ? 32 : 36, 'padding:6px 22px')}</div>` : ''}</div>`;
     const blocks = (s.viz || []).map(z => {
       if (z.type === 'trend') { const its = z.items || [];
@@ -3915,7 +3917,8 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
     const PWc = 480, PHc = 640;
     const board = `<div data-nodark="1" class="col" style="width:${RW}px;height:${PHc}px;box-sizing:border-box;padding:30px 44px;border-radius:30px;background:linear-gradient(160deg,#141E33,#0B1222);box-shadow:0 24px 54px rgba(10,14,24,.32);gap:20px;position:relative;align-items:flex-start;justify-content:flex-start;flex:0 0 auto">${head}<div style="width:100%;height:2px;background:rgba(255,255,255,.12)"></div>${(s.blocks || []).map(blk).join('')}
       <div style="position:absolute;right:30px;bottom:18px;font-size:22px;font-weight:700;color:#5F6B80">기록: KBO 박스스코어</div></div>`;
-    B(`<div class="row" style="width:100%;gap:40px;justify-content:center;align-items:center;flex-wrap:nowrap">${card(s.img, PWc, PHc)}${board}</div>`);
+    const IA = s.imgAt != null ? cl(TT(s, s.imgAt) == null ? 0 : TT(s, s.imgAt) / .5, 0, 1) : 1;   /* 10/28: s.imgAt = 사진·기록판이 그 호흡에 뜬다 */
+    B(`<div class="row" style="width:100%;gap:40px;justify-content:center;align-items:center;flex-wrap:nowrap;opacity:${IA.toFixed(3)};transform:translateY(${((1 - e3(IA)) * 40).toFixed(1)}px)">${card(s.img, PWc, PHc)}${board}</div>`);
   };
   Object.assign(MOTION, { plog: () => 2.4, hrcam: () => 4.6, rally: s => .6 + (s.plays || []).length * .5 });
 })();
