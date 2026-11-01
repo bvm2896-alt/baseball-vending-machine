@@ -23,13 +23,19 @@ def people(s):
     """장면에서 사진이 있는 사람 → 뜨는 호흡(at). -1 = 이미 보임"""
     out = {}
     t = s.get('type')
-    if t in ('pstat', 'plog') and s.get('img') and s.get('name'):
+    if t in ('pstat', 'plog', 'hrcam', 'hero') and s.get('img') and s.get('name'):   # 11/1 hero(사진 중심 장면) 추가
         nm = s['name'].split(' · ')[0]
         out[nm] = -1 if s.get('cont') else s.get('imgAt', 0)
-    for key in ('items', 'plays'):
+    for key in ('items', 'plays', 'clips'):   # 11/1 clip(신문 스크랩) 사진
         for x in s.get(key, []) or []:
             if isinstance(x, dict) and x.get('name') and x.get('img'):
                 out.setdefault(x['name'], x.get('at', 0) if x.get('at') is not None else 0)
+    for x in s.get('rows', []) or []:   # 11/1 matchtbl(차전별 선발 표) 사진
+        if isinstance(x, dict):
+            for sd in ('L', 'R'):
+                y = x.get(sd)
+                if isinstance(y, dict) and y.get('name') and y.get('img'):
+                    out.setdefault(y['name'].split(' · ')[0], x.get('at', 0) if x.get('at') is not None else 0)
     for side in ('left', 'right'):
         x = s.get(side)
         if isinstance(x, dict) and x.get('name') and x.get('img'):

@@ -1016,9 +1016,17 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
     jf = os.path.abspath(W('chunk_jobs.json')); json.dump(J, io.open(jf, 'w', encoding='utf-8'), ensure_ascii=False)
     # 10/2: 목록을 먼저 적어 둔다 — 조각은 다 그려지는 대로 제 이름이 되므로, 도중에 터져도 다음 실행은 남은 장면만 그린다
     json.dump(idx, io.open(idx_path, 'w', encoding='utf-8'), ensure_ascii=False)
-    r = subprocess.run(['node', 'frames.js', '--chunks', jf], capture_output=True, text=True, encoding='utf-8', errors='replace', env=fenv)
-    if r.returncode != 0: raise RuntimeError('조각 렌더 오류:\n' + ((r.stderr or '') + (r.stdout or ''))[-1200:])
-    if r.stdout: print((r.stdout or '').strip().splitlines()[-1])
+    # 10/31 사용자("몇 퍼센트 진행됐는지도 나오게, 하염없이 기다린다"): 화면 그리기 진행률을 그대로 창에 보여 준다
+    print(f'화면 그리기 시작 — {new_f} 프레임 (10초 분량마다 진행률 표시)', flush=True)
+    _p = subprocess.Popen(['node', 'frames.js', '--chunks', jf], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace', env=fenv)
+    _out = []
+    for _ln in _p.stdout:
+        _ln = _ln.rstrip()
+        if not _ln: continue
+        _out.append(_ln); print('  ' + _ln.strip(), flush=True)
+    _p.wait()
+    r = types.SimpleNamespace(returncode=_p.returncode, stdout='\n'.join(_out), stderr='')
+    if r.returncode != 0: raise RuntimeError('조각 렌더 오류:\n' + (r.stdout or '')[-1200:])
     for j in jobs:
         if os.path.exists(j['out']): os.replace(j['out'], j['final'])
     # 이어 붙이기(다시 인코딩 없이)
@@ -1036,6 +1044,7 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
     BW, BH = Wd - 2 * X0, max(2, int(round(5 * sw)))
     fc = (f'[0:v]split[a][b];[b]crop={BW}:{BH}:{X0}:{Y0}[tr];color=c={col}:s={BW}x{BH}:r={fps}[bar];'
           f"[tr][bar]overlay=x='-w+W*min(1,t/{total:.3f})':y=0:eval=frame:shortest=1[trf];[a][trf]overlay={X0}:{Y0}:shortest=1[v]")
+    print('화면 그리기 100% — 진행 막대 입히는 중(2~3분)', flush=True)
     run(['ffmpeg', '-y', '-v', 'error', '-i', raw, '-filter_complex', fc, '-map', '[v]', '-c:v', 'libx264', '-preset', cfg_get('CHUNK_PRESET', 'veryfast'),
          '-crf', '16', '-tune', 'animation', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-r', str(fps), '-movflags', '+faststart', W('silent.mp4')], check=True)
     # 이번에 안 쓴 옛 조각은 지운다(용량) — 목록도 이번 것만 남긴다
@@ -1238,6 +1247,7 @@ def write_youtube_txt(ep, path, dur=0):
     rec = [re.sub(r'^\s*(?:기록|자료)\s*(?:출처)?\s*[:：]\s*', '기록 출처: ', l).strip() for l in _dl if re.match(r'\s*(?:기록|자료)\s*(?:출처)?\s*[:：]', l)]
     credits = rec + [re.sub(r'^\s*사진\s*(?:출처)?\s*[:：]\s*', '사진 출처: ', l).strip() for l in _dl if re.match(r'\s*사진\s*(?:출처)?\s*[:：]', l)]
     desc = re.sub(r'\n{3,}', '\n\n', '\n'.join(l for l in _dl if not re.match(r'\s*(?:사진\s*(?:출처)?|재생목록|기록\s*(?:출처)?|자료\s*(?:출처)?)\s*[:：]', l))).strip()
+    desc = re.sub(r'\n{3,}', '\n\n', '\n'.join(l for l in desc.split('\n') if not re.match(r'\s*\S*\s*출처\s*[:：]', l))).strip()   # 11/1 23:31 '기사 출처:' 등 모든 출처 줄 빼기
     hashtags = y.get('hashtags') or []
     if not hashtags:   # 콘티에 없으면 태그로 만든다(띄어쓰기 제거)
         stag = {'야구이슈': '#야구이슈', '야구분석': '#야구분석'}.get(str(ep.get('series', '')), '#야구순위')
@@ -1245,7 +1255,7 @@ def write_youtube_txt(ep, path, dur=0):
         hashtags = base + ['#' + t.replace(' ', '') for t in y.get('tags', []) if '#' + t.replace(' ', '') not in base][:10] + ['#야구스타그램', '#야구팬', '#Shorts']
     # 9/30 사용자 지시: 해시태그는 [해시태그] 머리글 없이 설명 맨 밑에 한 줄 띄고 → [설명] 칸을 통째로 복사하면 해시태그까지 한 번에
     body = ['[제목]', title_with_date(ep), '', '[설명]', desc, '', ' '.join(hashtags), '', '[태그]  (유튜브 태그 칸에 그대로)', ', '.join(y.get('tags', []))]
-    if credits: body += [''] + credits
+    # 11/1 23:31 사용자 "출처는 TXT파일에 넣지마" → 기록·기사·사진 출처 줄은 유튜브 txt 에 쓰지 않는다
     if y.get('pinned'): body += ['', '[고정 댓글]  (영상 올린 뒤 댓글로 달고 고정)', y['pinned']]   # 10/24 롱폼㉙ 검수: 게시 전 고정 댓글 문안까지 준비
     io.open(path, 'w', encoding='utf-8').write('\n'.join(body) + '\n')
 

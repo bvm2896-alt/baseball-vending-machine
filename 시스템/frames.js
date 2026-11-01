@@ -102,7 +102,8 @@ async function chunkMode(jobsFile) {
           process.stdout.write(`  조각 ${path.basename(job.final || job.out)} ${a}번째 실패 → ${a < 3 ? '크롬 새로 띄워 다시' : '포기'}: ${String(e.message).split('\n')[0].slice(0, 120)}\n`); }
       }
       if (last) throw last;
-      if (done - lastLog >= fps * 10) { lastLog = done; process.stdout.write(`  ${done}/${total} 프레임 (${Math.round((Date.now() - t0all) / 1000)}초)\n`); }
+      if (done - lastLog >= fps * 10 || done === total) { lastLog = done; const el = (Date.now() - t0all) / 1000, pc = Math.round(100 * done / total), eta = done ? Math.round(el / done * (total - done) / 60) : 0;   /* 10/31 사용자: 퍼센트·남은 시간 */
+        process.stdout.write(`화면 그리기 ${pc}% (${done}/${total} 프레임) · ${Math.round(el / 60)}분 지남 · 약 ${eta}분 남음\n`); }
     }
   }
   const ws = []; for (let w = 0; w < Math.min(NW, Math.max(1, J.jobs.length)); w++) ws.push(runWorker(w));

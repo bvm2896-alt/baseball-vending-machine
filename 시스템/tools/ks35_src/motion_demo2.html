@@ -1,0 +1,116 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:P;src:url("file:///mnt/user-data/uploads/야구자판기/폰트/KBO Dia Gothic_bold.ttf")}
+body{margin:0;width:1920px;height:1080px;background:#F4F6FA;font-family:P,sans-serif;overflow:hidden}
+.g{display:grid;grid-template-columns:repeat(5,344px);gap:18px;padding:118px 40px 0 64px}
+.c{position:relative;height:208px;background:#fff;border-radius:22px;box-shadow:0 8px 20px rgba(18,22,31,.07);overflow:hidden}
+.l{position:absolute;left:18px;bottom:10px;font-size:26px;font-weight:900;color:#12161F;white-space:nowrap}.l small{font-size:16px;color:#8A93A3;margin-left:6px;font-weight:700}
+h1{position:absolute;left:64px;top:22px;margin:0;font-size:54px;font-weight:900;color:#12161F;letter-spacing:-2px}h1 b{color:#2563EB}
+.B{background:#2563EB;color:#fff;font-weight:900;border-radius:14px;display:flex;align-items:center;justify-content:center}
+</style></head><body><h1>야구자판기 <b>움직임 사전 ②</b> · 데이터·중계·강조 20가지</h1><div class="g" id="g"></div>
+<script>const c01=x=>x<0?0:x>1?1:x;
+/* @@MOTIONKIT 11/1 사용자 "영상 디자인 효과(이즈 인·이즈 아웃·스프링·바운스·순차 등장·페이드·슬라이드·확대 전환·공유 요소 전환 등)를 학습해 적절하게".
+   공용 움직임 도구 MK — 모든 장면에서 쓴다. p = 0~1 진행값(seg/pk 결과).
+   규칙(사용자 지적 반영): 큰 글자·국기·사진은 넘침(오버슛) 금지(9/19) → spring/bounce 는 칩·점·배지 같은 작은 요소에만.
+   사진 크기는 이어지는 장면에서 바뀌지 않는다(11/1) → 사진에는 zoom 효과 쓰지 않는다. 깜빡임 금지 → 페이드는 0.15초 이상. */
+const MK = (() => {
+  const c = x => x < 0 ? 0 : x > 1 ? 1 : x;
+  const E = {
+    linear: t => c(t),
+    inCubic: t => Math.pow(c(t), 3),                                   /* 이즈 인: 천천히 출발 → 빠르게(퇴장용) */
+    outCubic: t => 1 - Math.pow(1 - c(t), 3),                          /* 이즈 아웃: 빠르게 출발 → 끝에서 천천히(등장 기본) */
+    inOutCubic: t => { t = c(t); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; },   /* 이동·전환 */
+    outQuint: t => 1 - Math.pow(1 - c(t), 5),                          /* 강조 감속(MD3 emphasized decelerate 근사) */
+    outBack: (t, s = 1.2) => { t = c(t); return 1 + (s + 1) * Math.pow(t - 1, 3) + s * Math.pow(t - 1, 2); },   /* 살짝 넘쳤다 돌아옴 */
+    spring: (t, z = .55, w = 14) => { t = c(t); if (t >= 1) return 1; const wd = w * Math.sqrt(1 - z * z); return 1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + (z * w / wd) * Math.sin(wd * t)); },   /* 스프링: 툭 넘쳤다 튕기며 멈춤 */
+    outExpo: t => { t = c(t); return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t); },   /* 지수 감속 — 숫자 카운트업 기본 */
+    elastic: t => { t = c(t); return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - .75) * (2 * Math.PI / 3)) + 1; },   /* 엘라스틱 — 결론 숫자 한 번만 */
+    inBack: (t, s = 1.4) => { t = c(t); return (s + 1) * t * t * t - s * t * t; },   /* 예비동작(움츠렸다 출발) */
+    steps: (t, n = 6) => Math.floor(c(t) * n) / n,
+    bounce: t => { t = c(t); const n = 7.5625, d = 2.75; if (t < 1 / d) return n * t * t; if (t < 2 / d) return n * (t -= 1.5 / d) * t + .75; if (t < 2.5 / d) return n * (t -= 2.25 / d) * t + .9375; return n * (t -= 2.625 / d) * t + .984375; },   /* 바운스: 바닥에 튕김 */
+  };
+  const css = {
+    /* 등장 */
+    fade: p => `opacity:${c(p).toFixed(3)}`,
+    rise: (p, px = 40) => `opacity:${c(p * 1.5).toFixed(3)};transform:translateY(${((1 - E.outCubic(p)) * px).toFixed(1)}px)`,
+    slide: (p, dir = 'l', px = 120) => { const v = (1 - E.outQuint(p)) * px, tx = dir === 'l' ? -v : dir === 'r' ? v : 0, ty = dir === 'u' ? -v : dir === 'd' ? v : 0; return `opacity:${c(p * 2).toFixed(3)};transform:translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px)`; },
+    springPop: (p, from = .6) => `opacity:${c(p * 3).toFixed(3)};transform:scale(${(from + (1 - from) * E.spring(p)).toFixed(4)})`,   /* 칩·배지·점만 */
+    bounceDrop: (p, px = 80) => `opacity:${c(p * 3).toFixed(3)};transform:translateY(${(-(1 - E.bounce(p)) * px).toFixed(1)}px)`,   /* 점·공 아이콘만 */
+    zoomIn: (p, from = .92) => `opacity:${c(p * 1.6).toFixed(3)};transform:scale(${(from + (1 - from) * E.outCubic(p)).toFixed(4)})`,   /* 판·카드 전체(사진 단독 ✗) */
+    wipe: (p, dir = 'l') => { const r = (100 - 100 * E.inOutCubic(p)).toFixed(1); return `clip-path:inset(${dir === 'd' ? `0 0 ${r}% 0` : dir === 'u' ? `${r}% 0 0 0` : dir === 'r' ? `0 0 0 ${r}%` : `0 ${r}% 0 0`})`; },   /* 마스크 리빌 */
+    pop: (p, from = .7) => `opacity:${c(p * 2.5).toFixed(3)};transform:scale(${(from + (1 - from) * E.outBack(p)).toFixed(4)})`,   /* 스케일 팝(살짝 넘침) — 칩·배지 */
+    blur: (p, px = 12) => `opacity:${c(p * 1.5).toFixed(3)};filter:blur(${((1 - E.outCubic(p)) * px).toFixed(1)}px)`,   /* 블러 인 — 배경·보조 글 */
+    dim: (on, p, lo = .3) => `opacity:${(on ? 1 : 1 - (1 - lo) * E.outCubic(p)).toFixed(3)}`,   /* 하이라이트&디밍: 주인공 외 흐리게 */
+    grow: (p, axis = 'x') => `transform:scale${axis === 'x' ? 'X' : 'Y'}(${E.outCubic(p).toFixed(4)});transform-origin:${axis === 'x' ? 'left center' : 'center bottom'}`,   /* 막대 성장(오버슈트 금지) */
+    anticip: (p) => { const e = p < .2 ? 1 - .05 * Math.sin(p / .2 * Math.PI / 2) : .95 + .05 * E.outBack((p - .2) / .8); return `transform:scale(${e.toFixed(4)})`; },   /* 예비동작: 움츠렸다 커짐(1위 공개 직전) */
+    clash: (p, side = 'l', px = 600) => { const e = E.outQuint(p), x = (1 - e) * px * (side === 'l' ? -1 : 1), j = p > .55 && p < .8 ? Math.sin((p - .55) / .25 * Math.PI * 3) * 3 : 0; return `transform:translateX(${(x + j).toFixed(1)}px);opacity:${c(p * 3).toFixed(3)}`; },   /* 매치업: 양쪽이 들어와 부딪힘 */
+    shake: (p, amp = 10) => p <= 0 || p >= 1 ? '' : `transform:translateX(${(Math.sin(p * Math.PI * 6) * amp * (1 - p)).toFixed(1)}px)`,   /* 부정·경고 수치 한 번만 */
+  };
+  /* 순차 등장: i 번째 요소 시작 시각 */
+  const stagger = (i, base = .15, step = .08) => base + i * step;
+  /* 숫자 롤링(카운트업): 끝 자리수·소수 자리 유지 */
+  const count = (v, p, dec) => { const n = +v; if (isNaN(n)) return String(v); const d = dec != null ? dec : (String(v).split('.')[1] || '').length; return (n * E.outCubic(p)).toFixed(d); };
+  /* 하이라이트 스윕(광택이 한 번 지나감) — 강조 카드 안쪽에 겹쳐 넣는 div */
+  const sweep = (p, color = 'rgba(255,255,255,.55)') => p <= 0 || p >= 1 ? '' : `<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:inherit"><div style="position:absolute;top:-20%;bottom:-20%;width:28%;left:${(-30 + 160 * E.inOutCubic(p)).toFixed(1)}%;transform:skewX(-18deg);background:linear-gradient(90deg,transparent,${color},transparent)"></div></div>`;
+  /* 선 그리기: SVG path 에 stroke-dasharray/offset */
+  const draw = (p, len = 2000) => `stroke-dasharray="${len}" stroke-dashoffset="${(len * (1 - E.inOutCubic(p))).toFixed(1)}"`;
+  /* 오도미터: 자리별 숫자 띠가 굴러감(1의 자리부터) — 정수·소수 모두 */
+  const odo = (v, p, h = 1.1) => [...String(v)].map((ch, i, a) => { if (!/\d/.test(ch)) return `<span>${ch}</span>`; const k = +ch, q = E.outCubic(c((p - (a.length - 1 - i) * .06) / .8)), y = -(k + 10 * (1 - q)) % 10;
+      return `<span style="display:inline-block;height:${h}em;overflow:hidden;vertical-align:top"><span style="display:block;transform:translateY(${(y * h).toFixed(3)}em)">${[0,1,2,3,4,5,6,7,8,9].map(d => `<span style="display:block;height:${h}em;line-height:${h}em">${d}</span>`).join('')}</span></span>`; }).join('');
+  /* 원형 게이지(SVG): 값% 까지 원호, 12시 시작 */
+  const gauge = (pct, p, r = 80, sw = 18, col = '#2563EB', bg = '#E6EAF0') => { const C = 2 * Math.PI * r, off = C * (1 - c(pct / 100) * E.outCubic(p)), w = 2 * (r + sw);
+      return `<svg width="${w}" height="${w}" viewBox="0 0 ${w} ${w}"><circle cx="${w / 2}" cy="${w / 2}" r="${r}" fill="none" stroke="${bg}" stroke-width="${sw}"/><circle cx="${w / 2}" cy="${w / 2}" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${w / 2} ${w / 2})"/></svg>`; };
+  /* 형광펜 밑줄: 강조 단어 뒤에 깔리는 띠(단어 등장 +0.15초) */
+  const marker = (p, col = 'rgba(255,212,59,.55)') => `<span style="position:absolute;left:-4%;right:-4%;bottom:6%;height:38%;background:${col};border-radius:6px;z-index:-1;transform:scaleX(${E.outCubic(p).toFixed(4)});transform-origin:left center"></span>`;
+  /* 어절 분할 등장: 문장을 어절마다 아래에서 올라오게(마스크) */
+  const words = (txt, p, step = .12, dur = .5) => String(txt).split(' ').map((w, i) => { const q = c((p * (1 + step * 8) - i * step) / dur);
+      return `<span style="display:inline-block;overflow:hidden;vertical-align:bottom;padding:0 .12em"><span style="display:inline-block;transform:translateY(${((1 - E.outCubic(q)) * 100).toFixed(1)}%);opacity:${c(q * 2).toFixed(3)}">${w}</span></span>`; }).join('');
+  /* 후속 동작: 사진 → 이름 → 기록 순 지연(초) */
+  const follow = (i, base = 0, gap = .1) => base + i * gap;
+  /* 순위 재정렬: 키로 짝지은 위·아래 보간 */
+  const reorder = (y0, y1, p) => y0 + (y1 - y0) * E.inOutCubic(p);
+  /* 펄스 고리(결론 숫자 뒤 한 번 퍼짐) */
+  const pulse = (p, color = 'rgba(37,99,235,.35)') => p <= 0 || p >= 1 ? '' : `<div style="position:absolute;left:50%;top:50%;width:100%;height:100%;transform:translate(-50%,-50%) scale(${(1 + .35 * E.outCubic(p)).toFixed(3)});border:6px solid ${color};border-radius:inherit;opacity:${(1 - p).toFixed(3)};pointer-events:none"></div>`;
+  /* 타이프라이터(인용문) */
+  const type = (txt, p) => { const a = [...String(txt)], n = Math.round(a.length * c(p)); return a.slice(0, n).join(''); };
+  return { E, css, stagger, count, sweep, draw, pulse, type, odo, gauge, marker, words, follow, reorder };
+})();
+/* 장면 전환(s.tr): 'fade'(기본, 기존 그대로) · 'slide'(새 장면이 오른쪽에서 밀고 들어옴) · 'zoom'(살짝 커지며 등장 — 확대 전환) · 'up'(아래에서 올라옴).
+   같은 chain 의 cont 장면(공유 요소 전환)에는 적용 안 함. render 끝에서 #body 에 transform 을 준다. */
+function MK_tr(s, t, start) {
+  const b = document.getElementById('body'); if (!b) return;
+  if (!s || s._keep || s._chain || !s.tr || s.tr === 'fade') { b.style.transform = ''; return; }
+  const p = c01((t - start) / .45), e = MK.E.outQuint(p);
+  if (s.tr === 'through') { b.style.transform = `scale(${(.92 + .08 * e).toFixed(4)})`; return; }   /* 페이드 스루: 주제가 바뀔 때 */
+  b.style.transform = s.tr === 'slide' ? `translateX(${((1 - e) * 160).toFixed(1)}px)` : s.tr === 'zoom' ? `scale(${(.94 + .06 * e).toFixed(4)})` : s.tr === 'up' ? `translateY(${((1 - e) * 70).toFixed(1)}px)` : '';
+}
+/* @@MOTIONKITEND */
+
+const L=[['17 지수 감속','Expo-out'],['18 엘라스틱','Elastic'],['19 스케일 팝','Scale pop'],['20 블러 인','Blur-in'],['21 주인공 강조','Highlight&dim'],
+['22 막대 성장','Bar grow'],['23 오도미터','Odometer'],['24 원형 게이지','Gauge'],['25 형광펜 밑줄','Marker'],['26 어절 등장','Split text'],
+['27 예비동작','Anticipation'],['28 매치업 충돌','Matchup VS'],['29 순위 재정렬','Reorder'],['30 후속 동작','Follow-through'],['31 페이드 스루','Fade through'],
+['32 스팅어','Stinger'],['33 로어서드','Lower third'],['34 양쪽 막대','Head-to-head'],['35 계단','Steps'],['36 스코어 버그','Score bug']];
+function frame(t){const T=3.0,lt=t%T,p=c01((lt-.3)/1.2),q=c01((lt-.3)/1.8);let h='';
+L.forEach(([a,b],i)=>{let x='';const box=(st,inner,cls='B',extra='')=>`<div class="${cls}" style="position:absolute;${st};${extra}">${inner}</div>`;
+ if(i==0) x=`<div style="position:absolute;left:0;right:0;top:24px;text-align:center;font-size:84px;font-weight:900;color:#2563EB">${MK.E.outExpo(q)>=1?'139':Math.round(139*MK.E.outExpo(q))}</div>`;
+ if(i==1) x=box(`left:${40+180*MK.E.elastic(q)}px;top:50px;width:80px;height:80px`,'');
+ if(i==2) x=box('left:110px;top:40px;width:120px;height:90px;font-size:36px','MVP','B',MK.css.pop(p));
+ if(i==3) x=box('left:40px;right:40px;top:40px;height:90px;font-size:34px','2026 정규시즌','B',MK.css.blur(p));
+ if(i==4) x=[0,1,2].map(j=>box(`left:${30+j*100}px;top:40px;width:84px;height:100px;font-size:28px`,['KT','삼성','KIA'][j],'B',MK.css.dim(j==0,p))).join('');
+ if(i==5) x=[0.9,0.6,0.75].map((v,j)=>`<div style="position:absolute;left:30px;top:${30+j*38}px;width:${280*v}px;height:26px;border-radius:13px;background:#2563EB;${MK.css.grow(c01((lt-.3-j*.08)/.7))}"></div>`).join('');
+ if(i==6) x=`<div style="position:absolute;left:0;right:0;top:30px;text-align:center;font-size:84px;font-weight:900;color:#12161F;line-height:1">${MK.odo('77.06',q)}<span style="font-size:40px">%</span></div>`;
+ if(i==7) x=`<div style="position:absolute;left:100px;top:6px">${MK.gauge(64.5,q,62,16)}</div><div style="position:absolute;left:100px;width:156px;top:60px;text-align:center;font-size:28px;font-weight:900;color:#2563EB">${MK.count(64.5,q)}%</div>`;
+ if(i==8) x=`<div style="position:absolute;left:0;right:0;top:50px;text-align:center;font-size:44px;font-weight:900"><span style="position:relative;z-index:0;display:inline-block">사실상 반반${MK.marker(c01((lt-.6)/.5))}</span></div>`;
+ if(i==9) x=`<div style="position:absolute;left:20px;right:20px;top:46px;text-align:center;font-size:38px;font-weight:900">${MK.words('1위 팀인데도 반반 승부',q)}</div>`;
+ if(i==10) x=box('left:110px;top:40px;width:120px;height:100px;font-size:46px','1위','B',MK.css.anticip(q));
+ if(i==11) x=box('left:20px;top:50px;width:130px;height:90px;font-size:36px;background:#12161F','KT','B',MK.css.clash(q,'l',220))+box('right:20px;top:50px;width:130px;height:90px;font-size:36px;background:#074CA1','삼성','B',MK.css.clash(q,'r',220))+(q>.55?`<div style="position:absolute;left:150px;width:44px;top:70px;font-size:34px;font-weight:900;color:#E5484D;${MK.css.pop(c01((q-.55)/.3))}">VS</div>`:'');
+ if(i==12){const y=[[0,2],[1,0],[2,1]];x=y.map(([a0,a1],j)=>box(`left:40px;right:40px;height:40px;top:${16+46*MK.reorder(a0,a1,q)}px;font-size:24px;background:${['#12161F','#074CA1','#EA0029'][j]}`,`${['KT','삼성','KIA'][j]}`)).join('');}
+ if(i==13) x=`<div style="position:absolute;left:30px;top:30px;width:90px;height:110px;border-radius:12px;background:#C9D2DE;${MK.css.rise(c01((lt-.3)/.5))}"></div><div style="position:absolute;left:140px;top:40px;font-size:34px;font-weight:900;${MK.css.rise(c01((lt-.3-MK.follow(1))/.5))}">대니엘</div><div style="position:absolute;left:140px;top:90px;font-size:26px;font-weight:800;color:#2563EB;${MK.css.rise(c01((lt-.3-MK.follow(2))/.5))}">평균자책점 2.13</div>`;
+ if(i==14){const f=c01((lt-.6)/.5);x=f<.3?box('left:40px;right:40px;top:40px;height:100px;font-size:30px;background:#9AA3B2','이전 장면','B',`opacity:${(1-f/.3).toFixed(2)}`):box('left:40px;right:40px;top:40px;height:100px;font-size:30px','새 주제','B',`opacity:${c01((f-.3)/.4)};transform:scale(${(.92+.08*MK.E.outCubic((f-.3)/.7)).toFixed(3)})`);}
+ if(i==15){const f=c01((lt-.4)/1.4),cov=f<.5?MK.E.inOutCubic(f*2):1-MK.E.inOutCubic((f-.5)*2);x=box('left:40px;right:40px;top:50px;height:90px;font-size:28px;background:#fff;color:#12161F',f<.5?'1장':'2장 · 삼성이 오면','B','border:3px solid #E6EAF0')+`<div style="position:absolute;top:0;bottom:0;left:${f<.5?0:(100-100*cov)}%;width:${100*cov}%;background:#2563EB"></div>`;}
+ if(i==16){const w=MK.E.outCubic(c01((lt-.3)/.4));x=`<div style="position:absolute;left:20px;top:110px;height:50px;width:${290*w}px;background:#12161F;border-radius:6px"></div><div style="position:absolute;left:36px;top:116px;font-size:28px;font-weight:900;color:#fff;${MK.css.slide(c01((lt-.5)/.4),'l',40)}">이강철 · KT 감독</div>`;}
+ if(i==17) x=[[.62,.45],[.55,.7]].map(([l,r],j)=>`<div style="position:absolute;left:${170-140*l*MK.E.outCubic(c01((lt-.3-j*.1)/.7))}px;width:${140*l*MK.E.outCubic(c01((lt-.3-j*.1)/.7))}px;top:${40+j*50}px;height:30px;background:#12161F;border-radius:15px 0 0 15px"></div><div style="position:absolute;left:174px;width:${140*r*MK.E.outCubic(c01((lt-.3-j*.1)/.7))}px;top:${40+j*50}px;height:30px;background:#074CA1;border-radius:0 15px 15px 0"></div>`).join('');
+ if(i==18) x=box(`left:${30+250*MK.E.steps(q,5)}px;top:60px;width:50px;height:50px`,'');
+ if(i==19){const f=c01((lt-.4)/2.2),ex=f<.2?MK.E.spring(f/.2,.9,14):f<.8?1:1-MK.E.outCubic((f-.8)/.2);x=`<div style="position:absolute;left:30px;top:50px;height:56px;width:${120+160*ex}px;background:#12161F;border-radius:10px;overflow:hidden;color:#fff;font-size:26px;font-weight:900;display:flex;align-items:center;padding-left:16px;white-space:nowrap">KT 3 : 2 삼성${ex>.6?' · 홈런!':''}</div>`;}
+ h+=`<div class="c">${x}<div class="l">${a}<small>${b}</small></div></div>`;});
+document.getElementById('g').innerHTML=h;}
+</script></body></html>

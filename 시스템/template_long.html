@@ -414,9 +414,9 @@ SCENE.photo = (lt, s) => {
 SCENE.question = (lt, s) => {
   const vis = PH(s, s.ph || 560, seg(lt, 0, .5));   /* 10/5: s.ph — 가로 16:9 사진(관련 영상 썸네일)은 880 칸에 맞게 495 로 낮춰 안 잘리게 */
   const LS = s.logoSize || 170, n_ = (s.logos || []).length, gap_ = n_ >= 8 ? 18 : 40;   /* 10/4: 10구단 나열(마지막 질문) — 로고 150 · 간격 18 로 한 줄에 */
-  const tl = (s.logos || []).map((t, i) => { const tt = T(t); return tt && LOGO[tt.code] ? `<div class="chip" style="width:${LS}px;height:${LS}px;${pop(seg(lt, .5 + i * (n_ >= 8 ? .06 : .12), .4))}"><img src="${LOGO[tt.code]}"></div>` : ''; }).join('');   /* 10/1 밤: 마지막 질문에 팀 로고 줄 */
+  const tl = (s.logos || []).map((t, i) => { const tt = T(t); return tt && LOGO[tt.code] ? `<div class="chip" style="width:${LS}px;height:${LS}px;${s._same ? '' : pop(seg(lt, .5 + i * (n_ >= 8 ? .06 : .12), .4))}"><img src="${LOGO[tt.code]}"></div>` : ''; }).join('');   /* 10/1 밤: 마지막 질문에 팀 로고 줄 */
   const ex = noteLine(lt, s.note, .3) + statRow(lt, s.stats, .3) + (tl ? `<div class="row" style="gap:${gap_}px;justify-content:center;margin-top:10px;flex-wrap:nowrap">${tl}</div>` : '');
-  let mega = `<div class="mega" style="font-size:${s.size || 126}px;${pop(seg(lt, 0, .6))}">${br(s.text || '여러분 생각은?')}</div>`;
+  let mega = `<div class="mega" style="font-size:${s.size || 126}px;${s._same && s._prev.text === s.text ? '' : pop(seg(lt, 0, .6))}">${br(s.text || '여러분 생각은?')}</div>`;   /* 11/1 mega 그대로 */
   if (s.arrow === 'left' && vis) {   /* 10/11: 왼쪽 사진(관련 영상 썸네일)을 가리키며 통통 튀는 화살표 — 유튜브 카드 자리 */
     const a = c01((lt - .3) / .35), b = Math.abs(Math.sin(lt * 4.2)) * 18;
     const chev = [0, 1].map(i => `<svg width="66" height="150" viewBox="0 0 40 96" style="display:block;opacity:${(0.35 + 0.65 * Math.max(0, Math.sin(lt * 5 - i * 0.9))).toFixed(2)}"><path d="M34 10 L6 48 L34 86" fill="none" stroke="${ACC}" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/></svg>`).join('');
@@ -479,7 +479,7 @@ SCENE.matchup = (lt, s) => {
 /* people: 인물 카드 2~4장 (가로라 4장까지 들어간다) */
 SCENE.people = (lt, s) => {
   const items = s.items || [], n = Math.max(1, items.length);
-  let w = n <= 2 ? 460 : n === 3 ? 400 : n === 4 ? 330 : 300, ph = s.ph || (n <= 2 ? 400 : 330);   /* 9/30: 5장(키움 포스팅 5명) · s.ph 사진 높이 */
+  let w = n <= 2 ? 460 : n === 3 ? 400 : n === 4 ? 330 : n === 5 ? 300 : 250, ph = s.ph || (n <= 2 ? 400 : 330);   /* 9/30: 5장(키움 포스팅 5명) · s.ph 사진 높이 */
   if (s.full) {   /* 9/30 밤 사용자 "얼굴만 잘라서 띄우지 말고 프로필 사진 전체가 나오게": 카드 사진 칸을 사진 비율 그대로 → 잘리는 곳 없음 */
     const r = Math.max(...items.map(it => { const z = photoSize(it.img); return z ? z[1] / z[0] : 1.25; }));
     /* 10/5 밤 사용자(롱폼⑦ 'KBO 드래프트' 제목이 위 진행 줄과 겹침): 제목·이름·설명·아래 글씨를 뺀 남은 높이 안으로 사진 높이를 줄인다 → 본문 칸(#body)을 절대 안 넘음 */
@@ -760,7 +760,7 @@ SCENE.scoreboard = (lt, s) => {
   h += `<div class="row" style="gap:0;align-items:center;height:56px"><div style="width:190px"></div>${Array.from({ length: inn }, (_, k) => `<div class="num" style="width:${cw}px;text-align:center;font-size:30px;font-weight:900;color:${hiSet.has(k + 1) ? mixC(GRAY, ACC, hq) : GRAY}">${k + 1}</div>`).join('')}<div class="num" style="width:90px;text-align:center;font-size:32px;font-weight:900">R</div></div>`;
   rows.forEach((r, ri) => {
     h += `<div class="row" style="gap:0;align-items:center;height:${s.tall ? 150 : 120}px;border-top:2px solid ${LINE};position:relative">
-      <div class="row" style="width:190px;gap:12px;align-items:center">${tchip(r.team, 70)}<div class="title" style="font-size:38px;font-weight:900">${esc(r.team)}</div></div>`;
+      <div class="row" style="width:190px;gap:12px;align-items:center">${tchip(r.team, 70)}</div>`;
     for (let k = 0; k < inn; k++) {
       const p = K ? 1 : seg(lt, .35 + k * .12, .25), v = (r.runs || [])[k], m = (s.marks || []).find(x => x.row === ri && x.inn === k + 1);
       const hl = hiSet.has(k + 1), mp = m ? pk(s, m.at, .35, K ? seg(lt, .3, .35) : seg(lt, .45 + k * .12, .3)) : 0;
@@ -863,7 +863,7 @@ SCENE.podium = (lt, s) => {
     const p = seg(lt, .3 + order[k] * .45, .6), q = seg(lt, .6 + order[k] * .45, .45), hi = it.hi === true;
     h += `<div class="col" style="width:270px;gap:14px;align-items:center">
       <div class="col" style="gap:10px;align-items:center;${pop(q)}">${tchip(it.team, m === '금' ? 150 : 124)}
-        <div class="title" style="font-size:${m === '금' ? 50 : 42}px;font-weight:900;color:${hi ? 'var(--acc)' : TXT}">${esc(it.team || '')}</div>
+        <div class="title" style="font-size:${m === '금' ? 50 : 42}px;font-weight:900;color:${hi ? 'var(--acc)' : TXT}">${s.noName ? '' : esc(it.team || '')}</div>
         ${it.sub ? `<div class="label" style="font-size:28px;color:${GRAY};text-align:center">${br(it.sub)}</div>` : ''}</div>
       <div class="col" style="width:100%;height:${ht * eo(p)}px;border-radius:20px 20px 0 0;background:${c};justify-content:flex-start;padding-top:14px;${hi ? 'box-shadow:0 0 0 6px var(--acc) inset;' : ''}">
         <div class="num" style="width:84px;height:84px;border-radius:50%;background:#fff;color:${c};font-size:44px;font-weight:900;display:flex;align-items:center;justify-content:center;opacity:${c01(p * 2 - .6)}">${m}</div></div></div>`;
@@ -1837,7 +1837,7 @@ function prepAll() {
       (s.type === 'matchup' && prev.left === s.left && prev.right === s.right && !photoSrc(s.img)) ||
       (s.type === 'toc') ||   /* 9/28: 목차 → 목차는 사라지지 않고 강조만 옮긴다 */
       (s.type === 'facegrid' && chainKey(s) && chainKey(prev) === chainKey(s) && (prev.title || '') === (s.title || '') && J((prev.items || []).map(x => [x.name, photoSrc(x.img)])) === J((s.items || []).map(x => [x.name, photoSrc(x.img)]))) ||   /* 10/18 사용자 "사진은 다 그대로인데 한번 사라졌다가 다시 촤르륵 나타나게 한거야? 텍스트만 바뀌게": 같은 묶음·제목·사람·사진이면 cont 표시가 빠져도 사진은 그대로, 글만 */
-      (s.cont && ['gantt', 'flow', 'cells', 'funnel', 'flip', 'rankline', 'password', 'scale', 'stack', 'contracts', 'people', 'tiles', 'statbars', 'steps', 'speech', 'bars', 'facegrid', 'scoreboard', 'teamgrid', 'npbdraft', 'yearline', 'diamond', 'count', 'race', 'tline'].includes(s.type))));   /* 10/24 tline 추가 */
+      (s.cont && ['gantt', 'flow', 'cells', 'funnel', 'flip', 'rankline', 'password', 'scale', 'stack', 'contracts', 'people', 'tiles', 'statbars', 'steps', 'speech', 'bars', 'facegrid', 'scoreboard', 'teamgrid', 'npbdraft', 'yearline', 'diamond', 'count', 'race', 'tline', 'question', 'hero', 'board', 'water', 'probpair', 'probcalc', 'chalk', 'clip', 'scorecard', 'matchtbl', 'errs', 'rest', 'grid', 'mu_pgames', 'mu_hr2', 'mu_streak', 'mu_abs', 'mu_blocks', 'mu_closer', 'mu_pen2', 'mu_donut', 'mu_fly', 'mu_choice', 'mu_inn', 'mu_pstat', 'vA_gap', 'vA_units', 'vA_errs', 'vA_battery', 'vA_innings', 'vA_days', 'vA_tiles', 'vA_games', 'vA_rank', 'vA_relay', 'vA_saves', 'vA_streak', 'vB_units', 'vB_meter', 'vB_only', 'vB_rings', 'vB_split', 'vB_three', 'vB_inn', 'vB_pen', 'vB_branch', 'vB_next'].includes(s.type))));   /* 10/24 tline 추가 · 11/1 hero·board·water 등 새 장면도 이어받기 · 11/1 22시 사용자 "같은 글자 왜 없어졌다 나타나" → 새 그림 장면 전부 이어받기 */
     s._chain = !!(prev && ((chainKey(s) && chainKey(prev) === chainKey(s)) || s._same));
     s._cid = s._chain ? prev._cid : k; (CHAINS[s._cid] = CHAINS[s._cid] || []).push(k);
     /* 10/25 밤 사용자("틀의 크기를 너무 자주 바꿔.. 굳이 안 바꿔도 되잖아" / "그대로 틀이 유지되는 게 좋겠어"): 같은 사진(또는 같은 구단 로고)이 이어지는 장면들은
@@ -1861,8 +1861,8 @@ function ghostOf(k, t, start) {
   if (!G) { G = document.createElement('div'); G.id = 'ghost';
     G.style.cssText = 'position:absolute;left:56px;width:1808px;top:146px;height:714px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none';
     body.parentNode.insertBefore(G, body.nextSibling); }
-  const p = SC[k - 1], keep = NOW; ensureCx(k - 1); NOW = start - 0.02; (SCENE[p.type] || SCENE.big)(99, p); autoCenter(p); NOW = keep;
-  G.innerHTML = body.innerHTML; G.style.opacity = String((1 - c01(dt / 0.16)).toFixed(3));   /* 10/25 검수(사람이 바뀔 때 두 이름이 겹쳐 '원태인시환'): 앞 장면은 0.16초에 빠지고 새 장면은 0.05초 뒤부터 → 글이 겹쳐 읽히는 순간 없앰 */
+  const p = SC[k - 1], keep = NOW; ensureCx(k - 1); NOW = start - 0.02; const _bt = body.style.transform, _bo = body.style.opacity; body.style.transform = 'none'; (SCENE[p.type] || SCENE.big)(99, p); __faceFix(); __logoDedup(p); autoCenter(p); __titleFix(p); NOW = keep;
+  G.innerHTML = body.innerHTML; body.style.transform = _bt; G.style.opacity = String((1 - c01(dt / 0.16)).toFixed(3));   /* 10/25 검수(사람이 바뀔 때 두 이름이 겹쳐 '원태인시환'): 앞 장면은 0.16초에 빠지고 새 장면은 0.05초 뒤부터 → 글이 겹쳐 읽히는 순간 없앰 */
 }
 /* @@MVP1007 */
 /* ───── 10/7 롱폼⑧ 「2026 MVP 레이스」 새 인포그래픽 장면: mvp10 ─────
@@ -2405,7 +2405,7 @@ SCENE.rankstrip = (lt, s) => {
   const rows = s.rows || [], t = T(s.team || ''), SW = 92, SG = 6, LW = 440, RH = rows.length > 4 ? 120 : 134, LG = rows.length > 4 ? 52 : 66;
   const cOf = (r, n) => r <= (n === 10 ? 3 : 1) ? GREEN : r > n - (n === 10 ? 3 : 1) ? RED : '#3B4A63';
   let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;text-align:center;margin-bottom:12px;${s._same || (s.cont && s._prev && s._prev.type === 'rankstrip' && s._prev.title === s.title) ? '' : pop(seg(lt, 0, .4))}">${esc(s.title)}</div>` : '';
-  h += `<div class="row" style="justify-content:center;gap:0;margin-bottom:4px"><div style="width:${LW}px"></div><div class="row" style="width:${10 * (SW + SG)}px;justify-content:space-between;font-size:28px;font-weight:900"><span style="color:${GREEN}">◀ 잘함</span><span style="color:${RED}">못함 ▶</span></div></div>`;
+  /* 11/1 사용자 '잘함 못함 텍스트 빼' */
   rows.forEach((r, i) => {
     const n = r.n || 10, q = pk(s, r.at, 1.0, 1), e = eo(q), vis = c01(q * 5), zone = r.zone;
     const tgt = zone ? (zone[0] + zone[1]) / 2 : r.rank, st = r.from != null ? r.from : n + 1.6, pos = st + (tgt - st) * e;
@@ -2802,7 +2802,7 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
     const CHo = CHN(s, 'faceoff').filter(x => (x.left || {}).name === L.name && (x.right || {}).name === R.name), MXR = Math.max(...CHo.map(x => (x.rows || []).length)), rows0 = s.rows || [];
     const rows = rows0.concat(CHo.reduce((a, x) => (x.rows || []).length > a.length ? x.rows : a, []).slice(rows0.length, MXR).map(r => Object.assign({}, r, { hide: true })));
     const CL = s.leftColor || TC(s, L.team), CR = s.rightColor || TC(s, R.team), W = EP.vertical ? (photoSrc(L.img) ? 230 : 170) : (s.pw || 340), H = Math.round(W / .774);
-    const sideP = (x, d) => `<div class="col" style="align-items:center;width:${W + 20}px;flex:0 0 auto;${C_ ? '' : rise(seg(lt, d, .45), 30)}">${NP(x, W, photoSrc(x.img) ? H : W)}${NAME(x, 50, 50)}</div>`;
+    /* 10/31 faceoff 사진도 이름 부르는 호흡(left/right.at)에 뜬다 */ const sideP = (x, d) => `<div class="col" style="align-items:center;width:${W + 20}px;flex:0 0 auto;${C_ || (x.at != null && x.at < 0) ? '' : rise(x.at != null ? bp(s, x.at, .45) : seg(lt, d, .45), 30)}">${NP(x, W, photoSrc(x.img) ? H : W)}${NAME(x, 50, 50)}</div>`;
     const allT = rows.every(r => r.lv == null), RH = EP.vertical ? (rows.length >= 5 ? 84 : 100) : rows.length >= 5 ? 100 : 118, KW = 260;   /* 10/17: 가운데 항목 글자 칸 240→260 + keep-all(낱말 중간 줄바꿈 금지) */
     /* 10/15 사용자 "텍스트랑 사진이 겹쳐": 가운데 표 폭을 화면 폭(본문 1808)에서 양옆 사진 칸을 뺀 만큼으로 계산 — 넘쳐서 글자가 사진 위로 가던 것 */
     const HALF = Math.floor(((EP.vertical ? 1040 : 1700 - 2 * (W + 20) - 60) - KW) / 2), BW = allT ? 0 : Math.max(90, Math.min(180, HALF - 210)), VW = HALF - BW;
@@ -2902,7 +2902,7 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
           <circle cx="${CX}" cy="${CX}" r="${RR}" fill="none" stroke="#F1F3F7" stroke-width="${SW}"/>${segs}</svg>
           <div class="col" style="position:absolute;inset:0;align-items:center;justify-content:center;gap:0">${LOGOI(x.team, 120)}</div></div>
         <div class="num" style="font-size:76px;font-weight:900;letter-spacing:-3px;margin-top:6px"><span style="color:${c}">${x.w}승</span> <span style="color:#9AA3B2">${x.l}패</span></div></div>`; };
-    const leg = `<div class="row" style="gap:28px;margin-top:12px;font-size:32px;font-weight:800;color:${GRAY}"><span>한 칸 = 한 경기</span></div>`;
+    const leg = '';   /* 11/1 사용자 "한 칸 한 경기 텍스트 빼" */
     B(`<div class="col" style="width:100%;align-items:center">${ttl(lt, s, 24)}<div class="row" style="gap:180px;flex-wrap:nowrap">${it.map(one).join('')}</div>${leg}</div>`);
   };
 
@@ -2913,13 +2913,13 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
     const J = x => JSON.stringify(x || {});
     let h = ttl(lt, s, 30);
     h += `<div style="position:relative"><div class="row" style="gap:0;flex-wrap:nowrap;align-items:flex-start">` + G_.map((g, k) => {
-      const keep = C_ && PG[k] && J({ ...PG[k], at: 0, appear: 0 }) === J({ ...g, at: 0, appear: 0 }), p = keep ? 1 : bp(s, g.at ?? 0, .5), c = g.win && g.win !== '?' ? TC(s, g.win) : '#BFC7D4';
+      const keep = C_ && PG[k] && J({ ...PG[k], at: 0, appear: 0 }) === J({ ...g, at: 0, appear: 0 }) && !(PG[k].at >= 50), p = keep ? 1 : bp(s, g.at ?? 0, .5), c = g.win && g.win !== '?' ? TC(s, g.win) : '#BFC7D4';
       const glow = g.glow ? `<div style="position:absolute;left:8px;right:8px;top:-14px;bottom:-14px;border-radius:34px;background:${TC(s, g.glow)}18;border:5px solid ${TC(s, g.glow)};${C_ && PG[k] && PG[k].glow === g.glow ? '' : `opacity:${c01(bp(s, g.glowAt ?? g.at ?? 0, .5) * 1.6)}`}"></div>` : '';
       const res = g.off ? `<div style="width:170px;height:170px;border-radius:50%;border:6px dashed #D5DAE2;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;color:#B0B8C6;text-align:center;line-height:1.2">안 열림</div>`
         : g.win && !keep && p <= 0 ? `<div style="width:170px;height:170px;border-radius:50%;border:6px dashed #D5DAE2"></div>`   /* 10/20: 결과를 말하기 전엔 빈 원 */
         : g.win === '?' ? `<div style="width:170px;height:170px;border-radius:50%;border:7px dashed #9AA3B2;display:flex;align-items:center;justify-content:center;font-size:96px;font-weight:900;color:#9AA3B2;${ppop(p)}">?</div>`
         : g.win && g.maybe ? `<div style="position:relative;width:170px;height:170px;border-radius:50%;background:#fff;border:7px dashed ${c};display:flex;align-items:center;justify-content:center;${ppop(p)}"><div style="opacity:.45">${LOGOI(g.win, 110)}</div><div style="position:absolute;right:-14px;top:-14px;width:64px;height:64px;border-radius:50%;background:#12161F;color:#fff;font-size:44px;font-weight:900;display:flex;align-items:center;justify-content:center">?</div></div>`   /* 10/18: maybe = 가정(예측과 다른 경우)은 점선·흐린 로고·물음표 */
-        : g.win ? `<div style="width:170px;height:170px;border-radius:50%;background:#fff;border:8px solid ${c};display:flex;align-items:center;justify-content:center;box-shadow:0 14px 30px ${c}44;${ppop(p)}">${LOGOI(g.win, 118)}</div>`
+        : g.win ? `<div style="width:170px;height:170px;border-radius:50%;display:flex;align-items:center;justify-content:center;${ppop(p)}">${LOGOI(g.win, 150)}</div>`
         : g.who && photoSrc(g.who.img) ? (() => { const q = keep ? 1 : bp(s, g.who.at ?? 0, .5), w = g.who;   /* 10/20 사용자 "나레이션에서 말하는 거에 맞춰 원 안에 선수 프로필" — 빈 원 안에 그 경기 선발 얼굴(w: 그린 폭·왼쪽·위 px, 170 원 기준) */
             return `<div style="position:relative;width:170px;height:170px"><div style="position:absolute;inset:0;border-radius:50%;border:6px dashed #D5DAE2;opacity:${(1 - c01(q * 1.6)).toFixed(3)}"></div>
               <div style="position:absolute;inset:0;border-radius:50%;overflow:hidden;background:#2A1A1E;border:7px solid ${TC(s, w.team || 'KIA')};box-shadow:0 14px 30px rgba(0,0,0,.4);${ppop(q)}"><img src="${photoSrc(w.img)}" style="position:absolute;left:${w.l}px;top:${w.t}px;width:${w.w}px;height:auto;max-width:none"></div></div>`; })()
@@ -3905,7 +3905,7 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
       if (z.type === 'runs') { const bs = Array.from({ length: z.n }, (_, i) => { const q = cl(p * 3 - i * .35, 0, 1);
           return `<div style="width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FF8A90,#E5222E);box-shadow:0 0 18px rgba(255,90,99,.55);opacity:${cl(q * 2, 0, 1).toFixed(2)};transform:scale(${q <= 0 ? .3 : (.3 + .7 * eob(q)).toFixed(3)})"></div>`; }).join('');
         return `<div class="col" style="gap:10px;align-items:flex-start;opacity:${op}">${lab('실점')}<div class="row" style="gap:10px;align-items:center;flex-wrap:nowrap">${bs}<div class="num" style="margin-left:14px;font-size:66px;font-weight:900;color:#FF6B6B;white-space:nowrap">${z.n}점</div></div></div>`; }
-      if (z.type === 'zero') return `<div class="row" style="gap:28px;align-items:center;flex-wrap:nowrap;opacity:${op}"><div class="col" style="gap:0;align-items:flex-start">${lab(z.k)}<div class="num" style="font-size:150px;font-weight:900;letter-spacing:-6px;color:#5BD08A;line-height:1;transform:scale(${p <= 0 ? 1.6 : (1.6 - .6 * e3(p)).toFixed(3)});transform-origin:left center">0<span style="font-size:60px">개</span></div></div>
+      if (z.type === 'zero') return `<div class="row" style="gap:28px;align-items:center;flex-wrap:nowrap;opacity:${op}"><div class="col" style="gap:0;align-items:flex-start">${lab(z.k)}<div class="num" style="font-size:150px;font-weight:900;letter-spacing:-6px;color:#5BD08A;line-height:1;transform:scale(${p <= 0 ? 1.6 : (1.6 - .6 * e3(p)).toFixed(3)});transform-origin:left center">0<span style="font-size:60px">${esc(z.u || '개')}</span></div></div>
           <div style="border:7px solid #5BD08A;color:#5BD08A;border-radius:18px;padding:6px 22px;font-size:46px;font-weight:900;white-space:nowrap;transform:rotate(-6deg) scale(${cl(p * 2 - .6, 0, 1) <= 0 ? 1.5 : (1.5 - .5 * e3(cl(p * 2 - .6, 0, 1))).toFixed(3)});opacity:${cl(p * 3 - 1.2, 0, 1).toFixed(2)}">${esc(z.stamp || '')}</div></div>`;
       if (z.type === 'line') return `<div class="row" style="gap:46px;align-items:flex-end;flex-wrap:nowrap;opacity:${z.items.some(x => x[3] != null) ? 1 : op}">${(z.items || []).map(([k, v, hi, ia], i) => { const q = ia == null ? cl(p * 3 - i * .4, 0, 1) : Pr(ia, .5);
           return `<div class="col" style="gap:0;align-items:flex-start;opacity:${cl(q * 2, 0, 1).toFixed(2)};transform:translateY(${((1 - e3(q)) * 16).toFixed(1)}px)">${lab(k)}<div class="num" style="font-size:62px;font-weight:900;color:${hi ? '#FF6B6B' : '#FFFFFF'};white-space:nowrap">${esc(v)}</div></div>`; }).join('')}</div>`;
@@ -3916,9 +3916,9 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
       ${s.stamp ? `<div style="position:absolute;right:48px;bottom:64px;border:6px solid #FFD43B;color:#FFD43B;border-radius:16px;padding:4px 18px;font-size:40px;font-weight:900;white-space:nowrap;transform:rotate(-4deg) scale(${sp <= 0 ? 1.5 : (1.5 - .5 * e3(sp)).toFixed(3)});opacity:${cl(sp * 1.6, 0, 1).toFixed(2)}">${esc(s.stamp.t)}</div>` : ''}</div>`;
     const PWc = 480, PHc = 640;
     const board = `<div data-nodark="1" class="col" style="width:${RW}px;height:${PHc}px;box-sizing:border-box;padding:30px 44px;border-radius:30px;background:linear-gradient(160deg,#141E33,#0B1222);box-shadow:0 24px 54px rgba(10,14,24,.32);gap:20px;position:relative;align-items:flex-start;justify-content:flex-start;flex:0 0 auto">${head}<div style="width:100%;height:2px;background:rgba(255,255,255,.12)"></div>${(s.blocks || []).map(blk).join('')}
-      <div style="position:absolute;right:30px;bottom:18px;font-size:22px;font-weight:700;color:#5F6B80">기록: KBO 박스스코어</div></div>`;
+      </div>`;
     const IA = s.imgAt != null ? cl(TT(s, s.imgAt) == null ? 0 : TT(s, s.imgAt) / .5, 0, 1) : 1;   /* 10/28: s.imgAt = 사진·기록판이 그 호흡에 뜬다 */
-    B(`<div class="row" style="width:100%;gap:40px;justify-content:center;align-items:center;flex-wrap:nowrap;opacity:${IA.toFixed(3)};transform:translateY(${((1 - e3(IA)) * 40).toFixed(1)}px)">${card(s.img, PWc, PHc)}${board}</div>`);
+    B(`<div class="row" style="width:100%;gap:40px;justify-content:center;align-items:center;flex-wrap:nowrap;opacity:${IA.toFixed(3)};transform:translateY(${((1 - e3(IA)) * 40).toFixed(1)}px)">${card(s.img, PWc, PHc, '', s.img ? '' : (s.team || ''))}${board}</div>`);   /* 11/1: 사진 없는 기록판은 구단 색 + 로고 */
   };
   Object.assign(MOTION, { plog: () => 2.4, hrcam: () => 4.6, rally: s => .6 + (s.plays || []).length * .5 });
 })();
@@ -4355,6 +4355,1238 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
   Object.assign(MOTION, { posting: () => 1 });
 })();
 /* @@POST1025END */
+/* @@MOTIONKIT 11/1 사용자 "영상 디자인 효과(이즈 인·이즈 아웃·스프링·바운스·순차 등장·페이드·슬라이드·확대 전환·공유 요소 전환 등)를 학습해 적절하게".
+   공용 움직임 도구 MK — 모든 장면에서 쓴다. p = 0~1 진행값(seg/pk 결과).
+   규칙(사용자 지적 반영): 큰 글자·국기·사진은 넘침(오버슛) 금지(9/19) → spring/bounce 는 칩·점·배지 같은 작은 요소에만.
+   사진 크기는 이어지는 장면에서 바뀌지 않는다(11/1) → 사진에는 zoom 효과 쓰지 않는다. 깜빡임 금지 → 페이드는 0.15초 이상. */
+const MK = (() => {
+  const c = x => x < 0 ? 0 : x > 1 ? 1 : x;
+  const E = {
+    linear: t => c(t),
+    inCubic: t => Math.pow(c(t), 3),                                   /* 이즈 인: 천천히 출발 → 빠르게(퇴장용) */
+    outCubic: t => 1 - Math.pow(1 - c(t), 3),                          /* 이즈 아웃: 빠르게 출발 → 끝에서 천천히(등장 기본) */
+    inOutCubic: t => { t = c(t); return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; },   /* 이동·전환 */
+    outQuint: t => 1 - Math.pow(1 - c(t), 5),                          /* 강조 감속(MD3 emphasized decelerate 근사) */
+    outBack: (t, s = 1.2) => { t = c(t); return 1 + (s + 1) * Math.pow(t - 1, 3) + s * Math.pow(t - 1, 2); },   /* 살짝 넘쳤다 돌아옴 */
+    spring: (t, z = .55, w = 14) => { t = c(t); if (t >= 1) return 1; const wd = w * Math.sqrt(1 - z * z); return 1 - Math.exp(-z * w * t) * (Math.cos(wd * t) + (z * w / wd) * Math.sin(wd * t)); },   /* 스프링: 툭 넘쳤다 튕기며 멈춤 */
+    outExpo: t => { t = c(t); return t >= 1 ? 1 : 1 - Math.pow(2, -10 * t); },   /* 지수 감속 — 숫자 카운트업 기본 */
+    elastic: t => { t = c(t); return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - .75) * (2 * Math.PI / 3)) + 1; },   /* 엘라스틱 — 결론 숫자 한 번만 */
+    inBack: (t, s = 1.4) => { t = c(t); return (s + 1) * t * t * t - s * t * t; },   /* 예비동작(움츠렸다 출발) */
+    steps: (t, n = 6) => Math.floor(c(t) * n) / n,
+    bounce: t => { t = c(t); const n = 7.5625, d = 2.75; if (t < 1 / d) return n * t * t; if (t < 2 / d) return n * (t -= 1.5 / d) * t + .75; if (t < 2.5 / d) return n * (t -= 2.25 / d) * t + .9375; return n * (t -= 2.625 / d) * t + .984375; },   /* 바운스: 바닥에 튕김 */
+  };
+  const css = {
+    /* 등장 */
+    fade: p => `opacity:${c(p).toFixed(3)}`,
+    rise: (p, px = 40) => `opacity:${c(p * 1.5).toFixed(3)};transform:translateY(${((1 - E.outCubic(p)) * px).toFixed(1)}px)`,
+    slide: (p, dir = 'l', px = 120) => { const v = (1 - E.outQuint(p)) * px, tx = dir === 'l' ? -v : dir === 'r' ? v : 0, ty = dir === 'u' ? -v : dir === 'd' ? v : 0; return `opacity:${c(p * 2).toFixed(3)};transform:translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px)`; },
+    springPop: (p, from = .6) => `opacity:${c(p * 3).toFixed(3)};transform:scale(${(from + (1 - from) * E.spring(p)).toFixed(4)})`,   /* 칩·배지·점만 */
+    bounceDrop: (p, px = 80) => `opacity:${c(p * 3).toFixed(3)};transform:translateY(${(-(1 - E.bounce(p)) * px).toFixed(1)}px)`,   /* 점·공 아이콘만 */
+    zoomIn: (p, from = .92) => `opacity:${c(p * 1.6).toFixed(3)};transform:scale(${(from + (1 - from) * E.outCubic(p)).toFixed(4)})`,   /* 판·카드 전체(사진 단독 ✗) */
+    wipe: (p, dir = 'l') => { const r = (100 - 100 * E.inOutCubic(p)).toFixed(1); return `clip-path:inset(${dir === 'd' ? `0 0 ${r}% 0` : dir === 'u' ? `${r}% 0 0 0` : dir === 'r' ? `0 0 0 ${r}%` : `0 ${r}% 0 0`})`; },   /* 마스크 리빌 */
+    pop: (p, from = .7) => `opacity:${c(p * 2.5).toFixed(3)};transform:scale(${(from + (1 - from) * E.outBack(p)).toFixed(4)})`,   /* 스케일 팝(살짝 넘침) — 칩·배지 */
+    blur: (p, px = 12) => `opacity:${c(p * 1.5).toFixed(3)};filter:blur(${((1 - E.outCubic(p)) * px).toFixed(1)}px)`,   /* 블러 인 — 배경·보조 글 */
+    dim: (on, p, lo = .3) => `opacity:${(on ? 1 : 1 - (1 - lo) * E.outCubic(p)).toFixed(3)}`,   /* 하이라이트&디밍: 주인공 외 흐리게 */
+    grow: (p, axis = 'x') => `transform:scale${axis === 'x' ? 'X' : 'Y'}(${E.outCubic(p).toFixed(4)});transform-origin:${axis === 'x' ? 'left center' : 'center bottom'}`,   /* 막대 성장(오버슈트 금지) */
+    anticip: (p) => { const e = p < .2 ? 1 - .05 * Math.sin(p / .2 * Math.PI / 2) : .95 + .05 * E.outBack((p - .2) / .8); return `transform:scale(${e.toFixed(4)})`; },   /* 예비동작: 움츠렸다 커짐(1위 공개 직전) */
+    clash: (p, side = 'l', px = 600) => { const e = E.outQuint(p), x = (1 - e) * px * (side === 'l' ? -1 : 1), j = p > .55 && p < .8 ? Math.sin((p - .55) / .25 * Math.PI * 3) * 3 : 0; return `transform:translateX(${(x + j).toFixed(1)}px);opacity:${c(p * 3).toFixed(3)}`; },   /* 매치업: 양쪽이 들어와 부딪힘 */
+    shake: (p, amp = 10) => p <= 0 || p >= 1 ? '' : `transform:translateX(${(Math.sin(p * Math.PI * 6) * amp * (1 - p)).toFixed(1)}px)`,   /* 부정·경고 수치 한 번만 */
+  };
+  /* 순차 등장: i 번째 요소 시작 시각 */
+  const stagger = (i, base = .15, step = .08) => base + i * step;
+  /* 숫자 롤링(카운트업): 끝 자리수·소수 자리 유지 */
+  const count = (v, p, dec) => { const n = +v; if (isNaN(n)) return String(v); const d = dec != null ? dec : (String(v).split('.')[1] || '').length; return (n * E.outCubic(p)).toFixed(d); };
+  /* 하이라이트 스윕(광택이 한 번 지나감) — 강조 카드 안쪽에 겹쳐 넣는 div */
+  const sweep = (p, color = 'rgba(255,255,255,.55)') => p <= 0 || p >= 1 ? '' : `<div style="position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:inherit"><div style="position:absolute;top:-20%;bottom:-20%;width:28%;left:${(-30 + 160 * E.inOutCubic(p)).toFixed(1)}%;transform:skewX(-18deg);background:linear-gradient(90deg,transparent,${color},transparent)"></div></div>`;
+  /* 선 그리기: SVG path 에 stroke-dasharray/offset */
+  const draw = (p, len = 2000) => `stroke-dasharray="${len}" stroke-dashoffset="${(len * (1 - E.inOutCubic(p))).toFixed(1)}"`;
+  /* 오도미터: 자리별 숫자 띠가 굴러감(1의 자리부터) — 정수·소수 모두 */
+  const odo = (v, p, h = 1.1) => [...String(v)].map((ch, i, a) => { if (!/\d/.test(ch)) return `<span>${ch}</span>`; const k = +ch, q = E.outCubic(c((p - (a.length - 1 - i) * .06) / .8)), y = -(k + 10 * (1 - q)) % 10;
+      return `<span style="display:inline-block;height:${h}em;overflow:hidden;vertical-align:top"><span style="display:block;transform:translateY(${(y * h).toFixed(3)}em)">${[0,1,2,3,4,5,6,7,8,9].map(d => `<span style="display:block;height:${h}em;line-height:${h}em">${d}</span>`).join('')}</span></span>`; }).join('');
+  /* 원형 게이지(SVG): 값% 까지 원호, 12시 시작 */
+  const gauge = (pct, p, r = 80, sw = 18, col = '#2563EB', bg = '#E6EAF0') => { const C = 2 * Math.PI * r, off = C * (1 - c(pct / 100) * E.outCubic(p)), w = 2 * (r + sw);
+      return `<svg width="${w}" height="${w}" viewBox="0 0 ${w} ${w}"><circle cx="${w / 2}" cy="${w / 2}" r="${r}" fill="none" stroke="${bg}" stroke-width="${sw}"/><circle cx="${w / 2}" cy="${w / 2}" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${w / 2} ${w / 2})"/></svg>`; };
+  /* 형광펜 밑줄: 강조 단어 뒤에 깔리는 띠(단어 등장 +0.15초) */
+  const marker = (p, col = 'rgba(255,212,59,.55)') => `<span style="position:absolute;left:-4%;right:-4%;bottom:6%;height:38%;background:${col};border-radius:6px;z-index:-1;transform:scaleX(${E.outCubic(p).toFixed(4)});transform-origin:left center"></span>`;
+  /* 어절 분할 등장: 문장을 어절마다 아래에서 올라오게(마스크) */
+  const words = (txt, p, step = .12, dur = .5) => String(txt).split(' ').map((w, i) => { const q = c((p * (1 + step * 8) - i * step) / dur);
+      return `<span style="display:inline-block;overflow:hidden;vertical-align:bottom;padding:0 .12em"><span style="display:inline-block;transform:translateY(${((1 - E.outCubic(q)) * 100).toFixed(1)}%);opacity:${c(q * 2).toFixed(3)}">${w}</span></span>`; }).join('');
+  /* 후속 동작: 사진 → 이름 → 기록 순 지연(초) */
+  const follow = (i, base = 0, gap = .1) => base + i * gap;
+  /* 순위 재정렬: 키로 짝지은 위·아래 보간 */
+  const reorder = (y0, y1, p) => y0 + (y1 - y0) * E.inOutCubic(p);
+  /* 펄스 고리(결론 숫자 뒤 한 번 퍼짐) */
+  const pulse = (p, color = 'rgba(37,99,235,.35)') => p <= 0 || p >= 1 ? '' : `<div style="position:absolute;left:50%;top:50%;width:100%;height:100%;transform:translate(-50%,-50%) scale(${(1 + .35 * E.outCubic(p)).toFixed(3)});border:6px solid ${color};border-radius:inherit;opacity:${(1 - p).toFixed(3)};pointer-events:none"></div>`;
+  /* 타이프라이터(인용문) */
+  const type = (txt, p) => { const a = [...String(txt)], n = Math.round(a.length * c(p)); return a.slice(0, n).join(''); };
+  return { E, css, stagger, count, sweep, draw, pulse, type, odo, gauge, marker, words, follow, reorder };
+})();
+/* 장면 전환(s.tr): 'fade'(기본, 기존 그대로) · 'slide'(새 장면이 오른쪽에서 밀고 들어옴) · 'zoom'(살짝 커지며 등장 — 확대 전환) · 'up'(아래에서 올라옴).
+   같은 chain 의 cont 장면(공유 요소 전환)에는 적용 안 함. render 끝에서 #body 에 transform 을 준다. */
+function MK_tr(s, t, start) {
+  const b = document.getElementById('body'); if (!b) return;
+  if (!s || s._keep || s._chain || !s.tr || s.tr === 'fade') return;   /* 기존 slide() 의 transform 은 건드리지 않는다 */
+  const p = c01((t - start) / .45), e = MK.E.outQuint(p); if (p >= 1) return;
+  const add = x => { b.style.transform = ((b.style.transform || '') + ' ' + x).trim(); };
+  add(s.tr === 'through' ? `scale(${(.92 + .08 * e).toFixed(4)})` : s.tr === 'slide' ? `translateX(${((1 - e) * 160).toFixed(1)}px)` : s.tr === 'zoom' ? `scale(${(.94 + .06 * e).toFixed(4)})` : s.tr === 'up' ? `translateY(${((1 - e) * 70).toFixed(1)}px)` : '');   /* through = 페이드 스루(주제 바뀜) */
+}
+/* @@MOTIONKITEND */
+
+/* @@PROB1101 11/1 롱폼㉟ 「한국시리즈 KT 우승 확률」 — 사용자 "텍스트로 떼우지 말고 모션그래픽·인포그래픽으로".
+   probcalc: 큰 확률 숫자 + 0~100% 막대 + 더하기/빼기 칩. 칩이 그 호흡에 튀어나오면 숫자와 막대가 그만큼 움직인다.
+     {title, base:81.8, baseLabel, team, chips:[{k:'90승 전력', d:3, at, team}], text, textAt}   — 칩 at<0 = 이미 나온 칩(움직임 없음)
+     같은 chain 의 cont 장면이면 앞 장면에 있던 칩은 그대로, 새 칩만 튀어나온다.
+   probpair: 두 갈래 결과 나란히. {title, items:[{team, label, v, at, hi}], text, textAt} */
+const TCOL_P = n => { const c = TEAMCOL[(T(n) || {}).code] || '#6A7382'; return c === '#4A4A4A' ? '#12161F' : c; };
+const LOGOI_P = (n, px) => { const c_ = (T(n) || {}).code; return LOGO[c_] ? `<img src="${LOGO[c_]}" style="width:${px}px;height:${px}px;object-fit:contain;display:block">` : ''; };
+SCENE.probcalc = (lt, s) => { const e3 = x => 1 - Math.pow(1 - c01(x), 3);
+  const ch = s.chips || [], P0 = s._same ? (s._prev.chips || []) : [], base = +s.base || 0;
+  const was = c => P0.some(o => o.k === c.k && o.d === c.d);
+  const pr = ch.map((c, i) => was(c) || (c.at != null && c.at < 0) ? 1 : pk(s, c.at, .7, seg(lt, .4 + i * .3, .7)));
+  let v = base; ch.forEach((c, i) => { v += c.d * e3(pr[i]); });
+  const W = 1400, BH = 64, col = s.team ? TCOL_P(s.team) : ACC, sameT = s._same && s._prev.title === s.title;
+  const bq = sameT ? 1 : seg(lt, .05, .5), nq = s._same || s.baseAt == null ? 1 : pk(s, s.baseAt, .5, 0);
+  let h = titleH(lt, s, 54, 14, sameT);
+  h += `<div class="col" style="align-items:center;gap:22px;${sameT ? '' : rise(bq, 26)}">
+    <div class="row" style="gap:22px;align-items:center;opacity:${nq.toFixed(3)}">${s.team ? LOGOI_P(s.team, 110) : ''}
+      <div class="num" style="font-size:200px;font-weight:900;letter-spacing:-6px;line-height:1;color:${col}">${v.toFixed(s.dec ?? 1)}<span style="font-size:96px;margin-left:6px">%</span></div></div>
+    ${s.baseLabel ? `<div style="opacity:${nq.toFixed(3)};font-size:36px;font-weight:800;color:${GRAY};white-space:nowrap">${esc(s.baseLabel)}</div>` : ''}
+    <div style="position:relative;width:${W}px;height:${BH}px;border-radius:${BH / 2}px;background:#E9EDF3;overflow:hidden">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:${(W * c01(v / 100)).toFixed(1)}px;border-radius:${BH / 2}px;background:linear-gradient(90deg, ${col}CC, ${col})"></div>
+      <div style="position:absolute;left:${(W * base / 100).toFixed(1)}px;top:-4px;width:6px;height:${BH + 8}px;background:#12161F;opacity:.55"></div></div>
+    <div class="row" style="width:${W}px;justify-content:space-between;font-size:30px;font-weight:800;color:#9AA3B2;margin-top:-10px"><span>0%</span><span>100%</span></div>
+  </div>`;
+  if (ch.length) h += `<div class="row" style="margin-top:20px;gap:18px;justify-content:center;flex-wrap:wrap;max-width:1700px">` + ch.map((c, i) => {
+      const p = pr[i], plus = c.d > 0, cc = plus ? GREEN : RED, sg = (plus ? '+' : '−') + Math.abs(c.d);
+      return `<div class="row" style="gap:14px;align-items:center;padding:12px 26px;border-radius:24px;background:#fff;border:5px solid ${cc};box-shadow:0 10px 24px rgba(18,22,31,.10);${pop(p)}">
+        ${c.team ? LOGOI_P(c.team, 54) : ''}<span style="font-size:40px;font-weight:900;letter-spacing:-1px;white-space:nowrap">${esc(c.k)}</span>
+        <span class="num" style="font-size:54px;font-weight:900;color:${cc};white-space:nowrap">${sg}</span></div>`; }).join('') + `</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:22px;font-size:${s.size || 64}px;${pop(pk(s, s.textAt, .5, 1))}">${br(s.text)}</div>`;
+  wrapC(h);
+};
+SCENE.probpair = (lt, s) => { const e3 = x => 1 - Math.pow(1 - c01(x), 3);
+  const it = s.items || [], W = 760;
+  let h = titleH(lt, s, 54, 18, s._same && s._prev.title === s.title);
+  h += `<div class="row" style="gap:70px;justify-content:center;align-items:stretch">` + it.map((x, i) => {
+    const q = (s._same || (x.at != null && x.at < 0)) ? 1 : pk(s, x.at, .8, seg(lt, .3 + i * .4, .8)), col = TCOL_P(s.team || x.team), v = (+x.v) * e3(q);
+    const hq = x.hi && !(s._same) ? c01((q - 1) * 0 + (lt - (x.at != null && x.at >= 0 ? 0 : 0)) * 0) : 0, hp = x.hi ? pk(s, (x.at != null && x.at >= 0 ? x.at : 0) + .9, .8, 0) : 0;   /* 11/1 움직임 사전: 강조 칸 = 광택 스윕 1회(숫자 다 올라간 뒤) */
+    return `<div class="pane col" style="position:relative;overflow:hidden;width:${W}px;border-radius:36px;padding:34px 30px;gap:18px;align-items:center;border:${x.hi ? 8 : 4}px solid ${x.hi ? col : LINE};${rise(c01(q * 2.5), 40)}">${x.hi ? MK.sweep(hp, 'rgba(37,99,235,.18)') : ''}
+      <div class="row" style="gap:16px;align-items:center"><span style="font-size:52px;font-weight:900;letter-spacing:-1.5px;white-space:nowrap">${esc(x.label || '')}</span></div>
+      <div class="num" style="position:relative;font-size:190px;font-weight:900;letter-spacing:-6px;line-height:1;color:${col}">${v.toFixed(s.dec ?? 1)}<span style="font-size:70px">%</span></div>
+      <div style="position:relative;width:${W - 80}px;height:40px;border-radius:20px;background:#E9EDF3;overflow:hidden"><div style="width:${((W - 80) * c01(v / 100)).toFixed(1)}px;height:40px;border-radius:20px;background:${col}"></div></div></div>`; }).join('') + `</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:30px;font-size:${s.size || 64}px;${pop(pk(s, s.textAt, .5, 1))}">${br(s.text)}</div>`;
+  wrapC(h);
+};
+Object.assign(MOTION, { probcalc: s => .6 + (s.chips || []).length * .3, probpair: () => 1.2 });
+/* @@PROB1101END */
+
+/* @@STYLE1101 11/1 롱폼㉟ — 사용자 "모션그래픽·인포그래픽·애니메이션 너무 같은 스타일로만 해서 식상해 — 다른 스타일로도, 전부 적절히 섞어서
+   지루하지 않고 직관적이고 한눈에". 새 장면 네 종류(같은 chain 의 cont 장면이면 사진·틀은 그대로, 새 요소만 뜬다):
+   hero  : 사진 중심 다큐 톤 — 흐린 같은 사진 배경 + 왼쪽 큰 인물 사진(천천히 확대) + 오른쪽 이름·큰 숫자 2~3개
+           {img, name, team, kicker, stats:[{k, v, at, hi}], quote:{t, at}, stamp:{t, at}, focus}
+   board : 야구장 전광판(검은 LED 판·점 무늬·호박색 숫자) — 큰 점수 한 줄 + 표 한 줄
+           {title, big:{l:{team, v}, r:{team, v}, at, note}, cols:[..], rows:[{k, cells:[{t, team, at}]}], foot:{t, at}}
+   clip  : 신문 스크랩 — 종이 조각이 기울어 떨어지며 붙는다(제목·날짜·짧은 본문·흑백 사진·따옴표 발언)
+           {clips:[{date, head, body, quote, img, name, src, at, rot}]}
+   chalk : 감독 작전판 — 짙은 초록 칠판에 분필 글씨가 왼쪽부터 써진다(계산·예상)
+           {title, lines:[{t, at, c:'w'|'y'|'g'|'r', size, ind, rule}], circle:{line, at}} */
+(() => {
+  const e3 = x => 1 - Math.pow(1 - c01(x), 3);
+  const TC_ = n => { const c = TEAMCOL[(T(n) || {}).code] || '#6A7382'; return c === '#4A4A4A' ? '#12161F' : c; };
+  const LG_ = (n, px, st = '') => { const c_ = (T(n) || {}).code; return LOGO[c_] ? `<img src="${LOGO[c_]}" style="width:${px}px;height:${px}px;object-fit:contain;display:block;${st}">` : ''; };
+  const AT = (s, at, d, fb) => (at != null && at < 0) ? 1 : (at != null && at >= 50) ? 0 : pk(s, at, d, fb);
+  const wasIn = (s, key, x, keyf) => s._same && ((s._prev[key] || []).some(o => keyf(o) === keyf(x)));
+
+  /* ── hero ── */
+  SCENE.hero = (lt, s) => {
+    const src = photoSrc(s.img), K = s._same, W = 1808, H = 700, PW = 760;
+    const zin = K ? 1 : e3(seg(lt, 0, .6)), pim = (K || s.imgAt == null) ? 1 : c01(AT(s, s.imgAt, .5, 0) * 1.4), zoom = 1;   /* 11/1 사용자 "갈수록 사진 크기가 바뀌는 게 안 바뀌게" — 천천히 확대 없앰 */
+    const tc = TC_(s.team || 'KT');
+    const sts = s.stats || [];
+    const statH = sts.map((x, i) => {
+      const p = wasIn(s, 'stats', x, o => o.k + '|' + o.v) ? 1 : AT(s, x.at, .55, seg(lt, .5 + i * .3, .55));
+      return `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;opacity:${c01(p * 1.6).toFixed(3)};transform:translateX(${((1 - e3(p)) * 60).toFixed(1)}px)">
+        <div style="font-size:34px;font-weight:800;color:#AEB8C8;letter-spacing:-.5px;white-space:nowrap">${esc(x.k)}</div>
+        <div class="num" style="font-size:${x.size || 104}px;font-weight:900;line-height:1;letter-spacing:-3px;white-space:nowrap;color:${x.hi ? '#FFD43B' : '#fff'}">${esc(x.v)}</div></div>`; }).join('');
+    const q = s.quote ? AT(s, s.quote.at, .6, seg(lt, .8, .6)) : 0;
+    const sp = s.stamp ? AT(s, s.stamp.at, .45, seg(lt, 1, .45)) : 0;
+    const h = `<div style="position:relative;width:${W}px;height:${H}px;border-radius:36px;overflow:hidden;background:#0E1219;box-shadow:0 30px 60px rgba(10,14,24,.35);opacity:${zin.toFixed(3)}">
+      ${src ? `<img src="${src}" style="position:absolute;inset:-40px;width:calc(100% + 80px);height:calc(100% + 80px);object-fit:cover;filter:blur(28px) brightness(.38) saturate(1.2)">` : ''}
+      <div style="position:absolute;inset:0;background:linear-gradient(90deg, rgba(14,18,25,0) 30%, rgba(14,18,25,.75) 62%, rgba(14,18,25,.92))"></div>
+      <div style="position:absolute;left:0;top:0;width:${PW}px;height:${H}px;overflow:hidden;opacity:${pim.toFixed(3)}">${src ? `<img src="${src}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:${esc(s.focus || '50% 18%')};transform:scale(${zoom.toFixed(4)});transform-origin:50% 30%">` : ''}
+        <div style="position:absolute;inset:0;background:linear-gradient(90deg, rgba(14,18,25,0) 70%, rgba(14,18,25,.9))"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;height:160px;background:linear-gradient(180deg, rgba(14,18,25,0), rgba(14,18,25,.85))"></div></div>
+      <div style="position:absolute;left:0;top:0;width:12px;height:${H}px;background:${tc}"></div>
+      <div style="position:absolute;left:${PW + 40}px;top:56px;right:56px;display:flex;flex-direction:column;align-items:flex-start;gap:26px;text-align:left">
+        <div style="display:flex;align-items:center;gap:16px">${s.kicker ? `<span style="font-size:34px;font-weight:800;color:#fff;background:${tc};padding:6px 20px;border-radius:12px;white-space:nowrap">${esc(s.kicker)}</span>` : ''}</div>
+        <div style="font-size:112px;font-weight:900;color:#fff;letter-spacing:-4px;line-height:1;opacity:${pim.toFixed(3)}">${esc(s.name || '')}</div>
+        <div style="display:flex;gap:64px;align-items:flex-end;flex-wrap:wrap;margin-top:6px">${statH}</div>
+        ${s.quote ? `<div style="max-width:880px;font-size:50px;font-weight:800;color:#FFE8A3;line-height:1.3;letter-spacing:-1px;opacity:${c01(q * 1.5).toFixed(3)};transform:translateY(${((1 - e3(q)) * 24).toFixed(1)}px)">${br(s.quote.t)}</div>` : ''}
+      </div>
+      ${s.stamp ? `<div style="position:absolute;right:56px;bottom:52px;border:6px solid #FFD43B;color:#FFD43B;border-radius:16px;padding:6px 22px;font-size:46px;font-weight:900;white-space:nowrap;transform:rotate(-4deg) scale(${sp <= 0 ? 1.5 : (1.5 - .5 * e3(sp)).toFixed(3)});opacity:${c01(sp * 2).toFixed(3)}">${esc(s.stamp.t)}</div>` : ''}
+    </div>`;
+    B(h);
+  };
+
+  /* ── board (전광판) ── */
+  SCENE.board = (lt, s) => {
+    const K = s._same, AMB = '#FFB020', W = 1640;
+    const led = `background-color:#07090D;background-image:radial-gradient(rgba(255,255,255,.07) 1.4px, transparent 1.6px);background-size:9px 9px`;
+    const glow = c => `color:${c};text-shadow:0 0 14px ${c}AA, 0 0 2px ${c}`;
+    const pin = K ? 1 : e3(seg(lt, 0, .45));
+    let inner = '';
+    if (s.big) {
+      const p = K && s._prev.big && JSON.stringify(s._prev.big) === JSON.stringify(s.big) ? 1 : AT(s, s.big.at, .6, seg(lt, .3, .6));
+      const side = (x, al) => `<div style="display:flex;align-items:center;gap:26px;flex-direction:${al === 'r' ? 'row-reverse' : 'row'}">
+          <div style="font-size:84px;font-weight:900;${glow('#fff')};white-space:nowrap">${esc(x.label || x.team)}</div></div>`;
+      const roll = v => { const n = parseFloat(v); if (isNaN(n) || String(v).match(/[^\d.]/)) return esc(v); if (p <= 0) return '–'; return String(Math.round(n * e3(p))); };
+      const bv = s.big.at != null && s.big.at >= 50 ? 0 : 1;
+      inner += `<div style="display:flex;align-items:center;justify-content:space-between;width:${W - 120}px;margin:10px 0 6px;opacity:${bv}">
+          ${side(s.big.l, 'l')}
+          <div class="num" style="display:flex;align-items:center;gap:30px;font-size:190px;font-weight:900;line-height:1;${glow(AMB)}">
+            <span>${roll(s.big.l.v)}</span><span style="font-size:120px;opacity:.7">:</span><span>${roll(s.big.r.v)}</span></div>
+          ${side(s.big.r, 'r')}</div>`;
+      if (s.big.note) inner += `<div style="font-size:44px;font-weight:800;${glow('#7CF29A')};opacity:${c01(p * 1.5).toFixed(3)};white-space:nowrap">${esc(s.big.note)}</div>`;
+    }
+    if (s.cols && s.cols.length) {
+      const cw = Math.floor((W - 380) / s.cols.length);
+      inner += `<div style="display:flex;flex-direction:column;gap:8px;margin-top:${s.big ? 26 : 6}px;border-top:3px solid rgba(255,176,32,.35);padding-top:20px">
+        <div style="display:flex"><div style="width:300px"></div>${s.cols.map(c => `<div style="width:${cw}px;text-align:center;font-size:40px;font-weight:800;${glow('#C9D3E3')};white-space:nowrap">${esc(c)}</div>`).join('')}</div>` +
+        (s.rows || []).map(r => `<div style="display:flex;align-items:center;height:${s.big ? 110 : 150}px">
+          <div style="width:300px;text-align:left;font-size:46px;font-weight:900;${glow('#fff')};white-space:nowrap">${esc(r.k || '')}</div>
+          ${(r.cells || []).map((c, j) => { const pv = K ? (((s._prev.rows || [])[0] || {}).cells || [])[j] : null, same = pv && pv.t === c.t && pv.team === c.team;
+            const p = same ? 1 : AT(s, c.at, .4, seg(lt, .4 + j * .15, .4)), col = c.team ? TC_(c.team) : AMB;
+            return `<div style="width:${cw}px;display:flex;justify-content:center">${c.team && LOGO[(T(c.team) || {}).code]
+              ? `<div style="width:${s.big ? 96 : 128}px;height:${s.big ? 96 : 128}px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 12px ${col});opacity:${c01(p * 1.6).toFixed(3)};transform:scale(${(.6 + .4 * eb(p)).toFixed(3)})">${LG_(c.team, s.big ? 74 : 100)}</div>`
+              : `<div class="num" style="font-size:${s.big ? 64 : 84}px;font-weight:900;${glow(c.c || AMB)};opacity:${c01(p * 1.6).toFixed(3)}">${esc(c.t || '')}</div>`}</div>`; }).join('')}</div>`).join('') + `</div>`;
+    }
+    if (s.foot) { const p = K && s._prev.foot && s._prev.foot.t === s.foot.t ? 1 : AT(s, s.foot.at, .5, seg(lt, 1, .5));
+      inner += `<div style="margin-top:18px;font-size:50px;font-weight:900;${glow('#7CF29A')};opacity:${c01(p * 1.6).toFixed(3)};white-space:nowrap">${esc(s.foot.t)}</div>`; }
+    const h = `<div style="position:relative;width:${W}px;padding:28px 60px 36px;border-radius:26px;${led};border:10px solid #23272F;box-shadow:0 0 0 4px #3A3F48, 0 30px 60px rgba(10,14,24,.4);display:flex;flex-direction:column;align-items:center;opacity:${pin.toFixed(3)};transform:translateY(${((1 - pin) * 30).toFixed(1)}px)">
+        ${s.title ? `<div style="align-self:stretch;display:flex;justify-content:center;border-bottom:3px solid rgba(255,176,32,.35);padding-bottom:14px;margin-bottom:10px;font-size:48px;font-weight:900;${glow(AMB)};letter-spacing:2px;white-space:nowrap">${esc(s.title)}</div>` : ''}
+        ${inner}</div>`;
+    B(h);
+  };
+
+  /* ── clip (신문 스크랩) ── */
+  SCENE.clip = (lt, s) => {
+    const cs = s.clips || [], n = cs.length, CW = n >= 2 ? 820 : 1180;
+    const one = (c, i) => {
+      const p = wasIn(s, 'clips', c, o => o.head + '|' + (o.quote || '')) ? 1 : AT(s, c.at, .55, seg(lt, .2 + i * .4, .55));
+      const src = photoSrc(c.img), rot = c.rot != null ? c.rot : (i % 2 ? 1.6 : -1.8);
+      const paper = `background:#F4EEE1;background-image:linear-gradient(rgba(60,50,30,.05) 1px, transparent 1px);background-size:100% 46px`;
+      return `<div style="position:relative;width:${CW}px;flex:0 0 auto;padding:36px 44px 42px;${paper};border-radius:6px;box-shadow:0 22px 44px rgba(20,16,8,.28);text-align:left;
+          opacity:${c01(p * 2).toFixed(3)};transform:translateY(${((1 - e3(p)) * -70).toFixed(1)}px) rotate(${(rot * (1 + (1 - e3(p)) * 2)).toFixed(2)}deg);clip-path:polygon(0 1%,4% 0,9% 1.2%,15% .2%,22% 1%,30% 0,38% 1.3%,47% .3%,55% 1%,64% 0,72% 1.1%,81% .2%,89% 1.2%,96% 0,100% 1%,100% 99%,95% 100%,88% 98.8%,80% 99.8%,71% 98.9%,62% 100%,53% 99%,44% 99.9%,35% 98.8%,26% 99.8%,17% 99%,9% 100%,3% 98.9%,0 99.6%)">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:4px double #2A2418;padding-bottom:8px;margin-bottom:20px;font-size:34px;font-weight:800;color:#5A4E38">
+          <span>${esc(c.date || '')}</span><span>${esc(c.src || '')}</span></div>
+        <div style="display:flex;gap:26px;align-items:flex-start">
+          ${src ? `<div style="flex:0 0 auto;width:${n >= 2 ? 250 : 340}px">
+              <div style="position:relative;width:100%;height:${n >= 2 ? 320 : 430}px;overflow:hidden;border:3px solid #2A2418">${faceImg(src, c, '50% 15%').replace('object-fit:cover', 'object-fit:cover;filter:grayscale(1) contrast(1.15) sepia(.18)')}</div>
+              ${c.name ? `<div style="margin-top:8px;font-size:36px;font-weight:900;color:#2A2418;text-align:center">${esc(c.name)}</div>` : ''}</div>` : ''}
+          <div style="flex:1;display:flex;flex-direction:column;gap:14px;min-width:0">
+            <div style="font-size:${c.hsize || (n >= 2 ? 64 : 84)}px;font-weight:900;color:#17130B;line-height:1.16;letter-spacing:-2px;word-break:keep-all">${br(c.head)}</div>
+            ${c.body ? `<div style="font-size:${n >= 2 ? 38 : 46}px;font-weight:600;color:#3D3524;line-height:1.4;word-break:keep-all">${br(c.body)}</div>` : ''}
+            ${c.quote ? `<div style="position:relative;margin-top:6px;padding-left:58px;font-size:${n >= 2 ? 50 : 64}px;font-weight:900;color:#8A1F11;line-height:1.3;word-break:keep-all"><span style="position:absolute;left:0;top:-18px;font-size:110px;line-height:1;color:#C8B48A">“</span>${br(c.quote)}</div>` : ''}
+          </div></div></div>`; };
+    B(`<div style="display:flex;gap:${n >= 2 ? 46 : 0}px;align-items:center;justify-content:center;width:1760px;height:690px">${cs.map(one).join('')}</div>`);
+  };
+
+  /* ── chalk (작전판) ── */
+  SCENE.chalk = (lt, s) => {
+    const L = s.lines || [], K = s._same, W = 1640, H = 690;
+    const COL = { w: '#F3F4EE', y: '#FFE27A', g: '#9EF0B0', r: '#FF9C8F', b: '#9CD3FF' };
+    const done = (x, i) => K && (s._prev.lines || []).some(o => o.t === x.t && (o.ind || 0) === (x.ind || 0));
+    let rows = '';
+    L.forEach((x, i) => {
+      const p = done(x, i) ? 1 : AT(s, x.at, .7, seg(lt, .3 + i * .35, .7)), col = COL[x.c || 'w'] || x.c, fs = x.size || (x.big ? 104 : 62);
+      const tilt = ((i * 37) % 7 - 3) * .25;
+      rows += `<div style="position:relative;align-self:${x.center ? 'center' : 'flex-start'};margin-left:${(x.ind || 0) * 70}px;transform:rotate(${tilt}deg)">
+        <div style="font-size:${fs}px;font-weight:900;color:${col};letter-spacing:${x.big ? -2 : 0}px;line-height:1.12;white-space:nowrap;
+          text-shadow:0 0 1px ${col}, 1px 1px 0 rgba(255,255,255,.12), 0 0 8px rgba(255,255,255,.18);opacity:.95;
+          clip-path:inset(-20px ${(100 - 100 * c01(p)).toFixed(1)}% -20px -20px)">${esc(x.t)}</div>
+        ${x.rule ? `<div style="height:5px;margin-top:8px;border-radius:3px;background:${COL.w};opacity:.75;width:${(100 * c01((p - .5) * 2)).toFixed(1)}%"></div>` : ''}</div>`;
+    });
+    let circ = '';
+    if (s.circle) { const p = K && s._prev.circle && s._prev.circle.line === s.circle.line ? 1 : AT(s, s.circle.at, .7, 0);
+      circ = `<svg width="${W}" height="${H}" style="position:absolute;left:0;top:0;pointer-events:none;overflow:visible"><ellipse cx="${s.circle.x || W / 2}" cy="${s.circle.y || H - 120}" rx="${s.circle.rx || 360}" ry="${s.circle.ry || 90}" fill="none" stroke="#FFE27A" stroke-width="7" stroke-linecap="round"
+        stroke-dasharray="2400" stroke-dashoffset="${(2400 * (1 - e3(p))).toFixed(0)}" transform="rotate(-3 ${s.circle.x || W / 2} ${s.circle.y || H - 120})" opacity=".9"/></svg>`; }
+    let tot = '';
+    if (s.total) { const pv = K && s._prev.total ? s._prev.total.v : null, same = pv === s.total.v, p = same ? 1 : AT(s, s.total.at, .7, 0);
+      const big = (v, op, clip, rot) => `<div class="num" style="position:absolute;right:70px;top:${s.title ? 120 : 60}px;font-size:170px;font-weight:900;color:#FFE27A;letter-spacing:-5px;line-height:1;white-space:nowrap;opacity:${op};transform:rotate(${rot}deg);text-shadow:0 0 2px #FFE27A, 0 0 12px rgba(255,226,122,.35);clip-path:inset(-30px ${clip}% -30px -30px)">${esc(v)}</div>`;
+      if (pv && !same) tot += big(pv, (1 - c01(p * 2.2)).toFixed(3), 0, -2);
+      tot += big(s.total.v, (p > 0 ? .97 : 0), (100 - 100 * c01(p)).toFixed(1), -2);
+      if (s.total.k) tot += `<div style="position:absolute;right:76px;top:${(s.title ? 120 : 60) + 180}px;font-size:40px;font-weight:900;color:#F3F4EE;opacity:${(.85 * c01(Math.max(p, same ? 1 : 0) * 2)).toFixed(3)};white-space:nowrap">${esc(s.total.k)}</div>`; }
+    const logo = s.logo ? `<div style="position:absolute;right:46px;top:24px;width:86px;height:86px;border-radius:18px;background:#F3F4EE;display:flex;align-items:center;justify-content:center;opacity:.95">${LG_(s.logo, 70)}</div>` : '';
+    const pin = K ? 1 : e3(seg(lt, 0, .4));
+    B(`<div style="position:relative;width:${W}px;height:${H}px;border-radius:22px;border:22px solid #6B4A2B;box-shadow:inset 0 0 0 4px #4A321C, 0 26px 50px rgba(10,14,24,.35);
+        background:radial-gradient(ellipse at 30% 20%, #2F5A45 0%, #234836 55%, #1B3A2B 100%);overflow:hidden;opacity:${pin.toFixed(3)}">
+        <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.035) 1px, transparent 1.5px);background-size:7px 7px"></div>
+        ${s.title ? `<div style="position:absolute;left:46px;top:30px;font-size:46px;font-weight:900;color:#F3F4EE;opacity:.9;border-bottom:4px solid rgba(243,244,238,.6);padding-bottom:6px;white-space:nowrap">${esc(s.title)}</div>` : ''}
+        <div style="position:absolute;left:70px;right:70px;top:${s.title ? 118 : 50}px;bottom:40px;display:flex;flex-direction:column;justify-content:center;gap:${s.gap || 14}px">${rows}</div>
+        ${tot}${logo}
+        ${circ}
+        <div style="position:absolute;right:40px;bottom:18px;width:120px;height:26px;border-radius:6px;background:#E9E6DD;opacity:.85;transform:rotate(-6deg)"></div></div>`);
+  };
+  Object.assign(MOTION, { hero: () => 1.0, board: () => 1.0, clip: s => .7 + (s.clips || []).length * .4, chalk: s => .6 + (s.lines || []).length * .35 });
+})();
+/* @@STYLE1101END */
+/* @@WATER1101 11/1 02:48 사용자 "텍스트만 있는 것들이 잘 읽히지 않으니 그래픽으로 설명하라"(작전판 글씨 계산 화면) →
+   water: 확률 계단 막대(폭포 차트). 출발 막대 → 더하기(초록 계단 위로)·빼기(빨강 계단 아래로) → 마지막 막대. 칸 자리는 처음부터 고정(아직 안 나온 칸은 at 50).
+   {title, min, max, base:{v, k, at}, steps:[{k, d, at, team}], end:{v, k, at}, team} */
+(() => {
+  const e3 = x => 1 - Math.pow(1 - c01(x), 3);
+  const TC_ = n => { const c = TEAMCOL[(T(n) || {}).code] || '#6A7382'; return c === '#4A4A4A' ? '#12161F' : c; };
+  const LG_ = (n, px) => { const c_ = (T(n) || {}).code; return LOGO[c_] ? `<img src="${LOGO[c_]}" style="width:${px}px;height:${px}px;object-fit:contain;display:block">` : ''; };
+  const AT = (s, at, d, fb) => (at != null && at < 0) ? 1 : (at != null && at >= 50) ? 0 : pk(s, at, d, fb);
+  SCENE.water = (lt, s) => {
+    const K = s._same, st = s.steps || [], n = st.length + 2, W = 1640, H = 470, MIN = s.min ?? 70, MAX = s.max ?? 92;
+    const y = v => H - (v - MIN) / (MAX - MIN) * H, CW = W / n, BW = Math.min(150, CW * .62), tc = TC_(s.team || 'KT');
+    const prevSt = K ? (s._prev.steps || []) : [];
+    const pOf = (x, i, key) => { if (K && key === 'base' && s._prev.base && s._prev.base.at != null && AT(s._prev, s._prev.base.at, .1, 1) >= 0 && (s._prev.base.at < 50)) return 1;
+      return AT(s, x.at, .7, 0); };
+    let svg = '', lab = '', run = s.base.v;
+    const pb = K && s._prev.base && s._prev.base.at < 50 ? 1 : AT(s, s.base.at, .7, seg(lt, .2, .7));
+    const col = (i, top, bot, c, p, txt, big) => { const x = CW * i + (CW - BW) / 2, h = (bot - top) * e3(p);
+      svg += `<rect x="${x.toFixed(1)}" y="${(bot - h).toFixed(1)}" width="${BW.toFixed(1)}" height="${Math.max(0, h).toFixed(1)}" rx="10" fill="${c}"/>`;
+      if (txt) lab += `<div class="num" style="position:absolute;left:${(CW * i).toFixed(1)}px;width:${CW.toFixed(1)}px;top:${(top - (big ? 92 : 64)).toFixed(1)}px;text-align:center;font-size:${big ? 76 : 54}px;font-weight:900;letter-spacing:-2px;color:${big ? c : (c === '#1F9D55' ? '#1F9D55' : '#E5484D')};opacity:${c01(p * 1.6).toFixed(3)};white-space:nowrap">${esc(txt)}</div>`; };
+    col(0, y(s.base.v), H, '#9AA3B2', pb, s.base.v.toFixed(s.dec ?? 1) + '%', true);
+    const foot = (i, k, team, p) => `<div style="position:absolute;left:${(CW * i).toFixed(1)}px;width:${CW.toFixed(1)}px;top:${H + 18}px;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:${c01(p * 1.6).toFixed(3)}">
+        <div style="font-size:38px;font-weight:900;color:#12161F;line-height:1.15;text-align:center;word-break:keep-all">${br(k)}</div></div>`;
+    lab += foot(0, s.base.k || '출발점', s.base.team || '', pb);
+    st.forEach((x, i) => {
+      const was = prevSt.some(o => o.k === x.k && o.d === x.d && o.at != null && o.at < 50);
+      const p = was ? 1 : AT(s, x.at, .7, 0), a = run, b = run + x.d, up = x.d > 0, c = up ? '#1F9D55' : '#E5484D';
+      const top = y(Math.max(a, b)), bot = y(Math.min(a, b)), xx = CW * (i + 1) + (CW - BW) / 2;
+      /* 계단 잇는 점선 */
+      svg += `<line x1="${(CW * i + (CW + BW) / 2).toFixed(1)}" x2="${xx.toFixed(1)}" y1="${y(a).toFixed(1)}" y2="${y(a).toFixed(1)}" stroke="#AAB2BF" stroke-width="3" stroke-dasharray="8 7" opacity="${c01(p * 2).toFixed(3)}"/>`;
+      const h = (bot - top) * e3(p), ry = up ? bot - h : top;
+      svg += `<rect x="${xx.toFixed(1)}" y="${ry.toFixed(1)}" width="${BW.toFixed(1)}" height="${Math.max(0, h).toFixed(1)}" rx="8" fill="${c}"/>`;
+      lab += `<div class="num" style="position:absolute;left:${(CW * (i + 1)).toFixed(1)}px;width:${CW.toFixed(1)}px;top:${(up ? top - 66 : bot + 6).toFixed(1)}px;text-align:center;font-size:54px;font-weight:900;color:${c};opacity:${c01(p * 1.6).toFixed(3)}">${up ? '+' : '−'}${Math.abs(x.d)}</div>`;
+      if (x.tot) lab += `<div class="num" style="position:absolute;left:${(CW * (i + 1)).toFixed(1)}px;width:${CW.toFixed(1)}px;top:${(up ? top - 116 : bot + 58).toFixed(1)}px;text-align:center;font-size:38px;font-weight:900;color:#3B4A63;opacity:${(x.totAt != null ? (was ? 1 : c01(AT(s, x.totAt, .5, 0) * 1.6)) : c01((p - .5) * 3)).toFixed(3)}">${esc(x.tot)}</div>`;
+      lab += foot(i + 1, x.k, x.team || '', x.kAt != null ? (was ? 1 : AT(s, x.kAt, .5, 0)) : p);
+      run = b;
+    });
+    if (s.end) { const pe = K && s._prev.end && s._prev.end.at < 50 && s._prev.end.v === s.end.v ? 1 : AT(s, s.end.at, .7, 0), i = n - 1, xx = CW * i + (CW - BW) / 2;
+      svg += `<line x1="${(CW * (i - 1) + (CW + BW) / 2).toFixed(1)}" x2="${xx.toFixed(1)}" y1="${y(run).toFixed(1)}" y2="${y(run).toFixed(1)}" stroke="#AAB2BF" stroke-width="3" stroke-dasharray="8 7" opacity="${c01(pe * 2).toFixed(3)}"/>`;
+      col(i, y(s.end.v), H, tc, pe, s.end.v.toFixed(s.dec ?? 1) + '%', true);
+      lab += foot(i, s.end.k || '결과', s.end.team || s.team || '', pe); }
+    const grid = [MIN, (MIN + MAX) / 2, MAX].map(v => `<line x1="0" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="#E3E7EE" stroke-width="2"/>`).join('');
+    const ttl = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:18px;${K && s._prev.title === s.title ? '' : pop(seg(lt, 0, .4))}">${esc(s.title)}</div>` : '';
+    B(`<div class="col" style="align-items:center">${ttl}<div style="position:relative;width:${W}px;height:${H + 170}px;margin-top:80px">
+        <svg width="${W}" height="${H}" style="position:absolute;left:0;top:0;overflow:visible">${grid}<line x1="0" x2="${W}" y1="${H}" y2="${H}" stroke="#12161F" stroke-width="4"/>${svg}</svg>${lab}</div></div>`);
+  };
+  Object.assign(MOTION, { water: s => .8 + (s.steps || []).length * .3 });
+})();
+/* @@WATER1101END */
+
+/* @@SCORE1101 11/1 롱폼㉟ — 사용자 "요소 엄청 많이 고려해서 분석가처럼". 항목별 점수판(줄다리기).
+   scorecard: {title, l:'KT', r:'삼성', rows:[{k, w:'L'|'R', at}], tally:{at}, base:{v, at}, res:{v, at}}
+   - 줄은 말하는 순간 뜬다(at). 자리는 처음부터 잡아 두어 줄이 밀리지 않는다.
+   - 가운데 항목 이름, 앞선 쪽으로 구단 색 막대가 뻗는다. 같은 chain 의 cont 장면이면 이미 뜬 줄은 그대로.
+   - tally(몇 대 몇)·base→res(확률)는 말하는 순간에만 뜬다. */
+(() => {
+  const e3 = x => 1 - Math.pow(1 - c01(x), 3);
+  const TC_ = n => { const c = TEAMCOL[(T(n) || {}).code] || '#6A7382'; return c === '#4A4A4A' ? '#12161F' : c; };
+  const AT = (s, at, d, fb) => (at != null && at < 0) ? 1 : (at != null && at >= 50) ? 0 : pk(s, at, d, fb);
+  SCENE.scorecard = (lt, s) => {
+    const K = s._same, rows = s.rows || [], n = rows.length, W = 1640, RH = 74, LW = 420;
+    const cl = TC_(s.l), cr = TC_(s.r);
+    const pr = rows.map(x => AT(s, x.at, .55, 0));
+    const tq = s.tally ? AT(s, s.tally.at, .5, 0) : 0;
+    const nl = rows.filter((x, i) => x.w === 'L' && pr[i] > .5).length, nr = rows.filter((x, i) => x.w === 'R' && pr[i] > .5).length;
+    let h = '';
+    const head = `<div class="row" style="width:${W}px;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="width:${LW}px;text-align:left;font-size:96px;font-weight:900;letter-spacing:-2px;color:${cl}">${esc(s.l)}</div>
+      <div class="col" style="align-items:center;gap:0"><div style="font-size:44px;font-weight:900;color:#5F6B80;letter-spacing:-1px;white-space:nowrap">${esc(s.title || '')}</div>
+        <div class="num" style="height:84px;line-height:84px;font-size:80px;font-weight:900;letter-spacing:-2px;color:#12161F;opacity:${c01(tq * 1.6).toFixed(3)};transform:scale(${(1.25 - .25 * e3(tq)).toFixed(3)})">${nl}<span style="color:#9AA3B2;margin:0 18px">:</span>${nr}</div></div>
+      <div style="width:${LW}px;text-align:right;font-size:96px;font-weight:900;letter-spacing:-2px;color:${cr}">${esc(s.r)}</div></div>`;
+    const CW = 780, PH = 92;
+    const col_ = side => rows.map((x, i) => [x, i]).filter(([x]) => x.w === side).map(([x, i]) => {
+      const p = pr[i], c = side === 'L' ? cl : cr;
+      return `<div style="width:${CW}px;height:${PH - 14}px;margin-bottom:14px;border-radius:22px;background:#fff;border:5px solid ${p > .5 ? c : LINE};box-shadow:0 8px 20px rgba(18,22,31,.08);display:flex;align-items:center;gap:22px;padding:0 30px;box-sizing:border-box;flex-direction:${side === 'L' ? 'row' : 'row-reverse'};opacity:${c01(p * 2).toFixed(3)};transform:translateX(${((1 - e3(p)) * (side === 'L' ? -60 : 60)).toFixed(1)}px)">
+        <div style="flex:0 0 auto;width:48px;height:48px;border-radius:50%;background:${c};color:#fff;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900">✓</div>
+        <div style="font-size:52px;font-weight:900;letter-spacing:-1.5px;white-space:nowrap;color:#12161F">${esc(x.k)}</div></div>`; }).join('');
+    const body = `<div class="row" style="width:${W}px;justify-content:space-between;align-items:flex-start;gap:40px">
+      <div class="col" style="align-items:flex-start">${col_('L')}</div><div class="col" style="align-items:flex-end">${col_('R')}</div></div>`;
+    h += `<div class="col" style="align-items:center;gap:4px;${K ? '' : rise(seg(lt, 0, .45), 24)}">${head}${body}</div>`;
+    if (s.base && s.res) {
+      const bq = AT(s, s.base.at, .5, 0), rq = AT(s, s.res.at, .6, 0), d = (+s.res.v) - (+s.base.v), v = (+s.base.v) + d * e3(rq), dc = d >= 0 ? GREEN : RED;
+      h += `<div class="row" style="margin-top:8px;gap:30px;align-items:center;height:120px;opacity:${c01(bq * 2).toFixed(3)}">
+        <div class="num" style="font-size:64px;font-weight:900;color:#9AA3B2">${(+s.base.v).toFixed(0)}%</div>
+        <div style="font-size:54px;font-weight:900;color:${dc};opacity:${c01(rq * 2).toFixed(3)}">${d >= 0 ? '+' : '−'}${Math.abs(d)}</div>
+        <div style="font-size:54px;font-weight:900;color:#9AA3B2;opacity:${c01(rq * 2).toFixed(3)}">→</div>
+        <div class="num" style="font-size:110px;font-weight:900;letter-spacing:-3px;color:${cl};opacity:${c01(rq * 2).toFixed(3)}">${v.toFixed(0)}%</div></div>`;
+    }
+    wrapC(h);
+  };
+  Object.assign(MOTION, { scorecard: s => .6 + (s.rows || []).length * .2 });
+})();
+/* @@SCORE1101END */
+
+/* @@MATCH1101 11/1 롱폼㉟ — 분석가 검수 "±2점 대신 1~7차전 선발 매치업 표로". 차전별 선발 맞대기 + 판정 칩 → 7전 4선승 확률.
+   matchtbl: {l:'KT', r:'삼성', title, rows:[{g:'1차전', v:'수원', L:{name, img}, R:{name, img}, verdict:'L'|'E'|'R', at, vAt}], res:{t, v, at}}
+   - 줄은 at 에 뜨고, 판정 칩은 vAt(없으면 at)에 찍힌다. 같은 chain 의 cont 장면이면 이미 뜬 줄·칩은 그대로. */
+(() => {
+  const e3 = x => 1 - Math.pow(1 - c01(x), 3);
+  const TC_ = n => { const c = TEAMCOL[(T(n) || {}).code] || '#6A7382'; return c === '#4A4A4A' ? '#12161F' : c; };
+  const AT = (s, at, d, fb) => (at != null && at < 0) ? 1 : (at != null && at >= 50) ? 0 : pk(s, at, d, fb);
+  const AV = (x, side, col) => {
+    const src = x && x.img ? photoSrc(x.img) : null;
+    const pic = src ? `<div style="width:76px;height:76px;border-radius:50%;overflow:hidden;flex:0 0 auto;border:4px solid ${col};box-sizing:border-box;background:#E9EDF3"><img src="${src}" style="width:100%;height:100%;object-fit:cover;object-position:50% 15%"></div>`
+                    : `<div style="width:76px;height:76px;border-radius:50%;flex:0 0 auto;border:4px dashed #B8C0CC;box-sizing:border-box"></div>`;
+    return `<div style="display:flex;align-items:center;gap:16px;flex-direction:${side === 'L' ? 'row' : 'row-reverse'};width:430px">${pic}
+      <div style="font-size:50px;font-weight:900;letter-spacing:-1.5px;white-space:nowrap;color:${x && x.img ? '#12161F' : '#8A93A3'}">${esc((x && x.name) || '')}</div></div>`;
+  };
+  SCENE.matchtbl = (lt, s) => {
+    const K = s._same, rows = s.rows || [], cl = TC_(s.l), cr = TC_(s.r), RH = 96, W = 1680;
+    let h = `<div class="row" style="width:${W}px;justify-content:space-between;align-items:flex-end;margin-bottom:8px">
+      <div style="width:520px;text-align:left;font-size:80px;font-weight:900;letter-spacing:-2px;color:${cl}">${esc(s.l)}</div>
+      <div style="font-size:44px;font-weight:900;color:#5F6B80;letter-spacing:-1px;white-space:nowrap;padding-bottom:12px">${esc(s.title || '')}</div>
+      <div style="width:520px;text-align:right;font-size:80px;font-weight:900;letter-spacing:-2px;color:${cr}">${esc(s.r)}</div></div>`;
+    h += rows.map(x => {
+      const p = AT(s, x.at, .5, 0), q = AT(s, x.vAt != null ? x.vAt : x.at, .45, 0);
+      const vc = x.pct != null ? (x.pct > 50 ? cl : x.pct < 50 ? cr : '#8A93A3') : x.verdict === 'L' ? cl : x.verdict === 'R' ? cr : '#8A93A3';
+      const vt = x.pct != null ? `KT ${x.pct}%` : x.verdict === 'L' ? `${s.l} 우세` : x.verdict === 'R' ? `${s.r} 우세` : '팽팽';   /* 11/1 차전별 KT 승리 확률(50 미만이면 상대 색) */
+      return `<div style="position:relative;width:${W}px;height:${RH - 10}px;margin-bottom:10px;border-radius:22px;background:#fff;border:4px solid ${q > .5 ? vc : LINE};box-shadow:0 6px 16px rgba(18,22,31,.07);display:flex;align-items:center;justify-content:space-between;padding:0 26px;box-sizing:border-box;${MK.css.slide(p, 'l', 70)}">
+        ${AV(x.L, 'L', cl)}
+        <div style="display:flex;align-items:center;gap:22px">
+          <div style="width:200px;text-align:center"><div style="font-size:46px;font-weight:900;letter-spacing:-1px;white-space:nowrap">${esc(x.g)}</div><div style="font-size:28px;font-weight:800;color:#8A93A3;white-space:nowrap">${esc(x.v || '')}</div></div>
+          <div style="width:240px;height:64px;border-radius:32px;background:${vc};color:#fff;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:900;white-space:nowrap;${MK.css.springPop(q, .55)}">${esc(vt)}</div></div>
+        ${AV(x.R, 'R', cr)}</div>`; }).join('');
+    if (s.res) {
+      const rq = AT(s, s.res.at, .6, 0), v = (+s.res.v) * e3(rq);
+      h += `<div class="row" style="margin-top:6px;gap:26px;align-items:center;height:110px;opacity:${c01(rq * 2).toFixed(3)}">
+        <div style="font-size:46px;font-weight:900;color:#5F6B80;white-space:nowrap">${esc(s.res.t || '')}</div>
+        <div class="num" style="font-size:104px;font-weight:900;letter-spacing:-3px;color:${cl}">${v.toFixed(s.res.dec ?? 1)}<span style="font-size:58px">%</span></div></div>`;
+    }
+    wrapC(`<div class="col" style="align-items:center;${K ? '' : rise(seg(lt, 0, .45), 24)}">${h}</div>`);
+  };
+  Object.assign(MOTION, { matchtbl: s => .6 + (s.rows || []).length * .15 });
+})();
+/* @@MATCH1101END */
+
+/* @@FX1101 11/1 롱폼㊱ — 움직임 사전 #16 흔들림(부정 수치 1회). errs: 실책·부정 기록 카드가 뜬 직후 한 번만 좌우로 흔들린다.
+   errs: {title, items:[{k, v, at}], text, textAt}  — 화면 전체가 아니라 카드만 흔들림(사전 금지 규칙). */
+(() => {
+  const AT = (s, at, d, fb) => (at != null && at < 0) ? 1 : (at != null && at >= 50) ? 0 : pk(s, at, d, fb);
+  SCENE.errs = (lt, s) => {
+    const K = s._same, its = s.items || [];
+    let h = titleH(lt, s, 56, 30, K && s._prev.title === s.title);
+    h += `<div class="row" style="gap:60px;justify-content:center">` + its.map((x, i) => {
+      const pv = K ? (s._prev.items || [])[i] : null, was = !!(pv && pv.at != null && pv.at < 50);   /* 이어지는 장면: 앞에서 이미 보인 카드만 그대로 */
+      const p = was ? 1 : AT(s, x.at, .4, 0), sh = (was || x.shake === false) ? 1 : AT(s, (x.at != null && x.at >= 0 ? x.at : 0) + .35, .7, 0);
+      return `<div style="width:640px;height:330px;border-radius:36px;background:#fff;border:8px solid ${RED};box-shadow:0 14px 36px rgba(229,72,77,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;${rise(p, 40)}">
+        <div style="${MK.css.shake(sh, 14)}" class="col">
+        <div style="font-size:54px;font-weight:900;color:#3B4A63;letter-spacing:-1.5px;white-space:nowrap;text-align:center">${esc(x.k)}</div>
+        <div class="num" style="font-size:150px;font-weight:900;color:${RED};letter-spacing:-5px;line-height:1.05;text-align:center">${esc(x.v)}</div></div></div>`; }).join('') + `</div>`;
+    h += textH(lt, s, .8, 64);
+    wrapC(h);
+  };
+  Object.assign(MOTION, { errs: s => .8 });
+})();
+/* @@FX1101END */
+/* @@REST1101 11/1 20:13 사용자 "텍스트로만 떼운 장면 — 그림으로 한눈에". rest: 선발 후보별 날짜 달력(등판일·쉬는 날·1차전).
+   rest: {title, days:['10/26',...], rows:[{img, name, team, at, cells:{'10/29':{k:'p', t:'3차전'}, ...}, chip, chipAt}]}
+   k: p=등판(구단 색) · r=휴식(회색) · g=1차전(금색 테두리). 칸은 날짜축에 맞춰 줄을 세운다. */
+(() => {
+  const AT = (s, at, d, fb) => (at != null && at < 0) ? 1 : (at != null && at >= 50) ? 0 : pk(s, at, d, fb);
+  const TC_ = n => { const c = TEAMCOL[(T(n) || {}).code] || '#6A7382'; return c === '#4A4A4A' ? '#12161F' : c; };
+  SCENE.rest = (lt, s) => {
+    const K = s._same, days = s.days || [], rows = s.items || s.rows || [], n = days.length;
+    const PW = 210, PH = 250, GAP = 10, CW = Math.min(150, Math.floor((1600 - PW - 60 - GAP * (n - 1)) / n)), CH = 128;
+    let h = titleH(lt, s, 56, 30, K && s._prev.title === s.title);
+    h += `<div class="col" style="gap:34px;align-items:flex-start">`;
+    h += `<div class="row" style="gap:${GAP}px;margin-left:${PW + 60}px">` + days.map(d => `<div class="num" style="width:${CW}px;text-align:center;font-size:34px;font-weight:800;color:#7A8597">${esc(d)}</div>`).join('') + `</div>`;
+    rows.forEach((r, ri) => {
+      const pv = K ? (s._prev.items || s._prev.rows || [])[ri] : null, was = !!(pv && pv.at != null && pv.at < 50);
+      const p = was ? 1 : AT(s, r.at, .45, 0), col = TC_(r.team), src = photoSrc(r.img);
+      const cells = days.map((d, di) => {
+        const c = (r.cells || {})[d]; if (!c) return `<div style="width:${CW}px;height:${CH}px"></div>`;
+        const q = was ? 1 : c01((p - .15 - di * .06) * 2.2);
+        const st = c.k === 'p' ? `background:${col};color:#fff;border:0` : c.k === 'g' ? `background:#FFF6DA;color:#8A5A00;border:6px solid #F2B705` : `background:#EEF1F5;color:#8D97A6;border:0`;
+        return `<div class="col" style="width:${CW}px;height:${CH}px;border-radius:22px;${st};align-items:center;justify-content:center;gap:4px;box-shadow:0 8px 20px rgba(18,22,31,.06);opacity:${c01(q * 1.5)};transform:scale(${.85 + .15 * eo(q)})">
+          ${c.k === 'r' ? `<svg width="54" height="54" viewBox="0 0 40 40"><path d="M26 6a14 14 0 1 0 8 24A12 12 0 0 1 26 6z" fill="#B8C1CE"/></svg>` : c.k === 'g' && !c.t ? `<svg width="66" height="66" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#E2B100" stroke-width="2.5"/><path d="M11 7c5 6 5 20 0 26M29 7c-5 6-5 20 0 26" fill="none" stroke="#E5484D" stroke-width="2.4" stroke-dasharray="3 2.6"/></svg>` : `<div style="font-size:40px;font-weight:900;letter-spacing:-1px;white-space:nowrap">${esc(c.t || '')}</div>`}${c.sub ? `<div style="font-size:26px;font-weight:800;opacity:.9;white-space:nowrap">${esc(c.sub)}</div>` : ''}</div>`;
+      }).join('');
+      const cq = r.chip ? (was && pv.chip === r.chip && pv.chipAt != null && pv.chipAt < 50 ? 1 : AT(s, r.chipAt, .4, 0)) : 0;
+      h += `<div class="row" style="gap:60px;align-items:center;${rise(p, 30)}">
+        <div class="col" style="width:${PW}px;gap:10px;align-items:center">
+          <div style="width:${PW}px;height:${PH - 60}px;border-radius:24px;overflow:hidden;position:relative;background:#E9EDF3">${src ? `<div class="pp" style="position:absolute;inset:0">${photoImg(r, src, PW, PH - 60, r.focus || '50% 14%')}</div>` : ''}</div>
+          <div style="font-size:46px;font-weight:900;letter-spacing:-1px">${esc(r.name)}</div></div>
+        <div class="col" style="gap:16px;align-items:flex-start"><div class="row" style="gap:${GAP}px">${cells}</div>
+          ${r.chip ? `<div style="height:64px;padding:0 28px;border-radius:999px;background:${r.chipBad ? RED : '#12161F'};color:#fff;font-size:38px;font-weight:900;display:flex;align-items:center;white-space:nowrap;opacity:${c01(cq * 1.6)};transform:translateY(${(1 - eo(cq)) * 14}px)">${esc(r.chip)}</div>` : `<div style="height:64px"></div>`}</div></div>`;
+    });
+    h += `</div>` + textH(lt, s, .8, 64);
+    wrapC(h);
+  };
+  Object.assign(MOTION, { rest: s => .8 });
+})();
+/* @@REST1101END */
+/* @@GRID1101 11/1 20:14 사용자 "눈에 안 들어오게 만드는 것도 능력" (막대 3/4팀·4/4팀 + 연도 글자줄). grid: 팀(로고+연도) 열 × 결과 줄.
+   grid: {title, cols:[{team, label}], colAt, rows:[{k, at, vals:[{t, c:'bad'|'good'|'', icon:'trophy'|''}]}], text, textAt}
+   한 칸 = 한 팀의 결과 — 몇 팀 중 몇 팀을 막대로 말하지 않고 팀마다 바로 보이게. */
+(() => {
+  const AT = (s, at, d, fb) => (at != null && at < 0) ? 1 : (at != null && at >= 50) ? 0 : pk(s, at, d, fb);
+  const TROPHY = (px, c) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M18 8h28v10c0 10-6 18-14 18S18 28 18 18z" fill="${c}"/><path d="M18 12H8c0 10 5 15 12 15M46 12h10c0 10-5 15-12 15" fill="none" stroke="${c}" stroke-width="5"/><rect x="28" y="36" width="8" height="10" fill="${c}"/><rect x="18" y="46" width="28" height="8" rx="3" fill="${c}"/></svg>`;
+  SCENE.grid = (lt, s) => {
+    const K = s._same, cols = s.cols || [], rows = s.rows || [], n = cols.length;
+    const CW = Math.min(300, Math.floor(1300 / n)), LW = 230, RH = 150;
+    const cp = K ? 1 : AT(s, s.colAt, .45, seg(lt, .1, .45));
+    let h = titleH(lt, s, 56, 30, K && s._prev.title === s.title);
+    h += `<div class="col" style="gap:18px;align-items:flex-start">`;
+    h += `<div class="row" style="gap:0;margin-left:${LW}px">` + cols.map((c, i) => `<div class="col" style="width:${CW}px;align-items:center;gap:8px;${rise(c01((cp - i * .08) * 1.6), 26)}">
+        ${(() => { const tt = T(c.team); return tt && LOGO[tt.code] ? `<img src="${LOGO[tt.code]}" style="width:120px;height:120px;object-fit:contain">` : ''; })()}<div class="num" style="font-size:40px;font-weight:900;letter-spacing:-1px;white-space:nowrap">${esc(c.label || '')}</div></div>`).join('') + `</div>`;
+    rows.forEach((r, ri) => {
+      const pv = K ? (s._prev.rows || [])[ri] : null, was = !!(pv && pv.at != null && pv.at < 50);
+      const p = was ? 1 : AT(s, r.at, .5, 0);
+      h += `<div class="row" style="gap:0;align-items:center;height:${RH}px;opacity:${c01(p * 3)}">
+        <div style="width:${LW}px;font-size:48px;font-weight:900;letter-spacing:-1px;white-space:nowrap">${esc(r.k)}</div>` +
+        (r.vals || []).map((v, i) => { const q = was ? 1 : c01((p - i * .1) * 1.8);
+          const bg = v.c === 'bad' ? RED : v.c === 'good' ? GREEN : '#EEF1F5', fg = v.c ? '#fff' : '#8D97A6';
+          return `<div style="width:${CW}px;display:flex;justify-content:center"><div class="row" style="width:${CW - 50}px;height:${RH - 24}px;border-radius:28px;background:${bg};color:${fg};justify-content:center;align-items:center;gap:10px;font-size:54px;font-weight:900;opacity:${c01(q * 1.5)};transform:scale(${.8 + .2 * eo(q)});box-shadow:0 10px 26px rgba(18,22,31,.10)">${v.icon === 'trophy' ? TROPHY(58, fg) : ''}${esc(v.t || '')}</div></div>`; }).join('') + `</div>`;
+    });
+    h += `</div>` + textH(lt, s, .8, 64);
+    wrapC(h);
+  };
+  Object.assign(MOTION, { grid: s => .8 });
+})();
+/* @@GRID1101END */
+
+
+
+/* @@VISB1101 11/1 20:17 사용자 "텍스트로 떼우는 거 없이 다 그림과 그래픽으로, 진짜 직관적으로" — 1차전 승부 예측 장(p2~p19) 전용 그래픽 장면.
+   공통: at = 말하는 호흡(그 호흡에 뜸), -1 = 앞 장면에서 이미 보임, 50 이상 = 이 장면에선 안 뜸. 글자는 6자 이내 이름표만. */
+(() => {
+  const AT = (s, at, d, fb) => (at != null && at < 0) ? 1 : (at != null && at >= 50) ? 0 : pk(s, at, d, fb == null ? 0 : fb);
+  const C = x => x < 0 ? 0 : x > 1 ? 1 : x;
+  const E = t => 1 - Math.pow(1 - C(t), 3);
+  const TC_ = n => { const c = TEAMCOL[(T(n) || {}).code] || '#6A7382'; return c === '#4A4A4A' ? '#12161F' : c; };
+  const LG = (n, px, st = '') => { const tt = T(n); return tt && LOGO[tt.code] ? `<img src="${LOGO[tt.code]}" style="width:${px}px;height:${px}px;object-fit:contain;${st}">` : `<div style="width:${px}px;height:${px}px"></div>`; };
+  const NV = '#12161F', SS = '#074CA1', SOFT = '#EEF1F5', MUTE = '#9AA3B2', ORG = '#F08C00';
+  /* ── 그림(SVG) ── */
+  const IC = {
+    trophy: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M18 8h28v10c0 10-6 18-14 18S18 28 18 18z" fill="${c}"/><path d="M18 12H8c0 10 5 15 12 15M46 12h10c0 10-5 15-12 15" fill="none" stroke="${c}" stroke-width="5"/><rect x="28" y="36" width="8" height="10" fill="${c}"/><rect x="18" y="46" width="28" height="8" rx="3" fill="${c}"/></svg>`,
+    x: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M18 18L46 46M46 18L18 46" stroke="${c}" stroke-width="9" stroke-linecap="round"/></svg>`,
+    check: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M14 34L27 47L51 19" fill="none" stroke="${c}" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    mic: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><rect x="22" y="6" width="20" height="34" rx="10" fill="${c}"/><path d="M14 30c0 10 8 18 18 18s18-8 18-18" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round"/><rect x="29" y="48" width="6" height="8" fill="${c}"/><rect x="20" y="55" width="24" height="5" rx="2.5" fill="${c}"/></svg>`,
+    cal: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><rect x="6" y="10" width="52" height="48" rx="8" fill="#fff" stroke="${c}" stroke-width="4"/><rect x="6" y="10" width="52" height="14" rx="6" fill="${c}"/><rect x="16" y="4" width="6" height="12" rx="3" fill="${c}"/><rect x="42" y="4" width="6" height="12" rx="3" fill="${c}"/></svg>`,
+    play: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><rect x="4" y="12" width="56" height="40" rx="12" fill="${c}"/><path d="M27 22L42 32L27 42z" fill="#fff"/></svg>`,
+    glove: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M14 30c0-6 2-14 6-18 2-2 5-1 5 2v12l2-16c0-3 4-4 5-1l1 15 2-14c0-3 4-3 5 0l0 15 3-10c1-3 5-2 5 1l-3 18c-1 9-7 16-16 16h-4c-9 0-13-8-13-20z" fill="${c}"/><path d="M14 34c-4 0-6 3-5 6l6 10" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round"/></svg>`,
+    bat: (c, px) => `<div style="width:${px}px;height:${px}px">${ICON.bat(c)}</div>`,
+    pen: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><circle cx="20" cy="16" r="8" fill="${c}"/><path d="M8 50c0-12 5-20 12-20s12 8 12 20z" fill="${c}"/><circle cx="44" cy="16" r="8" fill="${c}" opacity=".55"/><path d="M32 50c0-12 5-20 12-20s12 8 12 20z" fill="${c}" opacity=".55"/><rect x="4" y="52" width="56" height="6" rx="3" fill="${c}"/></svg>`,
+    battery: (c, px, lv = .2) => `<svg width="${px}" height="${px * .6}" viewBox="0 0 64 38"><rect x="2" y="4" width="52" height="30" rx="6" fill="#fff" stroke="${c}" stroke-width="4"/><rect x="56" y="13" width="6" height="12" rx="2" fill="${c}"/><rect x="7" y="9" width="${Math.max(4, 42 * lv)}" height="20" rx="3" fill="${c}"/></svg>`,
+    link: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><rect x="4" y="22" width="26" height="20" rx="10" fill="none" stroke="${c}" stroke-width="6"/><rect x="34" y="22" width="26" height="20" rx="10" fill="none" stroke="${c}" stroke-width="6" transform="rotate(14 47 32)"/><path d="M30 14l2 8M36 12l-2 9" stroke="${RED}" stroke-width="4" stroke-linecap="round"/></svg>`,
+    home: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M8 30L32 10L56 30V56H8z" fill="${c}"/><rect x="26" y="38" width="12" height="18" rx="2" fill="#fff"/></svg>`,
+    q: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="${c}"/><text x="32" y="45" text-anchor="middle" font-size="38" font-weight="900" fill="#fff" font-family="inherit">?</text></svg>`,
+    warn: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M32 6L60 56H4z" fill="${c}"/><rect x="29" y="22" width="6" height="18" rx="3" fill="#fff"/><circle cx="32" cy="47" r="3.6" fill="#fff"/></svg>`,
+    flag: (c, px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><rect x="10" y="4" width="5" height="56" rx="2" fill="${NV}"/><path d="M15 6h38l-9 11 9 11H15z" fill="${c}"/></svg>`,
+  };
+  const pill = (t, bg, fg = '#fff', fs = 34, extra = '') => `<div style="height:${Math.round(fs * 1.75)}px;padding:0 ${Math.round(fs * .75)}px;border-radius:999px;background:${bg};color:${fg};font-size:${fs}px;font-weight:900;display:inline-flex;align-items:center;gap:10px;white-space:nowrap;letter-spacing:-.5px;${extra}">${t}</div>`;
+  const popS = (q, from = .6) => `opacity:${C(q * 2.5)};transform:scale(${from + (1 - from) * MK.E.outBack(C(q))})`;
+  const sub = (lt, s) => s.sub ? `<div style="margin-top:6px;font-size:30px;font-weight:800;color:${MUTE};${pop(seg(lt, .05, .4))}">${esc(s.sub)}</div>` : '';
+
+  /* ① vB_units: 팀 칸 N개 → 칸마다 그림이 채워짐(트로피/승/패/×). 큰 숫자 하나.
+     {title, sub, n, slotAt, fillAt, fills:['trophy'|'win'|'loss'|'x'], big:{v, unit, at, c}} */
+  SCENE.vB_units = (lt, s) => {
+    const n = s.n || (s.fills || []).length, sq = AT(s, s.slotAt, .5, seg(lt, .1, .5)), fq = AT(s, s.fillAt, .8, 0);
+    const W = n > 10 ? 116 : 170, H = n > 10 ? 170 : 200, G = n > 10 ? 10 : 22;
+    let h = titleH(lt, s, 58, 6) + sub(lt, s);
+    h += `<div class="row" style="gap:${G}px;margin-top:40px;justify-content:center">` + Array.from({ length: n }, (_, i) => {
+      const f = (s.fills || [])[i] || '', a = C((sq - i * .03) * 2.2), b = C((fq * 1.4 - i * (.4 / n)) * 2.2);
+      const col = f === 'trophy' ? GOLD : f === 'win' ? GREEN : f === 'loss' ? RED : '#C3CAD5';
+      const bg = b > .02 ? (f === 'trophy' ? '#FFF6DA' : f === 'win' ? '#E6F6EC' : f === 'loss' ? '#FDECEC' : SOFT) : '#fff';
+      const ic = f === 'trophy' ? IC.trophy(col, W * .62) : f === 'win' ? `<div style="font-size:${W * .5}px;font-weight:900;color:${col}">승</div>` : f === 'loss' ? `<div style="font-size:${W * .5}px;font-weight:900;color:${col}">패</div>` : IC.x(col, W * .5);
+      return `<div style="width:${W}px;height:${H}px;border-radius:24px;background:${bg};border:4px solid ${b > .02 ? col : LINE};display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(18,22,31,.07);opacity:${C(a * 2)};transform:translateY(${(1 - E(a)) * 30}px)">
+        <div style="${popS(b, .3)}">${ic}</div></div>`;
+    }).join('') + `</div>`;
+    if (s.big) { const q = AT(s, s.big.at, .5, 0);
+      h += `<div class="row" style="margin-top:46px;gap:18px;align-items:baseline;${popS(q, .7)}"><div class="num" style="font-size:150px;font-weight:900;letter-spacing:-5px;line-height:1;color:${s.big.c || NV}">${esc(s.big.v)}</div><div style="font-size:64px;font-weight:900;color:${s.big.c || NV}">${esc(s.big.unit || '')}</div></div>`; }
+    wrapC(h);
+  };
+
+  /* ② vB_meter: 반원 저울 바늘 — 왼쪽 팀 ↔ 오른쪽 팀. 바늘 각도 from → to (−1 왼쪽 끝, +1 오른쪽 끝)
+     {title, l, r, from, to, moveAt, lBadge:{t, at}, rBadge:{t, at}, crown:{side, at}} */
+  SCENE.vB_meter = (lt, s) => {
+    const K = s._same, mv = AT(s, s.moveAt, .9, 0), v = (s.from_ ?? 0) + ((s.to ?? 0) - (s.from_ ?? 0)) * MK.E.inOutCubic(mv);
+    const R = 330, cx = 400, cy = 380, ang = v * 70 * Math.PI / 180, nx = cx + Math.sin(ang) * (R - 40), ny = cy - Math.cos(ang) * (R - 40);
+    const cl = TC_(s.l), cr = TC_(s.r), wq = K ? 1 : seg(lt, .05, .6);
+    const arc = (a0, a1, col, w) => { const p0 = [cx + Math.sin(a0) * R, cy - Math.cos(a0) * R], p1 = [cx + Math.sin(a1) * R, cy - Math.cos(a1) * R]; return `<path d="M${p0[0].toFixed(1)},${p0[1].toFixed(1)} A${R},${R} 0 0 1 ${p1[0].toFixed(1)},${p1[1].toFixed(1)}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`; };
+    const r70 = 70 * Math.PI / 180;
+    const svg = `<svg width="800" height="420" viewBox="0 0 800 420" style="overflow:visible;${K ? '' : MK.css.zoomIn(wq)}">
+      ${arc(-r70, -0.03, cl, 54)}${arc(0.03, r70, cr, 54)}
+      <line x1="${cx}" y1="${cy - R - 40}" x2="${cx}" y2="${cy - R + 40}" stroke="#fff" stroke-width="8"/>
+      <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="${NV}" stroke-width="16" stroke-linecap="round"/>
+      <circle cx="${cx}" cy="${cy}" r="30" fill="${NV}"/><circle cx="${cx}" cy="${cy}" r="12" fill="#fff"/></svg>`;
+    const side = (team, b, al) => { const bq = b ? (K && s._prev[al === 'l' ? 'lBadge' : 'rBadge'] && s._prev[al === 'l' ? 'lBadge' : 'rBadge'].t === b.t ? 1 : AT(s, b.at, .45, 0)) : 0;
+      const cr_ = s.crown && s.crown.side === al ? AT(s, s.crown.at, .5, 0) : 0;
+      return `<div class="col" style="width:300px;align-items:center;gap:18px;position:relative">
+        <div style="position:absolute;top:-120px;${popS(cr_, .4)}">${IC.trophy(GOLD, 120)}</div>
+        <div style="${K ? '' : MK.css.rise(seg(lt, .1, .5), 30)}">${LG(team, 210)}</div>
+        <div style="height:66px">${b ? `<div style="${popS(bq)}">${pill(esc(b.t), b.bg || (al === 'l' ? cl : cr), '#fff', 36)}</div>` : ''}</div></div>`; };
+    let h = titleH(lt, s, 58, 10, K && s._prev.title === s.title);
+    h += `<div class="row" style="gap:10px;align-items:flex-end;margin-top:20px">${side(s.l, s.lBadge, 'l')}<div style="margin:0 -40px">${svg}</div>${side(s.r, s.rBadge, 'r')}</div>`;
+    wrapC(h);
+  };
+
+  /* ③ vB_only: 한 팀(KT)의 상대 9팀 로고 — 다 흐리게, 한 팀만 크게 + 배지. {title, me, opps:[], hit, oppAt, hitAt, badge} */
+  SCENE.vB_only = (lt, s) => {
+    const oq = AT(s, s.oppAt, .6, seg(lt, .1, .5)), hq = AT(s, s.hitAt, .5, 0), opps = s.opps || [];
+    let h = titleH(lt, s, 58, 30);
+    h += `<div class="row" style="gap:40px;align-items:center">
+      <div class="col" style="align-items:center;gap:10px;${MK.css.rise(seg(lt, .05, .5), 30)}">${LG(s.me, 220)}<div style="font-size:40px;font-weight:900">vs</div></div>
+      <div style="width:6px;height:360px;border-radius:3px;background:${LINE}"></div>
+      <div class="row" style="gap:26px;flex-wrap:wrap;width:1060px;justify-content:center;align-items:center">` +
+      opps.map((t, i) => { const a = C((oq - i * .05) * 2.2), hit = t === s.hit;
+        const dim = hit ? 1 - .0 : 1 - .65 * hq;
+        return `<div class="col" style="width:190px;height:${hit ? 250 : 170}px;align-items:center;justify-content:center;gap:10px;opacity:${(C(a * 2) * dim).toFixed(3)};transform:scale(${(hit ? 1 + .35 * MK.E.outBack(hq) : 1).toFixed(3)});filter:grayscale(${hit ? 0 : hq})">
+          ${LG(t, 140)}${hit ? `<div style="${popS(hq)}">${pill(`${IC.x('#fff', 34)}${esc(s.badge || '')}`, RED, '#fff', 34)}</div>` : ''}</div>`; }).join('') + `</div></div>`;
+    wrapC(h);
+  };
+
+  /* ④ vB_rings: 원 게이지 여러 개(퍼센트). {title, sub, items:[{k, v, dec, c, at, down:{at}}]} */
+  SCENE.vB_rings = (lt, s) => {
+    let h = titleH(lt, s, 58, 6) + sub(lt, s);
+    h += `<div class="row" style="gap:150px;margin-top:96px;align-items:flex-start">` + (s.items || []).map(x => {
+      const q = AT(s, x.at, .9, 0), dq = x.down ? AT(s, x.down.at, .5, 0) : 0, v = +x.v;
+      return `<div class="col" style="align-items:center;gap:18px;opacity:${C(q * 3)}">
+        <div style="position:relative;width:480px;height:480px">${MK.gauge(v, q, 200, 40, x.c, '#E6EAF0')}
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><div class="num" style="font-size:96px;font-weight:900;letter-spacing:-4px;color:${x.c}">${MK.count(v, q, x.dec ?? 1)}<span style="font-size:52px">%</span></div></div>
+          ${x.down ? `<div style="position:absolute;left:0;right:0;top:-74px;display:flex;justify-content:center;${popS(dq, .4)}">${pill(`<svg width="34" height="34" viewBox="0 0 64 64"><path d="M32 58L6 26h16V6h20v20h16z" fill="#fff"/></svg>${esc(x.down.t || '')}`, RED, '#fff', 36)}</div>` : ''}</div>
+        <div style="font-size:60px;font-weight:900;letter-spacing:-1px">${esc(x.k)}</div></div>`; }).join('') + `</div>`;
+    wrapC(h);
+  };
+
+  /* ⑤ vB_split: 두 팀 확률 막대(한 줄) — 가운데 50% 선, 경계가 from → to 로 밀림. {title, l, r, from, to, moveAt, push:{t, at}, label:{v, at}} */
+  SCENE.vB_split = (lt, s) => {
+    const W = 1500, mv = AT(s, s.moveAt, .9, 0), v = s.from_ + (s.to - s.from_) * MK.E.inOutCubic(mv), cl = TC_(s.l), cr = TC_(s.r);
+    const pq = s.push ? AT(s, s.push.at, .45, 0) : 0, lq = s.label ? AT(s, s.label.at, .5, 0) : 0, x = W * v / 100;
+    let h = titleH(lt, s, 58, 50);
+    h += `<div class="row" style="width:${W}px;justify-content:space-between;margin-bottom:22px">${LG(s.l, 150)}${LG(s.r, 150)}</div>
+      <div style="position:relative;width:${W}px;height:150px;border-radius:75px;overflow:hidden;background:${cr};box-shadow:0 14px 34px rgba(18,22,31,.12);${MK.css.zoomIn(seg(lt, .05, .5))}">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:${x.toFixed(1)}px;background:${cl}"></div>
+        <div style="position:absolute;left:${W / 2 - 4}px;top:-10px;bottom:-10px;width:8px;background:#fff;opacity:.95"></div>
+        ${s.label ? `<div class="num" style="position:absolute;left:44px;top:0;bottom:0;display:flex;align-items:center;font-size:84px;font-weight:900;color:#fff;letter-spacing:-3px;opacity:${C(lq * 2)}">${esc(s.label.v)}<span style="font-size:44px">%</span></div>` : ''}</div>
+      <div style="position:relative;width:${W}px;height:150px">
+        <div class="num" style="position:absolute;left:${W / 2 - 60}px;width:120px;top:16px;text-align:center;font-size:38px;font-weight:900;color:${MUTE}">반반</div>
+        ${s.push ? `<div style="position:absolute;left:${(x - 150).toFixed(1)}px;top:56px;width:300px;display:flex;justify-content:center;${popS(pq, .4)}">${pill(`${IC.pen('#fff', 46)}${esc(s.push.t)}`, ORG, '#fff', 44)}</div>` : ''}</div>`;
+    wrapC(h);
+  };
+
+  /* ⑥ vB_three: 번호 카드 3장(그림 + 짧은 이름표). {title, items:[{n, icon, team, k, at}], focus} — focus 있으면 그 카드만 밝게 */
+  SCENE.vB_three = (lt, s) => {
+    let h = titleH(lt, s, 58, 40);
+    h += `<div class="row" style="gap:50px">` + (s.items || []).map((x, i) => { const q = AT(s, x.at, .5, seg(lt, .15 + i * .15, .5));
+      return `<div class="col" style="width:440px;height:470px;border-radius:40px;background:#fff;border:6px solid ${LINE};box-shadow:0 18px 44px rgba(18,22,31,.10);align-items:center;justify-content:center;gap:26px;position:relative;${MK.css.rise(q, 50)}">
+        <div style="position:absolute;top:-34px;${popS(q, .5)}">${pill(esc(x.n), NV, '#fff', 36)}</div>
+        <div class="row" style="gap:10px;align-items:center">${x.team ? LG(x.team, 110) : ''}${IC[x.icon](x.c || NV, 150)}</div>
+        <div style="font-size:58px;font-weight:900;letter-spacing:-1.5px;white-space:nowrap">${esc(x.k)}</div></div>`; }).join('') + `</div>`;
+    wrapC(h);
+  };
+
+  /* ⑦ vB_inn: 이닝 띠 1~9 — 줄마다 선발(팀 색)·불펜(주황) 채움, 5회 깃발. {title, team, rows:[{k, icon, sp, pen, at, penAt, mark:'ok'|'bad', markAt}], line:{inn, at}} */
+  SCENE.vB_inn = (lt, s) => {
+    const CW = 132, col = TC_(s.team), rows = s.rows || [], lq = s.line ? AT(s, s.line.at, .5, 0) : 0;
+    let h = titleH(lt, s, 58, 70);
+    h += `<div class="col" style="gap:26px;position:relative">`;
+    h += `<div class="row" style="gap:6px;margin-left:300px">` + Array.from({ length: 9 }, (_, k) => `<div class="num" style="width:${CW}px;text-align:center;font-size:40px;font-weight:900;color:${s.line && k + 1 === s.line.inn ? NV : MUTE}">${k + 1}회</div>`).join('') + `</div>`;
+    rows.forEach((r, ri) => {
+      const q = AT(s, r.at, .9, 0), pq = r.pen ? AT(s, r.penAt, .9, 0) : 0, mq = r.mark ? AT(s, r.markAt, .45, 0) : 0;
+      const cells = Array.from({ length: 9 }, (_, k) => {
+        const spF = C(r.sp - k), spQ = C(q * (r.sp + 1) - k), fillSp = Math.min(spF, spQ);
+        const penF = r.pen && k + 1 > Math.floor(r.sp) ? C((pq * (9 - r.sp + 1)) - (k - r.sp)) : 0;
+        return `<div style="position:relative;width:${CW}px;height:110px;border-radius:18px;background:${SOFT};overflow:hidden">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:${(fillSp * 100).toFixed(1)}%;background:${col}"></div>
+          ${r.pen && k + 1 > r.sp - 1 ? `<div style="position:absolute;left:${(k < r.sp ? (r.sp - k) * 100 : 0).toFixed(1)}%;top:0;bottom:0;width:${(Math.min(1, penF) * (k < r.sp ? (1 - (r.sp - k)) : 1) * 100).toFixed(1)}%;background:${ORG}"></div>` : ''}</div>`; }).join('');
+      h += `<div class="row" style="gap:20px;align-items:center;opacity:${C(q * 4)}">
+        <div class="row" style="width:280px;gap:14px;align-items:center;justify-content:flex-end">${r.icon ? IC[r.icon](r.ic || col, 70) : ''}<div style="font-size:44px;font-weight:900;white-space:nowrap">${esc(r.k)}</div></div>
+        <div class="row" style="gap:6px">${cells}</div>
+        <div style="width:90px;${popS(mq, .4)}">${r.mark === 'ok' ? IC.check(GREEN, 84) : r.mark === 'bad' ? IC.x(RED, 84) : ''}</div></div>`;
+      if (r.pen) h += `<div class="row" style="margin-left:${300 + (Math.floor(r.sp) + 2) * (CW + 6) + 30}px;margin-top:-14px;gap:12px;align-items:center;${popS(pq, .6)}">${IC.pen(ORG, 60)}${pill('불펜 조기 투입', ORG, '#fff', 32)}</div>`;
+    });
+    if (s.line) { const lx = 300 + 20 + s.line.inn * (CW + 6) - 6 + 3;
+      h += `<div style="position:absolute;left:${lx}px;top:40px;bottom:-10px;width:8px;border-radius:4px;background:${NV};opacity:${C(lq * 2)}"></div>
+        <div style="position:absolute;left:${lx - 10}px;top:-66px;${popS(lq, .4)}">${IC.flag(GOLD, 64)}</div>`; }
+    h += `</div>`;
+    wrapC(h);
+  };
+
+  /* ⑧ vB_pen: 7·8·9회 불펜 싸움 — 두 팀 줄. 칸마다 그림(crack=금 간 칸 · battery=배터리 부족 · ok=단단), 오른쪽 짧은 이름표, 마지막 호흡에 경고.
+     {title, rows:[{team, cells:['crack'|'battery'|'ok'], t, at}], warnAt, warnT} */
+  SCENE.vB_pen = (lt, s) => {
+    const wq = AT(s, s.warnAt, .7, 0), shake = s.warnAt != null && wq > 0 && wq < 1 ? Math.sin(wq * Math.PI * 6) * 12 * (1 - wq) : 0;
+    let h = titleH(lt, s, 58, 30);
+    h += `<div class="col" style="gap:26px;align-items:center">`;
+    h += `<div class="row" style="gap:16px;margin-right:${300 + 16}px;margin-left:250px">` + [7, 8, 9].map(n => `<div class="num" style="width:290px;text-align:center;font-size:52px;font-weight:900">${n}회</div>`).join('') + `</div>`;
+    (s.rows || []).forEach(r => { const q = AT(s, r.at, .7, 0), cc = TC_(r.team);
+      h += `<div class="row" style="gap:16px;align-items:center;opacity:${C(q * 3)};transform:translateX(${shake.toFixed(1)}px)">
+        <div style="width:234px;display:flex;justify-content:center">${LG(r.team, 160)}</div>
+        ${(r.cells || []).map((c, k) => { const cq = C((q - .2 - k * .15) * 2.5);
+          const bad = c !== 'ok';
+          return `<div style="position:relative;width:290px;height:160px;border-radius:26px;background:${cc};display:flex;align-items:center;justify-content:center;opacity:${C((q - k * .1) * 2.5)}">${IC.pen('rgba(255,255,255,.9)', 96)}
+            <div style="position:absolute;right:-14px;top:-18px;${popS(cq, .4)}">${c === 'crack' ? `<div style="width:84px;height:84px;border-radius:50%;background:${RED};display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(229,72,77,.35)"><svg width="54" height="54" viewBox="0 0 64 64"><path d="M34 4L22 30h14L26 60" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
+              : c === 'battery' ? `<div style="width:110px;height:84px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(18,22,31,.18)">${IC.battery(RED, 84, .2)}</div>`
+              : `<div style="width:84px;height:84px;border-radius:50%;background:${GREEN};display:flex;align-items:center;justify-content:center">${IC.check('#fff', 60)}</div>`}</div></div>`; }).join('')}
+        <div style="width:300px;display:flex;${popS(C((q - .5) * 2), .5)}">${pill(esc(r.t), RED, '#fff', 38)}</div></div>`; });
+    h += `<div class="row" style="gap:18px;align-items:center;margin-top:16px;${popS(wq, .5)}">${IC.warn(GOLD, 80)}${pill(esc(s.warnT || ''), NV, '#fff', 40)}</div></div>`;
+    wrapC(h);
+  };
+
+  /* ⑨ vB_branch: 1차전 → 위(삼성 승) / 아래(KT 승) 갈래. {title, up:{team, steps:[{icon|logo|txt, t, at}]}, dn:{team, steps}} */
+  SCENE.vB_branch = (lt, s) => {
+    const K = s._same;
+    const node = (st, pvst) => { const was = !!(pvst && pvst.at != null && pvst.at < 50); const q = was ? 1 : AT(s, st.at, .5, 0);
+      const ico = st.logo ? LG(st.logo, 120) : st.icon === 'home' ? IC.home(st.c || SS, 110) : st.icon === 'q' ? `<div style="position:relative"><div style="opacity:${(1 - .85 * (st.strike ? AT(s, st.strike, .5, 0) : 0)).toFixed(3)}">${IC.q(MUTE, 110)}</div>${st.strike ? `<div style="position:absolute;inset:-6px;${popS(AT(s, st.strike, .5, 0), .4)}">${IC.check(GREEN, 122)}</div>` : ''}</div>` : st.icon === 'score' ? `<div class="num" style="font-size:76px;font-weight:900;letter-spacing:-2px;color:${NV}">${esc(st.v)}</div>` : '';
+      return `<div class="col" style="width:250px;height:230px;border-radius:30px;background:#fff;border:5px solid ${st.hi ? GOLD : LINE};box-shadow:0 14px 34px rgba(18,22,31,.09);align-items:center;justify-content:center;gap:12px;${MK.css.rise(q, 30)}">${ico}<div style="font-size:38px;font-weight:900;white-space:nowrap;letter-spacing:-1px">${esc(st.t || '')}</div></div>`; };
+    const arrow = (q, c) => `<svg width="70" height="40" viewBox="0 0 70 40" style="opacity:${C(q * 3)}"><path d="M4 20H56M44 8L60 20L44 32" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    const lane = (ln, pv, key) => { if (!ln) return ''; const lq = (K && pv) ? 1 : AT(s, ln.steps[0].at, .5, 0);
+      return `<div class="row" style="gap:14px;align-items:center;opacity:${C(lq * 3)}">` + ln.steps.map((st, i) => (i ? arrow(AT(s, st.at, .4, 0) || (pv && pv.steps[i] && pv.steps[i].at < 0 ? 1 : 0), TC_(ln.team)) : '') + node(st, pv && pv.steps[i])).join('') + `</div>`; };
+    const sq = K ? 1 : seg(lt, .05, .5);
+    let h = titleH(lt, s, 58, 30, K && s._prev.title === s.title);
+    h += `<div class="row" style="gap:40px;align-items:center">
+      <div class="col" style="width:240px;height:240px;border-radius:50%;background:${NV};align-items:center;justify-content:center;gap:4px;${MK.css.zoomIn(sq)}"><div style="font-size:30px;font-weight:800;color:#AFC0DA">한국시리즈</div><div style="font-size:58px;font-weight:900;color:#fff">1차전</div></div>
+      <div class="col" style="gap:50px;align-items:flex-start">${lane(s.up, K && s._prev.up, 'up')}${lane(s.dn, K && s._prev.dn, 'dn')}</div></div>`;
+    wrapC(h);
+  };
+
+  /* ⑩ vB_next: 그림 3단 흐름(트로피? → 달력+마이크 → 선발 발표 → 다음 영상). {title, steps:[{icon, big, t, at, c}]} */
+  SCENE.vB_next = (lt, s) => {
+    let h = titleH(lt, s, 58, 50);
+    h += `<div class="row" style="gap:26px;align-items:center">` + (s.steps || []).map((x, i) => { const q = AT(s, x.at, .5, 0);
+      const ic = x.icon === 'cal' ? `<div style="position:relative;width:200px;height:200px">${IC.cal(SS, 200)}<div class="num" style="position:absolute;left:0;right:0;top:78px;text-align:center;font-size:58px;font-weight:900;color:${NV}">${esc(x.big || '')}</div><div style="position:absolute;right:-30px;bottom:-14px">${IC.mic(RED, 96)}</div></div>`
+        : x.icon === 'pitchers' ? `<div class="row" style="gap:6px">${IC.glove(TC_('KT'), 110)}${IC.glove(TC_('삼성'), 110)}</div>`
+        : x.icon === 'trophy' ? `<div style="position:relative">${IC.trophy(GOLD, 200)}<div style="position:absolute;right:-20px;top:-10px">${IC.q(SS, 80)}</div></div>`
+        : IC[x.icon](x.c || RED, 200);
+      return (i ? `<svg width="60" height="40" viewBox="0 0 60 40" style="opacity:${C(q * 3)}"><path d="M4 20H48M36 8L52 20L36 32" fill="none" stroke="${MUTE}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>` : '') +
+        `<div class="col" style="width:330px;height:380px;border-radius:36px;background:#fff;border:5px solid ${x.hi ? GOLD : LINE};box-shadow:0 16px 40px rgba(18,22,31,.09);align-items:center;justify-content:center;gap:26px;${MK.css.rise(q, 40)}">${ic}<div style="font-size:46px;font-weight:900;white-space:nowrap;letter-spacing:-1px">${esc(x.t)}</div></div>`; }).join('') + `</div>`;
+    wrapC(h);
+  };
+
+  Object.assign(MOTION, { vB_units: s => .8, vB_meter: s => .8, vB_only: s => .8, vB_rings: s => .8, vB_split: s => .8, vB_three: s => .8, vB_inn: s => .8, vB_pen: s => .8, vB_branch: s => .8, vB_next: s => .8 });
+})();
+/* @@VISB1101END */
+
+/* @@VISA1101 11/1 20:17 사용자 "텍스트로 떼우는 거 없이 다 그림과 그래픽으로, 진짜 직관적으로" — 삼성이 치른 댓가·KT의 1차전 준비 장면 새 틀.
+   모든 장면: 픽토그램(SVG)·단위 차트·날짜 칸·이닝 띠. 글자는 6자 안팎 이름표만, 숫자는 크게. 요소는 말하는 호흡(at)에 뜬다. */
+(() => {
+  const AT = (s, at, d, fb) => (at != null && at < 0) ? 1 : (at != null && at >= 50) ? 0 : pk(s, at, d, fb == null ? 0 : fb);
+  const TCv = n => { const c = TEAMCOL[(T(n) || {}).code] || '#6A7382'; return c === '#4A4A4A' ? '#1B1F27' : c; };
+  const LG = (n, px) => { const tt = T(n); return tt && LOGO[tt.code] ? `<img src="${LOGO[tt.code]}" style="width:${px}px;height:${px}px;object-fit:contain;display:block">` : ''; };
+  const NAVY = '#0B2A5B', SOFT = '#EEF1F5', MUTE = '#9AA3B2', GOLD = '#F2B705', GOLDBG = '#FFF6DA';
+  const ap = p => `opacity:${c01(p * 1.6)};transform:scale(${.7 + .3 * eo(p)})`;
+  const up = (p, px = 24) => `opacity:${c01(p * 1.6)};transform:translateY(${(1 - eo(p)) * px}px)`;
+  const prev = (s, key, i) => s._same ? ((s._prev[key] || [])[i]) : null;
+  const shown = (pv) => !!(pv && pv.at != null && pv.at < 50);
+  /* ── 아이콘 ── */
+  const I = {
+    pitcher: (px, c) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><circle cx="32" cy="17" r="10" fill="${c}"/><path d="M20 12 Q32 2 44 12 L46 15 L18 15Z" fill="${c}"/><rect x="40" y="13" width="12" height="3.5" rx="1.7" fill="${c}"/><path d="M14 60 Q14 32 32 32 Q50 32 50 60Z" fill="${c}"/></svg>`,
+    ball: (px, c = '#fff', s = RED) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="${c}" stroke="#D5DAE2" stroke-width="3"/><path d="M14 14 Q26 32 14 50" fill="none" stroke="${s}" stroke-width="3.5" stroke-dasharray="4 4"/><path d="M50 14 Q38 32 50 50" fill="none" stroke="${s}" stroke-width="3.5" stroke-dasharray="4 4"/></svg>`,
+    glove: (px, c) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M14 30 L14 14 Q14 9 18.5 9 Q23 9 23 14 L23 26 L23 9 Q23 4 27.5 4 Q32 4 32 9 L32 25 L32 8 Q32 3.5 36.5 3.5 Q41 3.5 41 8 L41 26 L41 12 Q41 7.5 45.5 7.5 Q50 7.5 50 12 L50 34 Q56 28 59 31 Q61 34 56 40 Q47 58 32 59 Q16 59 14 44Z" fill="${c}"/><path d="M20 46 Q32 52 44 46" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linecap="round"/></svg>`,
+    x: (px) => `<svg width="${px}" height="${px}" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="${RED}" stroke="#fff" stroke-width="4"/><path d="M13 13 L27 27 M27 13 L13 27" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>`,
+    zz: (px, c = MUTE) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M40 10 A24 24 0 1 0 54 44 A19 19 0 0 1 40 10Z" fill="${c}"/><text x="36" y="30" font-size="16" font-weight="900" fill="${c}" font-family="sans-serif">z</text><text x="46" y="20" font-size="12" font-weight="900" fill="${c}" font-family="sans-serif">z</text></svg>`,
+    bat: (px, c) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M52 6 Q60 4 59 12 L26 47 L18 39Z" fill="${c}"/><rect x="9" y="43" width="14" height="7" rx="3" transform="rotate(-45 16 46)" fill="${c}"/><circle cx="11" cy="55" r="5" fill="${c}"/><circle cx="46" cy="50" r="8" fill="#fff" stroke="${c}" stroke-width="3"/></svg>`,
+    medal: (px, c = GOLD) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M20 4 L30 26 L22 30 L12 6Z" fill="${RED}"/><path d="M44 4 L34 26 L42 30 L52 6Z" fill="#1E5EFF"/><circle cx="32" cy="42" r="19" fill="${c}" stroke="#D99A00" stroke-width="3"/><path d="M32 30 L35.5 38 L44 38.5 L37.5 44 L39.5 52.5 L32 48 L24.5 52.5 L26.5 44 L20 38.5 L28.5 38Z" fill="#fff"/></svg>`,
+    shield: (px, c) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M32 4 L56 12 L56 30 Q56 50 32 60 Q8 50 8 30 L8 12Z" fill="${c}"/><path d="M21 32 L29 40 L44 24" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    crack: (px) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M32 4 L58 54 L6 54Z" fill="${RED}"/><rect x="29" y="22" width="6" height="18" rx="3" fill="#fff"/><circle cx="32" cy="46" r="3.6" fill="#fff"/></svg>`,
+    star: (px, c) => `<svg width="${px}" height="${px}" viewBox="0 0 64 64"><path d="M32 6 L39 24 L58 24 L43 36 L49 55 L32 44 L15 55 L21 36 L6 24 L25 24Z" fill="${c}"/></svg>`,
+    q: (px) => `<div style="width:${px}px;height:${px}px;border-radius:50%;background:${RED};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${Math.round(px * .7)}px;font-weight:900;border:5px solid #fff;box-shadow:0 6px 16px rgba(229,72,77,.35)">?</div>`,
+    plus: (px) => `<div style="width:${px}px;height:${px}px;border-radius:50%;background:${GREEN};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${Math.round(px * .7)}px;font-weight:900;border:5px solid #fff;box-shadow:0 6px 16px rgba(22,163,74,.35)">+</div>`,
+  };
+  const battery = (w, lvl, col, bolt) => `<div style="position:relative;width:${w}px;height:${Math.round(w * .5)}px;border:9px solid #2A3140;border-radius:22px;padding:8px;box-sizing:border-box;background:#fff">
+      <div style="height:100%;width:${Math.round(lvl * 100)}%;border-radius:10px;background:${col}"></div>
+      <div style="position:absolute;right:-26px;top:30%;width:16px;height:40%;border-radius:0 8px 8px 0;background:#2A3140"></div>
+      ${bolt ? `<svg style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)" width="${Math.round(w * .2)}" height="${Math.round(w * .3)}" viewBox="0 0 20 30"><path d="M12 0 L0 17 L9 17 L7 30 L20 11 L11 11Z" fill="#fff" stroke="#2A3140" stroke-width="1.5"/></svg>` : ''}</div>`;
+  const tag = (t, bg, fg = '#fff', fs = 36) => `<div style="height:${Math.round(fs * 1.65)}px;padding:0 ${Math.round(fs * .7)}px;border-radius:999px;background:${bg};color:${fg};font-size:${fs}px;font-weight:900;display:inline-flex;align-items:center;white-space:nowrap;letter-spacing:-.5px">${esc(t)}</div>`;
+  const T0 = (lt, s) => titleH(lt, s, 60, 40, s._same && s._prev.title === s.title);
+  const ZW = (lt, s, body, z) => wrapC(T0(lt, s) + `<div style="zoom:${s.z || z || 1.3}">${body}</div>`);
+
+  /* ── vA_gap (o4): 1차전까지 쉬는 날을 칸으로 — 삼성 하루 vs KT 3주 넘게 ── */
+  SCENE.vA_gap = (lt, s) => {
+    const rows = s.rows || [];
+    const goldSq = (px, q) => `<div style="width:${px}px;height:${px}px;border-radius:22px;background:${GOLDBG};border:7px solid ${GOLD};display:flex;flex-direction:column;align-items:center;justify-content:center;flex:0 0 auto;gap:2px;${ap(q)}">${I.ball(Math.round(px * .5))}<div style="font-size:24px;font-weight:900;color:#8A5A00">1차전</div></div>`;
+    let h = `<div class="row" style="gap:90px;align-items:center;justify-content:center">`;
+    rows.forEach((r, ri) => {
+      const p = AT(s, r.at, .45), f = AT(s, r.fillAt != null ? r.fillAt : r.at, Math.max(.6, r.days * .05)), col = TCv(r.team);
+      const SQ = 70, cols = Math.min(7, r.days);
+      const sq = Array.from({ length: r.days }, (_, i) => { const q = c01((f * r.days - i) * 1.2);
+        return `<div style="width:${SQ}px;height:${SQ}px;border-radius:14px;background:${SOFT};border:3px solid #D5DBE4;display:flex;align-items:center;justify-content:center;${ap(q)}">${I.zz(42)}</div>`; }).join('');
+      h += `<div class="col" style="align-items:center;gap:22px;padding:36px 44px;border-radius:40px;background:#fff;box-shadow:0 16px 40px rgba(18,22,31,.08);${up(p)}">
+        <div class="row" style="gap:18px;align-items:center">${LG(r.team, 110)}${tag(r.lab, col, '#fff', 46)}</div>
+        <div class="row" style="gap:22px;align-items:center"><div style="display:grid;grid-template-columns:repeat(${cols},${SQ}px);gap:10px">${sq}</div>
+          <svg width="46" height="40" viewBox="0 0 46 40" style="${ap(c01(f * 1.05))}"><path d="M4 20 H36 M24 6 L40 20 L24 34" fill="none" stroke="#B6BFCC" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>${goldSq(120, c01(f * 1.05))}</div></div>`;
+    });
+    h += `</div>`;
+    h += `<div class="row" style="gap:14px;align-items:center;justify-content:center;margin-top:30px;opacity:.95;${up(AT(s, s.legendAt, .4))}"><div style="width:44px;height:44px;border-radius:10px;background:${SOFT};border:3px solid #D5DBE4;display:flex;align-items:center;justify-content:center">${I.zz(28)}</div><div style="font-size:34px;font-weight:800;color:#5B6576">공식 경기 없는 날</div></div>`;
+    ZW(lt, s, h, 1.15);
+  };
+
+  /* ── vA_units (b2): 경기마다 투수 한 명 = 아이콘 하나 ── */
+  SCENE.vA_units = (lt, s) => {
+    const gs = s.groups || [], col = TCv(s.team || '삼성'), tot = gs.reduce((a, g) => a + g.n, 0);
+    const p0 = AT(s, s.at, .45), f = AT(s, s.fillAt, 1.2), tq = AT(s, s.totAt, .45);
+    let k = 0;
+    let h = `<div class="row" style="gap:28px;align-items:flex-end;justify-content:center">` + gs.map((g, gi) => {
+      const icons = Array.from({ length: g.n }, () => { const q = c01((f * tot - k++) * 1.3); return `<div style="width:64px;height:64px;line-height:0;${ap(q)}">${I.pitcher(64, col)}</div>`; }).join('');
+      return `<div class="col" style="width:230px;align-items:center;gap:14px;${up(c01((p0 - gi * .08) * 1.5))}">
+        <div style="width:230px;height:330px;border-radius:30px;background:#fff;box-shadow:0 12px 30px rgba(18,22,31,.08);display:flex;flex-wrap:wrap-reverse;align-content:flex-start;justify-content:center;gap:6px 10px;padding:22px 20px;box-sizing:border-box">${icons}</div>
+        <div style="font-size:42px;font-weight:900;letter-spacing:-1px">${esc(g.g)}</div></div>`; }).join('') + `</div>`;
+    h += `<div class="row" style="gap:20px;align-items:center;justify-content:center;margin-top:30px;${ap(tq)}">${I.pitcher(70, col)}<div class="num" style="font-size:110px;font-weight:900;color:${col};letter-spacing:-3px;line-height:1">${esc(s.v || '')}</div><div style="font-size:52px;font-weight:900;color:#3B4A63">${esc(s.vl || '')}</div></div>`;
+    ZW(lt, s, h);
+  };
+
+  /* ── vA_errs (b6a·b6): 경기별 실책 = 공 놓친 글러브 아이콘 ── */
+  SCENE.vA_errs = (lt, s) => {
+    const its = s.items || [];
+    let h = `<div class="row" style="gap:80px;justify-content:center;align-items:stretch">` + its.map((x, i) => {
+      const pv = prev(s, 'items', i), was = shown(pv), p = was ? 1 : AT(s, x.at, .9);
+      const gl = Array.from({ length: x.n }, (_, j) => { const q = was ? 1 : c01((p * x.n - j) * 1.4), sh = was ? 0 : Math.sin(c01(q) * Math.PI * 3) * (1 - c01(q)) * 14;
+        return `<div style="position:relative;width:150px;height:150px"><div style="position:absolute;inset:0;opacity:${(.18 * (1 - c01(q * 2))).toFixed(2)}">${I.glove(150, '#9AA3B2')}</div><div style="position:absolute;inset:0;opacity:${c01(q * 1.6)};transform:translateX(${sh}px) scale(${.7 + .3 * eo(q)})">${I.glove(150, '#B9772F')}<div style="position:absolute;right:-6px;top:-6px">${I.x(62)}</div></div></div>`; }).join('');
+      return `<div class="col" style="align-items:center;gap:22px">
+        <div style="font-size:52px;font-weight:900;letter-spacing:-1px">${esc(x.g)}</div>
+        <div class="row" style="gap:26px;min-width:${x.slots * 176}px;height:220px;justify-content:center;align-items:center;border-radius:36px;background:#fff;padding:20px 36px;box-shadow:0 14px 34px rgba(18,22,31,.08)">${gl}</div>
+        <div class="num" style="font-size:96px;font-weight:900;color:${RED};letter-spacing:-3px;line-height:1;${ap(p)}">${esc(x.v)}</div></div>`; }).join('') + `</div>`;
+    ZW(lt, s, h);
+  };
+
+  /* ── vA_battery (b7): 생각한 피로 vs 남은 힘 ── */
+  SCENE.vA_battery = (lt, s) => {
+    const its = s.items || [];
+    let h = `<div class="row" style="gap:150px;justify-content:center;align-items:center">` + its.map((x, i) => {
+      const p = AT(s, x.at, .5), lv = (x.frm != null ? x.frm + (x.lvl - x.frm) * eo(AT(s, x.at, 1.0)) : x.lvl);
+      return `<div class="col" style="align-items:center;gap:30px;${up(p, 30)}">${battery(380, lv, x.c === 'good' ? GREEN : RED, x.bolt && p > .3)}
+        ${tag(x.lab, x.c === 'good' ? GREEN : '#5B6576', '#fff', 44)}</div>`; }).join('') + `</div>`;
+    ZW(lt, s, h);
+  };
+
+  /* ── vA_innings (b8): 5차전 마운드를 이닝 띠로 — 선발 7칸 + 불펜 2칸 ── */
+  SCENE.vA_innings = (lt, s) => {
+    const segs = s.segs || [], CW = 150, G = 10, team = s.team || '삼성', col = TCv(team);
+    let h = '';
+    h += `<div class="row" style="gap:${G}px">` + Array.from({ length: 9 }, (_, i) => `<div class="num" style="width:${CW}px;text-align:center;font-size:40px;font-weight:900;color:#7A8597">${i + 1}회</div>`).join('') + `</div>`;
+    let cells = '', brk = '';
+    segs.forEach(g => { const p = AT(s, g.at, .9);
+      for (let i = g.frm; i <= g.to; i++) { const q = c01((p * (g.to - g.frm + 1) - (i - g.frm)) * 1.5);
+        cells += `<div style="width:${CW}px;height:150px;border-radius:24px;background:${g.c || col};display:flex;align-items:center;justify-content:center;${ap(q)}">${I.pitcher(100, '#fff')}</div>`; }
+      const w = (g.to - g.frm + 1) * CW + (g.to - g.frm) * G;
+      brk += `<div class="col" style="width:${w}px;align-items:center;gap:10px;${up(c01(p * 1.2 - .2))}"><div style="width:${w - 20}px;height:20px;border:6px solid ${g.c || col};border-top:0;border-radius:0 0 16px 16px"></div>${tag(g.lab, g.c || col, '#fff', 40)}</div>`;
+    });
+    h += `<div class="row" style="gap:${G}px;margin-top:12px">${cells}</div><div class="row" style="gap:${G}px;margin-top:14px;align-items:flex-start">${brk}</div>`;
+    if (s.v) h += `<div class="row" style="gap:18px;align-items:center;justify-content:center;margin-top:38px;${ap(AT(s, s.vAt, .45))}">${Array.from({ length: s.vn || 0 }, () => I.pitcher(84, s.vc || '#0E9384')).join('')}<div style="font-size:64px;font-weight:900;color:${s.vc || '#0E9384'}">${esc(s.v)}</div></div>`;
+    ZW(lt, s, h);
+  };
+
+  /* ── vA_days (b9·b9b): 날짜 칸 — 등판·휴식·경기 ── */
+  SCENE.vA_days = (lt, s) => {
+    const ds = s.days || [], CW = s.cw || 210, CH = s.ch || 230;
+    let h = `<div class="row" style="gap:16px;align-items:flex-end;justify-content:center">`;
+    ds.forEach((d, i) => {
+      const pv = prev(s, 'days', i), was = shown(pv), p = was ? 1 : AT(s, d.at, .45);
+      const st = d.k === 'p' ? `background:${TCv(s.team || '삼성')};color:#fff` : d.k === 'g' ? `background:${GOLDBG};border:7px solid ${GOLD};color:#8A5A00` : d.k === 'bad' ? `background:#FDECEC;border:7px solid ${RED};color:${RED}` : `background:${SOFT};color:#7A8597`;
+      const ic = d.k === 'p' ? I.pitcher(96, '#fff') : d.k === 'g' || d.k === 'bad' ? I.ball(96) : I.zz(92);
+      const ex = d.ic === 'tired' ? `<div class="row" style="gap:4px;position:absolute;bottom:18px;left:0;right:0;justify-content:center"><div class="row" style="gap:4px;${ap(AT(s, d.icAt, .45))}">${[0, 1, 2].map(() => I.pitcher(70, RED)).join('')}</div></div>`
+        : d.ic === 'pen' ? `<div class="row" style="gap:4px;position:absolute;bottom:18px;left:0;right:0;justify-content:center"><div class="row" style="gap:4px;${ap(AT(s, d.icAt, .45))}">${[0, 1, 2].map(() => I.pitcher(70, TCv(s.team || '삼성'))).join('')}</div></div>` : '';
+      h += `<div class="col" style="align-items:center;gap:14px;${up(p)}">
+        <div class="num" style="font-size:34px;font-weight:800;color:#7A8597">${esc(d.date || '')}</div>
+        <div style="position:relative;width:${CW}px;height:${CH}px;border-radius:30px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:${ex ? 'flex-start' : 'center'};padding-top:${ex ? 22 : 0}px;gap:6px;${st}">${ic}<div style="font-size:${d.k === 'r' ? 34 : 40}px;font-weight:900;white-space:nowrap">${esc(d.lab || '')}</div>${ex}</div></div>`;
+      if (d.arrow) h += `<div style="align-self:center;margin-top:48px;${ap(AT(s, d.arrowAt, .45))}"><svg width="90" height="60" viewBox="0 0 90 60"><path d="M4 30 H70 M52 10 L74 30 L52 50" fill="none" stroke="${d.arrowC || RED}" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+    });
+    h += `</div>`;
+    (s.brackets || []).forEach(b => { const q = AT(s, b.at, .45);
+      h += `<div class="row" style="justify-content:center;margin-top:20px;${up(q)}"><div class="col" style="align-items:center;gap:12px;margin-left:${b.ml || 0}px"><div style="width:${b.w}px;height:22px;border:7px solid ${b.c || GREEN};border-top:0;border-radius:0 0 18px 18px"></div>${tag(b.lab, b.c || GREEN, '#fff', 42)}</div></div>`; });
+    ZW(lt, s, h);
+  };
+
+  /* ── vA_tiles (b17): 정리 — 아이콘 칸 + 물음표/플러스 배지 ── */
+  SCENE.vA_tiles = (lt, s) => {
+    const its = s.items || [];
+    let h = `<div class="row" style="gap:40px;justify-content:center">` + its.map((x, i) => {
+      const p = AT(s, x.at, .45), good = x.c === 'good', col = good ? GREEN : RED;
+      const ic = x.ic === 'glove' ? I.glove(150, '#B9772F') : x.ic === 'bat' ? I.bat(150, '#3B4A63') : x.ic === 'pen' ? `<div class="row" style="gap:2px">${I.pitcher(78, TCv('삼성'))}${I.pitcher(78, TCv('삼성'))}</div>` : I.pitcher(150, TCv('삼성'));
+      return `<div class="col" style="align-items:center;gap:20px;${up(p, 30)}"><div style="position:relative;width:300px;height:280px;border-radius:36px;background:${good ? '#EAF7EF' : '#FDECEC'};border:7px solid ${col};display:flex;align-items:center;justify-content:center">${ic}
+        <div style="position:absolute;right:-22px;top:-22px;${ap(p)}">${good ? I.plus(84) : I.q(84)}</div></div>
+        <div style="font-size:54px;font-weight:900;letter-spacing:-1px">${esc(x.lab)}</div></div>`; }).join('') + `</div>`;
+    ZW(lt, s, h);
+  };
+
+  /* ── vA_games (k3): 연습경기 점수판 카드 ── */
+  SCENE.vA_games = (lt, s) => {
+    const gs = s.games || [];
+    /* 11/1 21:54 사용자 "u23 마크 저거 맞아?" — 실제 엠블럼이 아닌 그림(별·태극)을 상대 표시로 쓰지 않는다 → 중립 야구공 표시 */
+    const badge = (b) => `<div style="width:130px;height:130px;border-radius:30px;background:#EEF1F5;display:flex;align-items:center;justify-content:center"><svg width="84" height="84" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="#fff" stroke="#B8C1CE" stroke-width="2.5"/><path d="M11 7c5 6 5 20 0 26M29 7c-5 6-5 20 0 26" fill="none" stroke="#9AA3B2" stroke-width="2.4" stroke-dasharray="3 2.6"/></svg></div>`;
+    let h = `<div class="row" style="gap:70px;justify-content:center">` + gs.map((g, i) => {
+      const p = AT(s, g.at, .45), q = AT(s, g.scAt, .45);
+      return `<div class="col" style="align-items:center;gap:20px;${up(p, 30)}">
+        <div class="num" style="font-size:38px;font-weight:800;color:#7A8597">${esc(g.date || '')}</div>
+        <div class="row" style="position:relative;gap:34px;align-items:center;padding:40px 54px;border-radius:40px;background:#fff;box-shadow:0 16px 40px rgba(18,22,31,.10)">
+          <div class="col" style="align-items:center;gap:10px">${LG('KT', 130)}<div style="font-size:36px;font-weight:900;visibility:hidden">KT</div></div>
+          <div class="num" style="font-size:130px;font-weight:900;letter-spacing:-4px;line-height:1;${ap(q)}"><span style="color:${GREEN}">${esc(g.a)}</span><span style="color:#B6BFCC;margin:0 18px">:</span><span style="color:#5B6576">${esc(g.b)}</span></div>
+          <div class="col" style="align-items:center;gap:10px">${badge(g.badge)}<div style="font-size:36px;font-weight:900;white-space:nowrap">${esc(g.opp)}</div></div>
+          <div style="position:absolute;top:-30px;right:-24px;${ap(q)}">${tag('승', GREEN, '#fff', 44)}</div></div></div>`; }).join('') + `</div>`;
+    ZW(lt, s, h);
+  };
+
+  /* ── vA_rank (k7): 리그 1위 두 개 — 메달 + 종목 아이콘 ── */
+  SCENE.vA_rank = (lt, s) => {
+    const its = s.items || [];
+    let h = `<div class="row" style="gap:60px;justify-content:center;align-items:center">`;
+    h += `<div style="${ap(AT(s, s.logoAt, .45))}">${LG('KT', 230)}</div>`;
+    h += its.map((x, i) => { const p = AT(s, x.at, .45);
+      return `<div class="col" style="align-items:center;gap:18px;padding:36px 46px;border-radius:40px;background:#fff;box-shadow:0 16px 40px rgba(18,22,31,.10);${up(p, 30)}">
+        <div class="row" style="gap:16px;align-items:center">${x.ic === 'bat' ? I.bat(110, '#3B4A63') : I.ball(110)}${I.medal(130)}</div>
+        <div style="font-size:52px;font-weight:900;letter-spacing:-1px">${esc(x.lab)}</div>
+        ${x.v ? tag(x.v, GOLD, '#4A3300', 48) : ''}</div>`; }).join('');
+    h += `</div>`;
+    ZW(lt, s, h);
+  };
+
+  /* ── vA_relay (k9): 선발 → 중간 → 마무리 이어달리기, 약한 고리 ── */
+  SCENE.vA_relay = (lt, s) => {
+    const ns = s.nodes || [];
+    let h = `<div class="row" style="gap:0;align-items:center;justify-content:center">`;
+    ns.forEach((n, i) => { const p = AT(s, n.at, .45), bad = n.c === 'bad', good = n.c === 'good', w = AT(s, n.warnAt, .45);
+      const bc = bad ? RED : good ? GREEN : '#3B4A63';
+      if (i) h += `<div style="width:110px;height:16px;background:${bad || ns[i - 1].c === 'bad' ? `repeating-linear-gradient(90deg,${RED} 0 16px,transparent 16px 28px)` : '#C8CFDA'};border-radius:8px;opacity:${c01(p * 1.6)}"></div>`;
+      h += `<div class="col" style="align-items:center;gap:18px;${up(p, 30)}"><div style="position:relative;width:260px;height:260px;border-radius:50%;background:#fff;border:12px solid ${bc};display:flex;align-items:center;justify-content:center;box-shadow:0 14px 34px rgba(18,22,31,.10)">${I.pitcher(150, bc)}
+        ${bad ? `<div style="position:absolute;right:-20px;top:-20px;${ap(w)}">${I.crack(96)}</div>` : good ? `<div style="position:absolute;right:-16px;top:-16px;${ap(w)}">${I.shield(90, GREEN)}</div>` : ''}</div>
+        <div style="font-size:50px;font-weight:900;letter-spacing:-1px;color:${bad ? RED : TXT}">${esc(n.lab)}</div>${n.sub ? `<div style="font-size:34px;font-weight:800;color:#7A8597">${esc(n.sub)}</div>` : ''}</div>`; });
+    h += `</div>`;
+    ZW(lt, s, h);
+  };
+
+  /* ── vA_saves (k10): 세이브 30개 = 공 30개, 평균자책점 방패 ── */
+  SCENE.vA_saves = (lt, s) => {
+    const n = s.n || 30, f = AT(s, s.at, 1.0), q = AT(s, s.eraAt, .45), col = TCv('KT');
+    const balls = Array.from({ length: n }, (_, i) => { const r = c01((f * n - i) * 1.2); return `<div style="${ap(r)}">${I.ball(64)}</div>`; }).join('');
+    let h = `<div class="row" style="gap:80px;align-items:center;justify-content:center">
+      <div class="col" style="align-items:center;gap:20px"><div style="display:grid;grid-template-columns:repeat(10,64px);gap:12px;padding:30px;border-radius:36px;background:#fff;box-shadow:0 14px 34px rgba(18,22,31,.08)">${balls}</div>
+        <div class="row" style="gap:16px;align-items:baseline;${ap(c01(f * 1.2 - .2))}"><div class="num" style="font-size:100px;font-weight:900;color:${col};letter-spacing:-3px;line-height:1">${esc(s.v)}</div><div style="font-size:50px;font-weight:900;color:#3B4A63">${esc(s.vl)}</div></div></div>
+      <div class="col" style="align-items:center;gap:16px;${ap(q)}"><div style="position:relative">${I.shield(300, GREEN)}</div>
+        <div style="font-size:40px;font-weight:800;color:#5B6576">${esc(s.eraLab)}</div><div class="num" style="font-size:96px;font-weight:900;color:${GREEN};letter-spacing:-3px;line-height:1">${esc(s.era)}</div></div></div>`;
+    ZW(lt, s, h);
+  };
+
+  /* ── vA_streak (k2c): 마지막 10경기 = 승 10개 칸 + 연승 불꽃 ── */
+  SCENE.vA_streak = (lt, s) => {
+    const n = s.n || 10, f = AT(s, s.at, 1.0), q = AT(s, s.tagAt, .45);
+    let h = `<div class="row" style="gap:18px;align-items:center;justify-content:center">${LG('KT', 160)}<div style="width:20px"></div>` +
+      Array.from({ length: n }, (_, i) => { const r = c01((f * n - i) * 1.3); return `<div style="width:118px;height:150px;border-radius:26px;background:${GREEN};color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 10px 24px rgba(22,163,74,.25);${ap(r)}">${I.ball(56)}<div style="font-size:48px;font-weight:900">승</div></div>`; }).join('') + `</div>`;
+    h += `<div class="row" style="justify-content:center;margin-top:46px;${ap(q)}">${tag(s.lab || '', '#1B1F27', '#fff', 52)}</div>`;
+    ZW(lt, s, h);
+  };
+
+  Object.assign(MOTION, { vA_gap: s => .8, vA_units: s => .8, vA_errs: s => .8, vA_battery: s => .8, vA_innings: s => .8, vA_days: s => .8, vA_tiles: s => .8, vA_games: s => .8, vA_rank: s => .8, vA_relay: s => .8, vA_saves: s => .8, vA_streak: s => .8 });
+})();
+/* @@VISA1101END */
+
+/* @@MU1101 11/1 20:20 롱폼㊱ 「1차전 핵심 맞대결」 장 — 사용자 "텍스트로 떼우는 거 없이 다 그림과 그래픽으로, 진짜 직관적으로".
+   mu_pgames(투수 경기별 이닝칸·실점공) · mu_hr2(타자 둘 · 홈런공) · mu_streak(연타석 홈런) · mu_abs(타수 칸) · mu_blocks(맞대결 칸·득점 막대)
+   mu_closer(마무리 비교 · 이탈 도장) · mu_donut(구종 도넛) · mu_fly(나비 막대) · mu_choice(두 갈래 선택) */
+(() => {
+  const AT = (s, at, d, fb) => (at != null && at < 0) ? 1 : (at != null && at >= 50) ? 0 : pk(s, at, d, fb);
+  const TC_ = n => { const c = TEAMCOL[(T(n) || {}).code] || '#6A7382'; return c === '#4A4A4A' ? '#12161F' : c; };
+  const LG = (n, px) => { const tt = T(n); return tt && LOGO[tt.code] ? `<img src="${LOGO[tt.code]}" style="width:${px}px;height:${px}px;object-fit:contain;flex:0 0 auto">` : ''; };
+  const PH = (x, w, h, extra = '') => { const src = photoSrc(x.img);
+    return `<div style="width:${w}px;height:${h}px;border-radius:28px;overflow:hidden;position:relative;background:#E9EDF3;flex:0 0 auto;box-shadow:0 18px 40px rgba(18,22,31,.16);${extra}">${src ? `<div class="pp" style="position:absolute;inset:0">${photoImg(x, src, w, h, x.focus || '50% 14%')}</div>` : ''}</div>`; };
+  const NM = (x, fs = 50) => `<div class="row" style="gap:10px;align-items:center;justify-content:center;margin-top:14px">${LG(x.team, fs)}<div style="font-size:${fs}px;font-weight:900;letter-spacing:-1.5px">${esc(x.name)}</div></div>`;
+  const BALL = (px, fill = '#fff', stroke = '#D9DEE6', seam = '#E5484D') => `<svg width="${px}" height="${px}" viewBox="0 0 40 40" style="flex:0 0 auto"><circle cx="20" cy="20" r="17" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/><path d="M11 7c5 6 5 20 0 26M29 7c-5 6-5 20 0 26" fill="none" stroke="${seam}" stroke-width="2.4" stroke-dasharray="3 2.6"/></svg>`;
+  const POPQ = (q) => `opacity:${c01(q * 1.6)};transform:scale(${.7 + .3 * eo(q)})`;
+  const card = (inner, extra = '') => `<div style="background:#fff;border-radius:30px;box-shadow:0 14px 36px rgba(18,22,31,.08);border:2px solid #EDF0F5;${extra}">${inner}</div>`;
+  const prevItem = (s, key, i) => (s._same && s._prev && (s._prev[key] || [])[i]) || null;
+  const was = (s, key, i) => { const p = prevItem(s, key, i); return !!(p && p.at != null && p.at < 50); };
+
+  /* 투수: 경기마다 [상대 로고·날짜] [이닝 칸 9개 중 던진 만큼 채움] [실점 = 빨간 공 n개] [결과] */
+  SCENE.mu_pgames = (lt, s) => {
+    const K = s._same, rows = s.rows || [], col = TC_(s.team);
+    const pp = K ? 1 : AT(s, s.at, .45, seg(lt, .05, .45));
+    let h = titleH(lt, s, 56, 30, K && s._prev.title === s.title);
+    const rowsH = rows.map((r, i) => {
+      const p0 = was(s, 'rows', i) ? 1 : AT(s, r.at, .5, 0), pv_ = prevItem(s, 'rows', i), p = r.detAt == null ? p0 : (pv_ && pv_.detAt != null && pv_.detAt < 50 ? 1 : AT(s, r.detAt, .5, 0));
+      const inn = Array.from({ length: 9 }, (_, k) => { const on = r.inn != null && k < Math.ceil(r.inn), part = r.inn != null && k === Math.floor(r.inn) && r.inn % 1 > 0;
+        const q = c01((p - k * .05) * 2);
+        return `<div class="col" style="width:40px;gap:4px;align-items:center"><div style="width:40px;height:54px;border-radius:10px;background:${on ? col : '#EEF1F5'};${part ? 'opacity:.55;' : ''}opacity:${on ? c01(q * 1.5) : 1}"></div><div class="num" style="font-size:20px;font-weight:800;color:#9AA3B2">${k + 1}</div></div>`; }).join('');
+      const balls = Array.from({ length: Math.max(r.runs || 0, 0) }, (_, k) => `<div style="${POPQ(c01((p - .3 - k * .08) * 2))}">${BALL(54, RED, RED, '#fff')}</div>`).join('');
+      const zero = (r.runs || 0) === 0 ? `<div class="row" style="gap:10px;align-items:center;${POPQ(c01((p - .3) * 2))}"><svg width="60" height="60" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="${GREEN}"/><path d="M11 20l6 6 12-13" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg><b class="num" style="font-size:54px;color:${GREEN}">무실점</b></div>` : '';
+      const res = r.res ? `<div class="num" style="width:96px;height:96px;border-radius:24px;background:${r.res === '승' ? GREEN : r.res === '패' ? RED : '#C9CFD9'};color:#fff;font-size:52px;font-weight:900;display:flex;align-items:center;justify-content:center;${POPQ(c01((p - .6) * 2))}">${esc(r.res)}</div>` : '<div style="width:96px"></div>';
+      return card(`<div class="row" style="gap:30px;align-items:center;padding:26px 34px">
+        <div class="num" style="width:180px;text-align:center;font-size:44px;font-weight:900;color:#3B4A63;white-space:nowrap">${esc(r.d)}</div>
+        <div class="row" style="gap:6px;visibility:${r.inn != null ? 'visible' : 'hidden'}">${inn}</div>
+        <div class="row" style="gap:8px;align-items:center;width:400px">${balls}${zero}${r.rl ? `<b class="num" style="margin-left:10px;font-size:48px;color:${RED};white-space:nowrap;${POPQ(c01((p - .5) * 2))}">${esc(r.rl)}</b>` : ''}</div>
+        ${res}</div>`, `${rise(Math.max(p0, p), 30)}`);
+    }).join('');
+    const sq = (K && s._prev.statAt != null && s._prev.statAt < 50) ? 1 : AT(s, s.statAt, .45, 0);
+    const stH = (s.stats || []).length ? `${s.statsCap ? `<div style="margin-top:12px;padding:4px 18px;border-radius:14px;background:#3B4A63;color:#fff;font-size:28px;font-weight:900;white-space:nowrap;opacity:${c01(sq * 1.6)}">${esc(s.statsCap)}</div>` : ''}<div class="row" style="gap:22px;margin-top:10px;opacity:${c01(sq * 1.6)}">${s.stats.map(t => `<div class="col" style="align-items:center"><b class="num" style="font-size:52px;line-height:1.05;letter-spacing:-1.5px;white-space:nowrap">${esc(t.v)}</b><span style="font-size:24px;font-weight:800;color:${GRAY};white-space:nowrap">${esc(t.k)}</span></div>`).join('')}</div>` : '';
+    h += `<div class="row" style="gap:46px;align-items:center"><div class="col" style="align-items:center;${rise(pp, 30)}">${PH(s, 330, rows.length > 1 ? 360 : 400)}${NM(s)}${stH}</div><div class="col" style="gap:22px;align-items:stretch">${rowsH}</div></div>`;
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.0;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+
+  /* 타자 둘: 사진 + 정규시즌 숫자(홈런·타점) + 플레이오프 홈런 공 */
+  SCENE.mu_hr2 = (lt, s) => {
+    const K = s._same, its = s.items || [];
+    let h = titleH(lt, s, 56, 26, K && s._prev.title === s.title);
+    const sq0 = (() => { const x = its[0] || {}, pv = prevItem(s, 'items', 0); return pv && pv.statAt != null && pv.statAt < 50 ? 1 : AT(s, x.statAt, .45, 0); })();
+    const mid = `<div class="col" style="align-items:center;justify-content:flex-start;padding-top:${360 + 64 + 16 + 20}px;gap:0;opacity:${c01(sq0 * 1.6)}"><div class="row" style="gap:36px">${((its[0] || {}).stats || []).map(t => `<span style="min-width:130px;text-align:center;font-size:34px;font-weight:900;color:${GRAY}">${esc(t.k)}</span>`).join('')}</div></div>`;
+    h += `<div class="row" style="gap:40px;align-items:flex-start;justify-content:center">` + its.map((x, i) => {
+      const p = was(s, 'items', i) ? 1 : AT(s, x.at, .45, 0);
+      const pv = prevItem(s, 'items', i);
+      const sq = pv && pv.statAt != null && pv.statAt < 50 ? 1 : AT(s, x.statAt, .45, 0);
+      const bq = pv && pv.ballAt != null && pv.ballAt < 50 ? 1 : AT(s, x.ballAt, .5, 0);
+      const stats = (x.stats || []).map(t => `<div class="col" style="align-items:center;gap:0;min-width:130px"><b class="num" style="font-size:82px;line-height:1;letter-spacing:-3px;color:${TXT}">${esc(t.v)}</b></div>`).join('');
+      const balls = Array.from({ length: x.balls || 0 }, (_, k) => `<div style="${POPQ(c01((bq - k * .2) * 2))}">${BALL(84, '#FFF6DA', '#F2B705', '#E5484D')}</div>`).join('');
+      return `<div class="col" style="align-items:center;gap:16px;${rise(p, 30)}">${PH(x, 330, 360)}${NM(x)}
+        <div class="row" style="gap:36px;opacity:${c01(sq * 1.6)};height:116px">${stats}</div>
+        <div class="row" style="gap:16px;align-items:center;height:100px;opacity:${bq > 0 ? 1 : 0}">${balls}${x.ballLab ? `<span style="font-size:32px;font-weight:900;color:#8A5A00;margin-left:6px;white-space:nowrap">${esc(x.ballLab)}</span>` : ''}</div></div>`;
+    }).join(`<div style="width:80px"></div>`) + `</div>`;
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.12;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+
+  /* 연타석 홈런: 경기별 타석 칸(홈런은 금색 공) + 이어지는 타석을 묶는 괄호 */
+  SCENE.mu_streak = (lt, s) => {
+    const K = s._same, games = s.games || [], col = TC_(s.team);
+    const pp = K ? 1 : AT(s, s.at, .45, seg(lt, .05, .45));
+    const bq = (K && s._prev.bracketAt != null && s._prev.bracketAt < 50) ? 1 : AT(s, s.bracketAt, .5, 0);
+    let h = titleH(lt, s, 56, 26, K && s._prev.title === s.title);
+    const gH = games.map((g, i) => {
+      const p = was(s, 'games', i) ? 1 : AT(s, g.at, .5, 0);
+      const abs = (g.abs || []).map((a, k) => { const q = c01((p - .2 - k * .25) * 2), hr = a.k === 'hr';
+        return `<div class="col" style="width:150px;height:170px;border-radius:26px;background:${hr ? '#FFF6DA' : '#EEF1F5'};border:${hr ? `6px solid #F2B705` : '0'};align-items:center;justify-content:center;gap:6px;${POPQ(q)};${a.streak && bq > 0 ? `box-shadow:0 0 0 ${Math.round(8 * bq)}px rgba(229,72,77,.35)` : ''}">
+          ${hr ? BALL(74, '#fff', '#F2B705') : `<div style="font-size:40px;font-weight:900;color:#9AA3B2">${esc(a.t || '')}</div>`}
+          <div style="font-size:34px;font-weight:900;color:${hr ? '#8A5A00' : '#9AA3B2'};white-space:nowrap">${esc(a.t || '홈런')}</div></div>`; }).join('');
+      return card(`<div class="col" style="gap:16px;align-items:center;padding:24px 30px">
+        <div class="row" style="gap:12px;align-items:center"><div class="num" style="font-size:36px;font-weight:900;color:#3B4A63">${esc(g.d)}</div></div>
+        <div class="row" style="gap:16px">${abs}</div>
+        <div style="height:56px;display:flex;align-items:center">${g.note ? `<div class="num" style="height:56px;padding:0 26px;border-radius:999px;background:${col};color:#fff;font-size:34px;font-weight:900;display:flex;align-items:center;${POPQ(c01((p - .6) * 2))}">${esc(g.note)}</div>` : ''}</div></div>`, rise(p, 30));
+    }).join('');
+    h += `<div class="row" style="gap:46px;align-items:center"><div class="col" style="align-items:center;${rise(pp, 30)}">${PH(s, 320, 380)}${NM(s)}</div>
+      <div class="col" style="gap:20px;align-items:center"><div class="row" style="gap:28px;align-items:stretch">${gH}</div>
+      <div style="height:80px;display:flex;align-items:center;opacity:${c01(bq * 1.6)};transform:translateY(${(1 - eo(bq)) * 16}px)"><div class="num" style="height:76px;padding:0 40px;border-radius:999px;background:${RED};color:#fff;font-size:44px;font-weight:900;display:flex;align-items:center;gap:14px">${BALL(46, '#fff', '#fff')}${esc(s.bracket || '')}</div></div></div></div>`;
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.2;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+
+  /* 타수 칸: 안타는 구단 색, 아웃은 회색 */
+  SCENE.mu_abs = (lt, s) => {
+    const K = s._same, col = TC_(s.team), abs = s.abs || [];
+    const pp = K ? 1 : AT(s, s.at, .45, seg(lt, .05, .45)), aq = AT(s, s.absAt, .5, 0);
+    let h = titleH(lt, s, 56, 26, K && s._prev.title === s.title);
+    const cells = abs.map((a, k) => { const q = c01((aq - k * .18) * 2);
+      return `<div class="col" style="width:190px;height:230px;border-radius:30px;background:${a ? col : '#EEF1F5'};align-items:center;justify-content:center;gap:10px;${POPQ(q)}">
+        ${a ? BALL(90, '#fff', '#fff') : `<svg width="80" height="80" viewBox="0 0 40 40"><path d="M10 10l20 20M30 10L10 30" stroke="#AAB2BF" stroke-width="5" stroke-linecap="round"/></svg>`}
+        <div style="font-size:42px;font-weight:900;color:${a ? '#fff' : '#9AA3B2'}">${a ? '안타' : '아웃'}</div></div>`; }).join('');
+    const n = abs.filter(Boolean).length;
+    h += `<div class="row" style="gap:60px;align-items:center"><div class="col" style="align-items:center;${rise(pp, 30)}">${PH(s, 330, 400)}${NM(s)}</div>
+      <div class="col" style="gap:26px;align-items:center"><div class="row" style="gap:18px">${cells}</div>
+      <div class="num" style="font-size:96px;font-weight:900;letter-spacing:-3px;opacity:${c01((aq - .6) * 2.5)}">${abs.length}<span style="font-size:48px">타수</span> <span style="color:${col}">${n}</span><span style="font-size:48px;color:${col}">안타</span></div></div></div>`;
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.2;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+
+  /* 맞대결 칸: 한 칸 = 한 경기(이긴 팀 색·로고) + 득점 막대 */
+  SCENE.mu_blocks = (lt, s) => {
+    /* 11/1 22:01 사용자 "같은 팀 로고를 한 장면에 두 개씩 써야 하나" → 경기 칸은 구단 색 네모만, 로고는 아래 팀 칸에 한 번씩. 승수·득점은 팀 칸 안에 */
+    const K = s._same, gs = s.groups || [];
+    let h = titleH(lt, s, 56, 30, K && s._prev.title === s.title);
+    const cells = gs.map((g, gi) => { const p = was(s, 'groups', gi) ? 1 : AT(s, g.at, .6, 0);
+      return Array.from({ length: g.n }, (_, k) => { const q = c01((p - k * .07) * 2.2);
+        return `<div style="position:relative;width:76px;height:76px;border-radius:18px;background:#E3E7EE"><div style="position:absolute;inset:0;border-radius:18px;background:${TC_(g.team)};${POPQ(q)};${g.hi ? 'box-shadow:0 0 0 6px #F2B705' : ''}"></div></div>`; }).join(''); }).join('');
+    h += `<div class="row" style="gap:12px;align-items:center;flex-wrap:nowrap;margin-bottom:40px">${cells}</div>`;
+    const teams = (s.tally && s.tally.items) || (s.runs && s.runs.items) || [];
+    const tq = s.tally ? ((K && s._prev.tally && s._prev.tally.at != null && s._prev.tally.at < 50) ? 1 : AT(s, s.tally.at, .5, 0)) : 0;
+    const rq = s.runs ? ((K && s._prev.runs && s._prev.runs.at != null && s._prev.runs.at < 50) ? 1 : AT(s, s.runs.at, .6, 0)) : 0;
+    const mx = s.runs ? Math.max(...s.runs.items.map(r => r.v)) : 1;
+    const col = t => { const tl = ((s.tally || {}).items || []).find(x => x.team === t.team), rn = ((s.runs || {}).items || []).find(x => x.team === t.team), c = TC_(t.team);
+      const rv = rn ? Math.round(rn.v * eo(rq)) : 0, w = rn ? Math.round(420 * rn.v / mx * eo(rq)) : 0;
+      return card(`<div class="col" style="width:560px;padding:30px 0;align-items:center;gap:16px">
+        <div class="row" style="gap:24px;align-items:center">${LG(t.team, 110)}<div style="opacity:${c01(tq * 1.6)}"><b class="num" style="font-size:110px;letter-spacing:-3px;line-height:1;color:${c}">${esc(tl ? tl.v : '')}</b><span style="font-size:46px;font-weight:900;color:${GRAY}"> ${esc(tl ? tl.u : '')}</span></div></div>
+        <div class="col" style="gap:8px;align-items:center;height:70px;opacity:${c01(rq * 3)}">
+          <div class="row" style="gap:14px;align-items:center"><div style="width:420px;height:44px;border-radius:14px;background:#EEF1F5;overflow:hidden"><div style="width:${w}px;height:44px;background:${c}"></div></div><b class="num" style="font-size:54px;color:${c}">${rv}<span style="font-size:30px">점</span></b></div></div></div>`, `opacity:${c01(Math.max(tq, rq) * 1.6)}`); };
+    h += `<div class="row" style="gap:60px;align-items:stretch">${teams.map(col).join('')}</div>`;
+    h += `<div style="margin-top:18px;height:44px;font-size:34px;font-weight:900;color:${GRAY};opacity:${c01(rq * 3)}">${esc((s.runs || {}).label || '')}</div>`;
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.0;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+
+  /* 마무리 비교: 왼쪽 KT(로고) / 오른쪽 사진 — out 이 뜨면 사진이 흐려지고 '이탈' 도장 */
+  SCENE.mu_closer = (lt, s) => {
+    const K = s._same, L = s.l || {}, R = s.r || {};
+    const side = (x, key) => { const pv = K && s._prev[key]; const p = pv && pv.at != null && pv.at < 50 ? 1 : AT(s, x.at, .45, 0);
+      const oq = x.out ? (pv && pv.outAt != null && pv.outAt < 50 && pv.out ? 1 : AT(s, x.outAt, .45, 0)) : 0;
+      const head = x.img ? `<div style="position:relative">${PH(x, 300, 330, `filter:grayscale(${(oq * .9).toFixed(2)})`)}${oq > 0 ? `<div class="num" style="position:absolute;left:50%;top:78%;transform:translate(-50%,-50%) rotate(-12deg) scale(${1.4 - .4 * eo(oq)});opacity:${c01(oq * 1.6)};padding:10px 34px;border:8px solid ${RED};border-radius:20px;color:${RED};background:rgba(255,255,255,.88);font-size:70px;font-weight:900;white-space:nowrap">${esc(x.out)}</div>` : ''}</div>`
+        : `<div style="width:300px;height:330px;border-radius:28px;background:#fff;border:2px solid #EDF0F5;display:flex;align-items:center;justify-content:center;box-shadow:0 18px 40px rgba(18,22,31,.08)">${LG(x.team, 230)}</div>`;
+      const st = (x.stats || []).map(t => `<div class="col" style="align-items:center;gap:2px;min-width:150px"><b class="num" style="font-size:70px;line-height:1;letter-spacing:-2px;color:${t.hi ? TC_(x.team) : TXT}">${esc(t.v)}</b><span style="font-size:28px;font-weight:800;color:${GRAY};white-space:nowrap">${esc(t.k)}</span></div>`).join('');
+      return `<div class="col" style="align-items:center;gap:16px;${rise(p, 30)}">${head}${x.name ? NM(x, 46) : `<div style="height:64px;display:flex;align-items:center;font-size:44px;font-weight:900">${esc(x.label || '')}</div>`}
+        ${card(`<div class="col" style="gap:8px;align-items:center;padding:18px 26px"><div style="font-size:30px;font-weight:900;color:#3B4A63">${esc(x.cap || '')}</div><div class="row" style="gap:18px">${st}</div></div>`)}</div>`; };
+    let h = titleH(lt, s, 56, 26, K && s._prev.title === s.title);
+    h += `<div class="row" style="gap:110px;align-items:flex-start">${side(L, 'l')}${side(R, 'r')}</div>`;
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.15;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+
+  /* 구종 도넛 */
+  SCENE.mu_donut = (lt, s) => {
+    const K = s._same, its = s.items || [], tot = its.reduce((a, x) => a + x.v, 0);
+    let h = titleH(lt, s, 56, 26, K && s._prev.title === s.title);
+    const R = 210, C = 2 * Math.PI * R; let acc = 0;
+    const arcs = its.map((x, i) => { const q = was(s, 'items', i) ? 1 : AT(s, x.at, .6, 0), len = C * x.v / tot * eo(q);
+      const a = `<circle cx="260" cy="260" r="${R}" fill="none" stroke="${x.c}" stroke-width="86" stroke-dasharray="${len} ${C}" stroke-dashoffset="${-acc}" transform="rotate(-90 260 260)"/>`; acc += C * x.v / tot; return a; }).join('');
+    const leg = its.map((x, i) => { if (x.noLeg) return ''; const q = was(s, 'items', i) ? 1 : AT(s, x.at, .5, 0);
+      return `<div class="row" style="gap:20px;align-items:center;${rise(q, 16)}"><div style="width:44px;height:44px;border-radius:12px;background:${x.c}"></div><div style="width:200px;font-size:52px;font-weight:900">${esc(x.k)}</div><b class="num" style="font-size:80px;color:${x.c === '#D5DAE2' ? GRAY : x.c}">${esc(String(x.v))}</b><span style="font-size:40px;font-weight:900;color:${GRAY}">구</span></div>`; }).join('');
+    h += `<div class="row" style="gap:90px;align-items:center"><div style="position:relative;width:520px;height:520px"><svg width="520" height="520"><circle cx="260" cy="260" r="${R}" fill="none" stroke="#EEF1F5" stroke-width="86"/>${arcs}</svg>
+      <div class="col" style="position:absolute;inset:0;align-items:center;justify-content:center"><b class="num" style="font-size:110px;line-height:1">${tot}</b><span style="font-size:40px;font-weight:900;color:${GRAY}">${esc(s.center || '구')}</span></div></div>
+      <div class="col" style="gap:30px;align-items:flex-start">${leg}</div></div>`;
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.0;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+
+  /* 나비 막대: 가운데 항목, 왼쪽 팀 ← → 오른쪽 팀. 나쁜 쪽(worse) 빨간 테두리 */
+  SCENE.mu_fly = (lt, s) => {
+    const K = s._same, rows = s.rows || [], cl = TC_(s.lt), cr = TC_(s.rt);
+    let h = titleH(lt, s, 56, 26, K && s._prev.title === s.title);
+    h += `<div class="row" style="width:1500px;justify-content:space-between;align-items:center;margin-bottom:20px">${LG(s.lt, 130)}${LG(s.rt, 130)}</div>`;
+    h += rows.map((r, i) => { const q = was(s, 'rows', i) ? 1 : AT(s, r.at, .6, 0), mx = Math.max(r.l, r.r), e = eo(c01(q * 1.3));
+      const wl = Math.round(520 * r.l / mx * e), wr = Math.round(520 * r.r / mx * e);
+      const fmt = v => r.dec ? (v * e).toFixed(r.dec) : String(Math.round(v * e));
+      return `<div class="row" style="width:1500px;gap:0;align-items:center;height:130px;opacity:${c01(q * 3)}">
+        <div class="row" style="width:600px;justify-content:flex-end;align-items:center;gap:18px"><b class="num" style="font-size:66px;color:${r.worse === 'l' ? RED : cl}">${fmt(r.l)}</b><div style="flex:0 0 auto;width:${wl}px;height:80px;border-radius:20px 0 0 20px;background:${cl};${r.worse === 'l' ? `outline:6px solid ${RED};outline-offset:3px` : ''}"></div></div>
+        <div style="width:300px;text-align:center;font-size:40px;font-weight:900;letter-spacing:-1px;color:#3B4A63;white-space:nowrap">${esc(r.k)}</div>
+        <div class="row" style="width:600px;justify-content:flex-start;align-items:center;gap:18px"><div style="flex:0 0 auto;width:${wr}px;height:80px;border-radius:0 20px 20px 0;background:${cr};${r.worse === 'r' ? `outline:6px solid ${RED};outline-offset:3px` : ''}"></div><b class="num" style="font-size:66px;color:${r.worse === 'r' ? RED : cr}">${fmt(r.r)}</b></div></div>`; }).join('');
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.1;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+
+  /* 두 갈래 선택: 가운데 팀 로고, 양쪽 그림 카드 */
+  const ICO = {
+    rest: c => `<svg width="150" height="150" viewBox="0 0 64 64"><rect x="8" y="12" width="48" height="44" rx="8" fill="#fff" stroke="${c}" stroke-width="4"/><rect x="8" y="12" width="48" height="12" rx="6" fill="${c}"/><path d="M26 34h12l-12 12h12" fill="none" stroke="${c}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    record: c => `<svg width="150" height="150" viewBox="0 0 64 64"><rect x="10" y="34" width="10" height="20" rx="3" fill="${c}"/><rect x="27" y="22" width="10" height="32" rx="3" fill="${c}"/><rect x="44" y="12" width="10" height="42" rx="3" fill="${c}"/></svg>`,
+  };
+  SCENE.mu_choice = (lt, s) => {
+    const K = s._same, its = s.items || [], col = TC_(s.team);
+    const lq = K ? 1 : AT(s, s.at, .45, seg(lt, .05, .45)), qq = AT(s, s.qAt, .45, 0);
+    let h = titleH(lt, s, 56, 30, K && s._prev.title === s.title);
+    const side = (x, i) => { const q = was(s, 'items', i) ? 1 : AT(s, x.at, .5, 0);
+      return card(`<div class="col" style="width:420px;padding:34px 0;align-items:center;gap:14px">${ICO[x.ic](col)}<div style="font-size:58px;font-weight:900">${esc(x.k)}</div><div style="display:flex;gap:10px;align-items:center">${(x.who || []).map(w => `<span style="font-size:34px;font-weight:900;color:${col}">${esc(w)}</span>`).join('')}</div></div>`, POPQ(q)); };
+    h += `<div class="row" style="gap:70px;align-items:center">${side(its[0], 0)}
+      <div class="col" style="align-items:center;gap:14px;${POPQ(lq)}">${LG(s.team, 200)}<div class="num" style="width:120px;height:120px;border-radius:50%;background:${col};color:#fff;font-size:80px;font-weight:900;display:flex;align-items:center;justify-content:center;${POPQ(qq)}">?</div></div>
+      ${side(its[1], 1)}</div>`;
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.1;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+
+
+  /* 이닝 띠: 사진 + 1~9회 칸(구간마다 색·이름) + 표시(교체 시점 등) + 아래 작은 그림 배지 */
+  const BIC = {
+    bat: c => `<svg width="70" height="70" viewBox="0 0 64 64"><path d="M14 52L46 14" stroke="${c}" stroke-width="9" stroke-linecap="round"/><circle cx="50" cy="48" r="7" fill="#fff" stroke="${c}" stroke-width="4"/></svg>`,
+    run: c => `<svg width="70" height="70" viewBox="0 0 64 64"><circle cx="38" cy="12" r="7" fill="${c}"/><path d="M30 24l-10 14 12 6-6 14M30 24l12 6 8-6M32 44l14 4" fill="none" stroke="${c}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    bunt: c => `<svg width="70" height="70" viewBox="0 0 64 64"><path d="M10 26h44" stroke="${c}" stroke-width="9" stroke-linecap="round"/><circle cx="32" cy="46" r="8" fill="#fff" stroke="${c}" stroke-width="4"/></svg>`,
+  };
+  SCENE.mu_inn = (lt, s) => {
+    const K = s._same, segs = s.segs || [], col = TC_(s.team);
+    const pp = K ? 1 : AT(s, s.at, .45, seg(lt, .05, .45));
+    let h = titleH(lt, s, 56, 30, K && s._prev.title === s.title);
+    const cellOf = n => { const g = segs.find(x => n >= x.frm && n <= x.to); return g ? [g, segs.indexOf(g)] : [null, -1]; };
+    const cells = Array.from({ length: 9 }, (_, k) => { const n = k + 1, [g, gi] = cellOf(n);
+      const q = g ? (was(s, 'segs', gi) ? 1 : c01((AT(s, g.at, .6, 0) - (n - g.frm) * .08) * 2)) : 0;
+      const bg = !g ? '#EEF1F5' : g.skip ? '#fff' : (g.c || col);
+      return `<div class="col" style="width:112px;gap:8px;align-items:center"><div style="position:relative;width:112px;height:120px;border-radius:20px;background:#EEF1F5;overflow:hidden">
+        <div style="position:absolute;inset:0;background:${bg};${g && g.skip ? `border:5px dashed ${RED};border-radius:20px;box-sizing:border-box;` : ''}opacity:${c01(q * 1.5)}"></div>
+        ${g && g.skip && q > 0 ? `<svg style="position:absolute;inset:0;margin:auto;opacity:${c01(q * 1.5)}" width="70" height="70" viewBox="0 0 40 40"><path d="M10 10l20 20M30 10L10 30" stroke="${RED}" stroke-width="5" stroke-linecap="round"/></svg>` : ''}
+        ${g && g.hi && q > 0 ? `<div style="position:absolute;inset:0;box-shadow:inset 0 0 0 6px #F2B705;border-radius:20px;opacity:${c01(q * 1.5)}"></div>` : ''}</div>
+        <div class="num" style="font-size:28px;font-weight:900;color:#9AA3B2">${n}회</div></div>`; }).join('');
+    const labs = segs.map((g, gi) => { const q = was(s, 'segs', gi) ? 1 : AT(s, g.at, .6, 0), w = (g.to - g.frm + 1) * 112 + (g.to - g.frm) * 12;
+      return `<div style="position:absolute;left:${(g.frm - 1) * 124}px;width:${w}px;top:0;display:flex;flex-direction:column;align-items:center;opacity:${c01(q * 1.6)}"><div style="width:100%;height:14px;border:5px solid ${g.skip ? RED : g.c || col};border-top:0;border-radius:0 0 12px 12px;box-sizing:border-box"></div><div style="margin-top:8px;font-size:36px;font-weight:900;white-space:nowrap;color:${g.skip ? RED : TXT}">${esc(g.lab || '')}</div></div>`; }).join('');
+    const marks = (s.marks || []).map((m, i) => { const pv = K && (s._prev.marks || [])[i], q = pv && pv.at != null && pv.at < 50 ? 1 : AT(s, m.at, .45, 0);
+      return `<div style="position:absolute;left:${m.inn * 124 - 6}px;top:-30px;height:200px;border-left:6px dashed ${RED};opacity:${c01(q * 1.6)}"><div class="num" style="position:absolute;top:-56px;left:50%;transform:translateX(-50%);white-space:nowrap;height:52px;padding:0 20px;border-radius:999px;background:${RED};color:#fff;font-size:30px;font-weight:900;display:flex;align-items:center">${esc(m.lab)}</div></div>`; }).join('');
+    const badges = (s.badges || []).map((b, i) => { const pv = K && (s._prev.badges || [])[i], q = pv && pv.at != null && pv.at < 50 ? 1 : AT(s, b.at, .45, 0);
+      const lgo = b.team && b.team !== s.team && (s.badges || []).findIndex(z => z.team === b.team) === i;   /* 11/1 22:45 한 장면에 같은 팀 로고 한 번 */
+      return card(`<div class="row" style="gap:14px;align-items:center;padding:12px 26px">${lgo ? LG(b.team, 56) : ''}${BIC[b.ic] ? BIC[b.ic](TC_(b.team || s.team)) : ''}<div style="font-size:40px;font-weight:900;white-space:nowrap">${esc(b.lab)}</div></div>`, POPQ(q)); }).join('');
+    h += `<div class="row" style="gap:46px;align-items:center"><div class="col" style="align-items:center;${rise(pp, 30)}">${PH(s, 300, 360)}${NM(s)}</div>
+      <div class="col" style="gap:20px;align-items:flex-start"><div style="position:relative;margin-top:60px"><div class="row" style="gap:12px">${cells}</div>${marks}</div>
+      <div style="position:relative;height:80px;width:1100px">${labs}</div>
+      <div class="row" style="gap:20px;min-height:90px">${badges}</div></div></div>`;
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.05;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+
+  /* 사진 + 아이콘 개수(홀드 등) + 평균자책점 눈금(높을수록 빨강) */
+  SCENE.mu_pstat = (lt, s) => {
+    const K = s._same, col = TC_(s.team);
+    const pp = K ? 1 : AT(s, s.at, .45, seg(lt, .05, .45)), iq = AT(s, s.iconAt, .6, 0), eq = AT(s, s.eraAt, .6, 0);
+    let h = titleH(lt, s, 56, 30, K && s._prev.title === s.title);
+    const icons = Array.from({ length: s.n || 0 }, (_, k) => `<div style="${POPQ(c01((iq - k * .02) * 2))}">${BALL(52, '#fff', col, col)}</div>`).join('');
+    const mx = s.max || 7, v = s.era || 0, W = 900, x = Math.round(W * v / mx * eo(eq));
+    const ticks = Array.from({ length: mx + 1 }, (_, k) => `<div class="num" style="position:absolute;left:${Math.round(W * k / mx) - 10}px;top:72px;font-size:26px;font-weight:800;color:#9AA3B2">${k}</div>`).join('');
+    h += `<div class="row" style="gap:60px;align-items:center"><div class="col" style="align-items:center;${rise(pp, 30)}">${PH(s, 320, 390)}${NM(s)}</div>
+      <div class="col" style="gap:40px;align-items:flex-start">
+        <div class="col" style="gap:12px"><div class="row" style="gap:10px;flex-wrap:wrap;width:${W}px">${icons}</div><div class="num" style="font-size:60px;font-weight:900;opacity:${c01(iq * 2)}">${s.n}<span style="font-size:34px;color:${GRAY}"> ${esc(s.iconLab || '')}</span></div></div>
+        <div class="col" style="gap:10px;opacity:${c01(eq * 3)}"><div style="font-size:36px;font-weight:900;color:#3B4A63">${esc(s.eraLab || '평균자책점')}</div>
+          <div style="position:relative;width:${W}px;height:110px"><div style="position:absolute;left:0;top:20px;width:${W}px;height:44px;border-radius:22px;background:linear-gradient(90deg,#16A34A,#F2B705 55%,#E5484D)"></div>
+          <div style="position:absolute;left:${x - 4}px;top:4px;width:8px;height:76px;border-radius:4px;background:${TXT}"></div>${ticks}
+          <div class="num" style="position:absolute;left:${Math.min(x - 70, W - 150)}px;top:-78px;font-size:72px;font-weight:900;color:${RED}">${esc(String(v.toFixed ? v.toFixed(2) : v))}</div></div></div></div></div>`;
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.1;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+  Object.assign(MOTION, { mu_inn: s => .8, mu_pstat: s => .8 });
+  /* 11/1 22:40 불펜 싸움: 두 팀 불펜 카드(로고 한 번). KT = 평균자책점 게이지(경고 아이콘), 삼성 = 등판 사람 아이콘 n개(배터리 아이콘). VS 없음 */
+  SCENE.mu_pen2 = (lt, s) => {
+    const K = s._same, L = s.l || {}, R = s.r || {};
+    const PERSON = (px, c) => `<svg width="${px}" height="${px}" viewBox="0 0 40 40" style="flex:0 0 auto"><circle cx="20" cy="11" r="7.5" fill="${c}"/><path d="M6 38c0-9 6-15 14-15s14 6 14 15z" fill="${c}"/></svg>`;
+    const WARN = `<svg width="78" height="78" viewBox="0 0 40 40"><path d="M20 3 L38 35 H2 Z" fill="${RED}"/><rect x="18" y="13" width="4" height="12" rx="2" fill="#fff"/><circle cx="20" cy="30" r="2.4" fill="#fff"/></svg>`;
+    const BATT = `<svg width="96" height="60" viewBox="0 0 48 30"><rect x="2" y="3" width="38" height="24" rx="5" fill="#fff" stroke="#E8730C" stroke-width="3"/><rect x="41" y="10" width="5" height="10" rx="2" fill="#E8730C"/><rect x="6" y="7" width="8" height="16" rx="2" fill="#E8730C"/></svg>`;
+    const head = (x, ico) => `<div class="row" style="gap:18px;align-items:center;justify-content:space-between;width:100%"><div class="row" style="gap:16px;align-items:center">${LG(x.team, 96)}<div style="font-size:58px;font-weight:900;letter-spacing:-1.5px">${esc(x.label)}</div></div>${ico}</div>`;
+    const lq = K ? 1 : AT(s, L.at, .45, 0), rq = K ? 1 : AT(s, R.at, .45, 0);
+    const W = 600, mx = 7, v = +L.v || 0, gx = Math.round(W * v / mx * eo(lq));
+    const ticks = Array.from({ length: mx + 1 }, (_, k) => `<div class="num" style="position:absolute;left:${Math.round(W * k / mx) - 8}px;top:66px;font-size:24px;font-weight:800;color:#9AA3B2">${k}</div>`).join('');
+    const lBody = `<div class="col" style="gap:6px;align-items:center;width:${W}px"><div class="num" style="font-size:120px;font-weight:900;line-height:1;color:${RED}">${esc(String(L.v))}</div><div style="font-size:34px;font-weight:900;color:#3B4A63;margin-bottom:26px">${esc(L.cap)}</div>
+      <div style="position:relative;width:${W}px;height:100px"><div style="position:absolute;left:0;top:18px;width:${W}px;height:40px;border-radius:20px;background:linear-gradient(90deg,#16A34A,#F2B705 55%,#E5484D)"></div><div style="position:absolute;left:${gx - 4}px;top:4px;width:8px;height:68px;border-radius:4px;background:${TXT}"></div>${ticks}</div></div>`;
+    const n = +R.n || 0, ppl = Array.from({ length: n }, (_, k) => `<div style="${POPQ(c01((rq - k * .015) * 2))}">${PERSON(44, '#E8730C')}</div>`).join('');
+    const rBody = `<div class="col" style="gap:6px;align-items:center;width:${W}px"><div class="num" style="font-size:120px;font-weight:900;line-height:1;color:#E8730C">${esc(String(R.v))}</div><div style="font-size:34px;font-weight:900;color:#3B4A63;margin-bottom:26px">${esc(R.cap)}</div>
+      <div class="row" style="gap:4px;flex-wrap:wrap;width:${12 * 48}px;justify-content:center">${ppl}</div></div>`;
+    const box = (x, q, ico, body) => `<div style="opacity:${c01(q * 2)};${rise(q, 24)}">${card(`<div class="col" style="gap:34px;align-items:center;padding:40px 50px;width:${W + 100}px;height:520px;box-sizing:border-box">${head(x, ico)}${body}</div>`)}</div>`;
+    let h = titleH(lt, s, 56, 26, K && s._prev.title === s.title);
+    h += `<div class="row" style="gap:70px;align-items:flex-start">${box(L, lq, WARN, lBody)}${box(R, rq, BATT, rBody)}</div>`;
+    h += textH(lt, s, .8, 60); wrapC(`<div class="col" style="zoom:1.15;width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+  };
+  Object.assign(MOTION, { mu_pen2: s => .8 });
+
+
+  Object.assign(MOTION, { mu_pgames: s => .8, mu_hr2: s => .8, mu_streak: s => .8, mu_abs: s => .8, mu_blocks: s => .8, mu_closer: s => .8, mu_donut: s => .8, mu_fly: s => .8, mu_choice: s => .8 });
+})();
+/* @@MU1101END */
+
+/* @@FACEX1101 11/1 20:17 사용자 "사진 무조건 가운데로 잘 맞춰" — 사진마다 얼굴 가로 위치(0~1)·원본 크기. cover 로 자를 때 얼굴이 칸 가운데 오게 object-position x 를 계산한다 */
+const FACEX = {"경기/구자욱_적시타세리머니_스타뉴스": [0.45, 1200, 1557], "경기/김도영_덕아웃_KIA제공": [0.43, 1200, 800], "경기/김재윤_투구_1007_삼성제공": [0.48, 1200, 911], "경기/나성범_세리머니_KIA제공": [0.48, 1200, 800], "경기/대니엘_역투_스포츠경향": [0.55, 1200, 911], "경기/대니엘_주먹_KT제공": [0.41, 647, 911], "경기/디아즈_경기_삼성제공": [0.5, 1200, 825], "경기/박재현_주루_KIA제공": [0.42, 1200, 800], "경기/박진만_박수_0908_삼성제공": [0.38, 1200, 1100], "경기/스기모토_역투_스포츠경향": [0.28, 1200, 911], "경기/양현종_글러브_1012_KIA제공": [0.48, 1280, 853], "경기/올러_경기_KIA제공_세로": [0.46, 640, 801], "경기/원태인_역투_삼성제공": [0.68, 640, 911], "경기/원태인_투구_0828_삼성제공_세로": [0.5, 682, 853], "경기/원태인_포효_스타뉴스": [0.52, 1200, 911], "경기/이강철_덕아웃_KT제공": [0.45, 1200, 911], "경기/이강철_상체_스포츠조선": [0.41, 1200, 911], "경기/이범호_박수_0915_KIA제공_세로": [0.36, 588, 736], "경기/최원준_204안타_1007_KT제공": [0.45, 647, 967], "경기/최원준_역전타_KT제공": [0.62, 1200, 800], "경기/최원태_경기_삼성제공_세로": [0.44, 640, 800], "경기/최형우_100타점_0918_삼성제공_중앙_세로": [0.53, 852, 1066], "경기/최형우_만루포미소_0826_삼성제공_세로": [0.57, 640, 800], "경기/카스트로_엄지_0810_KIA제공": [0.45, 983, 1475], "경기/페덱_포효_연합뉴스": [0.47, 1200, 810], "경기/페덱_환호_삼성제공": [0.52, 1280, 1822], "경기/한준수_주루_KIA제공": [0.43, 1200, 800], "경기/후라도_경기_1019_삼성제공": [0.43, 1200, 800], "경기/후라도_경기_삼성제공": [0.7, 640, 427], "경기/후라도_박수_삼성제공_세로": [0.53, 729, 912], "경기/힐리어드_포효_KT제공_1280": [0.61, 1280, 853], "경기/힐리어드_하이파이브_1011_KT제공": [0.28, 1200, 800], "상황별/강민호_3점포_중앙": [0.5, 460, 500], "상황별/김지찬_상체": [0.59, 520, 728], "상황별/김지찬_홈충돌": [0.4, 1280, 853], "상황별/박승규_타격_0830_삼성제공": [0.47, 626, 911], "상황별/이재현_상체": [0.34, 520, 728], "상황별/최원태_KIA전_0908_삼성제공": [0.68, 465, 698], "카드/FA9_디아즈_경기": [0.54, 639, 825], "카드/FA9_후라도": [0.5, 325, 419], "카드/FA9원_대니엘": [0.5, 460, 460], "카드/G18_강민호_포수": [0.47, 780, 1000], "카드/G18_디아즈_B": [0.57, 330, 427], "카드/G18_류지혁_A": [0.5, 535, 691], "카드/G18_최형우_미소": [0.47, 624, 800], "카드/P17_김선빈": [0.61, 567, 733], "카드/P18_올러_투구": [0.61, 579, 747], "카드/P18_한준수_세리머니": [0.55, 558, 721], "카드/P20_후라도_투구": [0.6, 660, 854], "카드/P22_하주석_타격": [0.57, 420, 542], "카드/P31_이승민_삼성제공": [0.54, 1000, 1340], "경기/페덱_사용자제공_1004": [0.47, 620, 775], "경기/최원준_두검지_1006_KT제공": [0.36, 850, 900], "경기/힐리어드_하늘가리키기_KT제공": [0.47, 1200, 1799]};
+let __FXS = null;
+function __faceFix() {
+  try {
+    if (!__FXS) { __FXS = {}; Object.keys(FACEX).forEach(k => { const s_ = photoSrc(k); if (s_) __FXS[s_] = FACEX[k]; }); }
+    document.querySelectorAll('img').forEach(im => {
+      const f = __FXS[im.getAttribute('src')]; if (!f || im.dataset.nofx) return;
+      const cs = getComputedStyle(im); if (cs.objectFit !== 'cover') return;
+      const w = im.clientWidth, h = im.clientHeight; if (!w || !h) return;
+      const [fx, W, H] = f, sc = Math.max(w / W, h / H), W2 = W * sc;
+      if (W2 - w < 2) return;
+      const px = Math.max(0, Math.min(1, (fx * W2 - w / 2) / (W2 - w)));
+      const cur = (im.style.objectPosition || cs.objectPosition || '50% 12%').split(/\s+/);
+      im.style.objectPosition = `${(px * 100).toFixed(1)}% ${cur[1] || '12%'}`;
+    });
+  } catch (e) {}
+}
+/* 11/1 22:04 사용자 "제목이 점점 위로 올라가" — 장면마다 본문 높이에 따라 가운데 맞춤되면서 제목 높이가 달라짐 → 장면 제목(s.title)을 언제나 같은 높이(TITLE_Y)에 둔다. 아래 자막 칸을 넘으면 그만큼만 덜 옮긴다 */
+const TITLE_Y = 172, BOTTOM_MAX = 935;
+function __titleFix(s) {
+  try {
+    if (!s || !s.title) return;
+    const body = document.getElementById('body'); if (!body) return;
+    const el = body.firstElementChild; if (!el) return;
+    el.style.translate = '';
+    const want = String(s.title).replace(/\s+/g, ' ').trim();
+    const t = [...body.querySelectorAll('.title')].find(x => x.textContent.replace(/\s+/g, ' ').trim() === want);
+    if (!t) return;
+    const r = t.getBoundingClientRect(), br = el.getBoundingClientRect();
+    let dy = TITLE_Y - r.top;
+    let bottom = 0; el.querySelectorAll('*').forEach(c => { if (c.children.length && c.tagName !== 'svg') return; const q = c.getBoundingClientRect(); if (q.height > 0 && q.bottom > bottom && q.bottom < 1080) bottom = q.bottom; });
+    if (Math.abs(dy) > 0.5) el.style.translate = `0 ${dy.toFixed(1)}px`;
+  } catch (e) {}
+}
+
+/* 11/1 22:50 사용자 "한 장면에 같은 팀 로고는 한 번" — 그린 뒤 #body 안 같은 구단 로고는 문서 순서 첫 개만 남김(연도별 칸 grid·질문 장면 제외) */
+function __logoDedup(s) {
+  try {
+    if (!s || ['grid', 'question', 'matchup', 'mu_blocks'].includes(s.type)) return;
+    const L = Object.values(LOGO || {}), seen = new Set();
+    document.querySelectorAll('#body img').forEach(e => { const src = e.getAttribute('src'); if (!L.includes(src)) return;
+      if (seen.has(src)) e.style.display = 'none'; else seen.add(src); });
+  } catch (e) {}
+}
+
 function render(t) {
   prepAll();
   let k = 0; while (k < BD.length && t >= BD[k]) k++;
@@ -4373,8 +5605,8 @@ function render(t) {
   NOW = t;
   if (SC[kk]) ghostOf(kk, t, start);
   NOW = t;
-  (SCENE[s.type] || SCENE.big)(lt, s);
-  autoCenter(s);   /* 10/1 밤 사용자 3번째 지적 "오른쪽으로 치우쳐 있어 가운데로" → 보이는 내용 전체를 재서 화면 가운데로 */
+  (SCENE[s.type] || SCENE.big)(lt, s); __faceFix(); __logoDedup(s);
+  autoCenter(s); __titleFix(s);   /* 10/1 밤 사용자 3번째 지적 "오른쪽으로 치우쳐 있어 가운데로" → 보이는 내용 전체를 재서 화면 가운데로 */
   document.querySelectorAll('#body [data-fit]').forEach(el => {        // 한 줄짜리 강조 문구를 칸 폭에 맞춰 줄인다
     const lim = +el.dataset.fit; let fs = parseFloat(el.style.fontSize || getComputedStyle(el).fontSize), g = 0;
     while (el.scrollWidth > lim && fs > 46 && g++ < 60) { fs -= 3; el.style.fontSize = fs + 'px'; }
@@ -4383,6 +5615,7 @@ function render(t) {
   const gx = 50 + 4 * Math.sin(t * .5), gy = 22 + 2 * Math.cos(t * .37);
   document.getElementById('stage').style.background = `radial-gradient(60% 50% at ${gx}% ${gy}%, ${ACC}22 0%, rgba(244,246,250,0) 70%),#F4F6FA`;
   slide(k, t, s, start);
+  MK_tr(s, t, start);   /* 11/1 장면 전환 효과(s.tr) */
   drawRail(k, t); drawSub(t);
   if (window.__mangFx) window.__mangFx(t, s, lt, k, start, end);   /* 10/19 망상 극장 */
 }
