@@ -149,3 +149,63 @@ if _t.count(_a)==1: _t=_t.replace(_a,"rgba(18,22,31,.16);background:#FEFEFE\" da
 _b="<div style=\"position:absolute;inset:0;border-radius:50%;overflow:hidden;${src ? 'background:#E9EDF3;border:6px solid #fff;'"
 if _t.count(_b)==1: _t=_t.replace(_b,"<div data-nodark=\"1\" style=\"position:absolute;inset:0;border-radius:50%;overflow:hidden;${src ? 'background:#FEFEFE;border:6px solid #fff;'")
 open('template_long.html','w',encoding='utf-8').write(_t)
+
+# ── 11/3 0시 KT 한국시리즈 편 영상 검수(X) 반영 ──
+_t=open('template_long.html',encoding='utf-8').read()
+def _rep(a,b):
+    global _t
+    assert _t.count(a)==1, a[:60]
+    _t=_t.replace(a,b)
+# 표(grid): 칸마다 뜨는 시각(c.at·v.at), 칸 아래 작은 글(v.sub)
+_rep("${rise(c01((cp - i * .08) * 1.6), 26)}\">", "${rise(c.at != null ? (K ? 1 : AT(s, c.at, .45, 0)) : c01((cp - i * .08) * 1.6), 26)}\">")
+_rep("(r.vals || []).map((v, i) => { const q = was ? 1 : c01((p - i * .1) * 1.8);", "(r.vals || []).map((v, i) => { const q = v.at != null ? AT(s, v.at, .5, 0) : was ? 1 : c01((p - i * .1) * 1.8);")
+import re as _re
+_i=_t.index("SCENE.grid = (lt, s) => {"); _j=_t.index("Object.assign(MOTION, { grid:", _i)
+_g=_t[_i:_j]
+_k=_g.index("gap:10px;font-size:54px;font-weight:900;opacity:${c01(q * 1.5)};transform:scale(${.8 + .2 * eo(q)});box-shadow:0 10px 26px rgba(18,22,31,.10)\">")
+_g2=_g.replace("gap:10px;font-size:54px;font-weight:900;opacity:${c01(q * 1.5)};","gap:10px;font-size:54px;font-weight:900;position:relative;opacity:${c01(q * 1.5)};",1)
+_t=_t[:_i]+_g2+_t[_j:]
+# 칸 아래 작은 글: 값 칸 div 를 닫기 직전에 sub 를 붙인다
+_i=_t.index("SCENE.grid = (lt, s) => {"); _j=_t.index("Object.assign(MOTION, { grid:", _i); _g=_t[_i:_j]
+_m=_re.search(r"return `<div style=\"width:\$\{CW\}px;display:flex;justify-content:center\">", _g)
+assert _m
+_g=_g.replace("return `<div style=\"width:${CW}px;display:flex;justify-content:center\">","return `<div style=\"width:${CW}px;display:flex;flex-direction:column;align-items:center;justify-content:center\">",1)
+_e=_g.index("}).join('')", _m.start())
+_seg=_g[_m.start():_e]
+_last=_seg.rindex("</div>`;")
+_seg=_seg[:_last]+"${v.sub ? `<div style=\"margin-top:4px;font-size:30px;font-weight:900;color:#6A7382;white-space:nowrap;opacity:${c01(q * 1.5)}\">${esc(v.sub)}</div>` : ''}</div>`;"+_seg[_last+len("</div>`;"):]
+_g=_g[:_m.start()]+_seg+_g[_e:]
+_t=_t[:_i]+_g+_t[_j:]
+# 정리 타일: 약점 표시를 물음표 대신 빼기(−)
+_rep("${good ? I.plus(84) : I.q(84)}", "${good ? I.plus(84) : (x.q ? I.q(84) : `<svg width=\"84\" height=\"84\" viewBox=\"0 0 64 64\"><circle cx=\"32\" cy=\"32\" r=\"28\" fill=\"${RED}\"/><rect x=\"17\" y=\"28\" width=\"30\" height=\"8\" rx=\"4\" fill=\"#fff\"/></svg>`)}")
+# 일정표: 앞 장면 괄호와 글이 다르면 새로 뜨게
+_rep("const brk = (s.brackets || []).map((b, i) => { const q = wasOn(s, 'brackets', i) ? 1 : AT(s, b.at, .45, 0);", "const brk = (s.brackets || []).map((b, i) => { const pb = prevArr(s, 'brackets', i), q = wasOn(s, 'brackets', i) && pb && pb.lab === b.lab ? 1 : AT(s, b.at, .45, 0);")
+# 7경기 막대: 값에 % · 50% 선과 겹치지 않게 · 출발점 설명
+_rep("<div class=\"num\" style=\"position:absolute;left:-20px;right:-20px;bottom:${bh + 10}px;text-align:center;font-size:36px;", "<div class=\"num\" style=\"position:absolute;left:-20px;right:-20px;bottom:${(v < 50 && v > 41 ? Math.round(H * 50 / MX) + 12 : bh + 10)}px;text-align:center;font-size:36px;")
+_rep("${fin != null ? esc(fin) : ''}</div></div>", "${fin != null ? esc(fin) + (/^[0-9.]+$/.test(String(fin)) ? '%' : '') : ''}</div></div>")
+_rep("<div class=\"num\" style=\"position:absolute;left:-190px;top:${H - H * s.base / MX - 22}px;font-size:30px;font-weight:900;color:#6A7382;opacity:${c01(bq * 2).toFixed(3)}\">${esc(String(s.base))}%</div>", "<div class=\"num\" style=\"position:absolute;left:-190px;top:${H - H * s.base / MX - (s.baseNote ? 58 : 22)}px;font-size:30px;font-weight:900;color:#6A7382;text-align:right;width:170px;opacity:${c01(bq * 2).toFixed(3)}\">${s.baseNote ? `<div style=\"font-size:26px;white-space:nowrap;opacity:${c01(AT(s, s.baseNoteAt, .45, 0) * 2).toFixed(3)}\">${esc(s.baseNote)}</div>` : ''}${esc(String(s.base))}%</div>")
+# 10칸 묶음이 안전선 밖으로 — 10칸은 한 단계 작게
+_rep("const W = n > 14 ? 74 : n > 10 ? 116 : 170, H = n > 14 ? 120 : n > 10 ? 170 : 200, G = n > 14 ? 8 : n > 10 ? 10 : 22;", "const W = n > 14 ? 74 : n > 10 ? 116 : n === 10 ? 150 : 170, H = n > 14 ? 120 : n > 10 ? 170 : n === 10 ? 180 : 200, G = n > 14 ? 8 : n > 10 ? 10 : n === 10 ? 16 : 22;")
+open('template_long.html','w',encoding='utf-8').write(_t)
+# 상대 팀 강조 배지: 강조와 따로 뜨는 시각(badgeAt)
+_t=open('template_long.html',encoding='utf-8').read()
+_a="${hit ? `<div style=\"${popS(hq)}\">${pill(`${IC.x('#fff', 34)}${esc(s.badge || '')}`, RED, '#fff', 34)}</div>` : ''}"
+assert _t.count(_a)==1
+_t=_t.replace(_a,"${hit ? `<div style=\"${popS(s.badgeAt != null ? AT(s, s.badgeAt, .45, 0) : hq)}\">${pill(`${IC.x('#fff', 34)}${esc(s.badge || '')}`, RED, '#fff', 34)}</div>` : ''}")
+open('template_long.html','w',encoding='utf-8').write(_t)
+# 말풍선이 사진 폭을 넘던 것: 사진 폭 안에서 줄바꿈 · 7경기 막대 그래프를 자막 상자와 안 겹치게 조금 작게
+_t=open('template_long.html',encoding='utf-8').read()
+_a="<div style=\"border:4px solid ${ACC};background:#fff;border-radius:26px;padding:14px 26px;font-size:38px;font-weight:900;line-height:1.25;text-align:center;white-space:nowrap\">${br(x.say)}</div>"
+assert _t.count(_a)==1
+_t=_t.replace(_a,"<div style=\"border:4px solid ${ACC};background:#fff;border-radius:26px;padding:12px 20px;font-size:${Math.max(28, Math.min(36, Math.floor((W + 36) / Math.max(...String(x.say).split('\\n').map(l => l.length)))))}px;font-weight:900;line-height:1.25;text-align:center;white-space:nowrap;max-width:${W + 40}px;box-sizing:border-box\">${br(x.say)}</div>")
+_b="wrapC(`<div class=\"col\" style=\"zoom:${s.z || 1.12};width:fit-content;margin:0 auto;align-items:center\">${h}</div>`);\n  };\n\n  /* 시리즈 결과"
+assert _t.count(_b)==1
+_t=_t.replace(_b,_b.replace("s.z || 1.12","s.z || 1.06"))
+open('template_long.html','w',encoding='utf-8').write(_t)
+
+# 11/3 KT편 "제목 없어졌다 사라지면서 깜빡거려": rf_* 장면도 cont 면 같은 장면으로(제목·카드가 다시 뜨지 않게)
+_t=open('template_long.html',encoding='utf-8').read()
+_a="'vB_branch', 'vB_next'].includes(s.type))));"
+assert _t.count(_a)==1
+_t=_t.replace(_a,"'vB_branch', 'vB_next', 'rf_band', 'rf_duo', 'rf_bars', 'rf_card', 'rf_gold'].includes(s.type))));")
+open('template_long.html','w',encoding='utf-8').write(_t)

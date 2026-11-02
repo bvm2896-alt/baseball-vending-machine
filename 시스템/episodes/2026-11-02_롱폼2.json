@@ -9,9 +9,9 @@
  "ttsApi": true,
  "ttsTempo": 1.2,
  "ttsTempoSlow": 1.15,
- "rev": "1102-kia27-v3",
+ "rev": "1102-kia27-v4",
  "topic": "기아2027스토브리그",
- "endcardSec": 35,
+ "endcardSec": 24,
  "gapScale": 0.85,
  "pauseMax": 0.3,
  "ttsCharsOk": 6000,
@@ -20,25 +20,25 @@
    "key": "기아를 떠나는 사람",
    "title": "기아를 떠나는 사람",
    "from": 4,
-   "to": 20
+   "to": 22
   },
   {
    "key": "남을지 모르는 외국인 세 명",
    "title": "남을지 모르는 외국인 세 명",
-   "from": 21,
-   "to": 58
+   "from": 23,
+   "to": 60
   },
   {
    "key": "기아에 들어오는 사람",
    "title": "기아에 들어오는 사람",
-   "from": 59,
-   "to": 69
+   "from": 61,
+   "to": 71
   },
   {
    "key": "2027년 기아 예상",
    "title": "2027년 기아 예상",
-   "from": 70,
-   "to": 89
+   "from": 72,
+   "to": 91
   }
  ],
  "lines": [
@@ -90,6 +90,14 @@
   {
    "narr": "김호령은 / 플레이오프 삼차전에서 / 삼진 네 개를 당했고 / 오차전엔 선발에서 빠졌어요",
    "sub": "김호령은|플레이오프 3차전에서|삼진 4개를 당했고|5차전엔 선발에서 빠졌어요"
+  },
+  {
+   "narr": "플레이오프에선 / 안타를 하나도 치지 못했고 / 후반기 타율도 / 이할 사푼대로 떨어졌어요",
+   "sub": "플레이오프에선|안타를 하나도 치지 못했고|후반기 타율도|2할 4푼대로 떨어졌어요"
+  },
+  {
+   "narr": "그래서 언론에선 / 김호령의 에프에이 가치가 / 시험대에 올랐다는 / 말까지 나와요",
+   "sub": "그래서 언론에선|김호령의 FA 가치가|시험대에 올랐다는|말까지 나와요"
   },
   {
    "narr": "가을 부진이 / 김호령의 에프에이 몸값을 / 끌어내릴 수도 있는 거죠",
@@ -694,7 +702,7 @@
   },
   {
    "type": "rf_band",
-   "who": "김호령 · 플레이오프",
+   "who": "김호령 · 가을 부진",
    "team": "KIA",
    "vals": [
     {
@@ -717,39 +725,75 @@
    },
    "noCenter": true,
    "chain": "hr",
-   "tag": "FA 몸값 ↓?",
-   "tagAt": 50,
    "startLine": 11
   },
   {
    "type": "rf_band",
-   "who": "김호령 · 플레이오프",
+   "who": "김호령 · 가을 부진",
    "team": "KIA",
    "vals": [
     {
-     "v": "4",
-     "k": "3차전 삼진",
-     "at": -1,
+     "v": "무안타",
+     "k": "플레이오프",
+     "at": 2,
      "hi": false
     },
     {
-     "v": "제외",
-     "k": "5차전 선발",
-     "at": -1,
+     "v": "2할 4푼대",
+     "k": "후반기 타율",
+     "at": 4,
      "hi": true
     }
    ],
-   "tag": "FA 몸값 ↓?",
    "bg": {
     "img": "카드/F16_김호령_A",
     "pos": "center 15%",
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
-   "whoAt": -1,
    "noCenter": true,
    "chain": "hr",
    "cont": true,
+   "whoAt": -1,
    "startLine": 12
+  },
+  {
+   "type": "clip",
+   "clips": [
+    {
+     "date": "2026년 11월 2일",
+     "src": "SPOTV",
+     "head": "KIA 가을 최악 악몽 주인공\nFA 가치 시험대 오른다",
+     "img": "경기/김호령_환호_연합뉴스",
+     "name": "김호령",
+     "at": 1,
+     "hsize": 100
+    }
+   ],
+   "noCenter": true,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 55%,#24262E 100%)"
+   },
+   "startLine": 13
+  },
+  {
+   "type": "clip",
+   "clips": [
+    {
+     "date": "2026년 11월 2일",
+     "src": "SPOTV",
+     "head": "KIA 가을 최악 악몽 주인공\nFA 가치 시험대 오른다",
+     "img": "경기/김호령_환호_연합뉴스",
+     "name": "김호령",
+     "at": 1,
+     "hsize": 100
+    }
+   ],
+   "noCenter": true,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 55%,#24262E 100%)"
+   },
+   "cont": true,
+   "startLine": 14
   },
   {
    "type": "rf_card",
@@ -776,7 +820,7 @@
    "noCenter": true,
    "imgAt": 0,
    "focus": "13% 18%",
-   "startLine": 13
+   "startLine": 15
   },
   {
    "type": "rf_duo",
@@ -805,7 +849,7 @@
    "noCenter": true,
    "chain": "left",
    "reserveStats": true,
-   "startLine": 14
+   "startLine": 16
   },
   {
    "type": "rf_duo",
@@ -847,7 +891,7 @@
    "chain": "left",
    "cont": true,
    "reserveStats": true,
-   "startLine": 15
+   "startLine": 17
   },
   {
    "type": "rf_card",
@@ -866,7 +910,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 16
+   "startLine": 18
   },
   {
    "type": "slotboard",
@@ -902,7 +946,7 @@
     "at": 50,
     "c": "good"
    },
-   "startLine": 17
+   "startLine": 19
   },
   {
    "type": "slotboard",
@@ -939,7 +983,7 @@
     "at": 1,
     "c": "good"
    },
-   "startLine": 18
+   "startLine": 20
   },
   {
    "type": "slotboard",
@@ -962,7 +1006,7 @@
    "noCenter": true,
    "profile": false,
    "chain": "job",
-   "startLine": 19
+   "startLine": 21
   },
   {
    "type": "rf_card",
@@ -990,7 +1034,7 @@
    "imgAt": 2,
    "nameAt": 2,
    "focus": "43% 18%",
-   "startLine": 20
+   "startLine": 22
   },
   {
    "type": "slotboard",
@@ -1018,7 +1062,7 @@
    ],
    "noCenter": true,
    "profile": true,
-   "startLine": 21
+   "startLine": 23
   },
   {
    "type": "rf_gold",
@@ -1044,7 +1088,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 22
+   "startLine": 24
   },
   {
    "type": "rf_band",
@@ -1084,7 +1128,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 23
+   "startLine": 25
   },
   {
    "type": "rf_card",
@@ -1110,7 +1154,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 24
+   "startLine": 26
   },
   {
    "type": "rf_card",
@@ -1135,7 +1179,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 25
+   "startLine": 27
   },
   {
    "type": "speech",
@@ -1149,7 +1193,7 @@
      "hi": true
     }
    ],
-   "startLine": 26
+   "startLine": 28
   },
   {
    "type": "rf_duo",
@@ -1180,7 +1224,7 @@
    "noCenter": true,
    "chain": "kc",
    "reserveStats": true,
-   "startLine": 27
+   "startLine": 29
   },
   {
    "type": "rf_duo",
@@ -1218,7 +1262,7 @@
    "chain": "kc",
    "cont": true,
    "reserveStats": true,
-   "startLine": 28
+   "startLine": 30
   },
   {
    "type": "rf_card",
@@ -1244,7 +1288,7 @@
    },
    "noCenter": true,
    "focus": "43% 18%",
-   "startLine": 29
+   "startLine": 31
   },
   {
    "type": "rf_gold",
@@ -1271,7 +1315,7 @@
    },
    "noCenter": true,
    "focus": "32% 18%",
-   "startLine": 30
+   "startLine": 32
   },
   {
    "type": "rf_card",
@@ -1297,7 +1341,7 @@
    },
    "noCenter": true,
    "focus": "52% 18%",
-   "startLine": 31
+   "startLine": 33
   },
   {
    "type": "rf_band",
@@ -1330,7 +1374,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 32
+   "startLine": 34
   },
   {
    "type": "rf_card",
@@ -1356,7 +1400,7 @@
    },
    "noCenter": true,
    "focus": "29% 18%",
-   "startLine": 33
+   "startLine": 35
   },
   {
    "type": "rf_card",
@@ -1381,7 +1425,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 34
+   "startLine": 36
   },
   {
    "type": "rf_card",
@@ -1408,7 +1452,7 @@
    "imgAt": 1,
    "nameAt": 1,
    "focus": "34% 18%",
-   "startLine": 35
+   "startLine": 37
   },
   {
    "type": "rf_gold",
@@ -1435,7 +1479,7 @@
    },
    "noCenter": true,
    "focus": "80% 18%",
-   "startLine": 36
+   "startLine": 38
   },
   {
    "type": "rf_band",
@@ -1462,7 +1506,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 37
+   "startLine": 39
   },
   {
    "type": "rf_bars",
@@ -1492,7 +1536,7 @@
     "lab": "두 자릿수",
     "at": 1
    },
-   "startLine": 38
+   "startLine": 40
   },
   {
    "type": "rf_card",
@@ -1513,7 +1557,7 @@
    "noCenter": true,
    "imgAt": 0,
    "focus": "50% 18%",
-   "startLine": 39
+   "startLine": 41
   },
   {
    "type": "rf_band",
@@ -1551,7 +1595,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 40
+   "startLine": 42
   },
   {
    "type": "rf_card",
@@ -1570,7 +1614,7 @@
    },
    "noCenter": true,
    "focus": "0% 18%",
-   "startLine": 41
+   "startLine": 43
   },
   {
    "type": "slotboard",
@@ -1608,7 +1652,7 @@
     "at": 2,
     "c": "gold"
    },
-   "startLine": 42
+   "startLine": 44
   },
   {
    "type": "capbar",
@@ -1619,7 +1663,7 @@
    "capAt": 3,
    "capLabel": "한도 400만 달러",
    "chain": "cap",
-   "startLine": 43
+   "startLine": 45
   },
   {
    "type": "capbar",
@@ -1634,7 +1678,7 @@
    "textAt": 2,
    "size": 60,
    "chain": "cap",
-   "startLine": 44
+   "startLine": 46
   },
   {
    "type": "capbar",
@@ -1667,7 +1711,7 @@
    "textAt": 1,
    "size": 60,
    "chain": "cap",
-   "startLine": 45
+   "startLine": 47
   },
   {
    "type": "capbar",
@@ -1703,7 +1747,7 @@
    "textAt": -1,
    "size": 60,
    "chain": "cap",
-   "startLine": 46
+   "startLine": 48
   },
   {
    "type": "capbar",
@@ -1739,7 +1783,7 @@
    "textAt": -1,
    "size": 60,
    "chain": "cap",
-   "startLine": 47
+   "startLine": 49
   },
   {
    "type": "capbar",
@@ -1775,7 +1819,7 @@
    "textAt": 1,
    "size": 60,
    "chain": "cap",
-   "startLine": 48
+   "startLine": 50
   },
   {
    "type": "slotboard",
@@ -1807,7 +1851,7 @@
    "noCenter": true,
    "profile": true,
    "chain": "ex",
-   "startLine": 49
+   "startLine": 51
   },
   {
    "type": "slotboard",
@@ -1843,68 +1887,6 @@
    "profile": true,
    "chain": "ex",
    "cont": true,
-   "startLine": 50
-  },
-  {
-   "type": "slotboard",
-   "title": "2027 기아 외국인 재계약 전망",
-   "team": "KIA",
-   "slots": [
-    {
-     "img": "KBO프로필/카스트로",
-     "name": "카스트로",
-     "pos": "",
-     "at": -1
-    },
-    {
-     "img": "KBO프로필/네일",
-     "name": "네일",
-     "pos": "",
-     "at": -1
-    },
-    {
-     "img": "KBO프로필/올러",
-     "name": "올러",
-     "pos": "",
-     "at": -1
-    }
-   ],
-   "noCenter": true,
-   "profile": true,
-   "chain": "vd",
-   "startLine": 51
-  },
-  {
-   "type": "slotboard",
-   "title": "2027 기아 외국인 재계약 전망",
-   "team": "KIA",
-   "slots": [
-    {
-     "img": "KBO프로필/카스트로",
-     "name": "카스트로",
-     "pos": "",
-     "at": -1,
-     "tag": "잔류 유력",
-     "tagAt": 1,
-     "tc": "good"
-    },
-    {
-     "img": "KBO프로필/네일",
-     "name": "네일",
-     "pos": "",
-     "at": -1
-    },
-    {
-     "img": "KBO프로필/올러",
-     "name": "올러",
-     "pos": "",
-     "at": -1
-    }
-   ],
-   "noCenter": true,
-   "profile": true,
-   "chain": "vd",
-   "cont": true,
    "startLine": 52
   },
   {
@@ -1916,19 +1898,13 @@
      "img": "KBO프로필/카스트로",
      "name": "카스트로",
      "pos": "",
-     "at": -1,
-     "tag": "잔류 유력",
-     "tagAt": -1,
-     "tc": "good"
+     "at": -1
     },
     {
      "img": "KBO프로필/네일",
      "name": "네일",
      "pos": "",
-     "at": -1,
-     "tag": "몸값 관건",
-     "tagAt": 1,
-     "tc": "gold"
+     "at": -1
     },
     {
      "img": "KBO프로필/올러",
@@ -1940,7 +1916,6 @@
    "noCenter": true,
    "profile": true,
    "chain": "vd",
-   "cont": true,
    "startLine": 53
   },
   {
@@ -1954,6 +1929,75 @@
      "pos": "",
      "at": -1,
      "tag": "잔류 유력",
+     "tagAt": 1,
+     "tc": "good"
+    },
+    {
+     "img": "KBO프로필/네일",
+     "name": "네일",
+     "pos": "",
+     "at": -1
+    },
+    {
+     "img": "KBO프로필/올러",
+     "name": "올러",
+     "pos": "",
+     "at": -1
+    }
+   ],
+   "noCenter": true,
+   "profile": true,
+   "chain": "vd",
+   "cont": true,
+   "startLine": 54
+  },
+  {
+   "type": "slotboard",
+   "title": "2027 기아 외국인 재계약 전망",
+   "team": "KIA",
+   "slots": [
+    {
+     "img": "KBO프로필/카스트로",
+     "name": "카스트로",
+     "pos": "",
+     "at": -1,
+     "tag": "잔류 유력",
+     "tagAt": -1,
+     "tc": "good"
+    },
+    {
+     "img": "KBO프로필/네일",
+     "name": "네일",
+     "pos": "",
+     "at": -1,
+     "tag": "몸값 관건",
+     "tagAt": 1,
+     "tc": "gold"
+    },
+    {
+     "img": "KBO프로필/올러",
+     "name": "올러",
+     "pos": "",
+     "at": -1
+    }
+   ],
+   "noCenter": true,
+   "profile": true,
+   "chain": "vd",
+   "cont": true,
+   "startLine": 55
+  },
+  {
+   "type": "slotboard",
+   "title": "2027 기아 외국인 재계약 전망",
+   "team": "KIA",
+   "slots": [
+    {
+     "img": "KBO프로필/카스트로",
+     "name": "카스트로",
+     "pos": "",
+     "at": -1,
+     "tag": "잔류 유력",
      "tagAt": -1,
      "tc": "good"
     },
@@ -1977,7 +2021,7 @@
    "profile": true,
    "chain": "vd",
    "cont": true,
-   "startLine": 54
+   "startLine": 56
   },
   {
    "type": "slotboard",
@@ -2016,7 +2060,7 @@
    "profile": true,
    "chain": "vd",
    "cont": true,
-   "startLine": 55
+   "startLine": 57
   },
   {
    "type": "rf_band",
@@ -2043,7 +2087,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 56
+   "startLine": 58
   },
   {
    "type": "rf_card",
@@ -2066,7 +2110,7 @@
    "imgAt": 1,
    "nameAt": 1,
    "focus": "50% 18%",
-   "startLine": 57
+   "startLine": 59
   },
   {
    "type": "rf_band",
@@ -2088,7 +2132,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 58
+   "startLine": 60
   },
   {
    "type": "rf_band",
@@ -2102,7 +2146,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 59
+   "startLine": 61
   },
   {
    "type": "rf_card",
@@ -2130,7 +2174,7 @@
    "nameAt": 2,
    "focus": "50% 5%",
    "chain": "ihm",
-   "startLine": 60
+   "startLine": 62
   },
   {
    "type": "rf_card",
@@ -2166,7 +2210,7 @@
    "focus": "50% 5%",
    "chain": "ihm",
    "cont": true,
-   "startLine": 61
+   "startLine": 63
   },
   {
    "type": "rf_card",
@@ -2196,14 +2240,14 @@
    "focus": "50% 5%",
    "chain": "ihm",
    "cont": true,
-   "startLine": 62
+   "startLine": 64
   },
   {
    "type": "quote",
    "src": "기아 스카우트",
    "text": "1년에 한두 명 나올 만한\n우타 거포형 재목",
    "chain": "iq",
-   "startLine": 63
+   "startLine": 65
   },
   {
    "type": "quote",
@@ -2211,7 +2255,7 @@
    "text": "최근 몇 년 동안 이호민만큼\n장타력을 갖춘 고교 선수는 없었다",
    "chain": "iq",
    "cont": true,
-   "startLine": 64
+   "startLine": 66
   },
   {
    "type": "quote",
@@ -2221,7 +2265,7 @@
    "cont": true,
    "name": "이범호",
    "role": "감독",
-   "startLine": 65
+   "startLine": 67
   },
   {
    "type": "rf_duo",
@@ -2260,7 +2304,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 66
+   "startLine": 68
   },
   {
    "type": "rf_band",
@@ -2288,7 +2332,7 @@
    },
    "noCenter": true,
    "chain": "camp",
-   "startLine": 67
+   "startLine": 69
   },
   {
    "type": "rf_band",
@@ -2318,7 +2362,7 @@
    "chain": "camp",
    "cont": true,
    "whoAt": -1,
-   "startLine": 68
+   "startLine": 70
   },
   {
    "type": "rf_duo",
@@ -2345,7 +2389,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 55%,#24262E 100%)"
    },
    "noCenter": true,
-   "startLine": 69
+   "startLine": 71
   },
   {
    "type": "rf_band",
@@ -2359,7 +2403,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 70
+   "startLine": 72
   },
   {
    "type": "rf_card",
@@ -2387,7 +2431,7 @@
    "imgAt": 0,
    "nameAt": 0,
    "focus": "100% 18%",
-   "startLine": 71
+   "startLine": 73
   },
   {
    "type": "rf_card",
@@ -2413,7 +2457,7 @@
    },
    "noCenter": true,
    "focus": "42% 18%",
-   "startLine": 72
+   "startLine": 74
   },
   {
    "type": "rf_band",
@@ -2435,7 +2479,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 73
+   "startLine": 75
   },
   {
    "type": "rf_card",
@@ -2457,7 +2501,7 @@
    "imgAt": 0,
    "nameAt": 0,
    "focus": "100% 18%",
-   "startLine": 74
+   "startLine": 76
   },
   {
    "type": "speech",
@@ -2471,7 +2515,7 @@
      "hi": true
     }
    ],
-   "startLine": 75
+   "startLine": 77
   },
   {
    "type": "rf_card",
@@ -2499,7 +2543,7 @@
    "imgAt": 0,
    "nameAt": 0,
    "focus": "58% 18%",
-   "startLine": 76
+   "startLine": 78
   },
   {
    "type": "rf_band",
@@ -2521,7 +2565,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 77
+   "startLine": 79
   },
   {
    "type": "speech",
@@ -2542,7 +2586,7 @@
     }
    ],
    "chain": "lbh",
-   "startLine": 78
+   "startLine": 80
   },
   {
    "type": "speech",
@@ -2564,7 +2608,7 @@
    ],
    "chain": "lbh",
    "cont": true,
-   "startLine": 79
+   "startLine": 81
   },
   {
    "type": "rf_gold",
@@ -2595,7 +2639,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 80
+   "startLine": 82
   },
   {
    "type": "speech",
@@ -2615,7 +2659,7 @@
      "hi": false
     }
    ],
-   "startLine": 81
+   "startLine": 83
   },
   {
    "type": "rf_duo",
@@ -2650,7 +2694,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 82
+   "startLine": 84
   },
   {
    "type": "slotboard",
@@ -2688,7 +2732,7 @@
    ],
    "noCenter": true,
    "profile": true,
-   "startLine": 83
+   "startLine": 85
   },
   {
    "type": "rf_card",
@@ -2710,7 +2754,7 @@
    "imgAt": 2,
    "nameAt": 2,
    "focus": "50% 18%",
-   "startLine": 84
+   "startLine": 86
   },
   {
    "type": "rf_band",
@@ -2731,7 +2775,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 85
+   "startLine": 87
   },
   {
    "type": "slotboard",
@@ -2758,7 +2802,7 @@
    ],
    "noCenter": true,
    "profile": true,
-   "startLine": 86
+   "startLine": 88
   },
   {
    "type": "rf_band",
@@ -2778,7 +2822,7 @@
     "f": "contrast(1.25) saturate(1.15) brightness(.5)"
    },
    "noCenter": true,
-   "startLine": 87
+   "startLine": 89
   },
   {
    "type": "slotboard",
@@ -2816,7 +2860,7 @@
    "noCenter": true,
    "profile": true,
    "chain": "vd",
-   "startLine": 88
+   "startLine": 90
   },
   {
    "type": "rf_duo",
@@ -2853,7 +2897,7 @@
     "f": "blur(22px) brightness(.4)"
    },
    "noCenter": true,
-   "startLine": 89
+   "startLine": 91
   },
   {
    "type": "question",
@@ -2872,7 +2916,7 @@
    ],
    "logoSize": 150,
    "size": 72,
-   "startLine": 90
+   "startLine": 92
   }
  ],
  "thumb": {},
@@ -2880,7 +2924,7 @@
  "source": "사실 출처 = 기사 원문 2곳 이상 — /home/claude/kia27/facts_A.md, facts_B.md (일간스포츠·스포츠경향·OSEN·스타뉴스·엑스포츠뉴스·SPOTV·뉴시스·파이낸셜뉴스·데일리안·마이데일리)",
  "youtube": {
   "title": "기아 2027 스토브리그 | 카스트로·네일·올러 남을까? 떠나는 사람·들어오는 사람 총정리",
-  "description": "기아 타이거즈 2027 스토브리그 — 2026년 플레이오프에서 삼성에 2승 3패로 탈락한 기아의 겨울, 외국인 선수 카스트로·네일·올러 재계약 전망과 떠나는 사람·들어오는 사람을 정리했어요.\n카스트로·네일·올러는 2027년에도 기아에 남을까요?\n\n떠나는 사람: 기아는 10월 23일 고종욱·이창진·홍건희·김사윤·김대유·윤중현과 2027년 재계약을 하지 않기로 했어요. 정해영·한재승·윤도현은 12월 상무에 입대해 2028년 6월 돌아오고, 포수 김태군·중견수 김호령은 FA 자격 취득이 유력해요. 김선빈의 3년 30억 원 계약도 2026년으로 끝나요. 2025년 겨울엔 박찬호(두산 4년 80억 원)·최형우(삼성 2년 26억 원)·한승택(KT 4년 10억 원)이 떠났고, 조상우(2년 15억 원)는 붙잡고 김범수(3년 20억 원)를 데려왔어요.\n\n해럴드 카스트로·제임스 네일·아담 올러: 카스트로는 99경기 타율 3할 2푼 7리 21홈런 88타점에 2026년 총액 100만 달러. 네일은 31경기 13승 평균자책점 3.49에 총액 200만 달러, 올러는 11승 평균자책점 3.13에 총액 120만 달러. 외국인 3명 계약 총액 한도는 400만 달러이고 재계약 연차마다 선수당 10만 달러씩 늘어나요 — 규정대로 계산하면 2026년 한도는 430만 달러, 셋 다 재계약하면 2027년 한도는 최대 460만 달러예요. 아시아쿼터 시라카와 케이쇼도 재계약 대상이에요.\n\n들어오는 사람: 2027 신인 드래프트 1라운드 전체 3순위 경남고 내야수 이호민(2026년 고교 20경기 타율 4할 2푼). 김도영의 유격수 이동이 검토되면서 기아는 이호민을 3루 후계자로 키울 계획이에요. 이호민 등 신인 5명은 11월 1일~24일 일본 오키나와 마무리 캠프에 합류했어요.\n\n제 예상: 카스트로는 잔류 유력, 네일은 몸값이 관건, 올러는 반반. 셋 중 한 명만 바뀐다면 올러일 가능성이 가장 커요. 김도영은 빠르면 2028시즌 뒤 메이저리그에 도전할 수 있어서, 2027·2028년이 김도영과 함께 우승을 노릴 가장 확실한 두 시즌이라고 봐요.\n\n야구자판기는 매일 야구 이슈를 정리해요. 카스트로·네일·올러, 셋 다 남을까요? 아니면 한 명 이상 바뀔까요? 댓글로 알려 주세요.\n\n▶ 지난 영상: \n\n#기아타이거즈 #기아스토브리그 #카스트로 #제임스네일 #올러 #김도영 #프로야구 #야구자판기\n",
+  "description": "기아 타이거즈 2027 스토브리그 — 2026년 플레이오프에서 삼성에 2승 3패로 탈락한 기아의 겨울, 외국인 선수 카스트로·네일·올러 재계약 전망과 떠나는 사람·들어오는 사람을 정리했어요.\n카스트로·네일·올러는 2027년에도 기아에 남을까요?\n\n떠나는 사람: 기아는 10월 23일 고종욱·이창진·홍건희·김사윤·김대유·윤중현과 2027년 재계약을 하지 않기로 했어요. 정해영·한재승·윤도현은 12월 상무에 입대해 2028년 6월 돌아오고, 포수 김태군·중견수 김호령은 FA 자격 취득이 유력해요. 김호령은 플레이오프에서 안타를 치지 못했고(3차전 삼진 4개), 후반기 타율도 2할 4푼대로 떨어져 FA 가치가 시험대에 올랐어요. 김선빈의 3년 30억 원 계약도 2026년으로 끝나요. 2025년 겨울엔 박찬호(두산 4년 80억 원)·최형우(삼성 2년 26억 원)·한승택(KT 4년 10억 원)이 떠났고, 조상우(2년 15억 원)는 붙잡고 김범수(3년 20억 원)를 데려왔어요.\n\n해럴드 카스트로·제임스 네일·아담 올러: 카스트로는 99경기 타율 3할 2푼 7리 21홈런 88타점에 2026년 총액 100만 달러. 네일은 31경기 13승 평균자책점 3.49에 총액 200만 달러, 올러는 11승 평균자책점 3.13에 총액 120만 달러. 외국인 3명 계약 총액 한도는 400만 달러이고 재계약 연차마다 선수당 10만 달러씩 늘어나요 — 규정대로 계산하면 2026년 한도는 430만 달러, 셋 다 재계약하면 2027년 한도는 최대 460만 달러예요. 아시아쿼터 시라카와 케이쇼도 재계약 대상이에요.\n\n들어오는 사람: 2027 신인 드래프트 1라운드 전체 3순위 경남고 내야수 이호민(2026년 고교 20경기 타율 4할 2푼). 김도영의 유격수 이동이 검토되면서 기아는 이호민을 3루 후계자로 키울 계획이에요. 이호민 등 신인 5명은 11월 1일~24일 일본 오키나와 마무리 캠프에 합류했어요.\n\n제 예상: 카스트로는 잔류 유력, 네일은 몸값이 관건, 올러는 반반. 셋 중 한 명만 바뀐다면 올러일 가능성이 가장 커요. 김도영은 빠르면 2028시즌 뒤 메이저리그에 도전할 수 있어서, 2027·2028년이 김도영과 함께 우승을 노릴 가장 확실한 두 시즌이라고 봐요.\n\n야구자판기는 매일 야구 이슈를 정리해요. 카스트로·네일·올러, 셋 다 남을까요? 아니면 한 명 이상 바뀔까요? 댓글로 알려 주세요.\n\n▶ 지난 영상: \n\n#기아타이거즈 #기아스토브리그 #카스트로 #제임스네일 #올러 #김도영 #프로야구 #야구자판기\n",
   "tags": [
    "기아 스토브리그",
    "기아 2027",

@@ -62,8 +62,11 @@ SC['n5'] = CARD("홍건희", "홍건희", "투수", big=BIGV("1년 7억", "", 2,
 SC['n6'] = FG("상무 입대", [FI("KBO프로필/정해영", "정해영", 1), FI("KBO프로필/한재승", "한재승", 1), FI("KBO프로필/윤도현", "윤도현", 2)], text="12월 입대 · 2028년 6월 복귀", textAt=3)
 SC["n8"] = DUO("FA 자격 취득 유력", [DC("김태군", "김태군", 3), DC("김호령", "김호령", 3)])
 SC['n8']['bg'] = BG_DARK
-SC['n10'] = S(0, "rf_band", who="김호령 · 플레이오프", team="KIA", vals=[V("4", "3차전 삼진", 2), V("제외", "5차전 선발", 3, hi=True)], bg=BGI("김호령C", BAND_F), noCenter=True, chain="hr", tag="FA 몸값 ↓?", tagAt=50)
-SC['n10b'] = S(0, "rf_band", who="김호령 · 플레이오프", team="KIA", vals=[V("4", "3차전 삼진", -1), V("제외", "5차전 선발", -1, hi=True)], tag="FA 몸값 ↓?", bg=BGI("김호령C", BAND_F), whoAt=-1, noCenter=True, chain="hr", cont=True)
+SC['n10'] = S(0, "rf_band", who="김호령 · 가을 부진", team="KIA", vals=[V("4", "3차전 삼진", 2), V("제외", "5차전 선발", 3, hi=True)], bg=BGI("김호령C", BAND_F), noCenter=True, chain="hr")
+SC['n10c'] = S(0, "rf_band", who="김호령 · 가을 부진", team="KIA", vals=[V("무안타", "플레이오프", 2), V("2할 4푼대", "후반기 타율", 4, hi=True)], bg=BGI("김호령C", BAND_F), noCenter=True, chain="hr", cont=True, whoAt=-1)
+SC['n10d'] = S(0, "clip", clips=[dict(date="2026년 11월 2일", src="SPOTV", head="KIA 가을 최악 악몽 주인공\nFA 가치 시험대 오른다", img=ph("김호령B"), name="김호령", at=1, hsize=100)], noCenter=True)
+SC['n10d']['bg'] = BG_DARK
+SC['n10b'] = dict(SC['n10d'], cont=True)
 SC['n12'] = CARD("김선빈", "김선빈", "2루수", big=BIGV("3년 30억", "", 1, size=170), minor=[MI("계약 끝", "2026년", 2)], imgAt=0)
 SC['n13'] = DUO("2025년 겨울 떠난 내부 FA", [DC("박찬호", "박찬호", 2, team="두산"), DC("최형우", "최형우", 2, team="삼성")], chain="left", reserveStats=True)
 SC['n13']['bg'] = BG_NAVY

@@ -38,6 +38,9 @@ function __titleFix(s) {
 function __logoDedup(s) {
   try {
     if (!s || ['grid', 'question', 'matchup', 'mu_blocks'].includes(s.type)) return;
+    /* 11/3 0시 검수: 여러 사람 카드(faces·people)에서 첫 사람 이름 옆에만 로고가 남던 것(11/2 사용자 '카스트로 이름 옆에만 로고… 없애') → 같은 구단 로고가 두 개 이상이면 모두 뺀다 */
+    if (s.type === 'faces' || s.type === 'people') { const L0 = Object.values(LOGO || {}), cnt = {}; const ims = [...document.querySelectorAll('#body img')].filter(e => L0.includes(e.getAttribute('src')));
+      ims.forEach(e => { const k = e.getAttribute('src'); cnt[k] = (cnt[k] || 0) + 1; }); ims.forEach(e => { if (cnt[e.getAttribute('src')] > 1) e.style.display = 'none'; }); return; }
     const L = Object.values(LOGO || {}), seen = new Set();
     document.querySelectorAll('#body img').forEach(e => { const src = e.getAttribute('src'); if (!L.includes(src)) return;
       if (seen.has(src)) e.style.display = 'none'; else seen.add(src); });

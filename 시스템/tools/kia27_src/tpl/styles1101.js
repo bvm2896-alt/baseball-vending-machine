@@ -93,7 +93,7 @@
       const p = wasIn(s, 'clips', c, o => o.head + '|' + (o.quote || '')) ? 1 : AT(s, c.at, .55, seg(lt, .2 + i * .4, .55));
       const src = photoSrc(c.img), rot = c.rot != null ? c.rot : (i % 2 ? 1.6 : -1.8);
       const paper = `background:#F4EEE1;background-image:linear-gradient(rgba(60,50,30,.05) 1px, transparent 1px);background-size:100% 46px`;
-      return `<div style="position:relative;width:${CW}px;flex:0 0 auto;padding:36px 44px 42px;${paper};border-radius:6px;box-shadow:0 22px 44px rgba(20,16,8,.28);text-align:left;
+      return `<div data-nodark="1" style="position:relative;width:${CW}px;flex:0 0 auto;padding:36px 44px 42px;${paper};border-radius:6px;box-shadow:0 22px 44px rgba(20,16,8,.28);text-align:left;
           opacity:${c01(p * 2).toFixed(3)};transform:translateY(${((1 - e3(p)) * -70).toFixed(1)}px) rotate(${(rot * (1 + (1 - e3(p)) * 2)).toFixed(2)}deg);clip-path:polygon(0 1%,4% 0,9% 1.2%,15% .2%,22% 1%,30% 0,38% 1.3%,47% .3%,55% 1%,64% 0,72% 1.1%,81% .2%,89% 1.2%,96% 0,100% 1%,100% 99%,95% 100%,88% 98.8%,80% 99.8%,71% 98.9%,62% 100%,53% 99%,44% 99.9%,35% 98.8%,26% 99.8%,17% 99%,9% 100%,3% 98.9%,0 99.6%)">
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:4px double #2A2418;padding-bottom:8px;margin-bottom:20px;font-size:34px;font-weight:800;color:#5A4E38">
           <span>${esc(c.date || '')}</span><span>${esc(c.src || '')}</span></div>

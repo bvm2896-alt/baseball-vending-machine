@@ -1837,7 +1837,7 @@ function prepAll() {
       (s.type === 'matchup' && prev.left === s.left && prev.right === s.right && !photoSrc(s.img)) ||
       (s.type === 'toc') ||   /* 9/28: 목차 → 목차는 사라지지 않고 강조만 옮긴다 */
       (s.type === 'facegrid' && chainKey(s) && chainKey(prev) === chainKey(s) && (prev.title || '') === (s.title || '') && J((prev.items || []).map(x => [x.name, photoSrc(x.img)])) === J((s.items || []).map(x => [x.name, photoSrc(x.img)]))) ||   /* 10/18 사용자 "사진은 다 그대로인데 한번 사라졌다가 다시 촤르륵 나타나게 한거야? 텍스트만 바뀌게": 같은 묶음·제목·사람·사진이면 cont 표시가 빠져도 사진은 그대로, 글만 */
-      (s.cont && ['gantt', 'flow', 'cells', 'funnel', 'flip', 'rankline', 'password', 'scale', 'stack', 'contracts', 'people', 'tiles', 'statbars', 'steps', 'speech', 'bars', 'facegrid', 'scoreboard', 'teamgrid', 'npbdraft', 'yearline', 'diamond', 'count', 'race', 'tline', 'question', 'hero', 'board', 'water', 'probpair', 'probcalc', 'chalk', 'clip', 'scorecard', 'matchtbl', 'errs', 'rest', 'grid', 'mu_pgames', 'mu_hr2', 'mu_streak', 'mu_abs', 'mu_blocks', 'mu_closer', 'mu_pen2', 'ks_sched', 'ks_prob7', 'ks_outs', 'ks_rank', 'mu_donut', 'mu_fly', 'mu_choice', 'mu_inn', 'mu_pstat', 'vA_gap', 'vA_units', 'vA_errs', 'vA_battery', 'vA_innings', 'vA_days', 'vA_tiles', 'vA_games', 'vA_rank', 'vA_relay', 'vA_saves', 'vA_streak', 'vB_units', 'vB_meter', 'vB_only', 'vB_rings', 'vB_split', 'vB_three', 'vB_inn', 'vB_pen', 'vB_branch', 'vB_next'].includes(s.type))));   /* 10/24 tline 추가 · 11/1 hero·board·water 등 새 장면도 이어받기 · 11/1 22시 사용자 "같은 글자 왜 없어졌다 나타나" → 새 그림 장면 전부 이어받기 */
+      (s.cont && ['gantt', 'flow', 'cells', 'funnel', 'flip', 'rankline', 'password', 'scale', 'stack', 'contracts', 'people', 'tiles', 'statbars', 'steps', 'speech', 'bars', 'facegrid', 'scoreboard', 'teamgrid', 'npbdraft', 'yearline', 'diamond', 'count', 'race', 'tline', 'question', 'hero', 'board', 'water', 'probpair', 'probcalc', 'chalk', 'clip', 'scorecard', 'matchtbl', 'errs', 'rest', 'grid', 'mu_pgames', 'mu_hr2', 'mu_streak', 'mu_abs', 'mu_blocks', 'mu_closer', 'mu_pen2', 'ks_sched', 'ks_prob7', 'ks_outs', 'ks_rank', 'mu_donut', 'mu_fly', 'mu_choice', 'mu_inn', 'mu_pstat', 'vA_gap', 'vA_units', 'vA_errs', 'vA_battery', 'vA_innings', 'vA_days', 'vA_tiles', 'vA_games', 'vA_rank', 'vA_relay', 'vA_saves', 'vA_streak', 'vB_units', 'vB_meter', 'vB_only', 'vB_rings', 'vB_split', 'vB_three', 'vB_inn', 'vB_pen', 'vB_branch', 'vB_next', 'rf_band', 'rf_duo', 'rf_bars', 'rf_card', 'rf_gold'].includes(s.type))));   /* 10/24 tline 추가 · 11/1 hero·board·water 등 새 장면도 이어받기 · 11/1 22시 사용자 "같은 글자 왜 없어졌다 나타나" → 새 그림 장면 전부 이어받기 */
     s._chain = !!(prev && ((chainKey(s) && chainKey(prev) === chainKey(s)) || s._same));
     s._cid = s._chain ? prev._cid : k; (CHAINS[s._cid] = CHAINS[s._cid] || []).push(k);
     /* 10/25 밤 사용자("틀의 크기를 너무 자주 바꿔.. 굳이 안 바꿔도 되잖아" / "그대로 틀이 유지되는 게 좋겠어"): 같은 사진(또는 같은 구단 로고)이 이어지는 장면들은
@@ -3138,7 +3138,7 @@ const bp = (s, k, d = .45) => { if (k == null || k < 0) return 1; if (k >= 50) r
         : `${x.role ? `<div style="font-size:32px;font-weight:800;color:${GRAY};white-space:nowrap">${esc(x.role)}</div>` : ''}
         ${x.note ? `<div class="num" style="font-size:72px;font-weight:900;color:#E8A100;letter-spacing:-2px;line-height:1.1;${pp(P(s, x.noteAt ?? x.at ?? 0, .5))}">${esc(x.note)}</div>` : ''}`}
         ${x.say ? `<div style="position:relative;margin-top:22px;${pp(q)}"><div style="position:absolute;left:50%;top:-18px;translate:-50% 0;width:0;height:0;border-left:18px solid transparent;border-right:18px solid transparent;border-bottom:20px solid ${ACC}"></div>
-          <div style="border:4px solid ${ACC};background:#fff;border-radius:26px;padding:14px 26px;font-size:38px;font-weight:900;line-height:1.25;text-align:center;white-space:nowrap">${br(x.say)}</div></div>` : ''}</div>`; };
+          <div style="border:4px solid ${ACC};background:#fff;border-radius:26px;padding:12px 20px;font-size:${Math.max(28, Math.min(36, Math.floor((W + 36) / Math.max(...String(x.say).split('\n').map(l => l.length)))))}px;font-weight:900;line-height:1.25;text-align:center;white-space:nowrap;max-width:${W + 40}px;box-sizing:border-box">${br(x.say)}</div></div>` : ''}</div>`; };
     B(`<div class="col" style="width:100%;align-items:center">${ttl(lt, s, !!(s._chain && s._prev && s._prev.title === s.title))}<div class="row" style="gap:${n >= 4 ? 26 : 70}px;justify-content:center;align-items:flex-start;flex-wrap:nowrap">${its.map(one).join('')}</div></div>`);
   };
 
@@ -4485,6 +4485,8 @@ function MK_tr(s, t, start) {
   const AC = t => ACC[code(t)] || '#E5484D';
   const LGo = (t, w) => { const c = code(t); return c && LOGO[c] ? `<img src="${LOGO[c]}" style="width:${w}px;height:${w}px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45))">` : ''; };
   const YEL = '#FFD43B', INK = '#11151E', MUTE2 = '#C9D0DE';
+  const WL = t => [...String(t || '')].reduce((n, ch) => n + (ch.charCodeAt(0) > 0x3000 ? 1 : ch === ' ' ? .35 : .6), 0);   /* 11/3 '텍스트 삐져나감': 글 폭(글자 크기 1 기준) */
+  const FIT = (t, base, w) => Math.max(28, Math.min(base, Math.floor(w / Math.max(.1, WL(t)))));
   const op = q => `opacity:${c01(q * 1.6).toFixed(3)}`;
   const up = (q, d = 30) => `opacity:${c01(q * 1.6).toFixed(3)};transform:translateY(${((1 - eo(q)) * d).toFixed(1)}px)`;
   const pic = (img, focus, extra = '') => { const src = photoSrc(img); return src ? `<img src="${src}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:${focus || '50% 18%'};${extra}">` : ''; };
@@ -4522,8 +4524,8 @@ function MK_tr(s, t, start) {
       <div style="position:absolute;left:40px;top:0;width:14px;height:714px;background:${c};${op(pq)}"></div>
       <div style="position:absolute;left:820px;top:40px;display:flex;align-items:center;gap:22px;${up(nq)}">${LGo(s.team, 112)}<div><div style="font-size:32px;font-weight:800;color:${c === '#0A5BD1' ? '#7DB0FF' : '#FF7A7A'};letter-spacing:2px">${esc(s.kicker || '')}</div><div style="font-size:100px;font-weight:900;line-height:1.02;letter-spacing:-3px">${esc(s.name || '')}</div></div></div>`;
     if (s.big) { const bq = AT(s, s.big.at, .5, seg(lt, .3, .5));
-      h += `<div style="position:absolute;left:820px;top:240px;display:flex;align-items:flex-end;gap:26px;${up(bq, 40)}"><div class="num" style="font-size:${s.big.size || 210}px;font-weight:900;line-height:.92;letter-spacing:-8px;white-space:nowrap">${esc(s.big.v)}</div>
-        <div style="font-size:54px;font-weight:900;line-height:1.15;margin-bottom:22px;white-space:nowrap">${esc(s.big.k || '')}${s.big.sub ? `<br><span style="color:${YEL}">${esc(s.big.sub)}</span>` : ''}</div></div>`; }
+      h += `<div style="position:absolute;left:820px;top:240px;display:flex;align-items:flex-end;gap:26px;${up(bq, 40)}"><div class="num" style="font-size:${FIT(s.big.v, s.big.size || 210, 940 - 26 - Math.max(...String(s.big.k || '').split('\n').map(l => WL(l) * 54)))}px;font-weight:900;line-height:.92;letter-spacing:-8px;white-space:nowrap">${esc(s.big.v)}</div>
+        <div style="font-size:54px;font-weight:900;line-height:1.15;margin-bottom:22px;white-space:nowrap">${br(s.big.k || '')}${s.big.sub ? `<br><span style="color:${YEL}">${esc(s.big.sub)}</span>` : ''}</div></div>`; }
     const mi = s.minor || [];
     if (mi.length) h += `<div style="position:absolute;left:820px;top:560px;display:flex;align-items:center;gap:40px">` + mi.map((m, i) => { const q = AT(s, m.at, .45, seg(lt, .5 + i * .2, .45));
       return `${i ? `<div style="width:3px;height:64px;background:rgba(255,255,255,.35);${op(q)}"></div>` : ''}<div style="display:flex;align-items:baseline;gap:14px;white-space:nowrap;${up(q, 20)}"><span style="font-size:40px;font-weight:800;color:${MUTE2}">${esc(m.k)}</span><b class="num" style="font-size:66px;font-weight:900;letter-spacing:-2px">${esc(m.v)}</b></div>`; }).join('') + `</div>`;
@@ -4550,21 +4552,23 @@ function MK_tr(s, t, start) {
   /* ── B3 rf_bars (glass:true → B1): {title, items:[{label, place, venue, v, unit, dec, at, hi}], ref:{v, lab}, max, valAt}
      기준(ref)을 넘는 막대는 노랗게 빛남. 바탕은 s.bg 사진 ── */
   SCENE.rf_bars = (lt, s) => {
-    const its = s.items || [], n = its.length, MX = s.max || 100, H = s.h || 400, BW = n > 6 ? 118 : n > 4 ? 150 : 200, GAP = n > 6 ? 26 : 40;
+    const its = s.items || [], n = its.length, MX = s.max || 100, H = s.h || 400, BW = n > 7 ? 118 : n > 4 ? 150 : 200, GAP = n > 7 ? 26 : 40;
     const W = n * BW + (n - 1) * GAP, X0 = Math.round((1808 - W) / 2), YB = 560;
     let h = ttl(lt, s);
     if (s.glass) h += `<div style="position:absolute;left:${X0 - 150}px;top:90px;width:${W + 300}px;height:610px;border-radius:36px;background:rgba(255,255,255,.10);border:2px solid rgba(255,255,255,.22);box-shadow:0 30px 80px rgba(0,0,0,.35);${op(seg(lt, 0, .4))}"></div>`;
     if (s.ref) { const y = YB - H * s.ref.v / MX, rq = AT(s, s.ref.at, .4, seg(lt, .1, .4));
-      h += `<div style="position:absolute;left:${X0 - 40}px;width:${W + 80}px;top:${y}px;border-top:4px dashed rgba(255,255,255,.5);${op(rq)}"></div><div style="position:absolute;left:${X0 - 150}px;top:${y - 22}px;font-size:30px;font-weight:800;color:${MUTE2};${op(rq)}">${esc(s.ref.lab || (s.ref.v + '%'))}</div>`; }
+      h += `<div style="position:absolute;left:${X0 - 40}px;width:${W + 80}px;top:${y}px;border-top:4px dashed rgba(255,255,255,.5);${op(rq)}"></div><div style="position:absolute;left:${X0 + W + 60}px;top:${y - 22}px;font-size:30px;font-weight:800;color:${MUTE2};white-space:nowrap;${op(rq)}">${esc(s.ref.lab || (s.ref.v + '%'))}</div>`; }   /* 11/3: 기준선 이름은 오른쪽(긴 이름이 막대에 겹치던 것) */
     its.forEach((it, i) => {
       const q = AT(s, it.at, .6, seg(lt, .2 + i * .1, .6)), vq = it.valAt != null ? AT(s, it.valAt, .4, 0) : (s.valAt != null ? AT(s, s.valAt, .4, 0) : q);
-      const hot = it.hi != null ? it.hi : (s.ref && it.v >= s.ref.v), col = hot ? YEL : 'rgba(255,255,255,.55)', bh = H * it.v / MX * eo(q), x = X0 + i * (BW + GAP);
+      const hot = it.hi != null ? it.hi : (s.ref && it.v >= s.ref.v), col = hot ? YEL : 'rgba(255,255,255,.55)', bh = it.from != null ? H * (it.from + (it.v - it.from) * eo(q)) / MX : H * it.v / MX * eo(q), x = X0 + i * (BW + GAP);   /* 11/3 KT편: from → v 로 자라거나 줄어듦 */
       const val = (it.dec != null ? Number(it.v).toFixed(it.dec) : String(it.v)) + (it.unit || '');
       h += `<div style="position:absolute;left:${x}px;top:${YB - bh}px;width:${BW}px;height:${bh}px;border-radius:16px 16px 6px 6px;background:${col};${hot ? `box-shadow:0 0 34px rgba(255,212,59,.55);` : ''}"></div>
-        <div class="num" style="position:absolute;left:${x - 30}px;width:${BW + 60}px;top:${YB - H * it.v / MX - 56}px;text-align:center;font-size:${BW < 130 ? 40 : 48}px;font-weight:900;color:${hot ? '#FFFFFF' : MUTE2};${op(vq)}">${esc(val)}</div>
+        <div class="num" style="position:absolute;left:${x - 30}px;width:${BW + 60}px;top:${YB - H * it.v / MX - 56}px;text-align:center;font-size:${n >= 7 ? 36 : BW < 130 ? 40 : 48}px;font-weight:900;color:${hot ? '#FFFFFF' : MUTE2};${op(vq)}">${esc(val)}</div>
         <div style="position:absolute;left:${x - 30}px;width:${BW + 60}px;top:${YB + 12}px;text-align:center;font-size:${BW < 130 ? 32 : 38}px;font-weight:900;white-space:nowrap;${op(q)}">${esc(it.label || '')}</div>
         ${it.place ? `<div style="position:absolute;left:${x}px;width:${BW}px;top:${YB + 58}px;display:flex;justify-content:center;${op(q)}"><span style="padding:2px 14px;border-radius:10px;background:${AC(it.venue || '')};font-size:24px;font-weight:900">${esc(it.place)}</span></div>` : ''}`;
     });
+    if (s.brk) { const bq = AT(s, s.brk.at, .45, 0), xa = X0 + s.brk.a * (BW + GAP), xb = X0 + s.brk.b * (BW + GAP) + BW, top = Math.min(...its.slice(s.brk.a, s.brk.b + 1).map(it => YB - H * it.v / MX)) - 120;   /* 11/3: 막대 묶음 괄호 */
+      h += `<div style="position:absolute;left:${xa - 10}px;width:${xb - xa + 20}px;top:${top}px;${op(bq)}"><div style="text-align:center;margin-bottom:8px"><span style="padding:4px 20px;border-radius:14px;background:${YEL};color:${INK};font-size:34px;font-weight:900;white-space:nowrap">${esc(s.brk.lab)}</span></div><div style="height:22px;border:5px solid ${YEL};border-bottom:0;border-radius:14px 14px 0 0"></div></div>`; }
     ROOT(h);
   };
 
@@ -4574,7 +4578,7 @@ function MK_tr(s, t, start) {
     let h = `<div style="position:absolute;left:0;right:0;top:${s.top || 190}px;display:flex;flex-direction:column;align-items:center;gap:36px">
       <div style="display:flex;align-items:center;gap:18px;font-size:66px;font-weight:900;letter-spacing:-2px;text-shadow:0 4px 18px rgba(0,0,0,.6);${up(wq)}">${s.team ? LGo(s.team, 84) : ''}<span>${esc(s.who || '')}</span>${s.tag ? `<span style="color:${YEL};${s.tagAt != null ? op(AT(s, s.tagAt, .4, 1)) : ''}">#${esc(s.tag)}</span>` : ''}</div>
       <div style="display:flex;align-items:flex-end;gap:48px">` + vs.map((x, i) => { const q = AT(s, x.at, .45, seg(lt, .3 + i * .25, .45));
-        return `${i ? `<div style="width:4px;height:130px;background:rgba(255,255,255,.5);${op(q)}"></div>` : ''}<div style="text-align:center;${up(q, 26)}"><div class="num" style="font-size:${x.size || 128}px;font-weight:900;line-height:1;letter-spacing:-3px;white-space:nowrap;color:${x.hi ? YEL : '#FFFFFF'};text-shadow:0 6px 24px rgba(0,0,0,.6)">${esc(x.v)}</div><div style="font-size:36px;color:${MUTE2};font-weight:800;margin-top:10px;white-space:nowrap">${esc(x.k || '')}</div></div>`; }).join('') + `</div></div>`;
+        return `${i ? `<div style="width:4px;height:130px;background:rgba(255,255,255,.5);${op(q)}"></div>` : ''}<div style="text-align:center;${up(q, 26)}"><div class="num" style="font-size:${x.size || 128}px;font-weight:900;line-height:1;letter-spacing:-3px;white-space:nowrap;color:${x.hi ? YEL : '#FFFFFF'};text-shadow:0 6px 24px rgba(0,0,0,.6)">${esc(x.v)}</div><div style="font-size:36px;line-height:44px;height:44px;color:${MUTE2};font-weight:800;margin-top:10px;white-space:nowrap">${esc(x.k || '')}</div></div>`; }).join('') + `</div></div>`;
     ROOT(h);
   };
 
@@ -4590,7 +4594,8 @@ function MK_tr(s, t, start) {
         <div style="position:absolute;left:34px;bottom:${((c.stats || []).length || s.reserveStats) ? 176 : 30}px;display:flex;align-items:center;gap:14px"><div style="font-size:60px;font-weight:900;text-shadow:0 3px 12px #000">${esc(c.name || '')}</div></div>
         <div style="position:absolute;left:34px;right:34px;bottom:28px;display:flex;justify-content:space-between;align-items:flex-end">` + (c.stats || []).map((x, j) => { const sq = AT(s, x.at, .45, q);
           const v = x.hi ? `<span style="background:${YEL};color:${INK};padding:0 14px;border-radius:10px">${esc(x.v)}</span>` : esc(x.v);
-          return `<div style="${op(sq)}"><div style="font-size:30px;font-weight:800;color:${MUTE2}">${esc(x.k)}</div><div class="num" style="font-size:${j ? 70 : 92}px;font-weight:900;line-height:1.05;white-space:nowrap">${v}</div></div>`; }).join('') + `</div></div>`; });
+          const sw = (CW - 68) / Math.max(1, (c.stats || []).length) - 24;
+          return `<div style="${op(sq)}"><div style="font-size:${FIT(x.k, 30, sw)}px;font-weight:800;color:${MUTE2};white-space:nowrap">${esc(x.k)}</div><div class="num" style="font-size:${FIT(x.v, j ? 70 : 92, sw - (x.hi ? 28 : 0))}px;font-weight:900;line-height:1.05;white-space:nowrap">${v}</div></div>`; }).join('') + `</div></div>`; });
     ROOT(h);
   };
 
@@ -4741,7 +4746,7 @@ Object.assign(MOTION, { probcalc: s => .6 + (s.chips || []).length * .3, probpai
       const p = wasIn(s, 'clips', c, o => o.head + '|' + (o.quote || '')) ? 1 : AT(s, c.at, .55, seg(lt, .2 + i * .4, .55));
       const src = photoSrc(c.img), rot = c.rot != null ? c.rot : (i % 2 ? 1.6 : -1.8);
       const paper = `background:#F4EEE1;background-image:linear-gradient(rgba(60,50,30,.05) 1px, transparent 1px);background-size:100% 46px`;
-      return `<div style="position:relative;width:${CW}px;flex:0 0 auto;padding:36px 44px 42px;${paper};border-radius:6px;box-shadow:0 22px 44px rgba(20,16,8,.28);text-align:left;
+      return `<div data-nodark="1" style="position:relative;width:${CW}px;flex:0 0 auto;padding:36px 44px 42px;${paper};border-radius:6px;box-shadow:0 22px 44px rgba(20,16,8,.28);text-align:left;
           opacity:${c01(p * 2).toFixed(3)};transform:translateY(${((1 - e3(p)) * -70).toFixed(1)}px) rotate(${(rot * (1 + (1 - e3(p)) * 2)).toFixed(2)}deg);clip-path:polygon(0 1%,4% 0,9% 1.2%,15% .2%,22% 1%,30% 0,38% 1.3%,47% .3%,55% 1%,64% 0,72% 1.1%,81% .2%,89% 1.2%,96% 0,100% 1%,100% 99%,95% 100%,88% 98.8%,80% 99.8%,71% 98.9%,62% 100%,53% 99%,44% 99.9%,35% 98.8%,26% 99.8%,17% 99%,9% 100%,3% 98.9%,0 99.6%)">
         <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:4px double #2A2418;padding-bottom:8px;margin-bottom:20px;font-size:34px;font-weight:800;color:#5A4E38">
           <span>${esc(c.date || '')}</span><span>${esc(c.src || '')}</span></div>
@@ -4999,16 +5004,16 @@ Object.assign(MOTION, { probcalc: s => .6 + (s.chips || []).length * .3, probpai
     const cp = K ? 1 : AT(s, s.colAt, .45, seg(lt, .1, .45));
     let h = titleH(lt, s, 56, 30, K && s._prev.title === s.title);
     h += `<div class="col" style="gap:18px;align-items:flex-start">`;
-    h += `<div class="row" style="gap:0;margin-left:${LW}px">` + cols.map((c, i) => `<div class="col" style="width:${CW}px;align-items:center;gap:8px;${rise(c01((cp - i * .08) * 1.6), 26)}">
+    h += `<div class="row" style="gap:0;margin-left:${LW}px">` + cols.map((c, i) => `<div class="col" style="width:${CW}px;align-items:center;gap:8px;${rise(c.at != null ? (K ? 1 : AT(s, c.at, .45, 0)) : c01((cp - i * .08) * 1.6), 26)}">
         ${(() => { const tt = T(c.team); return tt && LOGO[tt.code] ? `<img src="${LOGO[tt.code]}" style="width:120px;height:120px;object-fit:contain">` : ''; })()}<div class="num" style="font-size:40px;font-weight:900;letter-spacing:-1px;white-space:nowrap">${esc(c.label || '')}</div></div>`).join('') + `</div>`;
     rows.forEach((r, ri) => {
       const pv = K ? (s._prev.rows || [])[ri] : null, was = !!(pv && pv.at != null && pv.at < 50);
       const p = was ? 1 : AT(s, r.at, .5, 0);
       h += `<div class="row" style="gap:0;align-items:center;height:${RH}px;opacity:${c01(p * 3)}">
         <div style="width:${LW}px;font-size:48px;font-weight:900;letter-spacing:-1px;white-space:nowrap">${esc(r.k)}</div>` +
-        (r.vals || []).map((v, i) => { const q = was ? 1 : c01((p - i * .1) * 1.8);
+        (r.vals || []).map((v, i) => { const q = v.at != null ? AT(s, v.at, .5, 0) : was ? 1 : c01((p - i * .1) * 1.8);
           const bg = v.c === 'bad' ? RED : v.c === 'good' ? GREEN : '#EEF1F5', fg = v.c ? '#fff' : '#8D97A6';
-          return `<div style="width:${CW}px;display:flex;justify-content:center"><div class="row" style="width:${CW - 50}px;height:${RH - 24}px;border-radius:28px;background:${bg};color:${fg};justify-content:center;align-items:center;gap:10px;font-size:54px;font-weight:900;opacity:${c01(q * 1.5)};transform:scale(${.8 + .2 * eo(q)});box-shadow:0 10px 26px rgba(18,22,31,.10)">${v.icon === 'trophy' ? TROPHY(58, fg) : ''}${esc(v.t || '')}</div></div>`; }).join('') + `</div>`;
+          return `<div style="width:${CW}px;display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="row" style="width:${CW - 50}px;height:${RH - 24}px;border-radius:28px;background:${bg};color:${fg};justify-content:center;align-items:center;gap:10px;font-size:54px;font-weight:900;position:relative;opacity:${c01(q * 1.5)};transform:scale(${.8 + .2 * eo(q)});box-shadow:0 10px 26px rgba(18,22,31,.10)">${v.icon === 'trophy' ? TROPHY(58, fg) : ''}${esc(v.t || '')}</div>${v.sub ? `<div style="margin-top:4px;font-size:30px;font-weight:900;color:#6A7382;white-space:nowrap;opacity:${c01(q * 1.5)}">${esc(v.sub)}</div>` : ''}</div>`; }).join('') + `</div>`;
     });
     h += `</div>` + textH(lt, s, .8, 64);
     wrapC(h);
@@ -5054,7 +5059,7 @@ Object.assign(MOTION, { probcalc: s => .6 + (s.chips || []).length * .3, probpai
      {title, sub, n, slotAt, fillAt, fills:['trophy'|'win'|'loss'|'x'], big:{v, unit, at, c}} */
   SCENE.vB_units = (lt, s) => {
     const n = s.n || (s.fills || []).length, sq = AT(s, s.slotAt, .5, seg(lt, .1, .5)), fq = AT(s, s.fillAt, .8, 0);
-    const W = n > 14 ? 74 : n > 10 ? 116 : 170, H = n > 14 ? 120 : n > 10 ? 170 : 200, G = n > 14 ? 8 : n > 10 ? 10 : 22;   /* 11/2 롱폼㉟: 21칸이 화면 밖으로 넘침 */
+    const W = n > 14 ? 74 : n > 10 ? 116 : n === 10 ? 150 : 170, H = n > 14 ? 120 : n > 10 ? 170 : n === 10 ? 180 : 200, G = n > 14 ? 8 : n > 10 ? 10 : n === 10 ? 16 : 22;   /* 11/2 롱폼㉟: 21칸이 화면 밖으로 넘침 */
     let h = titleH(lt, s, 58, 6) + sub(lt, s);
     h += `<div class="row" style="gap:${G}px;margin-top:40px;justify-content:center">` + Array.from({ length: n }, (_, i) => {
       const f = (s.fills || [])[i] || '', a = C((sq - i * .03) * 2.2), b = C((fq * 1.4 - i * (.4 / n)) * 2.2);
@@ -5104,7 +5109,7 @@ Object.assign(MOTION, { probcalc: s => .6 + (s.chips || []).length * .3, probpai
       opps.map((t, i) => { const a = C((oq - i * .05) * 2.2), hit = t === s.hit;
         const dim = hit ? 1 - .0 : 1 - .65 * hq;
         return `<div class="col" style="width:190px;height:${hit ? 250 : 170}px;align-items:center;justify-content:center;gap:10px;opacity:${(C(a * 2) * dim).toFixed(3)};transform:scale(${(hit ? 1 + .35 * MK.E.outBack(hq) : 1).toFixed(3)});filter:grayscale(${hit ? 0 : hq})">
-          ${LG(t, 140)}${hit ? `<div style="${popS(hq)}">${pill(`${IC.x('#fff', 34)}${esc(s.badge || '')}`, RED, '#fff', 34)}</div>` : ''}</div>`; }).join('') + `</div></div>`;
+          ${LG(t, 140)}${hit ? `<div style="${popS(s.badgeAt != null ? AT(s, s.badgeAt, .45, 0) : hq)}">${pill(`${IC.x('#fff', 34)}${esc(s.badge || '')}`, RED, '#fff', 34)}</div>` : ''}</div>`; }).join('') + `</div></div>`;
     wrapC(h);
   };
 
@@ -5367,7 +5372,7 @@ Object.assign(MOTION, { probcalc: s => .6 + (s.chips || []).length * .3, probpai
       const p = AT(s, x.at, .45), good = x.c === 'good', col = good ? GREEN : RED;
       const ic = x.ic === 'glove' ? I.glove(150, '#B9772F') : x.ic === 'bat' ? I.bat(150, '#3B4A63') : x.ic === 'pen' ? `<div class="row" style="gap:2px">${I.pitcher(78, TCv('삼성'))}${I.pitcher(78, TCv('삼성'))}</div>` : I.pitcher(150, TCv('삼성'));
       return `<div class="col" style="align-items:center;gap:20px;${up(p, 30)}"><div style="position:relative;width:300px;height:280px;border-radius:36px;background:${good ? '#EAF7EF' : '#FDECEC'};border:7px solid ${col};display:flex;align-items:center;justify-content:center">${ic}
-        <div style="position:absolute;right:-22px;top:-22px;${ap(p)}">${good ? I.plus(84) : I.q(84)}</div></div>
+        <div style="position:absolute;right:-22px;top:-22px;${ap(p)}">${good ? I.plus(84) : (x.q ? I.q(84) : `<svg width="84" height="84" viewBox="0 0 64 64"><circle cx="32" cy="32" r="28" fill="${RED}"/><rect x="17" y="28" width="30" height="8" rx="4" fill="#fff"/></svg>`)}</div></div>
         <div style="font-size:54px;font-weight:900;letter-spacing:-1px">${esc(x.lab)}</div></div>`; }).join('') + `</div>`;
     ZW(lt, s, h);
   };
@@ -5747,6 +5752,9 @@ function __titleFix(s) {
 function __logoDedup(s) {
   try {
     if (!s || ['grid', 'question', 'matchup', 'mu_blocks'].includes(s.type)) return;
+    /* 11/3 0시 검수: 여러 사람 카드(faces·people)에서 첫 사람 이름 옆에만 로고가 남던 것(11/2 사용자 '카스트로 이름 옆에만 로고… 없애') → 같은 구단 로고가 두 개 이상이면 모두 뺀다 */
+    if (s.type === 'faces' || s.type === 'people') { const L0 = Object.values(LOGO || {}), cnt = {}; const ims = [...document.querySelectorAll('#body img')].filter(e => L0.includes(e.getAttribute('src')));
+      ims.forEach(e => { const k = e.getAttribute('src'); cnt[k] = (cnt[k] || 0) + 1; }); ims.forEach(e => { if (cnt[e.getAttribute('src')] > 1) e.style.display = 'none'; }); return; }
     const L = Object.values(LOGO || {}), seen = new Set();
     document.querySelectorAll('#body img').forEach(e => { const src = e.getAttribute('src'); if (!L.includes(src)) return;
       if (seen.has(src)) e.style.display = 'none'; else seen.add(src); });
@@ -5783,7 +5791,7 @@ function __logoDedup(s) {
       const q = wasOn(s, 'sp', x.i) ? 1 : AT(s, x.at, .45, 0), c = x.bad ? RED : '#3B4A63';
       return `<div class="col" style="width:${W}px;align-items:center;gap:8px;${POPQ(q)}"><div style="font-size:40px;font-weight:900;white-space:nowrap">${esc(x.name)}</div>
         ${x.rest ? `<div style="width:110px;height:12px;border-radius:6px;background:${x.bad ? RED : '#16A34A'}"></div>` : '<div style="height:12px"></div>'}</div>`; }).join('');
-    const brk = (s.brackets || []).map((b, i) => { const q = wasOn(s, 'brackets', i) ? 1 : AT(s, b.at, .45, 0); const x0 = b.from * (W + GAP), w = (b.to - b.from + 1) * (W + GAP) - GAP, c = b.c || RED;
+    const brk = (s.brackets || []).map((b, i) => { const pb = prevArr(s, 'brackets', i), q = wasOn(s, 'brackets', i) && pb && pb.lab === b.lab ? 1 : AT(s, b.at, .45, 0); const x0 = b.from * (W + GAP), w = (b.to - b.from + 1) * (W + GAP) - GAP, c = b.c || RED;
       return `<div style="position:absolute;left:${x0}px;top:0;width:${w}px;opacity:${c01(q * 2).toFixed(3)}"><div style="height:18px;border:5px solid ${c};border-top:0;border-radius:0 0 14px 14px"></div>
         <div style="text-align:center;margin-top:8px"><span style="padding:4px 18px;border-radius:14px;background:${c};color:#fff;font-size:28px;font-weight:900;white-space:nowrap">${esc(b.lab)}</span></div></div>`; }).join('');
     const spLab = s.sp && s.sp.length ? `<div class="row" style="gap:10px;align-items:center;width:150px;justify-content:flex-end;opacity:${c01(AT(s, s.spAt, .45, 0) * 2)}">${LG(s.spTeam || '삼성', 54)}<div style="font-size:28px;font-weight:900;color:#3B4A63">선발</div></div>` : '';
@@ -5807,16 +5815,16 @@ function __logoDedup(s) {
       return `<div class="col" style="align-items:center;gap:10px;width:${BW + 40}px">
         <div style="position:relative;width:${BW}px;height:${H}px">
           <div style="position:absolute;left:0;right:0;bottom:0;height:${bh}px;border-radius:16px 16px 6px 6px;background:${col};${ring}transition:none"></div>
-          <div class="num" style="position:absolute;left:-20px;right:-20px;bottom:${bh + 10}px;text-align:center;font-size:36px;font-weight:900;color:${v >= 50 ? TXT : '#6A7382'};opacity:${c01(vqi(i) * 2).toFixed(3)}">${fin != null ? esc(fin) : ''}</div></div>
+          <div class="num" style="position:absolute;left:-20px;right:-20px;bottom:${(v < 50 && v > 41 ? Math.round(H * 50 / MX) + 12 : bh + 10)}px;text-align:center;font-size:36px;font-weight:900;color:${v >= 50 ? TXT : '#6A7382'};opacity:${c01(vqi(i) * 2).toFixed(3)}">${fin != null ? esc(fin) + (/^[0-9.]+$/.test(String(fin)) ? '%' : '') : ''}</div></div>
         <div style="font-size:34px;font-weight:900">${g.g}차전</div>
         <div style="padding:3px 16px;border-radius:12px;background:${TC_(g.venue)};color:#fff;font-size:26px;font-weight:900">${esc(g.place)}</div></div>`; }).join('');
     const chips = st.map((x, j) => { const q = wasOn(s, 'steps', j) ? 1 : AT(s, x.at, .45, 0); const c = x.neg ? RED : '#16A34A';
       return `<div style="padding:6px 18px;border-radius:14px;background:#fff;border:3px solid ${x.mix ? '#3B4A63' : c};color:${x.mix ? '#3B4A63' : c};font-size:30px;font-weight:900;white-space:nowrap;${POPQ(q)}">${esc(x.lab)}</div>`; }).join('');
     const legend = `<div class="row" style="gap:14px;align-items:center;justify-content:center;min-height:56px;flex-wrap:nowrap">${chips}</div>`;
     const axis = `<div style="position:absolute;left:-90px;right:-20px;top:${y50}px;border-top:4px dashed #C3CAD5"></div><div style="position:absolute;left:-150px;top:${y50 - 22}px;font-size:28px;font-weight:900;color:#8A93A3">50%</div>
-      <div class="num" style="position:absolute;left:-190px;top:${H - H * s.base / MX - 22}px;font-size:30px;font-weight:900;color:#6A7382;opacity:${c01(bq * 2).toFixed(3)}">${esc(String(s.base))}%</div>`;
+      <div class="num" style="position:absolute;left:-190px;top:${H - H * s.base / MX - (s.baseNote ? 58 : 22)}px;font-size:30px;font-weight:900;color:#6A7382;text-align:right;width:170px;opacity:${c01(bq * 2).toFixed(3)}">${s.baseNote ? `<div style="font-size:26px;white-space:nowrap;opacity:${c01(AT(s, s.baseNoteAt, .45, 0) * 2).toFixed(3)}">${esc(s.baseNote)}</div>` : ''}${esc(String(s.base))}%</div>`;
     h += legend + `<div style="position:relative;margin-top:16px;margin-left:150px">${axis}<div class="row" style="gap:6px;align-items:flex-end">${cols}</div></div>`;
-    wrapC(`<div class="col" style="zoom:${s.z || 1.12};width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
+    wrapC(`<div class="col" style="zoom:${s.z || 1.06};width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
   };
 
   /* 시리즈 결과: rows=[{team, outs:[{k:'4승 0패', v}]}], his=[{team, i, lab, at}], bracket={lab, at} (두 팀의 4승 3패 칸 묶음) */
