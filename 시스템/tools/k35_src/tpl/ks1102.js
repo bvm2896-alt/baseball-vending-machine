@@ -44,7 +44,7 @@
     const K = s._same, G = s.games || [], st = s.steps || [], H = 400, MX = 70, BW = 124;
     let h = titleH(lt, s, 56, 26, K && s._prev.title === s.title);
     const vals = G.map((g, i) => { let v = s.base; st.forEach((x, j) => { const q = wasOn(s, 'steps', j) ? 1 : AT(s, x.at, .7, 0); v += (x.d[i] || 0) * eo(q); }); return v; });
-    const vq = AT(s, s.valAt, .45, 0), bq = AT(s, s.baseLabAt, .45, 0);
+    const vq = Array.isArray(s.valAt) ? 0 : AT(s, s.valAt, .45, 0), vqi = i => Array.isArray(s.valAt) ? AT(s, s.valAt[i], .45, 0) : vq, bq = AT(s, s.baseLabAt, .45, 0);
     const y50 = H - H * 50 / MX;
     const cols = G.map((g, i) => { const v = vals[i], bh = Math.round(H * v / MX), hiX = (s.hi || []).find(x => x.g === g.g), hq = hiX ? AT(s, hiX.at, .45, 0) : 0;
       const col = v >= 50 ? '#12161F' : '#9AA3B2', ring = hq > 0 ? `box-shadow:0 0 0 ${Math.round(6 * hq)}px ${hiX.c || GOLD};` : '';
@@ -52,7 +52,7 @@
       return `<div class="col" style="align-items:center;gap:10px;width:${BW + 40}px">
         <div style="position:relative;width:${BW}px;height:${H}px">
           <div style="position:absolute;left:0;right:0;bottom:0;height:${bh}px;border-radius:16px 16px 6px 6px;background:${col};${ring}transition:none"></div>
-          <div class="num" style="position:absolute;left:-20px;right:-20px;bottom:${bh + 10}px;text-align:center;font-size:36px;font-weight:900;color:${v >= 50 ? TXT : '#6A7382'};opacity:${c01(vq * 2).toFixed(3)}">${fin != null ? esc(fin) : ''}</div></div>
+          <div class="num" style="position:absolute;left:-20px;right:-20px;bottom:${bh + 10}px;text-align:center;font-size:36px;font-weight:900;color:${v >= 50 ? TXT : '#6A7382'};opacity:${c01(vqi(i) * 2).toFixed(3)}">${fin != null ? esc(fin) : ''}</div></div>
         <div style="font-size:34px;font-weight:900">${g.g}차전</div>
         <div style="padding:3px 16px;border-radius:12px;background:${TC_(g.venue)};color:#fff;font-size:26px;font-weight:900">${esc(g.place)}</div></div>`; }).join('');
     const chips = st.map((x, j) => { const q = wasOn(s, 'steps', j) ? 1 : AT(s, x.at, .45, 0); const c = x.neg ? RED : '#16A34A';
@@ -76,10 +76,10 @@
       return `<div class="col" style="align-items:center;gap:8px;width:170px">
         <div style="height:56px;display:flex;align-items:flex-end">${hi && hi.lab ? `<span style="padding:4px 14px;border-radius:12px;background:${hi.c || GOLD};color:#fff;font-size:28px;font-weight:900;white-space:nowrap;${POPQ(hq)}">${esc(hi.lab)}</span>` : ''}</div>
         <div style="height:${BH}px;display:flex;align-items:flex-end"><div style="width:110px;height:${bh}px;border-radius:14px 14px 4px 4px;background:${c};${ol}"></div></div>
-        ${ri === R.length - 1 ? `<div style="font-size:32px;font-weight:900;white-space:nowrap">${esc(o.k)}</div>` : ''}</div>`; }).join('') + `</div>`;
+        <div style="font-size:30px;font-weight:900;white-space:nowrap;color:#3B4A63">${esc(o.k)}</div></div>`; }).join('') + `</div>`;
     const bq = s.bracket ? AT(s, s.bracket.at, .45, 0) : 0;
     h += `<div class="col" style="gap:26px;align-items:flex-start;position:relative">${R.map(row).join('')}</div>`;
-    if (s.bracket) h += `<div style="margin-top:20px;padding:8px 26px;border-radius:16px;border:4px solid ${RED};color:${RED};font-size:34px;font-weight:900;${POPQ(bq)}">${esc(s.bracket.lab)}</div>`;
+    if (s.bracket) h += `<div style="position:relative;width:${140 + 22 * 4 + 170 * 4}px;height:74px"><div style="position:absolute;left:${140 + 22 * 4 + 170 * 3 + 85}px;top:14px;transform:translateX(-50%);white-space:nowrap;padding:8px 26px;border-radius:16px;border:4px solid ${RED};color:${RED};font-size:34px;font-weight:900;${POPQ(bq)}">${esc(s.bracket.lab)}</div></div>`;
     else h += `<div style="height:70px"></div>`;
     wrapC(`<div class="col" style="zoom:${s.z || 1.0};width:fit-content;margin:0 auto;align-items:center">${h}</div>`);
   };

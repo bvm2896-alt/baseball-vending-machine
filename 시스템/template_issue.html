@@ -323,10 +323,10 @@ function noteLine(lt, n, t0) {
 SCENE.profile = (lt, s) => {
   const K = s._keep, sts = s.stats || [], f = s.showFrom || 0, nn = s._nmax || sts.length;
   const same = K && s._prev && s._prev.text === s.text;
-  const st = sts.map((x, i) => `<div style="${i < f ? '' : rise(seg(lt, (K ? .1 : .3) + (i - f) * .12, .45), 18)}"><b class="num" style="color:${x.hi ? ACC : TXT}">${esc(x.v)}</b><i>${esc(x.k)}</i></div>`).join('');
+  const st = sts.map((x, i) => `<div style="${i < f ? '' : rise(x.at != null ? bp(s, x.at, .45) : seg(lt, (K ? .1 : .3) + (i - f) * .12, .45), 18)}"><b class="num" style="color:${x.hi ? ACC : TXT}">${esc(x.v)}</b><i>${esc(x.k)}</i></div>`).join('');
   B(`${photoBox(s, 460, seg(lt, 0, .5))}
     <div class="row" style="gap:18px;margin-top:26px;${K ? '' : rise(seg(lt, .08, .45), 22)}"><div class="big" style="font-size:${s.size || 92}px">${br(s.name || '')}</div>${s.sub ? `<div class="badge" style="background:${ACC}">${esc(s.sub)}</div>` : ''}</div>
-    ${s.text ? `<div class="big gold" style="margin-top:14px;font-size:${s.textSize || 78}px;white-space:${/\n/.test(s.text) ? 'normal' : 'nowrap'};${same ? '' : pop(seg(lt, K ? .08 : .2, .5))}">${br(s.text)}</div>` : ''}
+    ${s.text ? `<div class="big gold" style="margin-top:14px;font-size:${s.textSize || 78}px;white-space:${/\n/.test(s.text) ? 'normal' : 'nowrap'};${same ? '' : pop(s.textAt != null ? bp(s, s.textAt, .5) : seg(lt, K ? .08 : .2, .5))}">${br(s.text)}</div>` : ''}
     ${st ? `<div class="st${nn >= 5 ? ' n5' : nn === 4 ? ' n4' : ''}" style="margin-top:22px">${st}</div>` : ''}`);
 };
 /* roster: 두 판 나란히 (세로라 폭 438씩) */
@@ -343,6 +343,7 @@ SCENE.roster = (lt, s) => {
   B(h);
 };
 
+/* 11/2: photo·profile 의 textAt, profile stats·cards·vtime 칸의 at(호흡 번호) — 말하는 호흡에 맞춰 뜨게(없으면 예전 시간). */
 /* photo: 사진이 주인공인 장면. {img, team, text, caption, tag, focus, size} — 사진 크게(640) + 아래 큰 문구 */
 SCENE.photo = (lt, s) => {
   if (!photoSrc(s.img) && !(s.team || (s.teams || [])[0])) {   // 사진도 로고도 없으면 빈 카드를 띄우지 않고 글씨만(9/15)
@@ -350,7 +351,7 @@ SCENE.photo = (lt, s) => {
     return SCENE.big(lt, { text: t, size: Math.min(s.size || 130, 120) });
   }
   B(`${photoBox(s, s.h || 640, seg(lt, 0, .6))}
-  ${s.text ? `<div class="mega gold" style="margin-top:36px;font-size:${s.size || 130}px;${(s.size || 130) < 110 ? 'letter-spacing:-1px;word-spacing:6px;line-height:1.15;' : ''}${pop(seg(lt, .35, .6))}">${br(s.text)}</div>` : ''}`);
+  ${s.text ? `<div class="mega gold" style="margin-top:36px;font-size:${s.size || 130}px;${(s.size || 130) < 110 ? 'letter-spacing:-1px;word-spacing:6px;line-height:1.15;' : ''}${pop(s.textAt != null ? bp(s, s.textAt, .6) : seg(lt, .35, .6))}">${br(s.text)}</div>` : ''}`);
 };
 
 /* people: 인물 카드 1~3장. {title, items:[{img, name, team, note, bad:true|false}], text}
@@ -580,7 +581,7 @@ SCENE.cards = (lt, s) => {
   let h = s.title ? `<div class="title gold" style="font-size:56px;font-weight:900;margin-bottom:28px;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
   h += grid ? `<div style="display:grid;grid-template-columns:repeat(2,${w}px);gap:${gap}px;justify-content:center">` : `<div class="row" style="gap:${gap}px;align-items:stretch">`;
   items.forEach((it, i) => {
-    const p = seg(lt, .2 + i * .18, .45), hi = it.hi === true;
+    const p = it.at != null ? bp(s, it.at, .45, it.li) : seg(lt, .2 + i * .18, .45), hi = it.hi === true;
     h += `<div class="pane col" style="width:${w}px;border-radius:30px;padding:${grid ? 40 : 30}px 12px ${grid ? 44 : 32}px;gap:${grid ? 20 : 14}px;justify-content:${items.some(x => x.badge) ? 'flex-start' : 'center'};${hi ? 'border-color:var(--acc);box-shadow:0 14px 40px rgba(232,120,40,.22);' : ''}${rise(p, 40)}">
       ${it.badge ? `<div class="num" style="height:54px;padding:0 22px;border-radius:14px;background:${hi ? 'var(--acc)' : '#12161F'};color:#fff;font-size:${grid ? 38 : 34}px;font-weight:900;display:flex;align-items:center">${esc(it.badge)}</div>` : ''}
       <div class="title" style="font-size:${n === 3 ? 66 : 78}px;font-weight:900;line-height:1.1;text-align:center">${br(cardName(it.name))}</div>
@@ -743,16 +744,16 @@ SCENE.bars = (lt, s) => {
   let h = s.title ? `<div class="title" style="font-size:54px;font-weight:900;margin-bottom:26px;text-align:center;${pop(seg(lt, 0, .4))}">${br(s.title)}</div>` : '';
   h += `<div class="col" style="width:900px;gap:22px;align-items:stretch">`;
   items.forEach((it, i) => {
-    const p = seg(lt, .3 + i * .3, .7), v = (Number(it.value) || 0), w = 560 * Math.min(1, v / (it.max || mx)) * eo(p), hi = it.hi === true;
+    const p = it.at != null ? bp(s, it.at, .7) : seg(lt, .3 + i * .3, .7), v = (Number(it.value) || 0), w = 560 * Math.min(1, v / (it.max || mx)) * eo(p), hi = it.hi === true;
     const shown = Number.isInteger(v) ? Math.round(v * eo(p)) : (v * eo(p)).toFixed(it.dec ?? 2);
-    h += `<div class="pane" style="border-radius:24px;padding:18px 24px;${rise(seg(lt, .2 + i * .3, .4), 30)};${hi ? 'border-color:var(--acc);' : ''}">
+    h += `<div class="pane" style="border-radius:24px;padding:18px 24px;${rise(it.at != null ? bp(s, it.at, .4) : seg(lt, .2 + i * .3, .4), 30)};${hi ? 'border-color:var(--acc);' : ''}">
       <div class="row" style="gap:14px;align-items:center;justify-content:flex-start;margin-bottom:10px">${it.team ? tchip(it.team, 62) : ''}<div class="title" style="font-size:44px;font-weight:900">${esc(it.label || '')}</div></div>
       <div class="row" style="gap:18px;align-items:center;justify-content:flex-start"><div style="width:560px;height:46px;border-radius:12px;background:#EEF1F6;overflow:hidden"><div style="width:${w}px;height:100%;border-radius:12px;background:${hi ? 'var(--acc)' : (it.color || '#9AA3B2')}"></div></div>
       <div class="num" style="font-size:56px;font-weight:900;color:${hi ? 'var(--acc)' : TXT};white-space:nowrap">${esc(String(shown))}<span style="font-size:32px">${esc(it.unit || '')}</span></div></div>
       ${it.sub ? `<div style="margin-top:10px;text-align:left;font-size:36px;font-weight:800;letter-spacing:-1px;color:${hi ? 'var(--acc)' : '#3B4A63'}">${esc(it.sub)}</div>` : ''}</div>`;   /* 9/30: 부제(기록)는 막대 아래 한 줄로 크게 */
   });
   h += '</div>';
-  if (s.text) h += `<div class="big gold" style="margin-top:28px;font-size:${s.size || 70}px;${pop(seg(lt, .4 + n * .3 + .3, .5))}">${br(s.text)}</div>`;
+  if (s.text) h += `<div class="big gold" style="margin-top:28px;font-size:${s.size || 70}px;${pop(s.textAt != null ? bp(s, s.textAt, .5) : seg(lt, .4 + n * .3 + .3, .5))}">${br(s.text)}</div>`;
   B(h);
 };
 /* podium: 시상대. {title, items:[{team, medal:'금'|'은'|'동', sub, hi}], text} — 가운데 금, 왼쪽 은, 오른쪽 동 */
@@ -941,7 +942,7 @@ SCENE.vtime = (lt, s) => {
   h += `<div style="position:absolute;left:208px;top:${RH / 2}px;width:8px;border-radius:4px;background:${LINE};height:${(n - 1) * RH}px"></div>`;
   h += `<div style="position:absolute;left:208px;top:${RH / 2}px;width:8px;border-radius:4px;background:var(--acc);height:${Math.max(0, (n - 1) * RH * grow)}px"></div>`;
   its.slice(0, n).forEach((it, i) => {
-    const p = i < NEW ? 1 : seg(lt, .15 + (i - NEW) * .35, .4), hi = it.hi === true, top = i * RH;
+    const p = i < NEW ? 1 : (it.at != null ? bp(s, it.at, .4) : seg(lt, .15 + (i - NEW) * .35, .4)), hi = it.hi === true, top = i * RH;
     h += `<div style="position:absolute;left:0;top:${top}px;height:${RH}px;width:880px;display:flex;align-items:center;${i < NEW ? '' : `opacity:${c01(p * 1.4)};transform:translateX(${(1 - eo(p)) * 40}px)`}">
       <div class="num" style="width:176px;text-align:right;font-size:${hi ? (CP ? 50 : 58) : (CP ? 44 : 50)}px;font-weight:900;color:${hi ? 'var(--acc)' : TXT};letter-spacing:-1px">${esc(it.y)}</div>
       <div style="width:28px;height:28px;border-radius:50%;margin-left:22px;flex:0 0 auto;background:${hi ? 'var(--acc)' : '#fff'};border:6px solid ${hi ? 'var(--acc)' : '#12161F'};box-shadow:0 0 0 ${hi ? 8 : 0}px ${ACC}30"></div>

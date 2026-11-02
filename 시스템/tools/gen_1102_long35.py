@@ -284,7 +284,7 @@ SC['h10'] = S(0, "vA_days", title="2026 삼성", team="삼성", days=[dict(date=
 SC['k13'] = S(0, "mu_pstat", title="홀드왕", img=P["스기모토"], name="스기모토", team="KT", at=1.0, n=25, iconLab="홀드", iconAt=2.0, era=5.90, eraAt=2.3)
 SC['k16c'] = HERO("김현수", "김현수", "KT", "", [], quote=dict(t="모두가 서로를 내려놓지 않는 게\n우리 팀의 장점", at=2.0))
 SC['s2'] = S(0, "vB_only", title="정규시즌 상대 전적", me="KT", opps=["KIA", "LG", "NC", "SSG", "두산", "롯데", "키움", "한화", "삼성"], hit="삼성", oppAt=0.6, hitAt=1.0, badge="7승 9패")
-SC['s4'] = S(0, "vA_units", title="플레이오프 · 삼성 투수 등판", team="삼성", groups=[dict(g="1차전", n=5), dict(g="2차전", n=3), dict(g="3차전", n=7), dict(g="4차전", n=6), dict(g="5차전", n=3)], at=0.3, fillAt=1.0, totAt=1.0, v="24", vl="번")
+SC['s4'] = FACES([FC("이승민", "이승민", "삼성", "플레이오프 다섯 경기 모두 등판", 2.0, keep=True)])
 SC['s6b'] = S(0, "ks_rank", title="2026 팀 세이브 순위", team="삼성", n=10, rank=2, at=1.0, note="42개")
 SC['s7'] = FACES([FC("최원태C", "최원태", "삼성", "", 1.0), FC("페덱C", "페덱", "삼성", "", 1.0), FC("후라도D", "후라도", "삼성", "", 2.0)])
 SC['s12'] = HERO("원태인", "원태인", "삼성", "", [ST("지금", "마무리", 0), ST("선발로 가면", "뒷문 공백", 0.4, True)])
@@ -316,6 +316,33 @@ SC['p17b'] = BARS(_GT, _A(_B1, [-1] * 3) + _A(_B2, [2.0, 3.0]), 100, chain="c17"
 SC['p17d'] = BARS(_GT, _A(_B1, [-1] * 3) + _A(_B2, [-1] * 2) + _A(_B3, [3.0]), 100, chain="c17", cont=True)
 SC['v2b'] = FACES([FC("대니엘", "대니엘", "KT", "평균자책점", -1, note="2.13", noteAt=1.0), FC("최원태", "최원태", "삼성", "KT전 평균자책점 6.94", -1, keep=True)])
 SC['v5c'] = HERO("페덱", "페덱", "삼성", "", [ST("8월 29일 KT전", "6이닝 무실점", 3.0, True, size=84), ST("삼진", "7개", 3.5)], imgAt=1.0)
+
+# ── 11/2 검수 3차 반영 ──
+SC['h10b'] = S(0, "vB_units", title="5차전 치르고 올라온 팀의 한국시리즈", n=8, slotAt=0.5, fillAt=1.0, fills=["trophy"] * 2 + ["x"] * 6, big=dict(v="2", unit="/ 8번 우승", at=2.0, c="#E5484D"))
+SC['k4'] = S(0, "vA_rank", title="2026 타선 · 리그 1위", logoAt=0, items=[dict(lab="팀 타율", ic="bat", v="", at=1.0), dict(lab="팀 득점", ic="ball", v="", at=1.9)])
+SC['k11'] = sched(sp=[], dayAt=-1, cont=True, brackets=[dict(**{"from": 0, "to": 8}, lab="KT 선발 넷 · 나흘 이상 휴식", c="#12161F", at=0.5)])
+SC['k11b'] = sched(sp=[dict(g=1, name="1선발", rest="", at=0), dict(g=2, name="2선발", rest="", at=1.0), dict(g=5, name="1선발", rest="나흘", at=0.5), dict(g=6, name="2선발", rest="닷새", at=1.5)], spTeam="KT", spAt=0, dayAt=-1, cont=True, brackets=[dict(**{"from": 0, "to": 8}, lab="KT 선발 넷 · 나흘 이상 휴식", c="#12161F", at=-1)])
+SC['k12'] = FACES([FC("이강철", "이강철", "KT", "", 0, say="타자들 컨디션 괜찮다\n이제서야 분위기가 난다", sayAt=1.0)])
+SC['k17'] = S(0, "vA_tiles", z=1.15, title="2026 KT 정리", items=[dict(lab="타선", ic="bat", c="good", at=1.0), dict(lab="선발", ic="pitcher", c="good", at=1.0), dict(lab="장타", ic="bat", c="bad", at=2.0), dict(lab="불펜", ic="pen", c="bad", at=3.0)])
+SC['s4'] = FACES([FC("이승민", "이승민", "삼성", "플레이오프 다섯 경기 모두 등판", 2.0, keep=True)])
+SC['s6'] = FACES([FC("김재윤", "김재윤", "삼성", "", 0), FC("원태인B", "원태인", "삼성", "", 2.0)])
+SC['s6b'] = S(0, "ks_rank", title="2026 팀 세이브 순위", team="삼성", n=10, rank=2, at=0.5, note="42개")
+SC['s11'] = sched(sp=[dict(g=1, name="최원태", rest="", at=-1), dict(g=2, name="페덱", rest="", at=-1), dict(g=3, name="후라도", rest="", at=-1),
+                      dict(g=4, name="최원태", rest="사흘", bad=True, at=1.0), dict(g=5, name="페덱", rest="사흘", bad=True, at=1.4), dict(g=6, name="후라도", rest="사흘", bad=True, at=2.0), dict(g=7, name="최원태", rest="사흘", bad=True, at=2.4)],
+                  spAt=-1, dayAt=-1, cont=True, brackets=[dict(**{"from": 4, "to": 8}, lab="4차전부터 사흘 휴식", at=2.6)])
+SC['v2b'] = HERO("대니엘", "대니엘", "KT", "", [ST("시즌 평균자책점", "2.13", 1.0, True), ST("삼성전", "등판 없음", 2.5)])
+SC['v2'] = HERO("최원태B", "최원태", "삼성", "", [ST("KT전 평균자책점", "6.94", 2.0, True), ST("플레이오프 3차전", "1⅔이닝", 3.5)])
+SC['v5c'] = HERO("페덱", "페덱", "삼성", "", [ST("2차전", "선발 차례", 1.0), ST("8월 29일 KT전", "6이닝 무실점", 3.0, True, size=84), ST("삼진", "7개", 3.5)], imgAt=1.0)
+SC['v7'] = FACES([FC("후라도D", "후라도", "삼성", "KT전 평균자책점 5.17", 0.3, keep=True), FC("힐리어드C", "힐리어드", "KT", "삼성전 3할 4리 · 홈런 5개", 2.0, keep=True)])
+SC['v8'] = FACES([FC("후라도D", "후라도", "삼성", "", -1, note="4이닝 6실점", noteAt=1.0), FC("힐리어드C", "힐리어드", "KT", "홈런 두 개", -1, keep=True, note="5타점", noteAt=3.0)])
+SC['v12'] = S(0, "vA_gap", title="4차전부터 선발 휴식", rows=[dict(team="KT", days=4, lab="나흘 이상", at=2.0, fillAt=2.0), dict(team="삼성", days=3, lab="사흘", at=1.0, fillAt=1.0)], goal="등판", legend="쉬는 날", legendAt=1.0)
+SC['p5b'] = S(0, "vB_rings", title="1위 팀의 한국시리즈 승률", items=[dict(k="1차전", v=61.9, dec=1, c="#E5484D", at=2.0), dict(k="2차전", v=76.1, dec=1, c="#16A34A", at=1.0)])
+SC['p9'] = prob7([-1] * 5, baseLabAt=-1, valAt=[0, 1.0, 50, 50, 50, 50, 50], hi=[dict(g=1, at=0), dict(g=2, at=1.0)])
+SC['p10'] = prob7([-1] * 5, baseLabAt=-1, valAt=[-1, -1, 0, 3.0, 3.0, 50, 50], hi=[dict(g=3, at=0, c="#E5484D"), dict(g=4, at=2.0), dict(g=5, at=2.0)], cont=True)
+SC['p11'] = prob7([-1] * 5, baseLabAt=-1, valAt=[-1, -1, -1, -1, -1, 2.0, 2.0], hi=[dict(g=6, at=1.0, c="#16A34A"), dict(g=7, at=1.0, c="#16A34A")], cont=True)
+SC['p13'] = S(0, "vB_split", title="KT 한국시리즈 우승 확률", l="KT", r="삼성", from_=51.33, to=51.33, moveAt=-1, label=dict(v="51.33", at=-1), rlabel=dict(v="48.66", at=0), halfAt=2.0, chain="sp", cont=True)
+SC['s4'] = HERO("후라도E", "후라도", "삼성", "", [ST("5차전", "7이닝", 2.0, True), ST("5차전 불펜", "두 명", 2.6)], imgAt=2.0)
+SC['k17'] = S(0, "vA_tiles", z=1.15, title="2026 KT 정리", items=[dict(lab="타선", ic="bat", c="good", at=1.0), dict(lab="선발", ic="pitcher", c="good", at=1.0), dict(lab="장타", ic="bat", c="bad", at=2.0), dict(lab="중간 불펜", ic="pen", c="bad", at=3.0)])
 SC.pop('h0')
 END_SC = Q("야구자판기 · 매일 야구 이슈", ["KIA", "KT", "LG", "NC", "SSG", "두산", "롯데", "삼성", "키움", "한화"], logoSize=150, size=72)
 # 11/1 20:18 사용자 "10월 27일은 왜 들어간 거야. 쓸데없는 서브텍스트들 다 지워" — 인물 장면의 꼬리표(감독·날짜·'선발 후보' 등)와 사진 장면 위 작은 머리글을 지운다(기록 범위를 알려 주는 'KT전'만 남김)
@@ -351,22 +378,21 @@ scenes.append(dict(END_SC, startLine=len(lines) - 1))
 
 def ch(title, a, b): return {"key": title, "title": title, "from": KEYS.index(a), "to": KEYS.index(b)}
 CH = [ch("역대 1위 팀의 한국시리즈", "h1", "h15"), ch("2026년 KT", "k1", "k17"), ch("삼성의 남은 힘", "s1", "s17"), ch("차전별 맞대결", "v1", "v12"), ch("KT 우승 확률", "p1", "q2")]
-DESC = ("2026 한국시리즈 KT 삼성 우승 예측 — 1차전부터 7차전까지 경기별 KT 승리 확률로 계산한 KT 통합 우승 확률은 51.33%예요.\n"
-        "정규시즌 1위 KT는 22일 만의 공식 경기를 딛고 통합 우승을 할 수 있을까요? 플레이오프 5차전을 뚫고 온 삼성은 1위 팀을 넘을 수 있을까요?\n\n"
-        "역대 1위 팀의 한국시리즈: 2005~2025년 정규시즌 1위 팀은 21번 중 19번 우승. 우승을 놓친 2015년 삼성·2018년 두산은 모두 플레이오프 5차전을 치르고 하루 쉰 상대에게 안방 1·2차전을 1승 1패로 나눴고 3차전부터 무너졌어요. 안방 1·2차전을 다 이긴 1위 팀은 10번 모두 우승.\n\n"
-        "2026년 KT: 90승 5무 49패 구단 최다승, 팀 타율·득점 1위, 팀 평균자책점 2위, 팀 홈런은 7위, 홀드 1위 스기모토 평균자책점 5.90. 고영표 다승 1위·소형준 승률 1위, 1차전 선발 유력 대니엘은 첫 포스트시즌. 선발 넷이 나흘씩 쉬며 7차전까지 돌 수 있는 일정. 큰 경기 경험은 김현수(한국시리즈 반지 세 개).\n\n"
-        "삼성의 남은 힘: 정규시즌 맞대결 삼성 9승 7패. 세이브왕 김재윤 부상으로 원태인이 마무리, 선발은 최원태·페덱·후라도 셋 — 대구 3~5차전 사흘 연속이라 4차전부터 사흘 휴식.\n\n"
+DESC = ("2026 한국시리즈 KT 삼성 우승 예측 — 1차전부터 7차전까지 경기별 KT 승리 확률로 계산한 KT 통합 우승 확률은 51.33%예요.\n\n"
+                "역대 1위 팀의 한국시리즈: 2005~2025년 정규시즌 1위 팀은 21번 중 19번 우승. 우승을 놓친 2015년 삼성·2018년 두산은 모두 플레이오프 5차전을 치르고 하루 쉰 상대에게 안방 1·2차전을 1승 1패로 나눴고 3차전부터 무너졌어요. 다만 플레이오프 5차전을 치르고 올라온 팀이 1위 팀을 꺾은 건 8번 중 2번뿐. 안방 1·2차전을 다 이긴 1위 팀은 10번 모두 우승.\n\n"
+        "2026년 KT: 90승 5무 49패 구단 최다승, 팀 타율·득점 1위, 팀 평균자책점 2위, 팀 홈런은 7위, 홀드 1위 스기모토 평균자책점 5.90. 고영표 다승 1위·소형준 승률 1위, 1차전 선발 유력 대니엘은 첫 포스트시즌. 선발 넷이 나흘 이상 쉬며 7차전까지 돌 수 있는 일정. 큰 경기 경험은 김현수(한국시리즈 반지 세 개).\n\n"
+        "삼성의 남은 힘: 정규시즌 맞대결 삼성 9승 7패. 세이브왕 김재윤 부상으로 원태인이 마무리, 선발은 최원태·페덱·후라도 순서가 유력 — 대구 3~5차전이 사흘 연속이라 셋으로만 돌리면 4차전부터 사흘 휴식.\n\n"
         "차전별 맞대결: 대니엘은 삼성전 등판 없음, 최원태 KT전 평균자책점 6.94, 삼성 중심 타선(구자욱·디아즈·최형우) 모두 왼손 — 사이드암 고영표 삼성전 3승 1패 2.25, 페덱 8월 29일 KT전 6이닝 무실점. 후라도 KT전 5.17, 힐리어드 삼성전 3할 4리 5홈런.\n\n"
         "제 계산: 출발점 43.75%(맞대결 7승 9패)에 수원 +4·대구 −4, 1차전 공백 −5, 삼성 불펜 피로 +2(1·2차전), 세이브왕 공백 +3, 삼성 선발 사흘 휴식 +6(4차전부터).\n"
         "1차전 47.75% · 2차전 52.75% · 3차전 42.75% · 4·5차전 48.75% · 6·7차전 56.75% → KT 우승 51.33%, 삼성 48.66%. 가장 가능성 높은 결과는 KT 4승 3패. 수원 2연승이면 82.35%, 1승 1패면 51.41%, 2연패면 19.52%.\n\n"
-        "KT가 22일 만의 공식 경기를 딛고 통합 우승을 할까요? 아니면 플레이오프를 뚫고 올라온 삼성이 KT를 넘을까요? 댓글로 알려 주세요.\n\n▶ 지난 영상: 한국시리즈 1차전 예측 KT 삼성 · 플레이오프 5차전 리뷰\n\n"
+        "KT가 22일 공백을 딛고 통합 우승을 할까요? 아니면 플레이오프를 뚫고 올라온 삼성이 KT를 넘을까요? 댓글로 알려 주세요.\n\n▶ 지난 영상: 한국시리즈 1차전 예측 KT 삼성 · 플레이오프 5차전 리뷰\n\n"
         "#한국시리즈 #한국시리즈예측 #KT위즈 #삼성라이온즈 #KT우승 #고영표 #프로야구 #야구자판기\n")
 TAGS = ["한국시리즈 예측", "한국시리즈 우승", "한국시리즈", "KT 위즈", "삼성 라이온즈", "KT 우승 확률", "이강철", "힐리어드", "대니엘", "고영표", "후라도", "원태인", "김현수", "프로야구", "KBO"]
 SOURCE = "사실 출처 = KBO 기록실 + 기사 원문 — /home/claude/ks35/research, /home/claude/g5/research_*.md, 롱폼㉝ 근거모음"
-EP = {"introChapter": "오프닝", "date": "2026-11-02", "gameDate": "2026-11-03", "series": "야구롱폼", "focusTeam": "KT", "speed": 1.0, "ttsApi": True, "ttsTempo": 1.2, "ttsTempoSlow": 1.15,
-      "rev": "1102-long35-v3", "topic": "KS예측_KT우승확률", "endcardSec": 20, "gapScale": 0.85, "pauseMax": 0.3, "ttsCharsOk": 6000,
+EP = {"theme": "m3", "introChapter": "오프닝", "date": "2026-11-02", "gameDate": "2026-11-03", "series": "야구롱폼", "focusTeam": "KT", "speed": 1.0, "ttsApi": True, "ttsTempo": 1.2, "ttsTempoSlow": 1.15,
+      "rev": "1102-long35-v6", "topic": "KS예측_KT우승확률", "endcardSec": 20, "gapScale": 0.85, "pauseMax": 0.3, "ttsCharsOk": 6000,
       "chapters": CH, "lines": lines, "scenes": scenes, "thumb": {}, "mascot": False, "source": SOURCE,
-      "youtube": {"title": "2026 한국시리즈 예측 KT 삼성 우승 확률 | 후라도·힐리어드, 경기별로 계산해 보니", "description": DESC, "tags": TAGS, "hashtags": ["#한국시리즈", "#한국시리즈예측", "#KT위즈", "#삼성라이온즈", "#KT우승", "#고영표", "#프로야구", "#야구자판기"]}}
+      "youtube": {"title": "2026 한국시리즈 예측 KT 삼성 우승 확률 | 22일 공백·삼성 선발 휴식까지 계산해 보니", "description": DESC, "tags": TAGS, "hashtags": ["#한국시리즈", "#한국시리즈예측", "#KT위즈", "#삼성라이온즈", "#KT우승", "#고영표", "#프로야구", "#야구자판기"]}}
 
 if __name__ == '__main__':
     SLOW = {KEYS.index(k) for k in ('o1', 'q1', 'q2')}

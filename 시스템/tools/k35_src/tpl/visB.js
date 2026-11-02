@@ -109,9 +109,9 @@
       <div style="position:relative;width:${W}px;height:150px;border-radius:75px;overflow:hidden;background:${cr};box-shadow:0 14px 34px rgba(18,22,31,.12);${MK.css.zoomIn(seg(lt, .05, .5))}">
         <div style="position:absolute;left:0;top:0;bottom:0;width:${x.toFixed(1)}px;background:${cl}"></div>
         <div style="position:absolute;left:${W / 2 - 4}px;top:-10px;bottom:-10px;width:8px;background:#fff;opacity:.95"></div>
-        ${s.label ? `<div class="num" style="position:absolute;left:44px;top:0;bottom:0;display:flex;align-items:center;font-size:84px;font-weight:900;color:#fff;letter-spacing:-3px;opacity:${C(lq * 2)}">${esc(s.label.v)}<span style="font-size:44px">%</span></div>` : ''}${s.rlabel ? `<div class="num" style="position:absolute;right:44px;top:0;bottom:0;display:flex;align-items:center;font-size:84px;font-weight:900;color:#fff;letter-spacing:-3px;opacity:${C(AT(s, s.rlabel.at, .5, 0) * 2)}">${esc(s.rlabel.v)}<span style="font-size:44px">%</span></div>` : ''}</div>
+        ${s.label ? `<div class="num" data-nodark="1" style="position:absolute;left:44px;top:0;bottom:0;display:flex;align-items:center;font-size:84px;font-weight:900;color:${window.__TPC ? '#1B2438' : '#fff'};letter-spacing:-3px;opacity:${C(lq * 2)}">${esc(s.label.v)}<span style="font-size:44px">%</span></div>` : ''}${s.rlabel ? `<div class="num" style="position:absolute;right:44px;top:0;bottom:0;display:flex;align-items:center;font-size:84px;font-weight:900;color:#fff;letter-spacing:-3px;opacity:${C(AT(s, s.rlabel.at, .5, 0) * 2)}">${esc(s.rlabel.v)}<span style="font-size:44px">%</span></div>` : ''}</div>
       <div style="position:relative;width:${W}px;height:150px">
-        <div class="num" style="position:absolute;left:${W / 2 - 60}px;width:120px;top:16px;text-align:center;font-size:38px;font-weight:900;color:${MUTE}">반반</div>
+        <div class="num" style="position:absolute;left:${W / 2 - 60}px;width:120px;top:16px;text-align:center;font-size:38px;font-weight:900;color:${MUTE};opacity:${s.halfAt == null ? 0 : C(AT(s, s.halfAt, .4, 0) * 2)}">반반</div>
         ${s.push ? `<div style="position:absolute;left:${(x - 150).toFixed(1)}px;top:56px;width:300px;display:flex;justify-content:center;${popS(pq, .4)}">${pill(`${IC.pen('#fff', 46)}${esc(s.push.t)}`, ORG, '#fff', 44)}</div>` : ''}</div>`;
     wrapC(h);
   };

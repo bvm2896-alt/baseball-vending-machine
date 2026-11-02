@@ -74,3 +74,64 @@ _f="document.querySelectorAll('#body .photo, #body .chip').forEach((el, i) => { 
 assert _t.count(_f)==1
 _t=_t.replace(_f,"/* 둥실 끔 */")
 open('template_long.html','w',encoding='utf-8').write(_t)
+# 11/2 10:00 사용자 "배경이 너무 흰색이라 눈이 살짝 부신데 약간 더 어둡게" — 화면 바탕만 한 톤 어둡게(카드·글자는 그대로)
+import os as _os
+_BG=_os.environ.get('K35_BG','#E4E8EE')
+_t=open('template_long.html',encoding='utf-8').read()
+for _a,_b in [("html,body{width:1920px;height:1080px;overflow:hidden;background:#F4F6FA}","html,body{width:1920px;height:1080px;overflow:hidden;background:%s}"%_BG),
+              ("#stage{position:relative;width:1920px;height:1080px;background:#F4F6FA}","#stage{position:relative;width:1920px;height:1080px;background:%s}"%_BG),
+              ("${ACC}22 0%, rgba(244,246,250,0) 70%),#F4F6FA`;","${ACC}22 0%, rgba(244,246,250,0) 70%),"+_BG+"`;")]:
+    assert _t.count(_a)==1, _a[:30]; _t=_t.replace(_a,_b)
+open('template_long.html','w',encoding='utf-8').write(_t)
+# 11/2 10:04 사용자 "어두운 거 위주에 약간 밝은 걸 섞는 느낌 / 흰색·검은색만이 아니라 적절한 다른 색을 섞어도" — EP.theme 로 고르는 어두운 바탕 팔레트(navy·teal·navyW)
+_t=open('template_long.html',encoding='utf-8').read()
+_anchor="  function darkStage(t) {"
+assert _t.count(_anchor)==1
+_theme=r'''
+  /* ── 11/2 어두운 바탕 팔레트: EP.theme = 'navy'(남색 바탕+밝은 남색 카드) / 'teal'(청록 바탕+밝은 청록 카드) / 'navyW'(남색 바탕+흰 카드) ── */
+  const TP = { navy: { bg: '#121A2B', glow: 'rgba(70,110,200,.30)', card: '#1F2A42', soft: '#18223A', line: '#2F3C5A', tx: '#EEF2F8', mu: '#A3AEC4', sub: 'rgba(8,12,22,.94)', prog: '#26324D', kt: '#C9D2E2', pill: '#34415F' },
+    teal: { bg: '#0F1F25', glow: 'rgba(40,150,160,.28)', card: '#1A323A', soft: '#15282E', line: '#2B4952', tx: '#EAF5F5', mu: '#9BB5B8', sub: 'rgba(5,14,17,.94)', prog: '#22393F', kt: '#C6D6D8', pill: '#2F4C55' },
+    m1: { bg: '#2B3652', glow: 'rgba(110,150,230,.30)', card: '#3A4767', soft: '#334060', line: '#4C5A7C', tx: '#F1F4FA', mu: '#BCC5D8', sub: 'rgba(14,20,34,.94)', prog: '#3E4B6B', kt: '#D3DAE8', pill: '#4A5880' },
+    m2: { bg: '#3A4664', glow: 'rgba(130,165,235,.30)', card: '#4A5779', soft: '#425071', line: '#5C6A8E', tx: '#F4F6FB', mu: '#C8D0E0', sub: 'rgba(16,22,38,.94)', prog: '#4D5A7C', kt: '#CFD7E6', pill: '#5A6890' },
+    m3: { bg: '#4B5877', glow: 'rgba(150,180,240,.30)', card: '#5B698B', soft: '#536182', line: '#6E7CA0', tx: '#F6F8FC', mu: '#D2D9E7', sub: 'rgba(18,24,40,.94)', prog: '#5E6B8E', kt: '#CFD7E6', pill: '#6A79A0' },
+    navyW: { bg: '#18233A', glow: 'rgba(90,130,220,.28)', card: null, soft: null, line: null, tx: '#F1F4FA', mu: '#B4BED2', sub: 'rgba(8,12,22,.94)', prog: '#2C3955', kt: '#C9D2E2', pill: '#34415F' } };
+  const TPC = TP[EP.theme];
+  window.__TPC = TPC || null;
+  if (TPC) {
+    const st = document.createElement('style');
+    st.textContent = `html,body,#stage{background:${TPC.bg}!important}#brand{color:${TPC.tx}}#chap{background:#EA0029}#meta .d,#railTitle{color:${TPC.mu}!important}#prog{background:${TPC.prog}}
+#sub span{background:${TPC.sub};box-shadow:0 0 0 2px rgba(255,255,255,.10)}` + (TPC.card ? `.card{background:${TPC.card};border-color:${TPC.line}}.photo{background:${TPC.soft};border-color:${TPC.line}}.pane{background:${TPC.card}!important;border-color:${TPC.line}!important}` : '');
+    document.head.appendChild(st);
+    const RP = TPC.card ? [[/background:\s*#12161F/gi, 'background:' + TPC.kt], [/background:\s*#fff(fff)?\b/gi, 'background:' + TPC.card], [/background:\s*white\b/gi, 'background:' + TPC.card],
+      [/#E3E7EE/gi, TPC.line], [/#E9EDF3/gi, TPC.soft], [/#EEF1F6/gi, TPC.soft], [/#EEF1F5/gi, TPC.soft], [/#F4F6F9/gi, TPC.soft], [/#F4F6FA/gi, TPC.soft], [/#D5DBE4/gi, TPC.line], [/#D5DBE5/gi, TPC.line],
+      [/#6A7382/gi, TPC.mu], [/#5B6576/gi, TPC.mu], [/#3B4A63/gi, TPC.mu], [/#8D97A6/gi, TPC.mu], [/#12161F/gi, TPC.tx]] : [];
+    const dk = h => { RP.forEach(([a, b]) => { h = h.replace(a, b); }); return h; };
+    const rgb = c => { const m = String(c).match(/rgba?\(([^)]+)\)/); if (!m) return null; const v = m[1].split(',').map(parseFloat); return { r: v[0], g: v[1], b: v[2], a: v[3] == null ? 1 : v[3] }; };
+    const lum = o => .299 * o.r + .587 * o.g + .114 * o.b;
+    function domTheme(root) {
+      const els = [...root.querySelectorAll('*')];
+      if (TPC.card) els.forEach(el => { if (el.closest('[data-nodark],.chip,svg')) return; const cs = getComputedStyle(el), bg = rgb(cs.backgroundColor);
+        if (bg && bg.a > .4 && lum(bg) > 232) el.style.backgroundColor = TPC.card; });
+      /* 검은 칸(KT 색 막대·검은 알약): 글자 없는 막대는 밝은 강철색, 글자 있는 작은 알약은 한 톤 밝은 남색 */
+      const underOf = el => { let p = el.parentElement; while (p && p !== root.parentElement) { const b = rgb(getComputedStyle(p).backgroundColor); if (b && b.a > .4) return b; p = p.parentElement; } return null; };
+      els.forEach(el => { if (el.closest('[data-nodark],.chip,svg')) return; const cs = getComputedStyle(el), bg = rgb(cs.backgroundColor); if (!bg || bg.a < .4 || !(bg.r < 32 && bg.g < 32 && bg.b < 42 && bg.b - bg.r < 16)) return;
+        const u = underOf(el); if (u && lum(u) > 120) return;
+        const txt = (el.textContent || '').trim(), r = el.getBoundingClientRect();
+        if (!txt && !el.querySelector('img')) el.style.backgroundColor = TPC.kt; else if (r.height < 140) el.style.backgroundColor = TPC.pill; });
+      els.forEach(el => { if (el.closest('[data-nodark],.chip,svg')) return; const cs = getComputedStyle(el); const bw = parseFloat(cs.borderTopWidth), bc = rgb(cs.borderTopColor);
+        if (bw > 0 && bc && lum(bc) < 45) el.style.borderColor = TPC.kt; });
+      els.forEach(el => { if (el.closest('[data-nodark],.chip,svg')) return; const cs = getComputedStyle(el), fg = rgb(cs.color); if (!fg || lum(fg) > 140) return;
+        let p = el, under = null; while (p && p !== root.parentElement) { const b = rgb(getComputedStyle(p).backgroundColor); if (b && b.a > .4) { under = b; break; } p = p.parentElement; }
+        if (!under || lum(under) < 120) el.style.color = lum(fg) > 60 ? TPC.mu : TPC.tx; });
+      els.forEach(el => { if (el.closest('[data-nodark],.chip,svg')) return; const cs = getComputedStyle(el), fg = rgb(cs.color); if (!fg || lum(fg) < 200) return;
+        let p = el, under = null; while (p && p !== root.parentElement) { const b = rgb(getComputedStyle(p).backgroundColor); if (b && b.a > .4) { under = b; break; } p = p.parentElement; }
+        if (under && lum(under) > 185) el.style.color = TPC.bg; });
+    }
+    const _B2 = B; B = h => { _B2(dk(h)); domTheme(document.getElementById('body')); };
+  }
+'''
+_t=_t.replace(_anchor,_theme+_anchor)
+_g="document.getElementById('stage').style.background = `radial-gradient(60% 50% at ${gx}% ${gy}%, ${ACC}22 0%, rgba(244,246,250,0) 70%),"
+assert _t.count(_g)==1
+_t=_t.replace(_g,"document.getElementById('stage').style.background = window.__TPC ? `radial-gradient(60% 55% at ${gx}% ${gy}%, ${window.__TPC.glow} 0%, rgba(0,0,0,0) 70%),${window.__TPC.bg}` : `radial-gradient(60% 50% at ${gx}% ${gy}%, ${ACC}22 0%, rgba(244,246,250,0) 70%),")
+open('template_long.html','w',encoding='utf-8').write(_t)
