@@ -209,8 +209,27 @@ def write_status():
     git_push_status()
 
 def sh(cmd, timeout=1800):
-    r = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=timeout)
-    return r.returncode, (r.stdout or '') + (r.stderr or '')
+    """11/2 사용자 '진행상황 실시간으로 보이도록' — 하위 프로그램(음성·렌더) 출력을 창에 바로 보여 주면서 모아서 돌려준다.
+    물음(input) 글도 줄바꿈 없이 바로 보이도록 글자 단위로 흘린다. 시간 초과면 끝낸다."""
+    import codecs, threading
+    env = dict(os.environ, PYTHONUNBUFFERED='1', PYTHONIOENCODING='utf-8')
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
+    timer = threading.Timer(timeout, p.kill); timer.daemon = True; timer.start()
+    dec = codecs.getincrementaldecoder('utf-8')('replace'); out = []
+    try:
+        while True:
+            b = p.stdout.read1(4096)
+            if not b: break
+            t = dec.decode(b)
+            if t:
+                out.append(t)
+                try: sys.stdout.write(t); sys.stdout.flush()
+                except Exception: pass
+        out.append(dec.decode(b'', final=True))
+        p.wait()
+    finally:
+        timer.cancel()
+    return p.returncode, ''.join(out)
 def py(*a, **k): return sh([sys.executable, '-X', 'utf8'] + list(a), **k)
 def key_of(ep_path):
     stem = os.path.splitext(os.path.basename(ep_path))[0]

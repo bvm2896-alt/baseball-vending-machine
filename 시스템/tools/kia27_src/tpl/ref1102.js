@@ -111,7 +111,7 @@
       h += `<div style="position:absolute;left:${x}px;top:110px;width:${CW}px;height:590px;border-radius:30px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.5);${up(q, 40)}">${pic(c.img, c.focus, 'filter:contrast(1.15)')}
         <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(0,0,0,.9))"></div>
         <div style="position:absolute;left:0;top:0;bottom:0;width:12px;background:${AC(c.team)}"></div>
-        <div style="position:absolute;left:34px;bottom:${((c.stats || []).length || s.reserveStats) ? 150 : 30}px;display:flex;align-items:center;gap:14px">${LGo(c.team, 80)}<div style="font-size:60px;font-weight:900;text-shadow:0 3px 12px #000">${esc(c.name || '')}</div></div>
+        <div style="position:absolute;left:34px;bottom:${((c.stats || []).length || s.reserveStats) ? 176 : 30}px;display:flex;align-items:center;gap:14px"><div style="font-size:60px;font-weight:900;text-shadow:0 3px 12px #000">${esc(c.name || '')}</div></div>
         <div style="position:absolute;left:34px;right:34px;bottom:28px;display:flex;justify-content:space-between;align-items:flex-end">` + (c.stats || []).map((x, j) => { const sq = AT(s, x.at, .45, q);
           const v = x.hi ? `<span style="background:${YEL};color:${INK};padding:0 14px;border-radius:10px">${esc(x.v)}</span>` : esc(x.v);
           return `<div style="${op(sq)}"><div style="font-size:30px;font-weight:800;color:${MUTE2}">${esc(x.k)}</div><div class="num" style="font-size:${j ? 70 : 92}px;font-weight:900;line-height:1.05;white-space:nowrap">${v}</div></div>`; }).join('') + `</div></div>`; });

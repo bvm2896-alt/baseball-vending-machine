@@ -142,3 +142,10 @@ _h="  slide(k, t, s, start);\n"
 assert _t.count(_h)==1
 _t=_t.replace(_h,"  if (window.__sbgPaint) window.__sbgPaint(kk, t, start);\n"+_h)
 open('template_long.html','w',encoding='utf-8').write(_t)
+# 11/2 15:03 사용자 "원 안, 선수 뒤 배경에 영상의 배경색이 부분적으로 같이 들어가있는데 전부 흰색으로" — 얼굴 원(facegrid·slotboard) 바탕을 테마가 바꾸지 못하게 흰색 고정
+_t=open('template_long.html',encoding='utf-8').read()
+_a="rgba(18,22,31,.16);background:#E9EDF3\">${it.ph"
+if _t.count(_a)==1: _t=_t.replace(_a,"rgba(18,22,31,.16);background:#FEFEFE\" data-nodark=\"1\">${it.ph")
+_b="<div style=\"position:absolute;inset:0;border-radius:50%;overflow:hidden;${src ? 'background:#E9EDF3;border:6px solid #fff;'"
+if _t.count(_b)==1: _t=_t.replace(_b,"<div data-nodark=\"1\" style=\"position:absolute;inset:0;border-radius:50%;overflow:hidden;${src ? 'background:#FEFEFE;border:6px solid #fff;'")
+open('template_long.html','w',encoding='utf-8').write(_t)
