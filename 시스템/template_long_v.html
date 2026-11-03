@@ -4321,7 +4321,9 @@ function render(t) {
         if (t < tin) { end = tin; k -= 1; start = k === 0 ? 0 : BD[k - 1]; } else start = tin; } } }
   const kk = Math.min(k, SC.length - 1), s = SC[kk] || { type: 'big', text: '' };
   const need = (MOTION[s.type] || MOTION.big)(s), fit = Math.max(0.6, (end - start) * 0.75);
-  const lt = (t - start) * (need > fit ? need / fit : 1);
+  let lt = (t - start) * (need > fit ? need / fit : 1);
+  /* 11/3 사용자(F-151 "쇼츠는 넘기다 보는 비율이 높으니 무슨 내용인지 먼저 인지"): 세로 쇼츠 첫 장면은 0초 첫 프레임부터 다 그려진 채로(등장 효과 없이) — 끄려면 콘티 "instant0": false */
+  const I0 = !!(EP.vertical && EP.instant0 !== false && kk === 0); if (I0) lt = Math.max(lt, 3);
   NOW = t;
   if (SC[kk]) ensureCx(kk);   /* 장면 첫 프레임: 다 그려진 마지막 모습으로 재서 가운데 맞춤 값(묶음이면 묶음 전체로) */
   NOW = t;
@@ -4333,7 +4335,7 @@ function render(t) {
     const lim = +el.dataset.fit; let fs = parseFloat(el.style.fontSize || getComputedStyle(el).fontSize), g = 0;
     while (el.scrollWidth > lim && fs > 46 && g++ < 60) { fs -= 3; el.style.fontSize = fs + 'px'; }
   });
-  document.getElementById('body').style.opacity = (s._keep || s._chain) ? '1' : String(c01((t - start) / 0.3));
+  document.getElementById('body').style.opacity = (s._keep || s._chain || I0) ? '1' : String(c01((t - start) / 0.3));
   const gx = 50 + 4 * Math.sin(t * .5), gy = 22 + 2 * Math.cos(t * .37);
   document.getElementById('stage').style.background = `radial-gradient(60% 50% at ${gx}% ${gy}%, ${ACC}22 0%, rgba(244,246,250,0) 70%),#F4F6FA`;
   slide(k, t, s, start);
@@ -4401,6 +4403,10 @@ function __vinit() { (function () {
     if (g && (s._same || s._keep || s._chain) && SC[g.ks[g.ks.length - 1]].type === s.type) {   /* 10/21: 종류가 다른 장면(말풍선 → 기록)은 배율을 따로 — 큰 장면에 묶여 작아지지 않게 */ g.L = Math.min(g.L, b.L); g.R = Math.max(g.R, b.R); g.T = Math.min(g.T, b.T); g.B = Math.max(g.B, b.B); g.ks.push(k); }
     else { g = Object.assign({ ks: [k] }, b); VZ.push(g); }
   }
+  /* 11/3 검수(컷 쇼츠 기아 2027 — 같은 선수 pstat 장면에서 사진이 바뀔 때마다 사진·이름이 옮겨 다님, F-121·F-136): 세로 컷의 pstat 장면은 전부 한 배율·한 자리 —
+     모든 pstat 묶음의 상자를 합쳐 같은 배율·같은 기준점으로 놓는다(위에서부터 쌓는 틀이라 사진·이름 자리가 같아진다). 끄려면 콘티 "vpstatFix": false */
+  if (EP.vpstatFix !== false) { const PG = VZ.filter(g => g.ks.every(k => (SC[k] || {}).type === 'pstat'));
+    if (PG.length > 1) { const U = { L: Math.min(...PG.map(g => g.L)), R: Math.max(...PG.map(g => g.R)), T: Math.min(...PG.map(g => g.T)), B: Math.max(...PG.map(g => g.B)) }; PG.forEach(g => Object.assign(g, U)); } }
   const Z = [];
   VZ.forEach(g => { const w = g.R - g.L + 40, h = g.B - g.T + 30;
     const z = Math.max(0.42, Math.min(1.0, ZW / w, ZH / h));

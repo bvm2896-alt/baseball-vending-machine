@@ -1115,10 +1115,12 @@ SCENE.flip = (lt, s) => {
 
 /* quote: 보도 인용 카드 — 매체·날짜 + 원문 한 문장 */
 SCENE.quote = (lt, s) => {
-  let h = `<div class="pane col" style="width:1500px;border-radius:40px;padding:56px 80px;gap:28px;align-items:flex-start;${rise(seg(lt, 0, .45), 30)}">
-    ${(s.src || s.date) ? `<div class="row" style="gap:18px">${s.src ? `<span class="badge" style="background:#12161F;font-size:36px;padding:10px 26px">${esc(s.src)}</span>` : ''}${s.date ? `<span class="num" style="font-size:36px;font-weight:800;color:${GRAY}">${esc(s.date)}</span>` : ''}</div>` : ''}
+  /* 11/3 검수(롯데 2027 — 이어지는 인용 장면에서 카드가 꺼졌다 켜지고 자리가 튐, F-136): 같은 묶음의 앞 장면도 quote 면 카드 틀은 그대로, 바뀐 글만 새로 뜬다 */
+  const QK = !!(s._chain && s._prev && s._prev.type === 'quote'), QT_ = QK && s._prev.text === s.text, QS = QK && s._prev.src === s.src && s._prev.date === s.date;
+  let h = `<div class="pane col" style="width:1500px;border-radius:40px;padding:56px 80px;gap:28px;align-items:flex-start;${QK ? '' : rise(seg(lt, 0, .45), 30)}">
+    ${(s.src || s.date) ? `<div class="row" style="gap:18px">${s.src ? `<span class="badge" style="background:#12161F;font-size:36px;padding:10px 26px;${QK && !QS ? pop(seg(lt, 0, .4)) : ''}">${esc(s.src)}</span>` : ''}${s.date ? `<span class="num" style="font-size:36px;font-weight:800;color:${GRAY}">${esc(s.date)}</span>` : ''}</div>` : ''}
     <div style="display:flex;gap:26px;align-items:flex-start"><div style="font-size:160px;line-height:.75;font-weight:900;color:${ACC}">“</div>
-      <div style="font-size:${s.fs || 66}px;font-weight:900;letter-spacing:-2px;line-height:1.35;text-align:left;${rise(seg(lt, .2, .5), 16)}">${s.mark ? br(s.text).replace(esc(s.mark), `<span style="background:${ACC}26;box-shadow:inset 0 -18px 0 ${ACC}40">${esc(s.mark)}</span>`) : br(s.text)}</div></div>
+      <div style="font-size:${s.fs || 66}px;font-weight:900;letter-spacing:-2px;line-height:1.35;text-align:left;${QT_ ? '' : rise(seg(lt, QK ? 0 : .2, .5), 16)}">${s.mark ? br(s.text).replace(esc(s.mark), `<span style="background:${ACC}26;box-shadow:inset 0 -18px 0 ${ACC}40">${esc(s.mark)}</span>`) : br(s.text)}</div></div>
     ${s.who ? `<div style="align-self:flex-end;font-size:40px;font-weight:800;color:${GRAY};${rise(seg(lt, .5, .4), 12)}">— ${esc(s.who)}</div>` : ''}</div>`;
   wrapC(h);
 };
@@ -1589,6 +1591,7 @@ function autoCenter(s, measure) {
   if (measure && s._cx == null) { const m = measureLR(s); s._cx = m ? Math.round(m.C - (m.L + m.R) / 2) : 0; }
   if (s._mh && ((CHAINS[s._cid] || []).length > 1 || (LGS[s._lg] || []).length > 1)) { el.style.minHeight = s._mh + 'px'; if (getComputedStyle(el).flexDirection === 'column') el.style.justifyContent = 'flex-start'; }   /* 10/16: 묶음 높이 고정(위 맞춤) */
   el.style.scale = s._fit && s._fit < 1 ? String(s._fit) : '';
+  if (s.type === 'rf_card' && !EP.vertical) s._cy = 24;   /* 11/3 사용자(롯데 2027 "이동욱 감독 화면 배치가 밑으로 내려간 것 같아 — 다른 장면이랑 위치 맞춰"): 아래 작은 기록(minor)이 없는 카드는 위아래 가운데 계산에서 큰 사진이 빠져 140px 내려갔다 → 선수 카드는 언제나 같은 높이 */
   el.style.translate = s._cy ? `0 ${s._cy}px` : '';   /* 10/25: 위아래 가운데(_cy) — transform·left 와 따로 노는 translate 속성 */   /* 10/5 밤: 위·아래로 넘치는 장면은 통째로 조금 줄인다(transform 과 따로 노는 scale 속성) */
   const chained = (CHAINS[s._cid] || []).length > 1 || (LGS[s._lg] || []).length > 1;
   /* 10/10 롱폼⑩ 사고(강백호 사진이 화면 왼쪽 밖으로 잘림): 묶음 전체 가운데 맞춤이 사진을 화면 밖으로 밀면 사진 왼쪽이 40px 안으로 들어오게 막는다 */
@@ -2194,11 +2197,15 @@ SCENE.slotboard = (lt, s) => {
   const CW = n >= 5 ? 320 : n === 4 ? 400 : 460, D = n >= 5 ? 210 : n === 4 ? 250 : 280, tt = s.team ? T(s.team) : null, anyTag = sl.some(k => k.tag) || PS.some(k => k.tag) || (s._next && s._next.type === 'slotboard' && (s._next.slots || []).some(k => k.tag));
   let h = s.title ? `<div class="row" style="gap:20px;align-items:center;margin-bottom:30px;${K && s._prev.title === s.title ? '' : pop(seg(lt, 0, .4))}">${tt && LOGO[tt.code] ? `<img src="${LOGO[tt.code]}" style="height:110px">` : ''}<div class="title" style="font-size:66px;font-weight:900">${br(s.title)}</div></div>` : '';
   h += `<div class="row" style="gap:28px;align-items:flex-start;justify-content:center">` + sl.map((k, i) => {
-    const old = PS.find(o => o.name === k.name && o.img === k.img && o.pos === k.pos), p = old ? 1 : pk(s, k.at, .5, seg(lt, .15 + i * .15, .5));
+    const old = PS.find(o => o.name === k.name && o.img === k.img && o.pos === k.pos && !(o.at >= 50)), p = old ? 1 : pk(s, k.at, .5, seg(lt, .15 + i * .15, .5));
     const tp = k.tag ? (old && old.tag === k.tag ? 1 : pk(s, k.tagAt, .35, seg(lt, .6 + i * .2, .35))) : 0, xp = k.x ? (old && old.x ? 1 : pk(s, k.xAt, .4, seg(lt, .8, .4))) : 0;
     const src = k.img ? photoSrc(k.img) : '', tc = vcol(k.tc || 'good');
     /* 10/8 밤 사용자("왜 비어있어?"): 사람 실루엣(사진 빠진 것처럼 보임) 대신 — 실제 선수는 사진, 아직 안 정해진 자리(tbd)는 점선 원 + 물음표 */
-    const face = src ? `<img src="${src}" style="width:100%;height:100%;object-fit:cover;object-position:${esc(k.focus || '50% 8%')};filter:grayscale(${(xp * .9).toFixed(2)})">`
+    /* 11/3 사용자(롯데 2027 "프로필 사진들이 전부 너무 위로 가 있어서 머리 부분이 잘려"): KBO 프로필 얼굴 사진은 모자 끝이 사진 맨 위에 붙어 있어 원에 꽉 채우면 머리가 잘린다
+       → 사진을 조금 줄여 위에 흰 여백(머리 위 14%)을 두고 아래는 원 밖으로 — 얼굴이 원 가운데 쯤, 흰 바탕. 가장자리는 흐리게 녹여 경계선이 안 보이게 */
+    const PF = !!(k.img && /^KBO프로필\//.test(k.img) && !/_원$/.test(k.img) && k.pad !== false);   /* 11/3 15:44 사용자 "그림자 지고 잘리고 난리났네" — 줄여 띄우면 원본 배경 그림자·사진 끝이 보인다 → 원 전용 사진(_원: 사람만 오려 흰 바탕, 머리 위 여백·어깨까지, tools/make_circ.py)을 꽉 채워 쓴다. 이 여백 처리는 _원 사진이 없을 때만 */
+    const face = src ? (PF ? `<div style="position:absolute;left:7%;top:${k.padTop || 14}%;width:86%;height:${100 - (k.padTop || 14) + 8}%;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 9%,#000 91%,transparent 100%),linear-gradient(180deg,transparent 0,#000 7%,#000 100%);-webkit-mask-composite:source-in;mask-composite:intersect"><img src="${src}" style="width:100%;height:100%;object-fit:cover;object-position:${esc(k.focus || '50% 0%')};filter:grayscale(${(xp * .9).toFixed(2)})"></div>`
+      : `<img src="${src}" style="width:100%;height:100%;object-fit:cover;object-position:${esc(k.focus || '50% 8%')};filter:grayscale(${(xp * .9).toFixed(2)})">`)
       : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:${Math.round(D * .52)}px;font-weight:900;color:${ACC};line-height:1;padding-bottom:${Math.round(D * .04)}px">?</div>`;
     const ip = k.inset ? (old && old.inset && old.inset.img === k.inset.img ? 1 : pk(s, k.insetAt, .4, seg(lt, .9, .4))) : 0, IS = Math.round(D * .44);
     return `<div class="col" style="width:${CW}px;align-items:center;gap:12px;${rise(p, 30)}">
@@ -4534,7 +4541,9 @@ function MK_tr(s, t, start) {
 
   /* ── A1 rf_gold: 조명 무대 + 금테 카드 {img, focus, name, en, team, profile:[..], stats:[{k, v, hi, at}], cardAt} — 바탕 s.bg 없으면 금빛 무대 ── */
   SCENE.rf_gold = (lt, s) => {
-    const cq = AT(s, s.cardAt, .55, seg(lt, 0, .55));
+    /* 11/3 검수(롯데 2027 — 이어지는 금테 카드가 장면이 바뀔 때 꺼졌다 켜짐, F-136): 같은 묶음 앞 장면이 같은 사진의 rf_gold 면 카드는 처음부터 다 보인 채 */
+    const GK = !!(s._chain && s._prev && s._prev.type === 'rf_gold' && s._prev.img === s.img);
+    const cq = GK ? 1 : AT(s, s.cardAt, .55, seg(lt, 0, .55));
     let h = `<div style="position:absolute;left:640px;top:0;width:500px;height:700px;border-radius:26px;padding:13px;background:linear-gradient(135deg,#FFE6A0,#B8860B 40%,#FFF1C2 60%,#9C6B12);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 60px rgba(255,200,90,.35);${up(cq, 50)}">
       <div style="position:relative;width:100%;height:100%;border-radius:16px;overflow:hidden;background:#000">${pic(s.img, s.focus, 'filter:contrast(1.15) saturate(1.1)')}
       <div style="position:absolute;left:0;right:0;bottom:0;height:240px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.86))"></div>
@@ -4579,6 +4588,11 @@ function MK_tr(s, t, start) {
       <div style="display:flex;align-items:center;gap:18px;font-size:66px;font-weight:900;letter-spacing:-2px;text-shadow:0 4px 18px rgba(0,0,0,.6);${up(wq)}">${s.team ? LGo(s.team, 84) : ''}<span>${esc(s.who || '')}</span>${s.tag ? `<span style="color:${YEL};${s.tagAt != null ? op(AT(s, s.tagAt, .4, 1)) : ''}">#${esc(s.tag)}</span>` : ''}</div>
       <div style="display:flex;align-items:flex-end;gap:48px">` + vs.map((x, i) => { const q = AT(s, x.at, .45, seg(lt, .3 + i * .25, .45));
         return `${i ? `<div style="width:4px;height:130px;background:rgba(255,255,255,.5);${op(q)}"></div>` : ''}<div style="text-align:center;${up(q, 26)}"><div class="num" style="font-size:${x.size || 128}px;font-weight:900;line-height:1;letter-spacing:-3px;white-space:nowrap;color:${x.hi ? YEL : '#FFFFFF'};text-shadow:0 6px 24px rgba(0,0,0,.6)">${esc(x.v)}</div><div style="font-size:36px;line-height:44px;height:44px;color:${MUTE2};font-weight:800;margin-top:10px;white-space:nowrap">${esc(x.k || '')}</div></div>`; }).join('') + `</div></div>`;
+    /* 11/3 사용자(롯데 2027 "중견수 FA 한 명에서 '수비 좋은 중견수' 나레이션이 나올 때 농담하듯 김호령 사진을 은은하게 띄워줘"):
+       s.ghost = {img, at, op, focus, label} — 말하는 호흡(at)에 오른쪽에 사진을 흐릿하게(기본 투명도 .3) 띄운다. 글 뒤에 깔리고 가장자리는 녹인다 */
+    if (s.ghost && s.ghost.img) { const g = s.ghost, gs = photoSrc(g.img), gx = g.hold != null ? (brP(s, g.at, .6, g.hold) || 0) : 0, gq = AT(s, g.at, .8, 0) * (1 - gx);   /* 11/3 15:54 사용자 "김호령 사진은 2초 후에 다시 없어지게": hold 초 뒤 0.6초에 걸쳐 사라짐 */
+      if (gs) h = `<div style="position:absolute;right:-40px;top:-30px;width:640px;height:774px;opacity:${((g.op || .3) * c01(gq * 1.25)).toFixed(3)};-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 38%),linear-gradient(180deg,transparent 0,#000 18%,#000 62%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect;transform:translateX(${((1 - eo(gq)) * 40).toFixed(1)}px)"><img src="${gs}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:${esc(g.focus || '50% 10%')};filter:grayscale(.15)"></div>`
+        + (g.label ? `<div style="position:absolute;right:40px;bottom:30px;font-size:30px;font-weight:800;color:rgba(255,255,255,.55);white-space:nowrap;opacity:${c01(gq * 1.25).toFixed(3)}">${esc(g.label)}</div>` : '') + h; }
     ROOT(h);
   };
 

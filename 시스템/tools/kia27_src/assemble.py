@@ -209,3 +209,10 @@ _a="'vB_branch', 'vB_next'].includes(s.type))));"
 assert _t.count(_a)==1
 _t=_t.replace(_a,"'vB_branch', 'vB_next', 'rf_band', 'rf_duo', 'rf_bars', 'rf_card', 'rf_gold'].includes(s.type))));")
 open('template_long.html','w',encoding='utf-8').write(_t)
+
+# 11/3 롯데편: slotboard 앞 장면에서 숨겨 둔 자리(at≥50)는 '이미 보임'으로 치지 않는다(이어지는 장면에서 미리 뜨던 것)
+_t=open('template_long.html',encoding='utf-8').read()
+_a="const old = PS.find(o => o.name === k.name && o.img === k.img && o.pos === k.pos), p = old ? 1 :"
+assert _t.count(_a)==1
+_t=_t.replace(_a,"const old = PS.find(o => o.name === k.name && o.img === k.img && o.pos === k.pos && !(o.at >= 50)), p = old ? 1 :")
+open('template_long.html','w',encoding='utf-8').write(_t)

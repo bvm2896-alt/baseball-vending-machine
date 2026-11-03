@@ -36,6 +36,9 @@ def people(s):
                 y = x.get(sd)
                 if isinstance(y, dict) and y.get('name') and y.get('img'):
                     out.setdefault(y['name'].split(' · ')[0], x.get('at', 0) if x.get('at') is not None else 0)
+    if t == 'question':   # 11/3 컷 쇼츠 마지막 질문의 얼굴 원(faces: 'KBO프로필/이름' → 파일 이름 앞부분이 사람 이름)
+        for f in s.get('faces', []) or []:
+            if isinstance(f, str): out.setdefault(f.split('/')[-1].split('_')[0], 0)
     for side in ('left', 'right'):
         x = s.get(side)
         if isinstance(x, dict) and x.get('name') and x.get('img'):
