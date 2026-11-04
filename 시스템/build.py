@@ -795,7 +795,7 @@ def render(ep, ep_path):
                 # 너무 짧게(0.45초 미만) 스쳐 가는 조각은 앞 조각과 합쳐 보여준다(깜빡임 방지)
                 merged = []
                 for it in items:
-                    if merged and (it[1] - it[0] < 0.45 or merged[-1][1] - merged[-1][0] < 0.45):
+                    if merged and not lines[i].get('noMerge') and (it[1] - it[0] < 0.45 or merged[-1][1] - merged[-1][0] < 0.45):   # 11/5 롱폼 순위 공개 줄('8위는')은 짧아도 따로 보인다
                         merged[-1] = [merged[-1][0], it[1], wrap2(merged[-1][2].replace('\n', ' ') + ' ' + it[2].replace('\n', ' '))]
                     else: merged.append(it)
                 for a, b, pc in merged: subs.append([round(a, 2), round(b, 2), pc])

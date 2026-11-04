@@ -1491,7 +1491,7 @@ function drawRail(k, t) {
   /* 10/4 롱폼⑥ 검수: 챕터 범위 밖(머리말·마무리)에서는 "1/5 5위 두산" 같은 엉뚱한 챕터를 보이지 않는다.
      10/2 사용자 규칙 "롱폼·컷 쇼츠엔 오른쪽 위 'KBO 깊게' 문구 금지" → railTitle 은 롱폼에서 절대 보이지 않는다(콘티에 railTitle 이 있어도) */
   if (rt) rt.style.display = 'none';
-  if (i < 0) { box.style.display = 'none'; return; }
+  if (i < 0 || !EP.chapChip) { box.style.display = 'none'; return; }   /* 11/4 23:46 사용자 "오른쪽 위에 알약 없애줘" — 챕터 칩 기본 숨김(EP.chapChip:true 일 때만) */
   box.style.display = 'flex';
   { const cn = document.getElementById('chapN'); cn.textContent = (i + 1) + '/' + CH.length; cn.style.display = EP.chapNoNum ? 'none' : ''; }   /* 10/18 사용자("이게 10개 포지션이냐"): 챕터 수와 다른 개수(8개 포지션)를 말하는 편은 'N/10' 번호를 숨긴다 */
   document.getElementById('chapT').textContent = CH[i].title || '';
@@ -1858,7 +1858,7 @@ function prepAll() {
 /* 크로스페이드: 앞 장면의 다 그려진 모습을 #ghost 에 복사해 0.3초 동안 흐리게 */
 function ghostOf(k, t, start, pv) {   /* 11/4 기아FA 사용자 "장면이 전환되면서 전 장면이 아주 잠깐 나오고": pv = 직전에 실제로 보이던 장면(순위표 post 앞뒤) */
   let G = document.getElementById('ghost'); const s = SC[k], dt = t - start;
-  const on = !EP.vertical && k > 0 && s && (!(s._keep || s._chain) || /^rf_/.test(s.type) || pv) && dt >= 0 && dt < 0.3;   /* 11/4 부드럽게: 그림 장면(rf_*)은 이어지는 장면이어도 바뀌는 글이 뚝 사라지지 않고 겹쳐 바뀜(같은 자리 그대로인 사진·이름은 겹쳐도 그대로) */
+  const on = !EP.vertical && k > 0 && s && (!(s._keep || s._chain) || pv) && dt >= 0 && dt < 0.3;   /* 11/5 01:42 사용자 "마지막 부분 화면이 깜빡깜빡": 이어지는 장면에 앞 장면을 겹치면 반투명 막대·칸이 두 번 겹쳐 한 프레임 밝아졌다가 돌아옴 → 이어지는 장면은 겹치지 않는다(같은 글은 rf_band·제목 규칙으로 그대로 유지) */   /* 11/4 부드럽게: 그림 장면(rf_*)은 이어지는 장면이어도 바뀌는 글이 뚝 사라지지 않고 겹쳐 바뀜(같은 자리 그대로인 사진·이름은 겹쳐도 그대로) */
   if (!on) { if (G && G.innerHTML) { G.innerHTML = ''; G.style.opacity = '0'; } return; }
   const body = document.getElementById('body');
   if (!G) { G = document.createElement('div'); G.id = 'ghost';
@@ -4555,7 +4555,7 @@ function MK_tr(s, t, start) {
       <div style="position:absolute;left:24px;bottom:22px">${s.en ? `<div style="font-size:28px;font-weight:800;color:#FFE6A0;letter-spacing:2px">${esc(s.en)}</div>` : ''}<div style="font-size:68px;font-weight:900;letter-spacing:-2px">${esc(s.name || '')}</div></div></div></div>`;
     const pf = s.plist || s.profile || [];   /* 11/2: 글 목록은 plist(검사기가 profile=True 를 '프로필 장면'으로 읽음) */
     if (pf.length) h += `<div style="position:absolute;right:${1808 - 590}px;top:110px;text-align:right;display:flex;flex-direction:column;gap:14px;font-size:38px;font-weight:800;color:#F3E2BF;${up(cq)}">${pf.map(x => `<div style="white-space:nowrap">${esc(x)}</div>`).join('')}</div>`;
-    h += `<div style="position:absolute;left:1200px;top:150px;display:flex;flex-direction:column;gap:26px">` + (s.stats || []).map((x, i) => { const q = AT(s, x.at, .45, seg(lt, .4 + i * .25, .45));
+    h += `<div style="position:absolute;left:1200px;top:150px;display:flex;flex-direction:column;gap:26px;text-align:left;align-items:flex-start">` + (s.stats || []).map((x, i) => { const q = AT(s, x.at, .45, seg(lt, .4 + i * .25, .45));
       const v = x.hi ? `<span style="background:${YEL};color:${INK};padding:0 16px;border-radius:12px">${esc(x.v)}</span>` : esc(x.v);
       return `<div style="${up(q, 24)}"><div style="font-size:32px;font-weight:800;color:#F3E2BF">${esc(x.k)}</div><div class="num" style="font-size:${x.size || 100}px;font-weight:900;line-height:1.05;letter-spacing:-2px;white-space:nowrap">${v}</div></div>`; }).join('') + `</div>`;
     ROOT(h);
@@ -4572,9 +4572,9 @@ function MK_tr(s, t, start) {
       h += `<div style="position:absolute;left:${X0 - 40}px;width:${W + 80}px;top:${y}px;border-top:4px dashed rgba(255,255,255,.5);${op(rq)}"></div><div style="position:absolute;${s.ref.side === 'left' ? `right:${1808 - X0 + 50}px` : `left:${X0 + W + 60}px`};top:${y - 22}px;font-size:30px;font-weight:800;color:${MUTE2};white-space:nowrap;${op(rq)}">${esc(s.ref.lab || (s.ref.v + '%'))}</div>`; }   /* 11/4 기아FA: 칸이 넓으면 기준선 이름을 왼쪽에(side:'left') */   /* 11/3: 기준선 이름은 오른쪽(긴 이름이 막대에 겹치던 것) */
     its.forEach((it, i) => {
       const q = AT(s, it.at, .6, seg(lt, (s.st0 != null ? s.st0 : .2) + i * (s.stag != null ? s.stag : .1), .6))   /* 11/4 기아FA 사용자 "17위에서 1위까지 좀 빨리": 막대 시작(st0)·간격(stag) 초 */, vq = it.valAt != null ? AT(s, it.valAt, .4, 0) : (s.valAt != null ? AT(s, s.valAt, .4, 0) : q);
-      const hot = it.hi != null ? it.hi : (s.ref && it.v >= s.ref.v), col = hot ? YEL : 'rgba(255,255,255,.55)', bh = Math.max(4, it.from != null ? H * (it.from + (it.v - it.from) * eo(q)) / MX : H * Math.max(0, it.v) / MX * eo(q)), x = X0 + i * (BW + GAP);   /* 11/3 KT편: from → v 로 자라거나 줄어듦 */
+      const hp_ = s.hiAt != null && it.hi ? AT(s, s.hiAt, .5, 1) : 1, hot = (it.hi != null ? it.hi : (s.ref && it.v >= s.ref.v)) && hp_ >= .5, col = hot ? YEL : 'rgba(255,255,255,.55)',   /* 11/5 검수: hiAt = 강조 막대가 그 호흡에 노랗게 */ bh = Math.max(4, it.from != null ? H * (it.from + (it.v - it.from) * eo(q)) / MX : H * Math.max(0, it.v) / MX * eo(q)), x = X0 + i * (BW + GAP);   /* 11/3 KT편: from → v 로 자라거나 줄어듦 */
       const val = it.txt != null ? it.txt : (it.dec != null ? Number(it.v).toFixed(it.dec) : String(it.v)) + (it.unit || '');   /* 11/4: 음수 등 표시 글 따로(txt) */
-      h += `<div style="position:absolute;left:${x}px;top:${YB - bh}px;width:${BW}px;height:${bh}px;border-radius:16px 16px 6px 6px;background:${col};${hot ? `box-shadow:0 0 34px rgba(255,212,59,.55);` : ''}"></div>
+      h += `<div style="position:absolute;left:${x}px;top:${YB - bh}px;width:${BW}px;height:${bh}px;border-radius:16px 16px 6px 6px;background:${hp_ < 1 && it.hi ? 'rgba(255,255,255,.55)' : col};${hot && hp_ >= 1 ? `box-shadow:0 0 34px rgba(255,212,59,.55);` : ''}"></div>${hp_ < 1 && hp_ > 0 && it.hi ? `<div style="position:absolute;left:${x}px;top:${YB - bh}px;width:${BW}px;height:${bh}px;border-radius:16px 16px 6px 6px;background:${YEL};opacity:${hp_.toFixed(3)}"></div>` : ''}
         <div class="num" style="position:absolute;left:${x - 30}px;width:${BW + 60}px;top:${YB - H * Math.max(0, it.v) / MX - 56}px;text-align:center;font-size:${n >= 7 ? 36 : BW < 130 ? 40 : 48}px;font-weight:900;color:${hot ? '#FFFFFF' : MUTE2};${op(vq)}">${esc(val)}</div>
         <div style="position:absolute;left:${x - 30}px;width:${BW + 60}px;top:${YB + 12}px;text-align:center;font-size:${s.lfs || (BW < 130 ? 32 : 38)}px;font-weight:900;white-space:nowrap;${op(q)}">${esc(it.label || '')}</div>
         ${it.place ? `<div style="position:absolute;left:${x}px;width:${BW}px;top:${YB + 58}px;display:flex;justify-content:center;${op(q)}"><span style="padding:2px 14px;border-radius:10px;background:${AC(it.venue || '')};font-size:24px;font-weight:900">${esc(it.place)}</span></div>` : ''}`;
@@ -4592,7 +4592,7 @@ function MK_tr(s, t, start) {
     const wq = sameWho ? 1 : AT(s, s.whoAt, .45, seg(lt, 0, .45)), vs = s.vals || [];
     const keepV = i => !!(sameWho && pv_.length === vs.length && pv_[i] && pv_[i].v === vs[i].v && (pv_[i].k || '') === (vs[i].k || '') && !!pv_[i].hi === !!vs[i].hi);
     let h = `<div style="position:absolute;left:0;right:0;top:${s.top || 190}px;display:flex;flex-direction:column;align-items:center;gap:36px">
-      <div style="display:flex;align-items:center;gap:18px;font-size:66px;font-weight:900;letter-spacing:-2px;text-shadow:0 4px 18px rgba(0,0,0,.6);${up(wq)}">${s.team ? LGo(s.team, 84) : ''}<span>${esc(s.who || '')}</span>${s.tag ? `<span style="color:${YEL};${s.tagAt != null && !sameWho ? op(AT(s, s.tagAt, .4, 1)) : ''}">#${esc(s.tag)}</span>` : ''}</div>
+      <div style="display:flex;align-items:center;gap:18px;font-size:66px;font-weight:900;letter-spacing:-2px;text-shadow:0 4px 18px rgba(0,0,0,.6);${up(wq)}">${s.team ? LGo(s.team, 84) : ''}<span>${esc(s.who || '')}</span>${s.tag ? `<span style="color:${YEL};${s.tagAt != null && !sameWho ? op(AT(s, s.tagAt, .4, 1)) : ''}">${esc(s.tag)}</span>` : ''}</div>
       <div style="display:flex;align-items:flex-start;gap:48px">` + vs.map((x, i) => { const q = keepV(i) ? 1 : AT(s, x.at, .45, seg(lt, .3 + i * .25, .45)), sz = x.size || 128;
         /* 11/4 16:11 사용자 "흰 실선이 너무 밑으로 내려가 있어서 보기 불편해, 상하 가운데 정렬 옆 텍스트들이랑 맞춰줘": 세로줄은 큰 숫자 줄 높이의 가운데(아래 작은 글 칸은 빼고) */
         return `${i ? `<div style="width:4px;height:${Math.round(sz * .78)}px;margin-top:${Math.round(sz * .11)}px;background:rgba(255,255,255,.5);${op(q)}"></div>` : ''}<div style="text-align:center;${up(q, 26)}"><div class="num" style="font-size:${x.size || 128}px;font-weight:900;line-height:1;letter-spacing:-3px;white-space:nowrap;color:${x.hi ? YEL : '#FFFFFF'};text-shadow:0 6px 24px rgba(0,0,0,.6)">${esc(x.v)}</div><div style="font-size:36px;line-height:44px;height:44px;color:${MUTE2};font-weight:800;margin-top:10px;white-space:nowrap">${esc(x.k || '')}</div></div>`; }).join('') + `</div></div>`;
@@ -4621,28 +4621,42 @@ function MK_tr(s, t, start) {
     ROOT(h);
   };
 
+  /* ── 11/4 22:46 rf_sil: 남은 n명의 실루엣만 {n} (사용자 "남은 7명의 실루엣만 보여 주고 … 사진이랑 텍스트 다 빼고") ── */
+  SCENE.rf_sil = (lt, s) => {
+    const n = s.n || 3, W = n > 4 ? 200 : 260, H = Math.round(W * 1.45), GP = n > 4 ? 34 : 70, TW = n * W + (n - 1) * GP, X0 = Math.round((1808 - TW) / 2), Y = Math.round((714 - H) / 2) + 10;
+    let h = '';
+    for (let i = 0; i < n; i++) { const q = seg(lt, .1 + i * .12, .6), x = X0 + i * (W + GP);
+      h += `<svg viewBox="0 0 200 290" style="position:absolute;left:${x}px;top:${Y}px;width:${W}px;height:${H}px;${up(q, 26)}"><defs><linearGradient id="slg${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4A5265"/><stop offset="1" stop-color="#1B202B"/></linearGradient></defs>
+        <circle cx="100" cy="78" r="54" fill="url(#slg${i})" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
+        <path d="M14 290 C14 196 52 152 100 152 C148 152 186 196 186 290 Z" fill="url(#slg${i})" stroke="rgba(255,255,255,.18)" stroke-width="2"/></svg>`; }
+    ROOT(h);
+  };
+
   /* ── 11/4 rf_rank: 순위표 {head, rows:[[순위, 이름, 계약, 값]], open(공개된 순위 수: 아래부터), next(다음 순위, 노랗게 깜빡), last(방금 채운 순위), unit} — 왼쪽 17~9위 · 오른쪽 8~1위 ── */
   SCENE.rf_rank = (lt, s) => {
     const R = s.rows || [], n = R.length, half = Math.ceil(n / 2), CW = 820, GAP = 80, X0 = Math.round((1808 - 2 * CW - GAP) / 2), HH = s.cols ? 40 : 0, RH = s.cols ? 58 : 62, RG = 4, Y0 = 96 + HH;   /* 11/4 16:41 사용자 "3년 20억과 -0.07의 헤더가 표시되면 좋겠고": s.cols = [순위, 선수, 계약, 값] 머리줄 */
     let h = `<div style="position:absolute;left:0;right:0;top:0;text-align:center;font-size:56px;font-weight:900;letter-spacing:-2px;text-shadow:0 4px 18px rgba(0,0,0,.55);${(s._chain && s._prev && s._prev.type === 'rf_rank') ? '' : op(seg(lt, 0, .35))}">${esc(s.head || '')}<span style="font-size:30px;color:${MUTE2};margin-left:18px">${esc(s.unit || '')}</span></div>`;
     if (s.cols) [0, 1].forEach(col => { const x = X0 + col * (CW + GAP), c = s.cols;
       h += `<div style="position:absolute;left:${x}px;top:${Y0 - HH}px;width:${CW}px;height:${HH - 6}px;display:flex;align-items:center;gap:22px;padding:0 24px;box-sizing:border-box;font-size:24px;font-weight:800;color:${MUTE2};${(s._chain && s._prev && s._prev.type === 'rf_rank') ? '' : op(seg(lt, 0, .35))}"><div style="width:96px;text-align:left">${esc(c[0])}</div><div style="width:200px;text-align:center">${esc(c[1])}</div><div style="flex:1;text-align:center">${esc(c[2])}</div><div style="width:130px;display:flex;justify-content:flex-end;white-space:nowrap">${esc(c[3])}</div></div>`; });
-    R.forEach((r, i) => {
+    /* 11/4 22:46 사용자 "순위는 좌측 상단이 1위고 우측 하단이 꼴찌" · "11위에 불이 들어와 있는 걸 아주 살짝 보여 주고 11위 불이 꺼졌다가 10위에 불이 들어오게" */
+    const RS = R.slice().sort((a, b) => a[0] - b[0]), keepR = !!(s._chain && s._prev && s._prev.type === 'rf_rank');
+    const lastOn = keepR ? 0 : 1 - ss((lt - .35) / .22), nextOn = keepR ? 1 : ss((lt - .6) / .2);
+    RS.forEach((r, i) => {
       const col = i < half ? 0 : 1, row = col ? i - half : i, x = X0 + col * (CW + GAP), y = Y0 + row * (RH + RG);
-      const rk = r[0], open = rk > n - (s.open || 0), nx = rk === s.next, last = rk === s.last;
-      const keepR = !!(s._chain && s._prev && s._prev.type === 'rf_rank'), q = keepR ? 1 : seg(lt, .05 + i * .02, .3), pulse = nx ? (.55 + .45 * Math.abs(Math.sin(NOW * 3.2))) : 1;
-      const bgc = nx ? `rgba(255,212,59,${(.20 * pulse).toFixed(3)})` : last ? 'rgba(255,212,59,.16)' : open ? 'rgba(255,255,255,.10)' : 'rgba(255,255,255,.04)';
-      const bd = nx ? `3px solid rgba(255,212,59,${pulse.toFixed(3)})` : last ? `3px solid ${YEL}` : '2px solid rgba(255,255,255,.12)';
-      const tc = last ? YEL : open ? '#FFFFFF' : 'rgba(255,255,255,.35)';
+      const rk = r[0], open = rk > n - (s.open || 0), nx = rk === s.next && nextOn > .01, last = rk === s.last && lastOn > .01;
+      const q = keepR ? 1 : seg(lt, .05 + i * .02, .3), pulse = nx ? (.55 + .45 * Math.abs(Math.sin(NOW * 3.2))) * nextOn : 1;
+      const bgc = nx ? `rgba(255,212,59,${(.20 * pulse).toFixed(3)})` : last ? `rgba(255,212,59,${(.16 * lastOn).toFixed(3)})` : open ? 'rgba(255,255,255,.10)' : 'rgba(255,255,255,.04)';
+      const bd = nx ? `3px solid rgba(255,212,59,${Math.max(.12, pulse).toFixed(3)})` : last ? `3px solid rgba(255,212,59,${Math.max(.12, lastOn).toFixed(3)})` : '3px solid rgba(255,255,255,.12)';
+      const tc = last ? `color-mix(in srgb, ${YEL} ${Math.round(lastOn * 100)}%, #FFFFFF)` : open ? '#FFFFFF' : 'rgba(255,255,255,.35)';
       h += `<div style="position:absolute;left:${x}px;top:${y}px;width:${CW}px;height:${RH}px;border-radius:14px;background:${bgc};border:${bd};box-sizing:border-box;display:flex;align-items:center;gap:22px;padding:0 22px;${op(q)}">
         <div class="num" style="width:96px;font-size:36px;font-weight:900;color:${nx || last ? YEL : MUTE2};white-space:nowrap">${rk}위</div>
         ${open ? `<div style="width:200px;text-align:center;font-size:40px;font-weight:900;color:${tc};white-space:nowrap">${esc(r[1])}</div><div style="flex:1;text-align:center;font-size:32px;font-weight:800;color:${last ? '#FFF1B8' : MUTE2};white-space:nowrap">${esc(r[2])}</div><div class="num" style="width:130px;text-align:right;font-size:42px;font-weight:900;color:${tc};white-space:nowrap">${esc(r[3])}</div>`
-               : `<div style="width:200px"></div><div style="flex:1;text-align:center;font-size:40px;font-weight:900;color:${nx ? YEL : 'rgba(255,255,255,.3)'}">?</div><div style="width:130px"></div>`}</div>`;   /* 11/4 16:46 사용자 "물음표 위치 위에꺼랑 가운데 정렬 안 맞아": '?'는 계약 칸 가운데(열린 줄과 같은 칸 구조) */
+               : `<div style="width:200px;text-align:center;font-size:40px;font-weight:900;color:${YEL};white-space:nowrap;${nx && s.nextName ? up(AT(s, s.nextNameAt, .45, 1), 14) : 'opacity:0'}">${nx && s.nextName ? esc(s.nextName) : ''}</div><div style="flex:1;text-align:center;font-size:40px;font-weight:900;color:${nx ? YEL : 'rgba(255,255,255,.3)'}">?</div><div style="width:130px"></div>`}</div>`;   /* 11/4 16:46 사용자 "물음표 위치 위에꺼랑 가운데 정렬 안 맞아": '?'는 계약 칸 가운데(열린 줄과 같은 칸 구조) */
     });
     ROOT(h);
   };
 
-  Object.assign(MOTION, { rf_card: s => .8, rf_gold: s => .8, rf_bars: s => .9, rf_band: s => .8, rf_duo: s => .8, rf_rank: s => .6 });
+  Object.assign(MOTION, { rf_card: s => .8, rf_gold: s => .8, rf_bars: s => .9, rf_band: s => .8, rf_duo: s => .8, rf_rank: s => .6, rf_sil: s => 1.2 });
 })();
 /* @@REF1102END */
 
