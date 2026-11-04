@@ -65,6 +65,26 @@ else:
     if not todo:
         sys.exit(f'다 만들어져 있어요({DRAFT}판): ' + ', '.join(os.path.basename(x) for x in longs) + (f' + 컷 {len(cuts)}편' if cuts else '') + ' — 콘티를 고치면 다시 만듭니다')
 
+# 11/4 사용자 "지금 하라고 해놓고 업데이트 안 돼서 크레딧이랑 토큰 낭비한 게 한두 번이 아니야. 이런 실수 앞으로 절대 없게 해":
+#   Claude 는 콘티·템플릿을 PC 에 넣은 뒤 PC 에 실제로 들어간 파일을 다시 읽어 클라우드 최신본과 같은지 확인하고, 같을 때만
+#   work\ready\<콘티 이름>.sha 에 두 파일의 지문(sha1)을 남긴다. 여기서 지금 PC 파일 지문이 그 확인 파일과 다르거나 확인 파일이 없으면
+#   음성 합성(크레딧)·렌더 전에 멈춘다 — 옛 콘티·옛 템플릿으로 만들어지는 일을 버튼 단계에서 막는다. (2026-11-05 이후 콘티부터 적용)
+def sha_full(f): return hashlib.sha1(open(f, 'rb').read()).hexdigest()
+_ready_bad = []
+for x in (todo if MODE != 'cuts' else []):
+    if os.path.basename(x)[:10] < '2026-11-05' or iscut(x): continue
+    rf = os.path.join('work', 'ready', os.path.basename(x)[:-5] + '.sha')
+    want = {l.split()[1]: l.split()[0] for l in io.open(rf, encoding='utf-8').read().splitlines() if len(l.split()) == 2} if os.path.exists(rf) else {}
+    now = {'episode': sha_full(x), 'template': sha_full('template_long.html')}
+    for k, v in now.items():
+        if want.get(k) != v: _ready_bad.append(f'{os.path.basename(x)} · {k}: ' + ('Claude 확인 파일 없음' if not want else 'Claude 가 확인한 판과 다름'))
+if _ready_bad:
+    print('=' * 70)
+    print('[멈춤] PC 에 있는 콘티/템플릿이 Claude 가 마지막으로 확인한 판이 아닙니다 — 합성·렌더를 시작하지 않았습니다(크레딧 0).')
+    for b in _ready_bad: print('   -', b)
+    print('   → 이 화면을 Claude 에게 보여 주세요. Claude 가 최신본을 다시 넣고 확인 파일을 만든 뒤에 다시 누르면 됩니다.')
+    sys.exit(1)
+
 print('=' * 70)
 print(f'이번에 만들 것({DRAFT}판):', ', '.join(os.path.basename(x) for x in todo))
 for x in (longs if MODE != 'cuts' else []):
