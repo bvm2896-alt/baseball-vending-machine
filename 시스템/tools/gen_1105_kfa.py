@@ -10,7 +10,7 @@ _spec = importlib.util.spec_from_file_location('t36', os.path.join(HERE, 'text_1
 _t = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_t)
 KEYS = [x[0] for x in _t.LINES]
 
-BAD_A = re.compile(r'(\d+만|\d+월|\b한|\b두|\b세|\b첫|\d+억|(?:^| )다|(?:^| )못|(?:^| )안|(?:^| )만|(?:^| )(?:이번|지난|다음|올|그)|(?:^| )(?:네|다섯|여섯|일곱|여덟|아홉|열|열일곱)|중심|KBO|기아|WAR|\d+할|남는|좋은|\d+푼|\d+천만)$'); BAD_B = re.compile(r'^(건|타선|겨울|\d+차전|첫 |것 |수 |때 |중 |구단|달러|일|명|개|경기|원|타수|안타|\d+(?:푼|리)(?![가-힣]*할))')
+BAD_A = re.compile(r'(\d+만|\d+월|\b한|\b두|\b세|\b첫|\d+억|(?:^| )다|(?:^| )못|(?:^| )안|(?:^| )만|(?:^| )(?:이번|지난|다음|올|그)|(?:^| )(?:네|다섯|여섯|일곱|여덟|아홉|열|열일곱)|중심|KBO|기아|WAR|\d+할|남는|좋은|\d+푼|\d+천만)$'); BAD_B = re.compile(r'^(건|타선|겨울|코치|\d+차전|첫 |것 |수 |때 |중 |구단|달러|일|명|개|경기|원|타수|안타|\d+(?:푼|리)(?![가-힣]*할))')
 def wrap2(t):
     # 11/5 검수: PC build.py 가 자막 한 줄 16자(SUB_MAX)로 다시 나눈다 → 16자 넘는 조각은 여기서 직접 꺾어 넘긴다(두 줄 다 16자 이하면 그대로 씀).
     # 숫자·단위('1할 8푼 6리', '5천만 원'), '중심 타선', '일곱 건', '시즌 중' 사이에서는 꺾지 않는다
@@ -306,6 +306,13 @@ for r_key, nxt, nat in REVEAL:
     SC[r_key] = dict(BOARD_R(nxt), noCenter=True, nextName=NAME[nxt], nextNameAt=nat); SC[r_key].pop("lead")
 SC["d5"] = dict(BOARD_R(1), noCenter=True, chain="rk1"); SC["d5"].pop("lead")
 SC["d6"]["chain"] = "rk1"; SC["d6"]["cont"] = True
+# 11/5 10:28 사용자 "순위표에서 추가된 멘트까지 말하고 나서 다음 장면으로" — 근황 줄은 같은 순위표(이름 뜬 채 그대로), 선수 카드는 그다음 줄부터
+NOW = {"a1r": "a1n", "a5r": "a5n", "a10r": "a10n", "a14": "a14n", "b4r": "b4n", "b12r": "b12n", "b16r": "b16n", "c2r": "c2n", "c6r": "c6n", "c20r": "c20n", "d6": "d6n"}
+for r_key, n_key in NOW.items():
+    ch = SC[r_key].get("chain") or ("rv" + r_key)
+    SC[r_key]["chain"] = ch
+    SC[n_key] = dict(SC[r_key], nextNameAt=-1, chain=ch, cont=True)
+NOW_KEYS = list(NOW.values())
 
 
 # 카드 사진: 선수 몸 중심(CX)을 칸 가운데로
@@ -358,7 +365,10 @@ if __name__ == '__main__':
         if i in SLOW: l['pace'] = 'slow'
     lines[-2]['gapAfter'] = 0.4
     for _k, _h in HOLD.items(): EP['lines'][KEYS.index(_k)]['holdAfter'] = _h
-    for _k in RV_KEYS: EP['lines'][KEYS.index(_k)]['holdAfter'] = 0.7; EP['lines'][KEYS.index(_k)]['noMerge'] = True   # 11/5 검수: '8위는'처럼 짧은 첫 조각도 자막 따로   # 11/5 01:20 사용자 "순위표에서 몇 위는 누구예요 할 때 특히 빨라서 휙휙" — 이름 공개 뒤 순위표에 0.7초 머묾   # 순위표 보여 줄 쉼
+    for _k in NOW_KEYS: EP['lines'][KEYS.index(_k)]['holdAfter'] = 0.7   # 11/5 10:28 근황 줄 뒤 순위표 머묾 → 카드
+    for _k in RV_KEYS:
+        if _k in NOW: EP['lines'][KEYS.index(_k)]['noMerge'] = True; continue   # 11/5 11:22 사용자 "김범수예요 / 현재 기아 불펜에서 — 텀이 너무 길어" → 근황 줄이 이어지면 0.7초 머묾 없이 보통 줄 사이 텀만
+        EP['lines'][KEYS.index(_k)]['holdAfter'] = 0.7; EP['lines'][KEYS.index(_k)]['noMerge'] = True   # 11/5 검수: '8위는'처럼 짧은 첫 조각도 자막 따로   # 11/5 01:20 사용자 "순위표에서 몇 위는 누구예요 할 때 특히 빨라서 휙휙" — 이름 공개 뒤 순위표에 0.7초 머묾   # 순위표 보여 줄 쉼
     # 11/4 16시 검수본(132줄)과 대사가 같은 줄은 그 음성을 새 번호로 옮긴다(voiceRemap, 재합성 0) — 바뀐 15줄만 새로 합성
     _vo = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'voice_old_1105.json')
     if os.path.exists(_vo):

@@ -20,31 +20,31 @@
    "key": "기아 FA 17위~13위",
    "title": "기아 FA 17위~13위",
    "from": 14,
-   "to": 45
+   "to": 49
   },
   {
    "key": "기아 FA 12위~8위",
    "title": "기아 FA 12위~8위",
-   "from": 46,
-   "to": 83
+   "from": 50,
+   "to": 90
   },
   {
    "key": "기아 FA 7위~3위",
    "title": "기아 FA 7위~3위",
-   "from": 84,
-   "to": 113
+   "from": 91,
+   "to": 123
   },
   {
    "key": "기아 FA 2위·1위",
    "title": "기아 FA 2위·1위",
-   "from": 114,
-   "to": 132
+   "from": 124,
+   "to": 143
   },
   {
    "key": "기아 FA 가장 남는 장사",
    "title": "기아 FA 가장 남는 장사",
-   "from": 133,
-   "to": 142
+   "from": 144,
+   "to": 153
   }
  ],
  "lines": [
@@ -109,8 +109,12 @@
   {
    "narr": "십칠 위는 / 한화에서 데려온 왼손 불펜 / 김범수예요",
    "sub": "17위는|한화에서 데려온 왼손 불펜|김범수예요",
-   "holdAfter": 0.7,
    "noMerge": true
+  },
+  {
+   "narr": "현재 기아 불펜에서 뛰고 있죠",
+   "sub": "현재 기아 불펜에서 뛰고 있죠",
+   "holdAfter": 0.7
   },
   {
    "narr": "김범수의 이천이십육 년부터 이천이십팔 년까지 / 삼 년 이십억 계약이에요",
@@ -131,8 +135,12 @@
   {
    "narr": "십육 위는 / 기아 에이스였던 / 윤석민이에요",
    "sub": "16위는|기아 에이스였던|윤석민이에요",
-   "holdAfter": 0.7,
    "noMerge": true
+  },
+  {
+   "narr": "현재 티빙 해설위원을 하고 있죠",
+   "sub": "현재 티빙\n해설위원을 하고 있죠",
+   "holdAfter": 0.7
   },
   {
    "narr": "윤석민의 이천십오 년부터 이천십팔 년까지 / 사 년 구십억 계약이에요",
@@ -157,8 +165,12 @@
   {
    "narr": "십오 위는 / 두 번째 에프에이를 맺은 / 김주찬이에요",
    "sub": "15위는|두 번째 FA를 맺은|김주찬이에요",
-   "holdAfter": 0.7,
    "noMerge": true
+  },
+  {
+   "narr": "현재 기아 일군 타격 코치를 맡고 있죠",
+   "sub": "현재 기아 1군\n타격 코치를 맡고 있죠",
+   "holdAfter": 0.7
   },
   {
    "narr": "김주찬의 이천십팔 년부터 이천이십 년까지 / 이 플러스 일 년 이십칠억 계약도 / 끝이 아쉬웠어요",
@@ -183,8 +195,12 @@
   {
    "narr": "십사 위는 의외일 수 있어요 / 양현종이에요",
    "sub": "14위는 의외일 수 있어요|양현종이에요",
-   "holdAfter": 0.7,
    "noMerge": true
+  },
+  {
+   "narr": "현재도 기아 마운드를 지키고 있죠",
+   "sub": "현재도 기아 마운드를\n지키고 있죠",
+   "holdAfter": 0.7
   },
   {
    "narr": "양현종의 이천이십이 년부터 이천이십오 년까지 / 사 년 백삼억 계약이에요",
@@ -266,8 +282,12 @@
   {
    "narr": "십일 위는 / 기아 역대 최고액의 주인공 / 나성범이에요",
    "sub": "11위는|기아 역대 최고액의 주인공|나성범이에요",
-   "holdAfter": 0.7,
    "noMerge": true
+  },
+  {
+   "narr": "현재 기아 주장을 맡고 있죠",
+   "sub": "현재 기아 주장을 맡고 있죠",
+   "holdAfter": 0.7
   },
   {
    "narr": "나성범의 이천이십이 년부터 이천이십칠 년까지 / 육 년 백오십억 계약이에요",
@@ -308,8 +328,12 @@
   {
    "narr": "십 위는 / 타격왕 출신 / 최형우예요",
    "sub": "10위는|타격왕 출신|최형우예요",
-   "holdAfter": 0.7,
    "noMerge": true
+  },
+  {
+   "narr": "현재는 삼성에서 뛰고 있죠",
+   "sub": "현재는 삼성에서 뛰고 있죠",
+   "holdAfter": 0.7
   },
   {
    "narr": "최형우의 이천이십일 년부터 이천이십삼 년까지 / 삼 년 사십칠억 계약이에요",
@@ -338,8 +362,12 @@
   {
    "narr": "구 위는 / 기아 원클럽맨 / 나지완이에요",
    "sub": "9위는|기아 원클럽맨|나지완이에요",
-   "holdAfter": 0.7,
    "noMerge": true
+  },
+  {
+   "narr": "현재 야구 해설위원을 하고 있죠",
+   "sub": "현재 야구\n해설위원을 하고 있죠",
+   "holdAfter": 0.7
   },
   {
    "narr": "나지완의 이천십칠 년부터 이천이십 년까지 / 사 년 사십억 계약이에요",
@@ -415,8 +443,12 @@
   {
    "narr": "칠 위는 / 꽃범호 / 이범호예요",
    "sub": "7위는|꽃범호|이범호예요",
-   "holdAfter": 0.7,
    "noMerge": true
+  },
+  {
+   "narr": "현재 기아 감독을 맡고 있죠",
+   "sub": "현재 기아 감독을 맡고 있죠",
+   "holdAfter": 0.7
   },
   {
    "narr": "이범호의 이천십육 년부터 이천십구 년까지 / 삼 플러스 일 년 삼십육억 계약이에요",
@@ -445,8 +477,12 @@
   {
    "narr": "육 위는 / 한 시즌만 뛰고 떠난 / 이대형이에요",
    "sub": "6위는|한 시즌만 뛰고 떠난|이대형이에요",
-   "holdAfter": 0.7,
    "noMerge": true
+  },
+  {
+   "narr": "현재 스포티비 해설위원을 하고 있죠",
+   "sub": "현재 SPOTV\n해설위원을 하고 있죠",
+   "holdAfter": 0.7
   },
   {
    "narr": "이대형의 이천십사 년부터 이천십칠 년까지 / 사 년 이십사억 계약이에요",
@@ -519,8 +555,12 @@
   {
    "narr": "삼 위는 / 꾸준함의 대명사 / 김선빈이에요",
    "sub": "3위는|꾸준함의 대명사|김선빈이에요",
-   "holdAfter": 0.7,
    "noMerge": true
+  },
+  {
+   "narr": "현재도 기아 내야를 지키고 있죠",
+   "sub": "현재도 기아 내야를\n지키고 있죠",
+   "holdAfter": 0.7
   },
   {
    "narr": "김선빈의 이천이십사 년부터 이천이십육 년까지 / 삼 년 삼십억 계약이에요",
@@ -581,8 +621,12 @@
   {
    "narr": "일 위는 바로 / 장성호예요",
    "sub": "1위는 바로|장성호예요",
-   "holdAfter": 0.7,
    "noMerge": true
+  },
+  {
+   "narr": "현재 케이비에스엔 해설위원을 하고 있죠",
+   "sub": "현재 KBSN\n해설위원을 하고 있죠",
+   "holdAfter": 0.7
   },
   {
    "narr": "장성호의 이천육 년부터 이천구 년까지 / 사 년 사십이억 계약이에요",
@@ -1421,7 +1465,135 @@
    "noCenter": true,
    "nextName": "김범수",
    "nextNameAt": 2.25,
+   "chain": "rva1r",
    "startLine": 14
+  },
+  {
+   "type": "rf_rank",
+   "head": "기아 FA 가성비 순위",
+   "unit": "",
+   "cols": [
+    "순위",
+    "선수",
+    "계약",
+    "10억당 WAR"
+   ],
+   "rows": [
+    [
+     17,
+     "김범수",
+     "3년 20억",
+     "-0.07"
+    ],
+    [
+     16,
+     "윤석민",
+     "4년 90억",
+     "0.40"
+    ],
+    [
+     15,
+     "김주찬",
+     "2+1년 27억",
+     "0.73"
+    ],
+    [
+     14,
+     "양현종",
+     "4년 103억",
+     "1.13"
+    ],
+    [
+     13,
+     "마해영",
+     "4년 28억",
+     "1.32"
+    ],
+    [
+     12,
+     "양현종",
+     "2+1년 45억",
+     "1.39"
+    ],
+    [
+     11,
+     "나성범",
+     "6년 150억",
+     "1.52"
+    ],
+    [
+     10,
+     "최형우",
+     "3년 47억",
+     "1.64"
+    ],
+    [
+     9,
+     "나지완",
+     "4년 40억",
+     "2.08"
+    ],
+    [
+     8,
+     "최형우",
+     "4년 100억",
+     "2.17"
+    ],
+    [
+     7,
+     "이범호",
+     "3+1년 36억",
+     "2.23"
+    ],
+    [
+     6,
+     "이대형",
+     "4년 24억",
+     "2.30"
+    ],
+    [
+     5,
+     "김주찬",
+     "4년 50억",
+     "2.31"
+    ],
+    [
+     4,
+     "양현종",
+     "1년 22억 5천만",
+     "2.42"
+    ],
+    [
+     3,
+     "김선빈",
+     "3년 30억",
+     "2.44"
+    ],
+    [
+     2,
+     "김선빈",
+     "4년 40억",
+     "2.87"
+    ],
+    [
+     1,
+     "장성호",
+     "4년 42억",
+     "3.30"
+    ]
+   ],
+   "open": 0,
+   "next": 17,
+   "last": null,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "nextName": "김범수",
+   "nextNameAt": -1,
+   "chain": "rva1r",
+   "cont": true,
+   "startLine": 15
   },
   {
    "type": "rf_card",
@@ -1441,7 +1613,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 15
+   "startLine": 16
   },
   {
    "type": "rf_card",
@@ -1474,7 +1646,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "50% 18%",
-   "startLine": 16
+   "startLine": 17
   },
   {
    "type": "rf_band",
@@ -1508,7 +1680,7 @@
    },
    "noCenter": true,
    "chain": "kbs",
-   "startLine": 17
+   "startLine": 18
   },
   {
    "type": "rf_band",
@@ -1543,7 +1715,7 @@
    "noCenter": true,
    "chain": "kbs",
    "cont": true,
-   "startLine": 18
+   "startLine": 19
   },
   {
    "type": "rf_rank",
@@ -1668,7 +1840,135 @@
    "noCenter": true,
    "nextName": "윤석민",
    "nextNameAt": 2.25,
-   "startLine": 19
+   "chain": "rva5r",
+   "startLine": 20
+  },
+  {
+   "type": "rf_rank",
+   "head": "기아 FA 가성비 순위",
+   "unit": "",
+   "cols": [
+    "순위",
+    "선수",
+    "계약",
+    "10억당 WAR"
+   ],
+   "rows": [
+    [
+     17,
+     "김범수",
+     "3년 20억",
+     "-0.07"
+    ],
+    [
+     16,
+     "윤석민",
+     "4년 90억",
+     "0.40"
+    ],
+    [
+     15,
+     "김주찬",
+     "2+1년 27억",
+     "0.73"
+    ],
+    [
+     14,
+     "양현종",
+     "4년 103억",
+     "1.13"
+    ],
+    [
+     13,
+     "마해영",
+     "4년 28억",
+     "1.32"
+    ],
+    [
+     12,
+     "양현종",
+     "2+1년 45억",
+     "1.39"
+    ],
+    [
+     11,
+     "나성범",
+     "6년 150억",
+     "1.52"
+    ],
+    [
+     10,
+     "최형우",
+     "3년 47억",
+     "1.64"
+    ],
+    [
+     9,
+     "나지완",
+     "4년 40억",
+     "2.08"
+    ],
+    [
+     8,
+     "최형우",
+     "4년 100억",
+     "2.17"
+    ],
+    [
+     7,
+     "이범호",
+     "3+1년 36억",
+     "2.23"
+    ],
+    [
+     6,
+     "이대형",
+     "4년 24억",
+     "2.30"
+    ],
+    [
+     5,
+     "김주찬",
+     "4년 50억",
+     "2.31"
+    ],
+    [
+     4,
+     "양현종",
+     "1년 22억 5천만",
+     "2.42"
+    ],
+    [
+     3,
+     "김선빈",
+     "3년 30억",
+     "2.44"
+    ],
+    [
+     2,
+     "김선빈",
+     "4년 40억",
+     "2.87"
+    ],
+    [
+     1,
+     "장성호",
+     "4년 42억",
+     "3.30"
+    ]
+   ],
+   "open": 1,
+   "next": 16,
+   "last": 17,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "nextName": "윤석민",
+   "nextNameAt": -1,
+   "chain": "rva5r",
+   "cont": true,
+   "startLine": 21
   },
   {
    "type": "rf_card",
@@ -1688,7 +1988,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 20
+   "startLine": 22
   },
   {
    "type": "rf_card",
@@ -1721,7 +2021,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "50% 18%",
-   "startLine": 21
+   "startLine": 23
   },
   {
    "type": "rf_band",
@@ -1749,7 +2049,7 @@
    },
    "noCenter": true,
    "chain": "ysm",
-   "startLine": 22
+   "startLine": 24
   },
   {
    "type": "rf_band",
@@ -1778,7 +2078,7 @@
    "noCenter": true,
    "chain": "ysm",
    "cont": true,
-   "startLine": 23
+   "startLine": 25
   },
   {
    "type": "rf_card",
@@ -1804,7 +2104,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 24
+   "startLine": 26
   },
   {
    "type": "rf_rank",
@@ -1929,7 +2229,135 @@
    "noCenter": true,
    "nextName": "김주찬",
    "nextNameAt": 2.25,
-   "startLine": 25
+   "chain": "rva10r",
+   "startLine": 27
+  },
+  {
+   "type": "rf_rank",
+   "head": "기아 FA 가성비 순위",
+   "unit": "",
+   "cols": [
+    "순위",
+    "선수",
+    "계약",
+    "10억당 WAR"
+   ],
+   "rows": [
+    [
+     17,
+     "김범수",
+     "3년 20억",
+     "-0.07"
+    ],
+    [
+     16,
+     "윤석민",
+     "4년 90억",
+     "0.40"
+    ],
+    [
+     15,
+     "김주찬",
+     "2+1년 27억",
+     "0.73"
+    ],
+    [
+     14,
+     "양현종",
+     "4년 103억",
+     "1.13"
+    ],
+    [
+     13,
+     "마해영",
+     "4년 28억",
+     "1.32"
+    ],
+    [
+     12,
+     "양현종",
+     "2+1년 45억",
+     "1.39"
+    ],
+    [
+     11,
+     "나성범",
+     "6년 150억",
+     "1.52"
+    ],
+    [
+     10,
+     "최형우",
+     "3년 47억",
+     "1.64"
+    ],
+    [
+     9,
+     "나지완",
+     "4년 40억",
+     "2.08"
+    ],
+    [
+     8,
+     "최형우",
+     "4년 100억",
+     "2.17"
+    ],
+    [
+     7,
+     "이범호",
+     "3+1년 36억",
+     "2.23"
+    ],
+    [
+     6,
+     "이대형",
+     "4년 24억",
+     "2.30"
+    ],
+    [
+     5,
+     "김주찬",
+     "4년 50억",
+     "2.31"
+    ],
+    [
+     4,
+     "양현종",
+     "1년 22억 5천만",
+     "2.42"
+    ],
+    [
+     3,
+     "김선빈",
+     "3년 30억",
+     "2.44"
+    ],
+    [
+     2,
+     "김선빈",
+     "4년 40억",
+     "2.87"
+    ],
+    [
+     1,
+     "장성호",
+     "4년 42억",
+     "3.30"
+    ]
+   ],
+   "open": 2,
+   "next": 15,
+   "last": 16,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "nextName": "김주찬",
+   "nextNameAt": -1,
+   "chain": "rva10r",
+   "cont": true,
+   "startLine": 28
   },
   {
    "type": "rf_card",
@@ -1949,7 +2377,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 26
+   "startLine": 29
   },
   {
    "type": "rf_band",
@@ -1976,7 +2404,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 27
+   "startLine": 30
   },
   {
    "type": "rf_band",
@@ -2009,7 +2437,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 28
+   "startLine": 31
   },
   {
    "type": "rf_card",
@@ -2035,7 +2463,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 29
+   "startLine": 32
   },
   {
    "type": "rf_card",
@@ -2063,7 +2491,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "50% 18%",
-   "startLine": 30
+   "startLine": 33
   },
   {
    "type": "rf_rank",
@@ -2188,7 +2616,135 @@
    "noCenter": true,
    "nextName": "양현종",
    "nextNameAt": 1.25,
-   "startLine": 31
+   "chain": "rva14",
+   "startLine": 34
+  },
+  {
+   "type": "rf_rank",
+   "head": "기아 FA 가성비 순위",
+   "unit": "",
+   "cols": [
+    "순위",
+    "선수",
+    "계약",
+    "10억당 WAR"
+   ],
+   "rows": [
+    [
+     17,
+     "김범수",
+     "3년 20억",
+     "-0.07"
+    ],
+    [
+     16,
+     "윤석민",
+     "4년 90억",
+     "0.40"
+    ],
+    [
+     15,
+     "김주찬",
+     "2+1년 27억",
+     "0.73"
+    ],
+    [
+     14,
+     "양현종",
+     "4년 103억",
+     "1.13"
+    ],
+    [
+     13,
+     "마해영",
+     "4년 28억",
+     "1.32"
+    ],
+    [
+     12,
+     "양현종",
+     "2+1년 45억",
+     "1.39"
+    ],
+    [
+     11,
+     "나성범",
+     "6년 150억",
+     "1.52"
+    ],
+    [
+     10,
+     "최형우",
+     "3년 47억",
+     "1.64"
+    ],
+    [
+     9,
+     "나지완",
+     "4년 40억",
+     "2.08"
+    ],
+    [
+     8,
+     "최형우",
+     "4년 100억",
+     "2.17"
+    ],
+    [
+     7,
+     "이범호",
+     "3+1년 36억",
+     "2.23"
+    ],
+    [
+     6,
+     "이대형",
+     "4년 24억",
+     "2.30"
+    ],
+    [
+     5,
+     "김주찬",
+     "4년 50억",
+     "2.31"
+    ],
+    [
+     4,
+     "양현종",
+     "1년 22억 5천만",
+     "2.42"
+    ],
+    [
+     3,
+     "김선빈",
+     "3년 30억",
+     "2.44"
+    ],
+    [
+     2,
+     "김선빈",
+     "4년 40억",
+     "2.87"
+    ],
+    [
+     1,
+     "장성호",
+     "4년 42억",
+     "3.30"
+    ]
+   ],
+   "open": 3,
+   "next": 14,
+   "last": 15,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "nextName": "양현종",
+   "nextNameAt": -1,
+   "chain": "rva14",
+   "cont": true,
+   "startLine": 35
   },
   {
    "type": "rf_card",
@@ -2208,7 +2764,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 32
+   "startLine": 36
   },
   {
    "type": "rf_card",
@@ -2236,7 +2792,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "50% 18%",
-   "startLine": 33
+   "startLine": 37
   },
   {
    "type": "rf_band",
@@ -2269,7 +2825,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 34
+   "startLine": 38
   },
   {
    "type": "rf_band",
@@ -2296,7 +2852,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 35
+   "startLine": 39
   },
   {
    "type": "rf_band",
@@ -2325,7 +2881,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 36
+   "startLine": 40
   },
   {
    "type": "rf_card",
@@ -2356,7 +2912,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 37
+   "startLine": 41
   },
   {
    "type": "rf_rank",
@@ -2481,7 +3037,7 @@
    "noCenter": true,
    "nextName": "마해영",
    "nextNameAt": 2.25,
-   "startLine": 38
+   "startLine": 42
   },
   {
    "type": "rf_card",
@@ -2501,7 +3057,7 @@
    },
    "noCenter": true,
    "focus": "45% 25%",
-   "startLine": 39
+   "startLine": 43
   },
   {
    "type": "rf_card",
@@ -2529,7 +3085,7 @@
    "focus": "45% 25%",
    "imgAt": -1,
    "nameAt": -1,
-   "startLine": 40
+   "startLine": 44
   },
   {
    "type": "rf_band",
@@ -2563,7 +3119,7 @@
    },
    "noCenter": true,
    "chain": "mhy",
-   "startLine": 41
+   "startLine": 45
   },
   {
    "type": "rf_band",
@@ -2598,7 +3154,7 @@
    "noCenter": true,
    "chain": "mhy",
    "cont": true,
-   "startLine": 42
+   "startLine": 46
   },
   {
    "type": "rf_card",
@@ -2624,7 +3180,7 @@
    },
    "noCenter": true,
    "focus": "45% 25%",
-   "startLine": 43
+   "startLine": 47
   },
   {
    "type": "rf_card",
@@ -2652,7 +3208,7 @@
    "focus": "45% 25%",
    "imgAt": -1,
    "nameAt": -1,
-   "startLine": 44
+   "startLine": 48
   },
   {
    "type": "rf_bars",
@@ -2713,7 +3269,7 @@
     "lab": "평균 1.77",
     "at": 1
    },
-   "startLine": 45
+   "startLine": 49
   },
   {
    "type": "rf_rank",
@@ -2838,7 +3394,7 @@
    "noCenter": true,
    "nextName": "양현종",
    "nextNameAt": 2.25,
-   "startLine": 46
+   "startLine": 50
   },
   {
    "type": "rf_card",
@@ -2858,7 +3414,7 @@
    },
    "noCenter": true,
    "focus": "58% 18%",
-   "startLine": 47
+   "startLine": 51
   },
   {
    "type": "rf_band",
@@ -2887,7 +3443,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 48
+   "startLine": 52
   },
   {
    "type": "rf_card",
@@ -2913,7 +3469,7 @@
    },
    "noCenter": true,
    "focus": "58% 18%",
-   "startLine": 49
+   "startLine": 53
   },
   {
    "type": "rf_rank",
@@ -3038,7 +3594,135 @@
    "noCenter": true,
    "nextName": "나성범",
    "nextNameAt": 2.25,
-   "startLine": 50
+   "chain": "rvb4r",
+   "startLine": 54
+  },
+  {
+   "type": "rf_rank",
+   "head": "기아 FA 가성비 순위",
+   "unit": "",
+   "cols": [
+    "순위",
+    "선수",
+    "계약",
+    "10억당 WAR"
+   ],
+   "rows": [
+    [
+     17,
+     "김범수",
+     "3년 20억",
+     "-0.07"
+    ],
+    [
+     16,
+     "윤석민",
+     "4년 90억",
+     "0.40"
+    ],
+    [
+     15,
+     "김주찬",
+     "2+1년 27억",
+     "0.73"
+    ],
+    [
+     14,
+     "양현종",
+     "4년 103억",
+     "1.13"
+    ],
+    [
+     13,
+     "마해영",
+     "4년 28억",
+     "1.32"
+    ],
+    [
+     12,
+     "양현종",
+     "2+1년 45억",
+     "1.39"
+    ],
+    [
+     11,
+     "나성범",
+     "6년 150억",
+     "1.52"
+    ],
+    [
+     10,
+     "최형우",
+     "3년 47억",
+     "1.64"
+    ],
+    [
+     9,
+     "나지완",
+     "4년 40억",
+     "2.08"
+    ],
+    [
+     8,
+     "최형우",
+     "4년 100억",
+     "2.17"
+    ],
+    [
+     7,
+     "이범호",
+     "3+1년 36억",
+     "2.23"
+    ],
+    [
+     6,
+     "이대형",
+     "4년 24억",
+     "2.30"
+    ],
+    [
+     5,
+     "김주찬",
+     "4년 50억",
+     "2.31"
+    ],
+    [
+     4,
+     "양현종",
+     "1년 22억 5천만",
+     "2.42"
+    ],
+    [
+     3,
+     "김선빈",
+     "3년 30억",
+     "2.44"
+    ],
+    [
+     2,
+     "김선빈",
+     "4년 40억",
+     "2.87"
+    ],
+    [
+     1,
+     "장성호",
+     "4년 42억",
+     "3.30"
+    ]
+   ],
+   "open": 6,
+   "next": 11,
+   "last": 12,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "nextName": "나성범",
+   "nextNameAt": -1,
+   "chain": "rvb4r",
+   "cont": true,
+   "startLine": 55
   },
   {
    "type": "rf_card",
@@ -3058,7 +3742,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 51
+   "startLine": 56
   },
   {
    "type": "rf_card",
@@ -3086,7 +3770,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "50% 18%",
-   "startLine": 52
+   "startLine": 57
   },
   {
    "type": "rf_card",
@@ -3119,7 +3803,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "50% 18%",
-   "startLine": 53
+   "startLine": 58
   },
   {
    "type": "rf_card",
@@ -3145,7 +3829,7 @@
    },
    "noCenter": true,
    "focus": "63% 18%",
-   "startLine": 54
+   "startLine": 59
   },
   {
    "type": "rf_bars",
@@ -3200,7 +3884,7 @@
     "lab": "110경기",
     "at": 1
    },
-   "startLine": 55
+   "startLine": 60
   },
   {
    "type": "rf_band",
@@ -3221,7 +3905,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 56
+   "startLine": 61
   },
   {
    "type": "rf_band",
@@ -3242,7 +3926,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 57
+   "startLine": 62
   },
   {
    "type": "rf_band",
@@ -3275,7 +3959,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 58
+   "startLine": 63
   },
   {
    "type": "rf_band",
@@ -3296,7 +3980,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 59
+   "startLine": 64
   },
   {
    "type": "rf_rank",
@@ -3421,7 +4105,135 @@
    "noCenter": true,
    "nextName": "최형우",
    "nextNameAt": 2.25,
-   "startLine": 60
+   "chain": "rvb12r",
+   "startLine": 65
+  },
+  {
+   "type": "rf_rank",
+   "head": "기아 FA 가성비 순위",
+   "unit": "",
+   "cols": [
+    "순위",
+    "선수",
+    "계약",
+    "10억당 WAR"
+   ],
+   "rows": [
+    [
+     17,
+     "김범수",
+     "3년 20억",
+     "-0.07"
+    ],
+    [
+     16,
+     "윤석민",
+     "4년 90억",
+     "0.40"
+    ],
+    [
+     15,
+     "김주찬",
+     "2+1년 27억",
+     "0.73"
+    ],
+    [
+     14,
+     "양현종",
+     "4년 103억",
+     "1.13"
+    ],
+    [
+     13,
+     "마해영",
+     "4년 28억",
+     "1.32"
+    ],
+    [
+     12,
+     "양현종",
+     "2+1년 45억",
+     "1.39"
+    ],
+    [
+     11,
+     "나성범",
+     "6년 150억",
+     "1.52"
+    ],
+    [
+     10,
+     "최형우",
+     "3년 47억",
+     "1.64"
+    ],
+    [
+     9,
+     "나지완",
+     "4년 40억",
+     "2.08"
+    ],
+    [
+     8,
+     "최형우",
+     "4년 100억",
+     "2.17"
+    ],
+    [
+     7,
+     "이범호",
+     "3+1년 36억",
+     "2.23"
+    ],
+    [
+     6,
+     "이대형",
+     "4년 24억",
+     "2.30"
+    ],
+    [
+     5,
+     "김주찬",
+     "4년 50억",
+     "2.31"
+    ],
+    [
+     4,
+     "양현종",
+     "1년 22억 5천만",
+     "2.42"
+    ],
+    [
+     3,
+     "김선빈",
+     "3년 30억",
+     "2.44"
+    ],
+    [
+     2,
+     "김선빈",
+     "4년 40억",
+     "2.87"
+    ],
+    [
+     1,
+     "장성호",
+     "4년 42억",
+     "3.30"
+    ]
+   ],
+   "open": 7,
+   "next": 10,
+   "last": 11,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "nextName": "최형우",
+   "nextNameAt": -1,
+   "chain": "rvb12r",
+   "cont": true,
+   "startLine": 66
   },
   {
    "type": "rf_card",
@@ -3441,7 +4253,7 @@
    },
    "noCenter": true,
    "focus": null,
-   "startLine": 61
+   "startLine": 67
   },
   {
    "type": "rf_card",
@@ -3469,7 +4281,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": null,
-   "startLine": 62
+   "startLine": 68
   },
   {
    "type": "rf_band",
@@ -3491,7 +4303,7 @@
    },
    "noCenter": true,
    "chain": "chw",
-   "startLine": 63
+   "startLine": 69
   },
   {
    "type": "rf_band",
@@ -3520,7 +4332,7 @@
    "noCenter": true,
    "chain": "chw",
    "cont": true,
-   "startLine": 64
+   "startLine": 70
   },
   {
    "type": "rf_card",
@@ -3546,7 +4358,7 @@
    },
    "noCenter": true,
    "focus": null,
-   "startLine": 65
+   "startLine": 71
   },
   {
    "type": "rf_card",
@@ -3579,7 +4391,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": null,
-   "startLine": 66
+   "startLine": 72
   },
   {
    "type": "rf_rank",
@@ -3704,7 +4516,135 @@
    "noCenter": true,
    "nextName": "나지완",
    "nextNameAt": 2.25,
-   "startLine": 67
+   "chain": "rvb16r",
+   "startLine": 73
+  },
+  {
+   "type": "rf_rank",
+   "head": "기아 FA 가성비 순위",
+   "unit": "",
+   "cols": [
+    "순위",
+    "선수",
+    "계약",
+    "10억당 WAR"
+   ],
+   "rows": [
+    [
+     17,
+     "김범수",
+     "3년 20억",
+     "-0.07"
+    ],
+    [
+     16,
+     "윤석민",
+     "4년 90억",
+     "0.40"
+    ],
+    [
+     15,
+     "김주찬",
+     "2+1년 27억",
+     "0.73"
+    ],
+    [
+     14,
+     "양현종",
+     "4년 103억",
+     "1.13"
+    ],
+    [
+     13,
+     "마해영",
+     "4년 28억",
+     "1.32"
+    ],
+    [
+     12,
+     "양현종",
+     "2+1년 45억",
+     "1.39"
+    ],
+    [
+     11,
+     "나성범",
+     "6년 150억",
+     "1.52"
+    ],
+    [
+     10,
+     "최형우",
+     "3년 47억",
+     "1.64"
+    ],
+    [
+     9,
+     "나지완",
+     "4년 40억",
+     "2.08"
+    ],
+    [
+     8,
+     "최형우",
+     "4년 100억",
+     "2.17"
+    ],
+    [
+     7,
+     "이범호",
+     "3+1년 36억",
+     "2.23"
+    ],
+    [
+     6,
+     "이대형",
+     "4년 24억",
+     "2.30"
+    ],
+    [
+     5,
+     "김주찬",
+     "4년 50억",
+     "2.31"
+    ],
+    [
+     4,
+     "양현종",
+     "1년 22억 5천만",
+     "2.42"
+    ],
+    [
+     3,
+     "김선빈",
+     "3년 30억",
+     "2.44"
+    ],
+    [
+     2,
+     "김선빈",
+     "4년 40억",
+     "2.87"
+    ],
+    [
+     1,
+     "장성호",
+     "4년 42억",
+     "3.30"
+    ]
+   ],
+   "open": 8,
+   "next": 9,
+   "last": 10,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "nextName": "나지완",
+   "nextNameAt": -1,
+   "chain": "rvb16r",
+   "cont": true,
+   "startLine": 74
   },
   {
    "type": "rf_card",
@@ -3724,7 +4664,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 68
+   "startLine": 75
   },
   {
    "type": "rf_card",
@@ -3752,7 +4692,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "50% 18%",
-   "startLine": 69
+   "startLine": 76
   },
   {
    "type": "rf_card",
@@ -3778,7 +4718,7 @@
    },
    "noCenter": true,
    "focus": "58% 18%",
-   "startLine": 70
+   "startLine": 77
   },
   {
    "type": "rf_band",
@@ -3806,7 +4746,7 @@
    },
    "noCenter": true,
    "chain": "njw",
-   "startLine": 71
+   "startLine": 78
   },
   {
    "type": "rf_band",
@@ -3829,7 +4769,7 @@
    "noCenter": true,
    "chain": "njw",
    "cont": true,
-   "startLine": 72
+   "startLine": 79
   },
   {
    "type": "rf_band",
@@ -3858,7 +4798,7 @@
    "noCenter": true,
    "chain": "njw",
    "cont": true,
-   "startLine": 73
+   "startLine": 80
   },
   {
    "type": "rf_card",
@@ -3889,7 +4829,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 74
+   "startLine": 81
   },
   {
    "type": "rf_rank",
@@ -4014,7 +4954,7 @@
    "noCenter": true,
    "nextName": "최형우",
    "nextNameAt": 2.25,
-   "startLine": 75
+   "startLine": 82
   },
   {
    "type": "rf_card",
@@ -4034,7 +4974,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 76
+   "startLine": 83
   },
   {
    "type": "rf_card",
@@ -4062,7 +5002,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "50% 18%",
-   "startLine": 77
+   "startLine": 84
   },
   {
    "type": "rf_band",
@@ -4099,7 +5039,7 @@
    },
    "noCenter": true,
    "tagAt": 3,
-   "startLine": 78
+   "startLine": 85
   },
   {
    "type": "rf_band",
@@ -4126,7 +5066,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 79
+   "startLine": 86
   },
   {
    "type": "rf_bars",
@@ -4171,7 +5111,7 @@
     "at": 0
    },
    "h": 420,
-   "startLine": 80
+   "startLine": 87
   },
   {
    "type": "rf_band",
@@ -4199,7 +5139,7 @@
    },
    "noCenter": true,
    "chain": "chw2",
-   "startLine": 81
+   "startLine": 88
   },
   {
    "type": "rf_band",
@@ -4235,7 +5175,7 @@
    "chain": "chw2",
    "cont": true,
    "whoAt": -1,
-   "startLine": 82
+   "startLine": 89
   },
   {
    "type": "rf_band",
@@ -4271,7 +5211,7 @@
    "chain": "chw2",
    "cont": true,
    "whoAt": -1,
-   "startLine": 83
+   "startLine": 90
   },
   {
    "type": "rf_sil",
@@ -4282,7 +5222,7 @@
     "f": "blur(22px) brightness(.4)"
    },
    "noCenter": true,
-   "startLine": 84
+   "startLine": 91
   },
   {
    "type": "rf_rank",
@@ -4407,7 +5347,135 @@
    "noCenter": true,
    "nextName": "이범호",
    "nextNameAt": 2.25,
-   "startLine": 85
+   "chain": "rvc2r",
+   "startLine": 92
+  },
+  {
+   "type": "rf_rank",
+   "head": "기아 FA 가성비 순위",
+   "unit": "",
+   "cols": [
+    "순위",
+    "선수",
+    "계약",
+    "10억당 WAR"
+   ],
+   "rows": [
+    [
+     17,
+     "김범수",
+     "3년 20억",
+     "-0.07"
+    ],
+    [
+     16,
+     "윤석민",
+     "4년 90억",
+     "0.40"
+    ],
+    [
+     15,
+     "김주찬",
+     "2+1년 27억",
+     "0.73"
+    ],
+    [
+     14,
+     "양현종",
+     "4년 103억",
+     "1.13"
+    ],
+    [
+     13,
+     "마해영",
+     "4년 28억",
+     "1.32"
+    ],
+    [
+     12,
+     "양현종",
+     "2+1년 45억",
+     "1.39"
+    ],
+    [
+     11,
+     "나성범",
+     "6년 150억",
+     "1.52"
+    ],
+    [
+     10,
+     "최형우",
+     "3년 47억",
+     "1.64"
+    ],
+    [
+     9,
+     "나지완",
+     "4년 40억",
+     "2.08"
+    ],
+    [
+     8,
+     "최형우",
+     "4년 100억",
+     "2.17"
+    ],
+    [
+     7,
+     "이범호",
+     "3+1년 36억",
+     "2.23"
+    ],
+    [
+     6,
+     "이대형",
+     "4년 24억",
+     "2.30"
+    ],
+    [
+     5,
+     "김주찬",
+     "4년 50억",
+     "2.31"
+    ],
+    [
+     4,
+     "양현종",
+     "1년 22억 5천만",
+     "2.42"
+    ],
+    [
+     3,
+     "김선빈",
+     "3년 30억",
+     "2.44"
+    ],
+    [
+     2,
+     "김선빈",
+     "4년 40억",
+     "2.87"
+    ],
+    [
+     1,
+     "장성호",
+     "4년 42억",
+     "3.30"
+    ]
+   ],
+   "open": 10,
+   "next": 7,
+   "last": 8,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "nextName": "이범호",
+   "nextNameAt": -1,
+   "chain": "rvc2r",
+   "cont": true,
+   "startLine": 93
   },
   {
    "type": "rf_card",
@@ -4427,7 +5495,7 @@
    },
    "noCenter": true,
    "focus": "58% 18%",
-   "startLine": 86
+   "startLine": 94
   },
   {
    "type": "rf_card",
@@ -4460,7 +5528,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "58% 18%",
-   "startLine": 87
+   "startLine": 95
   },
   {
    "type": "rf_band",
@@ -4487,7 +5555,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 88
+   "startLine": 96
   },
   {
    "type": "rf_band",
@@ -4508,7 +5576,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 89
+   "startLine": 97
   },
   {
    "type": "rf_card",
@@ -4539,7 +5607,7 @@
    },
    "noCenter": true,
    "focus": "58% 18%",
-   "startLine": 90
+   "startLine": 98
   },
   {
    "type": "rf_card",
@@ -4572,7 +5640,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "58% 18%",
-   "startLine": 91
+   "startLine": 99
   },
   {
    "type": "rf_rank",
@@ -4697,7 +5765,135 @@
    "noCenter": true,
    "nextName": "이대형",
    "nextNameAt": 2.25,
-   "startLine": 92
+   "chain": "rvc6r",
+   "startLine": 100
+  },
+  {
+   "type": "rf_rank",
+   "head": "기아 FA 가성비 순위",
+   "unit": "",
+   "cols": [
+    "순위",
+    "선수",
+    "계약",
+    "10억당 WAR"
+   ],
+   "rows": [
+    [
+     17,
+     "김범수",
+     "3년 20억",
+     "-0.07"
+    ],
+    [
+     16,
+     "윤석민",
+     "4년 90억",
+     "0.40"
+    ],
+    [
+     15,
+     "김주찬",
+     "2+1년 27억",
+     "0.73"
+    ],
+    [
+     14,
+     "양현종",
+     "4년 103억",
+     "1.13"
+    ],
+    [
+     13,
+     "마해영",
+     "4년 28억",
+     "1.32"
+    ],
+    [
+     12,
+     "양현종",
+     "2+1년 45억",
+     "1.39"
+    ],
+    [
+     11,
+     "나성범",
+     "6년 150억",
+     "1.52"
+    ],
+    [
+     10,
+     "최형우",
+     "3년 47억",
+     "1.64"
+    ],
+    [
+     9,
+     "나지완",
+     "4년 40억",
+     "2.08"
+    ],
+    [
+     8,
+     "최형우",
+     "4년 100억",
+     "2.17"
+    ],
+    [
+     7,
+     "이범호",
+     "3+1년 36억",
+     "2.23"
+    ],
+    [
+     6,
+     "이대형",
+     "4년 24억",
+     "2.30"
+    ],
+    [
+     5,
+     "김주찬",
+     "4년 50억",
+     "2.31"
+    ],
+    [
+     4,
+     "양현종",
+     "1년 22억 5천만",
+     "2.42"
+    ],
+    [
+     3,
+     "김선빈",
+     "3년 30억",
+     "2.44"
+    ],
+    [
+     2,
+     "김선빈",
+     "4년 40억",
+     "2.87"
+    ],
+    [
+     1,
+     "장성호",
+     "4년 42억",
+     "3.30"
+    ]
+   ],
+   "open": 11,
+   "next": 6,
+   "last": 7,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "nextName": "이대형",
+   "nextNameAt": -1,
+   "chain": "rvc6r",
+   "cont": true,
+   "startLine": 101
   },
   {
    "type": "rf_card",
@@ -4717,7 +5913,7 @@
    },
    "noCenter": true,
    "focus": "40% 18%",
-   "startLine": 93
+   "startLine": 102
   },
   {
    "type": "rf_card",
@@ -4745,7 +5941,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "40% 18%",
-   "startLine": 94
+   "startLine": 103
   },
   {
    "type": "rf_band",
@@ -4766,7 +5962,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 95
+   "startLine": 104
   },
   {
    "type": "rf_band",
@@ -4794,7 +5990,7 @@
    },
    "noCenter": true,
    "whoAt": -1,
-   "startLine": 96
+   "startLine": 105
   },
   {
    "type": "rf_card",
@@ -4825,7 +6021,7 @@
    },
    "noCenter": true,
    "focus": "40% 18%",
-   "startLine": 97
+   "startLine": 106
   },
   {
    "type": "rf_band",
@@ -4852,7 +6048,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 98
+   "startLine": 107
   },
   {
    "type": "rf_rank",
@@ -4977,7 +6173,7 @@
    "noCenter": true,
    "nextName": "김주찬",
    "nextNameAt": 2.25,
-   "startLine": 99
+   "startLine": 108
   },
   {
    "type": "rf_card",
@@ -4997,7 +6193,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 100
+   "startLine": 109
   },
   {
    "type": "rf_card",
@@ -5025,7 +6221,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "50% 18%",
-   "startLine": 101
+   "startLine": 110
   },
   {
    "type": "rf_band",
@@ -5058,7 +6254,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 102
+   "startLine": 111
   },
   {
    "type": "rf_card",
@@ -5089,7 +6285,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 103
+   "startLine": 112
   },
   {
    "type": "rf_rank",
@@ -5214,7 +6410,7 @@
    "noCenter": true,
    "nextName": "양현종",
    "nextNameAt": 2.25,
-   "startLine": 104
+   "startLine": 113
   },
   {
    "type": "rf_card",
@@ -5234,7 +6430,7 @@
    },
    "noCenter": true,
    "focus": "50% 18%",
-   "startLine": 105
+   "startLine": 114
   },
   {
    "type": "rf_card",
@@ -5262,7 +6458,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "50% 18%",
-   "startLine": 106
+   "startLine": 115
   },
   {
    "type": "rf_band",
@@ -5298,7 +6494,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 107
+   "startLine": 116
   },
   {
    "type": "rf_card",
@@ -5331,7 +6527,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "50% 18%",
-   "startLine": 108
+   "startLine": 117
   },
   {
    "type": "rf_rank",
@@ -5456,7 +6652,135 @@
    "noCenter": true,
    "nextName": "김선빈",
    "nextNameAt": 2.25,
-   "startLine": 109
+   "chain": "rvc20r",
+   "startLine": 118
+  },
+  {
+   "type": "rf_rank",
+   "head": "기아 FA 가성비 순위",
+   "unit": "",
+   "cols": [
+    "순위",
+    "선수",
+    "계약",
+    "10억당 WAR"
+   ],
+   "rows": [
+    [
+     17,
+     "김범수",
+     "3년 20억",
+     "-0.07"
+    ],
+    [
+     16,
+     "윤석민",
+     "4년 90억",
+     "0.40"
+    ],
+    [
+     15,
+     "김주찬",
+     "2+1년 27억",
+     "0.73"
+    ],
+    [
+     14,
+     "양현종",
+     "4년 103억",
+     "1.13"
+    ],
+    [
+     13,
+     "마해영",
+     "4년 28억",
+     "1.32"
+    ],
+    [
+     12,
+     "양현종",
+     "2+1년 45억",
+     "1.39"
+    ],
+    [
+     11,
+     "나성범",
+     "6년 150억",
+     "1.52"
+    ],
+    [
+     10,
+     "최형우",
+     "3년 47억",
+     "1.64"
+    ],
+    [
+     9,
+     "나지완",
+     "4년 40억",
+     "2.08"
+    ],
+    [
+     8,
+     "최형우",
+     "4년 100억",
+     "2.17"
+    ],
+    [
+     7,
+     "이범호",
+     "3+1년 36억",
+     "2.23"
+    ],
+    [
+     6,
+     "이대형",
+     "4년 24억",
+     "2.30"
+    ],
+    [
+     5,
+     "김주찬",
+     "4년 50억",
+     "2.31"
+    ],
+    [
+     4,
+     "양현종",
+     "1년 22억 5천만",
+     "2.42"
+    ],
+    [
+     3,
+     "김선빈",
+     "3년 30억",
+     "2.44"
+    ],
+    [
+     2,
+     "김선빈",
+     "4년 40억",
+     "2.87"
+    ],
+    [
+     1,
+     "장성호",
+     "4년 42억",
+     "3.30"
+    ]
+   ],
+   "open": 14,
+   "next": 3,
+   "last": 4,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "nextName": "김선빈",
+   "nextNameAt": -1,
+   "chain": "rvc20r",
+   "cont": true,
+   "startLine": 119
   },
   {
    "type": "rf_card",
@@ -5476,7 +6800,7 @@
    },
    "noCenter": true,
    "focus": "24% 18%",
-   "startLine": 110
+   "startLine": 120
   },
   {
    "type": "rf_band",
@@ -5505,7 +6829,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 111
+   "startLine": 121
   },
   {
    "type": "rf_card",
@@ -5536,7 +6860,7 @@
    },
    "noCenter": true,
    "focus": "24% 18%",
-   "startLine": 112
+   "startLine": 122
   },
   {
    "type": "rf_card",
@@ -5569,7 +6893,7 @@
    "imgAt": -1,
    "nameAt": -1,
    "focus": "24% 18%",
-   "startLine": 113
+   "startLine": 123
   },
   {
    "type": "rf_sil",
@@ -5580,7 +6904,7 @@
     "f": "blur(22px) brightness(.4)"
    },
    "noCenter": true,
-   "startLine": 114
+   "startLine": 124
   },
   {
    "type": "rf_rank",
@@ -5705,7 +7029,7 @@
    "noCenter": true,
    "nextName": "김선빈",
    "nextNameAt": 1.25,
-   "startLine": 115
+   "startLine": 125
   },
   {
    "type": "rf_card",
@@ -5725,7 +7049,7 @@
    },
    "noCenter": true,
    "focus": "0% 18%",
-   "startLine": 116
+   "startLine": 126
   },
   {
    "type": "rf_duo",
@@ -5767,7 +7091,7 @@
     "f": "blur(22px) brightness(.4)"
    },
    "noCenter": true,
-   "startLine": 117
+   "startLine": 127
   },
   {
    "type": "rf_card",
@@ -5793,7 +7117,7 @@
    },
    "noCenter": true,
    "focus": "0% 18%",
-   "startLine": 118
+   "startLine": 128
   },
   {
    "type": "rf_band",
@@ -5820,7 +7144,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 119
+   "startLine": 129
   },
   {
    "type": "rf_bars",
@@ -5883,7 +7207,7 @@
     "at": 2
    },
    "chain": "sbw",
-   "startLine": 120
+   "startLine": 130
   },
   {
    "type": "rf_bars",
@@ -5962,7 +7286,7 @@
      "at": 1
     }
    ],
-   "startLine": 121
+   "startLine": 131
   },
   {
    "type": "rf_rank",
@@ -6086,7 +7410,7 @@
    },
    "noCenter": true,
    "chain": "rk1",
-   "startLine": 122
+   "startLine": 132
   },
   {
    "type": "rf_rank",
@@ -6213,7 +7537,134 @@
    "nextNameAt": 1.25,
    "chain": "rk1",
    "cont": true,
-   "startLine": 123
+   "startLine": 133
+  },
+  {
+   "type": "rf_rank",
+   "head": "기아 FA 가성비 순위",
+   "unit": "",
+   "cols": [
+    "순위",
+    "선수",
+    "계약",
+    "10억당 WAR"
+   ],
+   "rows": [
+    [
+     17,
+     "김범수",
+     "3년 20억",
+     "-0.07"
+    ],
+    [
+     16,
+     "윤석민",
+     "4년 90억",
+     "0.40"
+    ],
+    [
+     15,
+     "김주찬",
+     "2+1년 27억",
+     "0.73"
+    ],
+    [
+     14,
+     "양현종",
+     "4년 103억",
+     "1.13"
+    ],
+    [
+     13,
+     "마해영",
+     "4년 28억",
+     "1.32"
+    ],
+    [
+     12,
+     "양현종",
+     "2+1년 45억",
+     "1.39"
+    ],
+    [
+     11,
+     "나성범",
+     "6년 150억",
+     "1.52"
+    ],
+    [
+     10,
+     "최형우",
+     "3년 47억",
+     "1.64"
+    ],
+    [
+     9,
+     "나지완",
+     "4년 40억",
+     "2.08"
+    ],
+    [
+     8,
+     "최형우",
+     "4년 100억",
+     "2.17"
+    ],
+    [
+     7,
+     "이범호",
+     "3+1년 36억",
+     "2.23"
+    ],
+    [
+     6,
+     "이대형",
+     "4년 24억",
+     "2.30"
+    ],
+    [
+     5,
+     "김주찬",
+     "4년 50억",
+     "2.31"
+    ],
+    [
+     4,
+     "양현종",
+     "1년 22억 5천만",
+     "2.42"
+    ],
+    [
+     3,
+     "김선빈",
+     "3년 30억",
+     "2.44"
+    ],
+    [
+     2,
+     "김선빈",
+     "4년 40억",
+     "2.87"
+    ],
+    [
+     1,
+     "장성호",
+     "4년 42억",
+     "3.30"
+    ]
+   ],
+   "open": 16,
+   "next": 1,
+   "last": 2,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "nextName": "장성호",
+   "nextNameAt": -1,
+   "chain": "rk1",
+   "cont": true,
+   "startLine": 134
   },
   {
    "type": "rf_gold",
@@ -6239,7 +7690,7 @@
    "noCenter": true,
    "chain": "jsh6",
    "focus": "50% 18%",
-   "startLine": 124
+   "startLine": 135
   },
   {
    "type": "rf_gold",
@@ -6272,7 +7723,7 @@
    "cont": true,
    "cardAt": -1,
    "focus": "50% 18%",
-   "startLine": 125
+   "startLine": 136
   },
   {
    "type": "rf_band",
@@ -6306,7 +7757,7 @@
    },
    "noCenter": true,
    "chain": "jsh",
-   "startLine": 126
+   "startLine": 137
   },
   {
    "type": "rf_band",
@@ -6342,7 +7793,7 @@
    "chain": "jsh",
    "cont": true,
    "whoAt": -1,
-   "startLine": 127
+   "startLine": 138
   },
   {
    "type": "rf_bars",
@@ -6386,7 +7837,7 @@
     "lab": "WAR 1.5",
     "at": 1
    },
-   "startLine": 128
+   "startLine": 139
   },
   {
    "type": "rf_band",
@@ -6407,7 +7858,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 129
+   "startLine": 140
   },
   {
    "type": "rf_gold",
@@ -6444,7 +7895,7 @@
    "chain": "jsh11",
    "cardAt": -1,
    "focus": "50% 18%",
-   "startLine": 130
+   "startLine": 141
   },
   {
    "type": "rf_gold",
@@ -6471,7 +7922,7 @@
    "chain": "jsh12",
    "cardAt": -1,
    "focus": "50% 18%",
-   "startLine": 131
+   "startLine": 142
   },
   {
    "type": "rf_gold",
@@ -6504,7 +7955,7 @@
    "cont": true,
    "cardAt": -1,
    "focus": "50% 18%",
-   "startLine": 132
+   "startLine": 143
   },
   {
    "type": "rf_bars",
@@ -6645,7 +8096,7 @@
    "chain": "rk",
    "cont": false,
    "lfs": 26,
-   "startLine": 133
+   "startLine": 144
   },
   {
    "type": "rf_bars",
@@ -6792,7 +8243,7 @@
     "lab": "1~4위 모두 잔류 FA",
     "at": 1
    },
-   "startLine": 134
+   "startLine": 145
   },
   {
    "type": "rf_bars",
@@ -6933,7 +8384,7 @@
    "chain": "rk",
    "cont": true,
    "lfs": 26,
-   "startLine": 135
+   "startLine": 146
   },
   {
    "type": "rf_bars",
@@ -7075,7 +8526,7 @@
    "cont": false,
    "lfs": 26,
    "hiAt": 2,
-   "startLine": 136
+   "startLine": 147
   },
   {
    "type": "rf_bars",
@@ -7216,7 +8667,7 @@
    "chain": "rk",
    "cont": true,
    "lfs": 26,
-   "startLine": 137
+   "startLine": 148
   },
   {
    "type": "rf_bars",
@@ -7357,7 +8808,7 @@
    "chain": "rk",
    "cont": true,
    "lfs": 26,
-   "startLine": 138
+   "startLine": 149
   },
   {
    "type": "rf_rank",
@@ -7481,7 +8932,7 @@
      "3.30"
     ]
    ],
-   "startLine": 139
+   "startLine": 150
   },
   {
    "type": "rf_rank",
@@ -7606,7 +9057,7 @@
      "3.30"
     ]
    ],
-   "startLine": 140
+   "startLine": 151
   },
   {
    "type": "rf_duo",
@@ -7651,7 +9102,7 @@
    "chain": "q",
    "reserveStats": true,
    "cw": 560,
-   "startLine": 141
+   "startLine": 152
   },
   {
    "type": "rf_duo",
@@ -7697,7 +9148,7 @@
    "cont": true,
    "reserveStats": true,
    "cw": 560,
-   "startLine": 142
+   "startLine": 153
   },
   {
    "type": "question",
@@ -7716,7 +9167,7 @@
    ],
    "logoSize": 150,
    "size": 72,
-   "startLine": 143,
+   "startLine": 154,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3A0A10 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.08) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -7771,9 +9222,9 @@
   11,
   12,
   13,
-  null,
+  14,
   15,
-  null,
+  16,
   17,
   18,
   19,
@@ -7826,7 +9277,7 @@
   66,
   67,
   68,
-  null,
+  69,
   70,
   71,
   72,
@@ -7841,14 +9292,14 @@
   81,
   82,
   83,
-  null,
+  84,
   85,
   86,
-  null,
+  87,
   88,
   89,
   90,
-  null,
+  91,
   92,
   93,
   94,
@@ -7861,7 +9312,7 @@
   101,
   102,
   103,
-  null,
+  104,
   105,
   106,
   107,
@@ -7887,7 +9338,7 @@
   127,
   128,
   129,
-  null,
+  130,
   131,
   132,
   133,
@@ -7900,6 +9351,17 @@
   140,
   141,
   142,
-  143
+  143,
+  144,
+  145,
+  146,
+  147,
+  148,
+  149,
+  150,
+  151,
+  152,
+  153,
+  154
  ]
 }
