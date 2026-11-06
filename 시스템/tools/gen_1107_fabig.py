@@ -104,7 +104,7 @@ P.update({
     "홍창기": "경기/홍창기_상체_0921_LG제공", "박동원": "경기/박동원_세리머니_LG제공",
 "김재환": "경기/김재환_300호축하_1001_SSG제공_카드", "김재환두": "경기/김재환_두산시절_두산제공", "최지훈": "경기/최지훈_타격_0920_SSG제공", "최지훈B": "경기/최지훈_주루_0920_SSG제공",
     "강백호": "경기/강백호_30호환대_0908_한화제공", "강백호B": "경기/강백호_헬멧인사_0915_한화제공",
-    "류지현": "카드/H14_류지현_한화_A", "노시환": "카드/P29c_노시환_경기_세로",
+    "류지현": "경기/류지현_취임_한화_사용자제공_카드", "노시환": "카드/P29c_노시환_경기_세로",
     "박찬호두": "경기/박찬호_홈쇄도_1005_두산제공", "양현종": "경기/양현종_글러브_1012_KIA제공", "김범수": "경기/김범수_투구_0304_KIA제공",
     "김호령": "경기/김호령_만루포_0821_KIA제공", "광주": "경기/광주_관중_1017_KIA제공",
     "이동욱": "카드/H14_이동욱", "이택근": "경기/이택근_단장_1026_롯데제공", "레이예스": "경기/레이예스_타격_1012_롯데제공",
@@ -217,7 +217,7 @@ SC['o3'] = KEEP(SC['o2'])
 CAPS = [("2023년", 114.2, "114억 2천만"), ("2027년", 151.1, "151억 1천만")]   # 11/5 2라운드: 말하는 두 해만
 def CAPB(hi27=False):   # 값은 말하는 2027년만
     its = [dict(label=a, v=v, txt=t, at=0, hi=(hi27 and a == "2027년"), valAt=50) for a, v, t in CAPS]
-    sc = RBARS("샐러리캡 · 상위 40명 합계 상한", its, 160, bgk=None, bw=260, gap=160, chain="cap", lfs=36)
+    sc = RBARS("샐러리캡 상한", its, 160, bgk=None, bw=260, gap=160, chain="cap", lfs=36)
     sc["bg"] = BG_NEU
     return sc
 SC['o4'] = None   # 아래 o5 정의 뒤에 채움
@@ -232,12 +232,12 @@ SC['o7'] = dict(type="rf_capbar", who="샐러리캡을 처음 넘으면", team="
                 over=dict(v=16, lab="넘은 돈", at=0), rate=dict(txt="× 30% = 제재금", at=1), noCenter=True, bg=BG_NEU)
 SC['o8'] = dict(type="rf_capbar", who="계산 방법", team="", cap=CAP, capLab="2027 상한", total=125, totalLab="구단 2025시즌 합계", totalTxt="", leftLab="", leftTxt="남은 돈",
                 totalAt=1, leftAt=1, capAt=0, noCenter=True, bg=BG_NEU, chain="o8")
-SC['o9'] = KEEP(SC['o8'], leftLab="많을수록 FA에 쓸 여유 ↑")
+SC['o9'] = KEEP(SC['o8'])   # 11/6 사용자 '필요한 서브텍스트만' — 나레이션 되풀이 설명 뺌
 SC['o10'] = KEEP(SC['o8'])
 SC['o11'] = RBARS("4년 100억 FA", [dict(label="", v=25, txt="25억", at=1, hi=True) for _ in range(4)], 40, bw=220, gap=50, lfs=36)
 SC['o11']["bg"] = BG_NEU
 SC['o12'] = BAND("2026시즌 합계", [V("2026년 12월", "발표 예정", 1)], bgk="광주", top=140,
-                 fig=dict(type="steps", at=2, items=[dict(lab="2025시즌 합계", sub="이 영상의 기준"), dict(lab="2025년 겨울 이적", sub="팀마다 말로 짚기", hi=True), dict(lab="2026년 12월", sub="2026 합계 발표")]))
+                 fig=dict(type="steps", at=2, items=[dict(lab="2025시즌 합계"), dict(lab="2025년 겨울 이적", hi=True), dict(lab="2026시즌 합계")]))
 SC['o13'] = dict(BOARD(0, 10, None), chain="b13")
 # ── 10위 삼성 ──
 SC['s1'] = CB("삼성", bgk="삼성bg", at1=1, at2=50, tag="10개 구단 최다 합계", tagAt=2)
@@ -293,7 +293,7 @@ SC['k1'] = TB("KIA", "123억", "28억 1천만", "광주", 1, 2)
 SC['k2'] = DUOT("2025년 겨울 떠난 주전", [DCT("박찬호두", "박찬호", "두산", 1), DCT("최형우삼", "최형우", "삼성", 1)])
 SC['k3'] = DUOT("2025년 겨울 계약", [DCT("양현종", "양현종", "KIA", 1), DCT("김범수", "김범수", "KIA", 2)], reserveStats=True, chain="k3")
 SC['k3q'] = KEEP(SC['k3']); SC['k3q']['cards'][0]['stats'] = [dict(k="", v="도전은 계속", at=1)]; SC['k3q']['cards'][1]['stats'] = [dict(k="", v="명문 구단 영광", at=3)]   # 스타뉴스·시대 2025-12 / 엑스포츠·트윅 2026-01-21
-SC['k4'] = CB("KIA", bgk="양현종", at1=-1, at2=-1, trend=dict(dir="up", lab="실제 여유는 더 클 것", at=1))
+SC['k4'] = CB("KIA", bgk="양현종", at1=-1, at2=-1, trend=dict(dir="up", lab="실제 여유 ↑", at=1))
 SC['k5'] = TC("김호령", "김호령", "KIA", "기아 타이거즈", minor=[MI("중견수", "생애 첫 FA", 1)], chain="khr")
 SC['k5q'] = KEEP(SC['k5']); SC['k5q']['minor'].append(MI("기아 감독", "빨리 계약하라", 2))   # 스포츠경향·일간스포츠 2026-07-19
 SC['k6'] = KEEP(SC['k5']); SC['k6']['big'] = BIGV("13홈런", "2026년", 1, size=170); SC['k6']['minor'] = [MI("타점", "68", 1), MI("커리어", "최다", 2)]
@@ -304,7 +304,7 @@ SC['r1'] = TB("롯데", "122억 1천만", "29억", "레이예스", 1, 2)
 SC['r1b'] = BAND("롯데 · 2026년", [V("64승 77패", "", 1), V("7위", "정규시즌", 2, hi=True)], bgk="롯데2", team="롯데", top=130, fig=dict(type="rank", pos=7, cut=5, at=2))
 SC['r2'] = BAND("롯데 · 2026년 팀 홈런", [V("113개", "", 1), V("최소", "10개 구단", 2, hi=True)], bgk="롯데3", team="롯데", top=130, fig=dict(type="rank", pos=10, lab="팀 홈런 순위", at=2))
 SC['r3'] = BAND("롯데 · 보강 필요", [V("수비형 외야수", "", 0, hi=True)], bgk="롯데4", team="롯데", top=120, figY=420, fig=dict(type="field", at=0))
-SC['r4'] = BAND("롯데 · 2025년 겨울", [V("0명", "외부 FA", 2, hi=True)], bgk="롯데5", team="롯데", chain="r4", top=130, fig=dict(type="people", n=3, on=0, lab="데려온 외부 FA 없음", at=2))
+SC['r4'] = BAND("롯데 · 2025년 겨울", [V("0명", "외부 FA", 2, hi=True)], bgk="롯데5", team="롯데", chain="r4", top=130, fig=dict(type="people", n=3, on=0, at=2))
 SC['r5'] = KEEP(SC['r4'])
 SC['r6'] = BAND("롯데 · 2022년 겨울", [V("170억", "FA 세 명", 1, hi=True)], bgk="롯데6", team="롯데", top=130, fig=dict(type="people", n=3, on=3, at=1))
 SC['r7'] = BAND("롯데 자이언츠 · 2026년 10월", [V("이동욱", "새 감독", 1), V("이택근", "새 단장", 1)], bgk="레이예스", team="롯데", chain="r7")
@@ -316,7 +316,7 @@ SC['d1'] = TB("두산", "105억 5천만", "45억 6천만", "정수빈", 1, 2)
 SC['d2'] = TC("박찬호두", "박찬호", "두산", "두산 베어스", big=BIGV("4년 80억", "", 1, size=170), minor=[MI("집토끼", "셋", 2)])
 SC['d2q'] = KEEP(SC['d2']); SC['d2q']['minor'] = [MI("소감", "어린 시절 꿈의 팀", 1)]   # 경향·일간스포츠 2025-11-18
 SC['d3'] = TC("김재환두", "김재환", "SSG", "두산 → SSG 랜더스", minor=[MI("이적", "두산 → SSG", 0)])
-SC['d4'] = CB("두산", bgk="두산3", at1=-1, at2=-1, trend=dict(dir="?", lab="실제 여유는 2026년 12월 발표", at=2))
+SC['d4'] = CB("두산", bgk="두산3", at1=-1, at2=-1, trend=dict(dir="?", lab="2026년 12월에 확인", at=2))
 SC['d5'] = BAND("두산 · 2026년", [V("5위", "정규시즌", 0), V("탈락", "와일드카드", 1)], bgk="두산2", team="두산", top=130, fig=dict(type="rank", pos=5, cut=5, at=0))
 SC['d6'] = TC("김원형", "김원형", "두산", "두산 베어스", minor=[MI("부진 원인", "공격", 1)])
 SC['d7'] = TC("구자욱B", "구자욱", "삼성", "삼성 라이온즈", big=BIGV("타자", "두산 보강 필요", 0, size=170), imgAt=2, nameAt=2, chain="d7")
@@ -328,7 +328,7 @@ SC['t2'] = DUOT("KT · 2025년 겨울 외부 FA", [DCT("김현수KT", "김현수
 SC['t2q'] = KEEP(SC['t2']); SC['t2q']['cards'][1]['stats'] = [dict(k="KT 단장 평가", v="공수주 두루", at=1)]   # OSEN·일간스포츠 2025-11-26 나도현
 SC['t3'] = TC("강백호", "강백호", "한화", "한화 이글스", minor=[MI("이적", "KT → 한화", 0)])
 SC['t4'] = BAND("KT · 2026년", [V("108억", "2025년 겨울 투자", 0), V("90승", "", 1), V("1위", "정규시즌", 2, hi=True)], bgk="KTbg2", team="KT", top=130, fig=dict(type="rank", pos=1, cut=5, at=2))
-SC['t5'] = BAND("KT · 1위 멤버", [V("여럿", "FA 앞둔 선수", 2, hi=True)], bgk="KT덕아웃", team="KT", top=130, fig=dict(type="people", n=5, on=5, lab="1위 멤버 가운데 FA 앞둔 선수", at=1))
+SC['t5'] = BAND("KT · 1위 멤버", [V("여럿", "FA 앞둔 선수", 2, hi=True)], bgk="KT덕아웃", team="KT", top=130, fig=dict(type="people", n=5, on=5, at=1))
 SC['t6'] = TB("KT", "105억 1천만", "46억", "KTbg3", -1, -1)
 # ── 2위 NC ──
 SC['n1'] = TB("NC", "89억 4천만", "61억 6천만", "라일리", 1, 2)
@@ -406,7 +406,7 @@ def TO_GOLD(sc):
     if b:
         it = dict(k=b.get('k', ''), v=b['v'], at=b['at'], hi=True, size=min(b.get('size', 110), 110))
         m = _re.fullmatch(r'(\d+)년 (\d+)억', b['v'])
-        if m: it['years'] = dict(n=int(m.group(1)), per=_per(int(m.group(2)), int(m.group(1))))   # 11/5 23:14 계약 = 연도 칸
+        if m: it['years'] = dict(n=int(m.group(1)), per=_per(int(m.group(2)), int(m.group(1))), pv=int(int(m.group(2)) * 10 / int(m.group(1))) / 10)   # 11/5 23:14 계약 = 연도 칸
         st.append(it)
     for m in sc.get('minor') or []:
         it = dict(k=m['k'], v=m['v'], at=m['at'], size=64)
@@ -444,7 +444,7 @@ DESC = ("2027 FA 큰손 순위 — 10개 구단의 2027년 샐러리캡 여유(�
 TAGS = ["FA 큰손", "2027 FA", "샐러리캡", "경쟁균형세", "KBO 샐러리캡", "FA 시장", "10개 구단", "원태인", "구자욱", "최지훈", "홍창기", "박동원", "프로야구", "KBO"]
 SOURCE = "사실 출처 = 샐러리캡·구단별 합계: 데일리안·더게이트 2025-12-18, 상한 인상: 시사저널 2026-08-15·OSEN 2026-01-05 (fabig/research_cap.md · research_teams.md · review1/fact_round1.md)"
 EP = {"theme": "m3", "introChapter": "FA 큰손 기준 · 샐러리캡", "date": "2026-11-07", "gameDate": "2026-11-07", "series": "야구롱폼", "focusTeam": "", "speed": 1.0, "ttsApi": True, "ttsTempo": 1.2, "ttsTempoSlow": 1.15,
-      "rev": "1107-fabig-v1", "topic": "FA큰손순위", "endcardSec": 10, "gapScale": 1.3, "pauseMax": 0.5, "ttsCharsOk": 6000,
+      "rev": "1107-fabig-v1", "topic": "FA큰손순위", "endcardSec": 10, "gapScale": 1.15, "pauseMax": 0.35, "ttsCharsOk": 6000,
       "chapters": CH, "lines": lines, "scenes": scenes, "thumb": {}, "mascot": False, "source": SOURCE,
       "youtube": {"title": "2027 FA 큰손 순위 | 원태인·구자욱 데려갈 팀은? 10개 구단 샐러리캡 여유", "description": DESC, "tags": TAGS, "hashtags": ["#FA큰손", "#샐러리캡", "#2027FA", "#원태인", "#구자욱", "#프로야구", "#KBO", "#야구자판기"]}}
 
@@ -459,6 +459,15 @@ if __name__ == '__main__':
     for _k in RV_KEYS:
         if _k in NOW: EP['lines'][KEYS.index(_k)]['noMerge'] = True; continue   # 11/5 11:22 사용자 "김범수예요 / 현재 기아 불펜에서 — 텀이 너무 길어" → 근황 줄이 이어지면 0.7초 머묾 없이 보통 줄 사이 텀만
         EP['lines'][KEYS.index(_k)]['holdAfter'] = 0.7; EP['lines'][KEYS.index(_k)]['noMerge'] = True   # 11/5 검수: '8위는'처럼 짧은 첫 조각도 자막 따로   # 11/5 01:20 사용자 "순위표에서 몇 위는 누구예요 할 때 특히 빨라서 휙휙" — 이름 공개 뒤 순위표에 0.7초 머묾   # 순위표 보여 줄 쉼
+    # 11/6 10:57 사용자 "단락 안에서 호흡 쉼이 살짝 길다 · 상황과 대사마다 섞어서" → 단락 안은 조이고(줄 안 0.35·줄 사이 ×1.15),
+    #   자문자답(줄 중간 '?')은 0.5, 팀이 바뀌는 자리(순위 공개 앞)는 0.6, 챕터(단락)가 바뀌는 자리는 0.75 로 쉼을 남긴다
+    _rvi = {KEYS.index(k) for k in RV_KEYS}; _chs = {c['from'] for c in CH}
+    for i, l in enumerate(EP['lines'][:-1]):
+        sg = l['narr'].split(' / ')
+        if l.get('pauseMax') is None and any(x.rstrip().endswith('?') for x in sg[:-1]): l['pauseMax'] = 0.5
+        if l.get('holdAfter') is None and l.get('gapAfter') is None:
+            if (i + 1) in _chs: l['gapAfter'] = 0.75
+            elif (i + 1) in _rvi: l['gapAfter'] = 0.6
     # 11/4 16시 검수본(132줄)과 대사가 같은 줄은 그 음성을 새 번호로 옮긴다(voiceRemap, 재합성 0) — 바뀐 15줄만 새로 합성
     _vo = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'voice_old_1107.json')
     if os.path.exists(_vo):
