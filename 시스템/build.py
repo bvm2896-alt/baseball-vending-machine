@@ -897,6 +897,11 @@ def render(ep, ep_path):
         if r.returncode != 0 or not os.path.exists(W('silent.mp4')): raise SystemExit('프레임 렌더 실패(재시도):\n' + ((r.stderr or '') + '\n' + (r.stdout or ''))[-1500:])
         vd = dur_of(W('silent.mp4'))
         if vd < total * 0.95: raise SystemExit(f'영상 길이 부족: {vd:.1f}s / {total:.1f}s (재시도 후에도)')
+    # 11/8 사용자 "자료 영상(실제 경기 장면)이 들어가면 좋겠다": 영상 장면(bt_clip) 자리에 경기 영상을 소리 없이 덮는다(clip_overlay.py · 영상은 선수이미지\영상\)
+    if any(s_.get('type') == 'bt_clip' for s_ in ep.get('scenes', [])):
+        import clip_overlay
+        print('경기 영상 덮는 중 …', flush=True)
+        clip_overlay.apply(ep, EP, W, os.path.join(PLAYER_IMG_DIR, '영상'), fps, float(scale), cw, ch, fenv)
     # 6) 합성 → 결과물 폴더(영상/날짜/번호_팀.mp4)
     out, thumb_path, yt_path = out_paths(ep, ep_path)
     if DRAFT: out = out[:-4] + '_검수.mp4'

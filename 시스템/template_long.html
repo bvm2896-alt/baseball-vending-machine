@@ -166,7 +166,7 @@ function trig(x, y, rot, bars) {
     o += b ? `<rect x="${-W / 2}" y="${yy}" width="${W}" height="${H}"/>`
            : `<rect x="${-W / 2}" y="${yy}" width="${half}" height="${H}"/><rect x="${W / 2 - half}" y="${yy}" width="${half}" height="${H}"/>`;
   });
-  return `<g transform="translate(${x},${y}) rotate(${rot})" fill="#12161F">${o}</g>`;
+  return `<g transform="translate(${x},${y}) rotate(${rot})" fill="#000000">${o}</g>`;
 }
 const FLAG = {
   '한국': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
@@ -180,6 +180,10 @@ const FLAG = {
     <rect width="90" height="60" fill="#FE0000"/><rect width="45" height="30" fill="#000095"/>
     <g transform="translate(22.5,15)"><g fill="#fff">${Array.from({length:12},(_,i)=>`<rect x="-1.5" y="-11.5" width="3" height="11.5" transform="rotate(${i*30})"/>`).join('')}</g>
     <circle r="6.4" fill="#000095"/><circle r="5.4" fill="#fff"/></g></svg>`,
+  '호주': () => { const st = (cx, cy, r, n = 7) => { let d = ''; for (let i = 0; i < n * 2; i++) { const a = -Math.PI / 2 + i * Math.PI / n, rr = i % 2 ? r * .45 : r; d += (i ? 'L' : 'M') + (cx + rr * Math.cos(a)).toFixed(2) + ',' + (cy + rr * Math.sin(a)).toFixed(2); } return `<path d="${d}Z" fill="#fff"/>`; };   /* 11/8 APBC: 호주 국기(유니언잭 칸 + 연방의 별 + 남십자성) */
+    return `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><rect width="90" height="60" fill="#012169"/>
+    <g><clipPath id="auC"><rect width="45" height="30"/></clipPath><g clip-path="url(#auC)"><path d="M0,0 L45,30 M45,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L45,30 M45,0 L0,30" stroke="#C8102E" stroke-width="2"/><path d="M22.5,0 V30 M0,15 H45" stroke="#fff" stroke-width="10"/><path d="M22.5,0 V30 M0,15 H45" stroke="#C8102E" stroke-width="6"/></g></g>
+    ${st(22.5, 45, 6.5)}${st(67.5, 50, 3.2)}${st(56, 28, 3.2)}${st(67.5, 11, 3.2)}${st(77.5, 24, 3.2)}${st(71.5, 33, 1.8, 5)}</svg>`; },
   '일본': () => `<svg viewBox="0 0 90 60" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
     <rect width="90" height="60" fill="#fff"/><circle cx="45" cy="30" r="18" fill="#BC002D"/></svg>`,
 };
@@ -471,7 +475,7 @@ SCENE.matchup = (lt, s) => {
   const S_ = s._same;   /* 9/19: 앞 장면도 같은 두 팀 matchup 이면 국기·배지는 그대로 두고 점수와 문구만 바꾼다 */
   /* 10/27 사용자("가만히 있는 장면인데 이미지들이 없어졌다가 다시 생겨"): 이어지는 matchup 은 점수가 같으면 다시 튀어나오지 않는다 */ const tag = s.tag ? `<div class="badge" style="background:#12161F;margin-bottom:22px;${S_ && s._prev.tag === s.tag ? '' : rise(seg(lt, 0, .4), 16)}">${esc(s.tag)}</div>` : '';
   const sts = statRow(lt, s.stats, .35, s.showFrom);
-  B(LR(PH(Object.assign({}, s, { tag: s.imgTag || '' }), 560, seg(lt, 0, .5)), `${tag}<div class="row" style="gap:54px;${S_ ? '' : pop(seg(lt, .05, .5))}">${sideChip(s.left, 'M')}<span class="big" style="font-size:150px;${S_ && (s._prev.score || 'vs') !== (s.score || 'vs') ? pop(seg(lt, .02, .4)) : ''}">${esc(s.score || 'vs')}</span>${sideChip(s.right, 'M')}</div>
+  B(LR(PH(Object.assign({}, s, { tag: s.imgTag || '' }), 560, seg(lt, 0, .5)), `${tag}<div data-anchor class="row" style="gap:54px;${S_ ? '' : pop(seg(lt, .05, .5))}">${sideChip(s.left, 'M')}<span class="big" style="font-size:150px;display:inline-block;min-width:330px;text-align:center;${S_ && (s._prev.score || 'vs') !== (s.score || 'vs') ? pop(seg(lt, .02, .4)) : ''}">${esc(s.score || 'vs')}</span>${sideChip(s.right, 'M')}</div>
     ${s.text ? `<div class="big gold" style="margin-top:24px;font-size:${s.size || 92}px;${pop(seg(lt, S_ ? .1 : .3, .5))}">${br(s.text)}</div>` : ''}
     ${sts ? `<div style="margin-top:22px">${sts}</div>` : ''}`, true, s.vw));   /* 9/28: s.vw = 사진 칸 폭(얼굴 가운데 사진은 좁게) */
 };
@@ -1840,7 +1844,7 @@ function prepAll() {
       (s.type === 'matchup' && prev.left === s.left && prev.right === s.right && !photoSrc(s.img)) ||
       (s.type === 'toc') ||   /* 9/28: 목차 → 목차는 사라지지 않고 강조만 옮긴다 */
       (s.type === 'facegrid' && chainKey(s) && chainKey(prev) === chainKey(s) && (prev.title || '') === (s.title || '') && J((prev.items || []).map(x => [x.name, photoSrc(x.img)])) === J((s.items || []).map(x => [x.name, photoSrc(x.img)]))) ||   /* 10/18 사용자 "사진은 다 그대로인데 한번 사라졌다가 다시 촤르륵 나타나게 한거야? 텍스트만 바뀌게": 같은 묶음·제목·사람·사진이면 cont 표시가 빠져도 사진은 그대로, 글만 */
-      (s.cont && ['gantt', 'flow', 'cells', 'funnel', 'flip', 'rankline', 'password', 'scale', 'stack', 'contracts', 'people', 'tiles', 'statbars', 'steps', 'speech', 'bars', 'facegrid', 'scoreboard', 'teamgrid', 'npbdraft', 'yearline', 'diamond', 'count', 'race', 'tline', 'question', 'hero', 'board', 'water', 'probpair', 'probcalc', 'chalk', 'clip', 'scorecard', 'matchtbl', 'errs', 'rest', 'grid', 'mu_pgames', 'mu_hr2', 'mu_streak', 'mu_abs', 'mu_blocks', 'mu_closer', 'mu_pen2', 'ks_sched', 'ks_prob7', 'ks_outs', 'ks_rank', 'mu_donut', 'mu_fly', 'mu_choice', 'mu_inn', 'mu_pstat', 'vA_gap', 'vA_units', 'vA_errs', 'vA_battery', 'vA_innings', 'vA_days', 'vA_tiles', 'vA_games', 'vA_rank', 'vA_relay', 'vA_saves', 'vA_streak', 'vB_units', 'vB_meter', 'vB_only', 'vB_rings', 'vB_split', 'vB_three', 'vB_inn', 'vB_pen', 'vB_branch', 'vB_next', 'rf_band', 'rf_duo', 'rf_bars', 'rf_card', 'rf_gold', 'rf_capbar'].includes(s.type))));   /* 10/24 tline 추가 · 11/1 hero·board·water 등 새 장면도 이어받기 · 11/1 22시 사용자 "같은 글자 왜 없어졌다 나타나" → 새 그림 장면 전부 이어받기 */
+      (s.cont && ['apbc_teams', 'apbc_sched', 'apbc_innings', 'apbc_field', 'apbc_wild', 'apbc_hist', 'apbc_waffle', 'apbc_slots', 'apbc_move', 'apbc_rank', 'apbc_ages', 'apbc_rot', 'apbc_games', 'apbc_lineup', 'apbc_zone', 'apbc_path', 'gantt', 'flow', 'cells', 'funnel', 'flip', 'rankline', 'password', 'scale', 'stack', 'contracts', 'people', 'tiles', 'statbars', 'steps', 'speech', 'bars', 'facegrid', 'scoreboard', 'teamgrid', 'npbdraft', 'yearline', 'diamond', 'count', 'race', 'tline', 'question', 'hero', 'board', 'water', 'probpair', 'probcalc', 'chalk', 'clip', 'scorecard', 'matchtbl', 'errs', 'rest', 'grid', 'mu_pgames', 'mu_hr2', 'mu_streak', 'mu_abs', 'mu_blocks', 'mu_closer', 'mu_pen2', 'ks_sched', 'ks_prob7', 'ks_outs', 'ks_rank', 'mu_donut', 'mu_fly', 'mu_choice', 'mu_inn', 'mu_pstat', 'vA_gap', 'vA_units', 'vA_errs', 'vA_battery', 'vA_innings', 'vA_days', 'vA_tiles', 'vA_games', 'vA_rank', 'vA_relay', 'vA_saves', 'vA_streak', 'vB_units', 'vB_meter', 'vB_only', 'vB_rings', 'vB_split', 'vB_three', 'vB_inn', 'vB_pen', 'vB_branch', 'vB_next', 'rf_band', 'rf_duo', 'rf_bars', 'rf_card', 'rf_gold', 'rf_capbar', 'bt_stat', 'bt_full', 'bt_clip'].includes(s.type))));   /* 10/24 tline 추가 · 11/1 hero·board·water 등 새 장면도 이어받기 · 11/1 22시 사용자 "같은 글자 왜 없어졌다 나타나" → 새 그림 장면 전부 이어받기 */
     s._chain = !!(prev && ((chainKey(s) && chainKey(prev) === chainKey(s)) || s._same));
     s._cid = s._chain ? prev._cid : k; (CHAINS[s._cid] = CHAINS[s._cid] || []).push(k);
     /* 10/25 밤 사용자("틀의 크기를 너무 자주 바꿔.. 굳이 안 바꿔도 되잖아" / "그대로 틀이 유지되는 게 좋겠어"): 같은 사진(또는 같은 구단 로고)이 이어지는 장면들은
@@ -1865,7 +1869,7 @@ function ghostOf(k, t, start, pv) {   /* 11/4 기아FA 사용자 "장면이 전�
     G.style.cssText = 'position:absolute;left:56px;width:1808px;top:146px;height:714px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none';
     body.parentNode.insertBefore(G, body.nextSibling); }
   const p = pv || SC[k - 1], keep = NOW; if (!pv) ensureCx(k - 1); NOW = start - 0.02; const _bt = body.style.transform, _bo = body.style.opacity; body.style.transform = 'none'; (SCENE[p.type] || SCENE.big)(99, p); __faceFix(); __logoDedup(p); autoCenter(p); __titleFix(p); NOW = keep;
-  G.innerHTML = body.innerHTML; body.style.transform = _bt; G.style.opacity = String((1 - (x => x * x * (3 - 2 * x))(c01(dt / 0.15))).toFixed(3));   /* 11/4 부드럽게: 앞 장면 글은 0.15초 S자로 빠지고 새 글은 S자로 0.48초에 걸쳐 들어옴(겹쳐 읽히는 순간 최소) */   /* 10/25 검수(사람이 바뀔 때 두 이름이 겹쳐 '원태인시환'): 앞 장면은 0.16초에 빠지고 새 장면은 0.05초 뒤부터 → 글이 겹쳐 읽히는 순간 없앰 */
+  G.innerHTML = body.innerHTML; body.style.transform = _bt; G.style.opacity = String((1 - (x => x * x * (3 - 2 * x))(c01(dt / 0.1))).toFixed(3));   /* 11/4 부드럽게: 앞 장면 글은 0.15초 S자로 빠지고 새 글은 S자로 0.48초에 걸쳐 들어옴(겹쳐 읽히는 순간 최소) */   /* 10/25 검수(사람이 바뀔 때 두 이름이 겹쳐 '원태인시환'): 앞 장면은 0.16초에 빠지고 새 장면은 0.05초 뒤부터 → 글이 겹쳐 읽히는 순간 없앰 */
 }
 /* @@MVP1007 */
 /* ───── 10/7 롱폼⑧ 「2026 MVP 레이스」 새 인포그래픽 장면: mvp10 ─────
@@ -4563,9 +4567,11 @@ function MK_tr(s, t, start) {
       if (x.move) return `<div style="${up(q, 24)}"><div style="font-size:32px;font-weight:800;color:#F3E2BF">${esc(x.k)}</div><div style="display:flex;align-items:center;gap:18px;margin-top:6px"><div style="width:84px;height:84px;flex:none;display:flex">${LGo(x.move.from, 84)}</div><svg width="92" height="40" viewBox="0 0 92 40"><path d="M4 20 H72" stroke="${YEL}" stroke-width="8" stroke-linecap="round"/><path d="M60 6 L84 20 L60 34" fill="none" stroke="${YEL}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/></svg><span style="padding:6px 22px;border-radius:14px;background:${AC(x.move.to)};font-size:44px;font-weight:900;white-space:nowrap">${esc(x.move.to)}</span></div></div>`;   /* 같은 장면 같은 팀 로고는 한 번(카드 위 로고) → 도착 팀은 팀 색 글자 */
       if (x.quote) return `<div style="${up(q, 24)}"><div style="font-size:30px;font-weight:800;color:#F3E2BF;margin-bottom:10px">${esc(x.k)}</div><div style="position:relative;max-width:580px;padding:16px 26px;border-radius:26px;background:rgba(255,255,255,.13);border:2px solid rgba(255,230,160,.55);font-size:${FIT('“' + x.v + '”', 46, 520)}px;font-weight:900;line-height:1.2;white-space:nowrap">“${esc(x.v)}”<div style="position:absolute;left:34px;bottom:-16px;width:28px;height:28px;background:rgba(40,40,46,1);border-right:2px solid rgba(255,230,160,.55);border-bottom:2px solid rgba(255,230,160,.55);transform:rotate(45deg)"></div></div></div>`;
       /* 11/6 사용자 "1년 몫이 팀 샐러리캡에서 얼만큼 차지하는지 그래픽으로 · 한 칸=… 같은 설명 ✗" → 상한 막대 안에 1년 몫만 채움 */
-      const yrs = x.years ? (() => { const CAPV = 151.17, r = Math.min(1, x.years.pv / CAPV), pc = Math.round(r * 100), f = ss((q - .25) * 1.6), R = 74, C = 2 * Math.PI * R;
-        /* 11/6 11:10 사용자 "좀 더 이해 잘되게" → 도넛: 샐러리캡 전체 = 원, 1년 몫 = 노란 조각, 가운데 % */
-        return `<div style="display:flex;align-items:center;gap:26px;margin-top:16px;opacity:${Math.min(1, f * 1.5).toFixed(3)}"><svg width="190" height="190" viewBox="0 0 190 190" style="flex:none"><circle cx="95" cy="95" r="${R}" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="34"/><circle cx="95" cy="95" r="${R}" fill="none" stroke="${YEL}" stroke-width="34" stroke-dasharray="${(C * r * f).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 95 95)"/><text x="95" y="108" text-anchor="middle" font-size="40" font-weight="900" fill="#fff">${pc}%</text></svg><div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:50px;font-weight:900;color:${YEL};white-space:nowrap">1년 ${esc(x.years.per)}</div><div style="font-size:34px;font-weight:800;color:#F3E2BF;white-space:nowrap">샐러리캡 151억 가운데</div></div></div>`; })() : '';
+      const yrs = x.years ? (() => { const CAPV = 151.17, r = Math.min(1, x.years.pv / CAPV), pc = Math.floor(r * 100), yq_ = x.years.at != null ? AT(s, x.years.at, .45, q) : q, f = ss((yq_ - .25) * 1.6),   /* 11/7 1년 몫 원은 그 금액을 말하는 호흡에(years.at) */ R = 84, C = 2 * Math.PI * R, tm = esc(s.team || ''), nm = esc(s.name || '');
+        /* 11/7 03:08 사용자 "샐러리캡 얼마 가운데 ✗ → '삼성 샐러리캡 151억' · 삼성 돈 중에 최형우가 9%라는 느낌이 한 번에" → 색 범례로 원 전체=팀 샐러리캡, 노란 조각=그 선수 1년 몫 */
+        const chip = (c, t, fs, col) => `<div style="display:flex;align-items:center;gap:14px;white-space:nowrap"><span style="width:30px;height:30px;border-radius:7px;background:${c};flex:none"></span><span style="font-size:${fs}px;font-weight:900;color:${col}">${t}</span></div>`;
+        return `<div style="display:flex;align-items:center;gap:28px;margin-top:16px;opacity:${Math.min(1, f * 1.5).toFixed(3)}"><svg width="214" height="214" viewBox="0 0 214 214" style="flex:none"><circle cx="107" cy="107" r="${R}" fill="none" stroke="#4A5160" stroke-width="40"/><circle cx="107" cy="107" r="${R}" fill="none" stroke="${YEL}" stroke-width="40" stroke-dasharray="${(C * r * f).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 107 107)"/><text x="107" y="122" text-anchor="middle" font-size="46" font-weight="900" fill="#fff" opacity="${(x.years.pcAt != null ? AT(s, x.years.pcAt, .45, 1) : 1).toFixed(3)}">${pc}%</text></svg><div style="display:flex;flex-direction:column;gap:18px">${chip(YEL, `${nm} 1년 ${esc(x.years.per)}`, FIT(`${nm} 1년 ${x.years.per}`, 44, 300), YEL)}${chip('#4A5160', `${tm} 샐러리캡 151억`, FIT(`${tm} 샐러리캡 151억`, 36, 300), '#F3E2BF')}</div></div>`; })() : '';
+      if (!x.v && yrs) return `<div style="${up(q, 24)}">${yrs}</div>`;   /* 11/7 19:09 "2년 22억인데 어떻게 1년 8억?" — 보장액·옵션 칸 다음에 원(계산 순서대로) */
       return `<div style="${up(q, 24)}"><div style="font-size:32px;font-weight:800;color:#F3E2BF">${esc(x.k)}</div><div class="num" style="font-size:${FIT(x.v, x.size || 100, 590 - (x.hi ? 32 : 0))}px;font-weight:900;line-height:1.05;letter-spacing:-2px;white-space:nowrap">${v}</div>${yrs}</div>`; }).join('') + `</div>`;   /* 11/5 FA큰손: 긴 값(인용)은 오른쪽 칸 폭 590 에 맞춰 줄임 */
     ROOT(h);
   };
@@ -4581,15 +4587,91 @@ function MK_tr(s, t, start) {
       h += `<div style="position:absolute;left:${X0 - 40}px;width:${W + 80}px;top:${y}px;border-top:4px dashed rgba(255,255,255,.5);${op(rq)}"></div><div style="position:absolute;${s.ref.side === 'left' ? `right:${1808 - X0 + 50}px` : `left:${X0 + W + 60}px`};top:${y - 22}px;font-size:30px;font-weight:800;color:${MUTE2};white-space:nowrap;${op(rq)}">${esc(s.ref.lab || (s.ref.v + '%'))}</div>`; }   /* 11/4 기아FA: 칸이 넓으면 기준선 이름을 왼쪽에(side:'left') */   /* 11/3: 기준선 이름은 오른쪽(긴 이름이 막대에 겹치던 것) */
     its.forEach((it, i) => {
       const q = AT(s, it.at, .6, seg(lt, (s.st0 != null ? s.st0 : .2) + i * (s.stag != null ? s.stag : .1), .6))   /* 11/4 기아FA 사용자 "17위에서 1위까지 좀 빨리": 막대 시작(st0)·간격(stag) 초 */, vq = it.valAt != null ? AT(s, it.valAt, .4, 0) : (s.valAt != null ? AT(s, s.valAt, .4, 0) : q);
-      const hA_ = it.hiAt != null ? it.hiAt : s.hiAt, hp_ = hA_ != null && it.hi ? AT(s, hA_, .5, 1) : 1,   /* 11/5 FA큰손: 막대마다 강조 호흡(it.hiAt) — 이미 노란 막대는 -1 로 그대로 */ hot = (it.hi != null ? it.hi : (s.ref && it.v >= s.ref.v)) && hp_ >= .5, col = hot ? YEL : 'rgba(255,255,255,.55)',   /* 11/5 검수: hiAt = 강조 막대가 그 호흡에 노랗게 */ bh = q <= 0.001 ? 0 : Math.max(4, it.from != null ? H * (it.from + (it.v - it.from) * eo(q)) / MX : H * Math.max(0, it.v) / MX * eo(q)), x = X0 + i * (BW + GAP);   /* 11/3 KT편: from → v 로 자라거나 줄어듦 */
+      const hA_ = it.hiAt != null ? it.hiAt : s.hiAt, hp_ = hA_ != null && it.hi ? AT(s, hA_, .5, 1) : 1,   /* 11/5 FA큰손: 막대마다 강조 호흡(it.hiAt) — 이미 노란 막대는 -1 로 그대로 */ hot = (it.hi != null ? it.hi : (s.ref && it.v >= s.ref.v)) && hp_ >= .5, HC_ = it.col || YEL, col = hot ? HC_ : 'rgba(255,255,255,.55)',   /* 11/7 두 무리 색(it.col) */   /* 11/5 검수: hiAt = 강조 막대가 그 호흡에 노랗게 */ bh = q <= 0.001 ? 0 : Math.max(4, it.from != null ? H * (it.from + (it.v - it.from) * eo(q)) / MX : H * Math.max(0, it.v) / MX * eo(q)), x = X0 + i * (BW + GAP);   /* 11/3 KT편: from → v 로 자라거나 줄어듦 */
       const val = it.txt != null ? it.txt : (it.dec != null ? Number(it.v).toFixed(it.dec) : String(it.v)) + (it.unit || '');   /* 11/4: 음수 등 표시 글 따로(txt) */
-      h += `<div style="position:absolute;left:${x}px;top:${YB - bh}px;width:${BW}px;height:${bh}px;border-radius:16px 16px 6px 6px;background:${hp_ < 1 && it.hi ? 'rgba(255,255,255,.55)' : col};${hot && hp_ >= 1 ? `box-shadow:0 0 34px rgba(255,212,59,.55);` : ''}"></div>${hp_ < 1 && hp_ > 0 && it.hi ? `<div style="position:absolute;left:${x}px;top:${YB - bh}px;width:${BW}px;height:${bh}px;border-radius:16px 16px 6px 6px;background:${YEL};opacity:${hp_.toFixed(3)}"></div>` : ''}
+      h += `<div style="position:absolute;left:${x}px;top:${YB - bh}px;width:${BW}px;height:${bh}px;border-radius:16px 16px 6px 6px;background:${hp_ < 1 && it.hi ? 'rgba(255,255,255,.55)' : col};${hot && hp_ >= 1 ? `box-shadow:0 0 34px rgba(255,212,59,.55);` : ''}"></div>${hp_ < 1 && hp_ > 0 && it.hi ? `<div style="position:absolute;left:${x}px;top:${YB - bh}px;width:${BW}px;height:${bh}px;border-radius:16px 16px 6px 6px;background:${HC_};opacity:${hp_.toFixed(3)}"></div>` : ''}
         <div class="num" style="position:absolute;left:${x - 30}px;width:${BW + 60}px;top:${YB - H * Math.max(0, it.v) / MX - 56}px;text-align:center;white-space:nowrap;font-size:${s.vfs || (n >= 7 ? 36 : BW < 130 ? 40 : 48)}px;font-weight:900;color:${hot ? '#FFFFFF' : MUTE2};${op(vq)}">${esc(val)}</div>
         <div style="position:absolute;left:${x - 30}px;width:${BW + 60}px;top:${YB + 12}px;text-align:center;font-size:${s.lfs || (BW < 130 ? 32 : 38)}px;font-weight:900;white-space:nowrap;${op(q)}">${esc(it.label || '')}</div>
         ${it.place ? `<div style="position:absolute;left:${x}px;width:${BW}px;top:${YB + 58}px;display:flex;justify-content:center;${op(q)}"><span style="padding:2px 14px;border-radius:10px;background:${AC(it.venue || '')};font-size:24px;font-weight:900">${esc(it.place)}</span></div>` : ''}`;
     });
+    if (s.legend) { const lq = AT(s, s.legendAt, .45, 1);   /* 11/7 두 무리 범례 */
+      h += `<div style="position:absolute;left:110px;top:120px;display:flex;flex-direction:column;gap:12px;${op(lq)}">` + s.legend.map(L => `<div style="display:flex;align-items:center;gap:14px;${L.at != null ? op(AT(s, L.at, .45, 1)) : ''}"><span style="width:34px;height:34px;border-radius:8px;background:${L.c}"></span><span style="font-size:38px;font-weight:900;color:${L.c};white-space:nowrap">${esc(L.lab)}</span></div>`).join('') + `</div>`; }
     (Array.isArray(s.brk) ? s.brk : (s.brk ? [s.brk] : [])).forEach(BK => { const bq = AT(s, BK.at, .45, 0), xa = X0 + BK.a * (BW + GAP), xb = X0 + BK.b * (BW + GAP) + BW, top = Math.min(...its.slice(BK.a, BK.b + 1).map(it => YB - H * it.v / MX)) - (s.brkOff || 120);   /* 11/4: 괄호 여러 개(배열) */   /* 11/3: 막대 묶음 괄호 */
       h += `<div style="position:absolute;left:${xa - 10}px;width:${xb - xa + 20}px;top:${top}px;${op(bq)}"><div style="text-align:center;margin-bottom:8px"><span style="padding:4px 20px;border-radius:14px;background:${YEL};color:${INK};font-size:34px;font-weight:900;white-space:nowrap">${esc(BK.lab)}</span></div><div style="height:22px;border:5px solid ${YEL};border-bottom:0;border-radius:14px 14px 0 0"></div></div>`; });
+    ROOT(h);
+  };
+
+  /* ── 11/7 23:30 사용자 "템플릿이 이전 영상들과 같이 가니까 금방 질린다 · 다른 유튜브도 참고해서" (참고: 베투야 '후라도 MVP' 편) ──
+     bt_stat: 왼쪽 흰 테두리 사진 액자(천천히 다가가는 움직임) + 뒤에 아주 큰 흐린 글(연도) + 오른쪽 '머리줄 + 흰 기록 칸'(값 큼, 강조는 빨강)
+       {img, focus, name, team, big(흐린 큰 글), head, headAt, imgAt, tiles:[{k, v, at, hi}], tag, tagAt}
+     bt_full: 사진 한 장을 크게(같은 사진을 흐리게 바탕에 깔고) + 왼쪽 위 빨간 이름표 + 아래 큰 한 줄 — '자료 화면' 느낌
+       {img, focus, tag, tagAt, cap, capAt, imgAt} ── */
+  const KB = (lt, keep) => keep ? 1.04 : 1 + .04 * c01(lt / 7);   /* 천천히 다가가기(7초에 4%) — 이어지는 장면은 멈춘 크기 그대로 */
+  const RTAG = (t, q) => t ? `<div style="position:absolute;left:0;top:0;padding:10px 26px;border-radius:10px;background:#D7263D;color:#fff;font-size:38px;font-weight:900;letter-spacing:-1px;white-space:nowrap;box-shadow:0 8px 22px rgba(0,0,0,.35);${up(q, 16)}">${esc(t)}</div>` : '';
+  /* 11/7 23:45 사용자 "베투야 스타일은 별로 — 영상이 들어간 것과 사진이 움직이는 게 좋은 것": bt_stat = 크게 띄운 경기 사진이 천천히 움직이고(같은 사진이 이어지면 끊김 없이 계속),
+     기록은 사진 아래쪽 반투명 띠에 중계 자막처럼(값 크게, 강조는 노랑). 바탕은 같은 사진을 흐리게 */
+  const KBT = s => { let j = s._k; while (j > 0 && SC[j - 1] && /^bt_/.test(SC[j - 1].type) && SC[j - 1].img === s.img) j--; const t0 = j > 0 ? ((EP.bounds || [])[j - 1] || 0) : 0; return c01((NOW - t0) / 12); };
+  const KB0 = s => { let j = s._k; while (j > 0 && SC[j - 1] && /^bt_/.test(SC[j - 1].type) && SC[j - 1].img === s.img) j--; return j; };
+  const KBS = (s, x) => `transform:scale(${(1 + .07 * x).toFixed(4)}) translateX(${((s.kbx != null ? s.kbx : (KB0(s) % 2 ? -1 : 1)) * 1.6 * x).toFixed(3)}%);transform-origin:${s.kbo || '50% 32%'}`;
+  SCENE.bt_stat = (lt, s) => {
+    const P = s._prev && s._prev.type === 'bt_stat' ? s._prev : null, same = !!(P && P.img === s.img), z = photoSize(s.img), r_ = z ? z[0] / z[1] : 1.5;
+    let FH = Math.min(660, z ? z[1] * 1.25 : 660), FW = Math.round(FH * r_); if (FW > 1500) { FW = 1500; FH = Math.round(FW / r_); } FH = Math.round(FH);
+    const SIDE = FW < 1000, FX = SIDE ? 170 : Math.round((1808 - FW) / 2), FY = Math.max(0, Math.round((690 - FH) / 2));   /* 세로·좁은 사진은 기록을 오른쪽에 */
+    const iq = same ? 1 : AT(s, s.imgAt, .5, seg(lt, 0, .5));
+    let h = `<div style="position:absolute;left:${FX}px;top:${FY}px;width:${FW}px;height:${FH}px;border-radius:20px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.55);${op(iq)}">${pic(s.img, s.focus, KBS(s, KBT(s)))}
+      ${SIDE ? '' : `<div style="position:absolute;left:0;right:0;bottom:0;height:58%;background:linear-gradient(180deg,rgba(6,10,22,0) 0%,rgba(6,10,22,.82) 62%,rgba(6,10,22,.92) 100%)"></div>`}</div>`;
+    const nq = same && P.name === s.name ? 1 : AT(s, s.imgAt, .45, seg(lt, .1, .45));
+    if (s.name) h += `<div style="position:absolute;left:${FX + 34}px;top:${FY + 30}px;display:flex;align-items:center;gap:12px;padding:8px 24px 8px 14px;border-radius:12px;background:rgba(10,14,26,.78);border:2px solid rgba(255,255,255,.18);font-size:40px;font-weight:900;letter-spacing:-1px;${up(nq, 14)}">${s.team ? LGo(s.team, 50) : ''}${esc(s.name)}</div>`;
+    if (s.tag) h += `<div style="position:absolute;left:${FX + 34}px;top:${FY + 108}px">${RTAG(s.tag, P && P.tag === s.tag ? 1 : AT(s, s.tagAt, .45, seg(lt, .1, .45)))}</div>`;
+    const ts = s.tiles || [], n = ts.length, IW = Math.floor((FW - 80) / Math.max(1, n));
+    const hq = P && P.head === s.head ? 1 : AT(s, s.headAt, .45, seg(lt, .15, .45));
+    if (SIDE) { const RX = FX + FW + 80, RW = 1808 - RX - 60, RH = Math.min(150, Math.floor((FH - 70) / Math.max(1, n))), Y0 = FY + Math.max(0, Math.round((FH - 70 - n * RH) / 2));
+      if (s.head) h += `<div style="position:absolute;left:${RX}px;top:${Y0}px;font-size:40px;font-weight:900;color:#C9D0DE;white-space:nowrap;${op(hq)}">${esc(s.head)}</div>`;
+      ts.forEach((t, i) => { const pt = P && (P.tiles || [])[i], kp = !!(pt && pt.k === t.k && pt.v === t.v && !(pt.at >= 50)), q = kp ? 1 : AT(s, t.at, .45, seg(lt, .3 + i * .2, .45)), y = Y0 + 70 + i * RH;
+        h += `<div style="position:absolute;left:${RX}px;top:${y}px;width:${RW}px;border-left:6px solid ${t.hi ? YEL : 'rgba(255,255,255,.45)'};padding-left:26px;${up(q, 18)}"><div style="font-size:30px;font-weight:800;color:rgba(255,255,255,.72);white-space:nowrap">${esc(t.k || '')}</div><div class="num" style="font-size:${FIT(t.v, Math.min(84, RH - 46), RW - 40)}px;font-weight:900;letter-spacing:-2px;line-height:1.05;color:${t.hi ? YEL : '#FFFFFF'};white-space:nowrap">${esc(t.v)}</div></div>`; });
+      ROOT(h); return; }
+    if (s.head) h += `<div style="position:absolute;left:${FX + 40}px;top:${FY + FH - 210}px;font-size:34px;font-weight:800;color:#C9D0DE;letter-spacing:-.5px;white-space:nowrap;${op(hq)}">${esc(s.head)}</div>`;
+    ts.forEach((t, i) => {
+      const pt = P && (P.tiles || [])[i], kp = !!(pt && pt.k === t.k && pt.v === t.v && !(pt.at >= 50)), q = kp ? 1 : AT(s, t.at, .45, seg(lt, .3 + i * .2, .45)), x = FX + 40 + i * IW;
+      h += `<div style="position:absolute;left:${x}px;top:${FY + FH - 160}px;width:${IW - 20}px;${up(q, 18)}">${i ? `<div style="position:absolute;left:-12px;top:10px;width:3px;height:104px;background:rgba(255,255,255,.28)"></div>` : ''}
+        <div style="font-size:28px;font-weight:800;color:rgba(255,255,255,.72);white-space:nowrap">${esc(t.k || '')}</div>
+        <div class="num" style="font-size:${FIT(t.v, t.size || 74, IW - 34)}px;font-weight:900;letter-spacing:-2px;line-height:1.08;color:${t.hi ? YEL : '#FFFFFF'};white-space:nowrap;text-shadow:0 4px 14px rgba(0,0,0,.6)">${esc(t.v)}</div></div>`;
+    });
+    ROOT(h);
+  };
+  /* 11/7 23:58 사용자 "자료 영상이 들어가면 좋겠다 · 그 장면을 실제 영상으로": bt_clip = 경기 영상 자리(id=clipbox, 렌더 뒤 ffmpeg 가 그 자리에 소리 없이 영상을 덮는다).
+     영상 위에는 아무것도 안 올린다 → 빨간 이름표는 액자 위, 기록 칸은 액자 아래(가로 영상) 또는 오른쪽(세로·정사각 영상).
+     {clip, poster(영상 첫 화면 사진), cw, ch(영상 크기), tag, head, tiles:[{k,v,at,hi}]} — 같은 clip 이 이어지면 액자 그대로(영상도 끊김 없이) */
+  SCENE.bt_clip = (lt, s) => {
+    const P = s._prev && s._prev.type === 'bt_clip' ? s._prev : null, same = !!(P && P.clip === s.clip), r_ = (s.cw || 16) / (s.ch || 9);
+    const SIDE = r_ < 1.6; let FW, FH, FX, FY;
+    if (SIDE) { FH = 600; FW = Math.round(FH * r_); FX = 150; FY = 70; }
+    else { FH = 500; FW = Math.round(FH * r_); if (FW > 1500) { FW = 1500; FH = Math.round(FW / r_); } FX = Math.round((1808 - FW) / 2); FY = 78; }
+    const iq = same ? 1 : AT(s, s.imgAt, .4, seg(lt, 0, .4));
+    let h = `<div id="clipbox" data-clip="${esc(s.clip)}" style="position:absolute;left:${FX}px;top:${FY}px;width:${FW}px;height:${FH}px;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 30px 70px rgba(0,0,0,.6);${op(iq)}">${s.poster ? pic(s.poster, null, '') : ''}</div>`;
+    const tq = P && P.tag === s.tag ? 1 : AT(s, s.tagAt, .45, seg(lt, .1, .45));
+    if (s.tag) h += `<div style="position:absolute;left:${FX}px;top:${FY - 74}px;display:flex;align-items:center;gap:14px">${RTAG(s.tag, tq).replace('position:absolute;left:0;top:0;', 'position:relative;')}<span style="font-size:26px;font-weight:800;color:rgba(255,255,255,.6);${op(tq)}">경기 영상</span></div>`;
+    const ts = s.tiles || [], n = ts.length;
+    const hq = P && P.head === s.head ? 1 : AT(s, s.headAt, .45, seg(lt, .15, .45));
+    const keep = (t, i) => { const pt = P && (P.tiles || [])[i]; return !!(pt && pt.k === t.k && pt.v === t.v && !(pt.at >= 50)); };
+    if (SIDE) { const RX = FX + FW + 80, RW = 1808 - RX - 40, RH = Math.min(150, Math.floor((FH - 70) / Math.max(1, n))), Y0 = FY + Math.max(0, Math.round((FH - 70 - n * RH) / 2));
+      if (s.head) h += `<div style="position:absolute;left:${RX}px;top:${Y0}px;font-size:40px;font-weight:900;color:#C9D0DE;white-space:nowrap;${op(hq)}">${esc(s.head)}</div>`;
+      ts.forEach((t, i) => { const q = keep(t, i) ? 1 : AT(s, t.at, .45, seg(lt, .3 + i * .2, .45)), y = Y0 + 70 + i * RH;
+        h += `<div style="position:absolute;left:${RX}px;top:${y}px;width:${RW}px;border-left:6px solid ${t.hi ? YEL : 'rgba(255,255,255,.45)'};padding-left:26px;${up(q, 18)}"><div style="font-size:30px;font-weight:800;color:rgba(255,255,255,.72);white-space:nowrap">${esc(t.k || '')}</div><div class="num" style="font-size:${FIT(t.v, Math.min(84, RH - 46), RW - 40)}px;font-weight:900;letter-spacing:-2px;line-height:1.05;color:${t.hi ? YEL : '#FFFFFF'};white-space:nowrap">${esc(t.v)}</div></div>`; });
+      ROOT(h); return; }
+    const IW = Math.floor(FW / Math.max(1, n)), Y = FY + FH + 26;
+    ts.forEach((t, i) => { const q = keep(t, i) ? 1 : AT(s, t.at, .45, seg(lt, .3 + i * .2, .45)), x = FX + i * IW;
+      h += `<div style="position:absolute;left:${x}px;top:${Y}px;width:${IW - 24}px;border-left:6px solid ${t.hi ? YEL : 'rgba(255,255,255,.45)'};padding-left:22px;${up(q, 18)}"><div style="font-size:26px;font-weight:800;color:rgba(255,255,255,.72);white-space:nowrap">${esc(t.k || '')}</div><div class="num" style="font-size:${FIT(t.v, 64, IW - 60)}px;font-weight:900;letter-spacing:-2px;line-height:1.05;color:${t.hi ? YEL : '#FFFFFF'};white-space:nowrap">${esc(t.v)}</div></div>`; });
+    ROOT(h);
+  };
+  SCENE.bt_full = (lt, s) => {
+    const P = s._prev && s._prev.type === 'bt_full' ? s._prev : null, same = !!(P && P.img === s.img), z = photoSize(s.img);
+    const r_ = z ? z[0] / z[1] : 1.5; let FH = Math.min(640, z ? z[1] * 1.25 : 640), FW = Math.round(FH * r_); if (FW > 1500) { FW = 1500; FH = Math.round(FW / r_); } FH = Math.round(FH); const FX = Math.round((1808 - FW) / 2), FY = Math.max(20, Math.round((680 - FH) / 2));
+    const iq = same ? 1 : AT(s, s.imgAt, .5, seg(lt, 0, .5));
+    let h = `<div style="position:absolute;left:${FX}px;top:${FY}px;width:${FW}px;height:${FH}px;border-radius:22px;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.55);${op(iq)}">${pic(s.img, s.focus, KBS(s, KBT(s)))}
+      <div style="position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.78))"></div></div>`;
+    h += `<div style="position:absolute;left:${FX + 30}px;top:${FY + 28}px">${RTAG(s.tag, P && P.tag === s.tag ? 1 : AT(s, s.tagAt, .45, seg(lt, .15, .45)))}</div>`;
+    if (s.cap) h += `<div style="position:absolute;left:${FX + 40}px;right:${1808 - FX - FW + 40}px;top:${FY + FH - 130}px;font-size:${FIT(s.cap, s.capSize || 70, FW - 80)}px;font-weight:900;letter-spacing:-2px;white-space:nowrap;text-shadow:0 4px 18px rgba(0,0,0,.7);${up(P && P.cap === s.cap ? 1 : AT(s, s.capAt, .45, seg(lt, .3, .45)), 20)}">${esc(s.cap)}</div>`;
     ROOT(h);
   };
 
@@ -4622,12 +4704,12 @@ function MK_tr(s, t, start) {
           g += `<svg viewBox="0 0 100 130" style="position:absolute;left:${x}px;top:${FY}px;width:${w}px;height:125px"><circle cx="50" cy="32" r="24" fill="${on ? YEL : 'none'}" stroke="${on ? YEL : 'rgba(255,255,255,.55)'}" stroke-width="5" ${on ? '' : 'stroke-dasharray="9 7"'}/><path d="M8 128 C8 86 28 66 50 66 C72 66 92 86 92 128 Z" fill="${on ? YEL : 'none'}" stroke="${on ? YEL : 'rgba(255,255,255,.55)'}" stroke-width="5" ${on ? '' : 'stroke-dasharray="9 7"'}/></svg>`; }
         if (F.lab) g += `<div style="position:absolute;left:0;right:0;top:${FY + 138}px;text-align:center;font-size:30px;font-weight:800;color:${MUTE2}">${esc(F.lab)}</div>`; }
       if (F.type === 'field') { const cx = 904;
-        g += `<svg viewBox="0 0 400 230" style="position:absolute;left:${cx - 200}px;top:${FY - 10}px;width:400px;height:230px"><path d="M200 220 L20 60 A260 260 0 0 1 380 60 Z" fill="rgba(255,212,59,${(.85 * eo(fq)).toFixed(2)})" stroke="${YEL}" stroke-width="4"/><path d="M200 220 L120 140 L200 70 L280 140 Z" fill="rgba(60,140,80,.9)" stroke="#fff" stroke-width="4"/><text x="200" y="40" text-anchor="middle" font-size="30" font-weight="900" fill="${INK}">외야</text></svg>`;
+        g += `<svg viewBox="0 -24 400 254" style="position:absolute;left:${cx - 200}px;top:${FY - 34}px;width:400px;height:254px;overflow:visible"><path d="M200 220 L20 60 A260 260 0 0 1 380 60 Z" fill="rgba(255,212,59,${(.85 * eo(fq)).toFixed(2)})" stroke="${YEL}" stroke-width="4"/><path d="M200 220 L120 140 L200 70 L280 140 Z" fill="rgba(60,140,80,.9)" stroke="#fff" stroke-width="4"/><text x="200" y="40" text-anchor="middle" font-size="30" font-weight="900" fill="${INK}">외야</text></svg>`;
         if (F.lab) g += `<div style="position:absolute;left:0;right:0;top:${FY + 226}px;text-align:center;font-size:30px;font-weight:800;color:${MUTE2}">${esc(F.lab)}</div>`; }
-      if (F.type === 'steps') { const its = F.items || [], n = its.length, w = 300, gp = 90, W0 = n * w + (n - 1) * gp, x0 = Math.round((1808 - W0) / 2);
-        its.forEach((it, k) => { const x = x0 + k * (w + gp);
-          g += `<div style="position:absolute;left:${x}px;top:${FY}px;width:${w}px;height:120px;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;${it.hi ? `background:${YEL};color:${INK}` : 'background:rgba(255,255,255,.12);color:#fff'}"><div style="font-size:40px;font-weight:900">${esc(it.lab)}</div>${it.sub ? `<div style="font-size:26px;font-weight:800;opacity:.85">${esc(it.sub)}</div>` : ''}</div>`;
-          if (k < n - 1) g += `<svg width="70" height="40" viewBox="0 0 70 40" style="position:absolute;left:${x + w + 10}px;top:${FY + 40}px"><path d="M4 20 H50 M38 6 L60 20 L38 34" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`; }); }
+      if (F.type === 'steps') { const its = F.items || [], n = its.length, ws = its.map(it => it.w || 300), gp = 90, W0 = ws.reduce((a, b) => a + b, 0) + (n - 1) * gp, x0 = Math.round((1808 - W0) / 2);   /* 11/7 20:12: 칸마다 폭(it.w) */
+        its.forEach((it, k) => { const w = ws[k], x = x0 + ws.slice(0, k).reduce((a, b) => a + b, 0) + k * gp, iq = it.at != null ? AT(s, it.at, .45, 1) : 1;   /* 11/7 검수: 칸마다 그 말을 하는 호흡에(it.at) */
+          g += `<div style="position:absolute;left:${x}px;top:${FY}px;width:${w}px;height:120px;opacity:${iq.toFixed(3)};border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;${it.hi ? `background:${YEL};color:${INK}` : 'background:rgba(255,255,255,.12);color:#fff'}"><div style="font-size:${FIT(it.lab, 40, w - 30)}px;font-weight:900;white-space:nowrap">${esc(it.lab)}</div>${it.sub ? `<div style="font-size:26px;font-weight:800;opacity:.85">${esc(it.sub)}</div>` : ''}</div>`;
+          if (k < n - 1) g += `<svg width="70" height="40" viewBox="0 0 70 40" style="position:absolute;left:${x + w + 10}px;top:${FY + 40}px;opacity:${(its[k + 1].at != null ? AT(s, its[k + 1].at, .45, 1) : 1).toFixed(3)}">${its[k + 1].join ? ({ '+': '<path d="M35 4 V36 M17 20 H53" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>', '÷': '<path d="M17 20 H53" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/><circle cx="35" cy="7" r="4.5" fill="#fff"/><circle cx="35" cy="33" r="4.5" fill="#fff"/>', '=': '<path d="M17 12 H53 M17 28 H53" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>', '−': '<path d="M17 20 H53" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>', 'none': '' })[its[k + 1].join] || '' : '<path d="M4 20 H50 M38 6 L60 20 L38 34" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'}</svg>`; }); }   /* 11/7 19:09 사용자 "+방출에 +는 카드 안이 아니라 왼쪽 화살표 대신" → it.join='+' 면 화살표 자리에 + */
       h += `<div style="position:absolute;inset:0;${op(fq)}">${g}</div>`; }
     ROOT(h);
   };
@@ -4662,11 +4744,11 @@ function MK_tr(s, t, start) {
     h += `<div style="position:absolute;left:${X0}px;top:${Y}px;width:${BW}px;height:${BH}px;border-radius:16px;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.14)"></div>`;
     /* 합계 막대 */
     h += `<div style="position:absolute;left:${X0}px;top:${Y}px;width:${(BW * tot / MX * eo(tq)).toFixed(1)}px;height:${BH}px;border-radius:16px 0 0 16px;background:linear-gradient(180deg,#8E99B2,#5E6981)"></div>`;
-    if (s.totalLab || s.totalTxt) h += `<div style="position:absolute;left:${X0 + 28}px;top:${Y + 14}px;${op(tq)}"><div style="font-size:36px;font-weight:800;color:#E6EAF2">${esc(s.totalLab || '')}</div><div class="num" style="font-size:66px;font-weight:900;line-height:1.05;white-space:nowrap">${esc(s.totalTxt || '')}</div></div>`;
+    if (s.totalLab || s.totalTxt) h += `<div style="position:absolute;left:${X0 + 28}px;top:${Y + 14}px;${op(tq)}"><div style="font-size:36px;font-weight:800;color:#E6EAF2">${esc(s.totalLab || '')}</div><div class="num" style="font-size:66px;font-weight:900;line-height:1.05;white-space:nowrap;${s.totalTxtAt != null ? op(AT(s, s.totalTxtAt, .45, 1)) : ''}">${esc(s.totalTxt || '')}</div></div>`;   /* 11/7 검수본#2: '이미 쓸 돈은' 호흡에 막대·라벨, 숫자는 말할 때 */
     /* 남은 돈 칸 */
     if (cap > tot && (s.leftTxt || s.leftLab)) { const x1 = X(tot), x2 = X(cap);
       h += `<div style="position:absolute;left:${x1}px;top:${Y}px;width:${((x2 - x1) * eo(lq)).toFixed(1)}px;height:${BH}px;background:${YEL};box-shadow:0 0 30px rgba(255,212,59,.45)"></div>
-        <div style="position:absolute;left:${(x1 + x2) / 2 - 300}px;width:600px;top:${Y + BH + 18}px;text-align:center;${up(lq, 16)}"><div class="num" style="font-size:80px;font-weight:900;color:${YEL};line-height:1;white-space:nowrap">${esc(s.leftTxt || '')}</div><div style="font-size:38px;font-weight:800;color:${MUTE2};margin-top:8px;white-space:nowrap">${esc(s.leftLab || '')}</div></div>`; }
+        <div style="position:absolute;left:${Math.min((x1 + x2) / 2, x2 - 210) - 300}px;width:600px;top:${Y + BH + 18}px;text-align:center;${up(lq, 16)}"><div class="num" style="font-size:80px;font-weight:900;color:${YEL};line-height:1;white-space:nowrap">${esc(s.leftTxt || '')}</div><div style="font-size:38px;font-weight:800;color:${MUTE2};margin-top:8px;white-space:nowrap">${esc(s.leftLab || '')}</div></div>`; }
     /* 빼는 몫(빗금) */
     if (s.minus) { const m = s.minus, mq = AT(s, m.at, .55, 1), x1 = X(tot), w = BW * m.v / MX, over = tot + m.v > cap;
       h += `<div style="position:absolute;left:${x1}px;top:${Y - 8}px;width:${(w * eo(mq)).toFixed(1)}px;height:${BH + 16}px;border-radius:6px;background:repeating-linear-gradient(135deg,rgba(255,92,92,.95) 0 14px,rgba(150,30,40,.95) 14px 28px);box-shadow:0 0 24px rgba(255,80,80,.4)"></div>
@@ -4683,17 +4765,17 @@ function MK_tr(s, t, start) {
     if (s.floor) { const f = s.floor, fq = AT(s, f.at, .5, 1), fx = X(f.v);
       if (s.short) { const sh = s.short, sq = AT(s, sh.at, .55, 1), x1 = X(tot);
         h += `<div style="position:absolute;left:${x1}px;top:${Y}px;width:${((fx - x1) * eo(sq)).toFixed(1)}px;height:${BH}px;border:4px dashed #FF7A7A;border-left:0;background:rgba(255,92,92,.18)"></div>
-          <div style="position:absolute;left:${(x1 + fx) / 2 - 260}px;width:520px;top:${Y + BH + 18}px;text-align:center;${up(sq, 16)}"><div class="num" style="font-size:58px;font-weight:900;color:#FF8A8A;white-space:nowrap">${esc(sh.txt || '')}</div><div style="font-size:30px;font-weight:800;color:${MUTE2};white-space:nowrap">${esc(sh.lab || '')}</div></div>`; }
+          <div style="position:absolute;left:${(x1 + fx) / 2 - 260}px;width:520px;top:${Y + BH + 72}px;text-align:center;${up(sq, 16)}"><div class="num" style="font-size:58px;font-weight:900;color:#FF8A8A;white-space:nowrap">${esc(sh.txt || '')}</div><div style="font-size:30px;font-weight:800;color:${MUTE2};white-space:nowrap">${esc(sh.lab || '')}</div></div>`; }
       h += `<div style="position:absolute;left:${fx - 3}px;top:${Y - 60}px;width:6px;height:${BH + 120}px;background:#FF8A8A;${op(fq)}"></div><div style="position:absolute;left:${fx - 260}px;width:520px;top:${Y - 108}px;text-align:center;font-size:40px;font-weight:900;color:#FF9C9C;white-space:nowrap;${op(fq)}">${esc(f.lab || '')}</div>`;
       if (s.rate && !s.over) { const rq = AT(s, s.rate.at, .5, 1);
-        h += `<div style="position:absolute;left:${(X(tot) + fx) / 2 - 300}px;width:600px;top:${Y + BH + 150}px;text-align:center;${up(rq, 16)}"><span style="display:inline-block;padding:10px 28px;border-radius:18px;background:#FF6B6B;color:#fff;font-size:44px;font-weight:900;white-space:nowrap">${esc(s.rate.txt)}</span></div>`; } }
+        h += `<div style="position:absolute;left:${(X(tot) + fx) / 2 - 300}px;width:600px;top:${Y + BH + 210}px;text-align:center;${up(rq, 16)}"><span style="display:inline-block;padding:10px 28px;border-radius:18px;background:#FF6B6B;color:#fff;font-size:44px;font-weight:900;white-space:nowrap">${esc(s.rate.txt)}</span></div>`; } }
     /* 눈금선(예: 50억) */
     if (s.mark) { const mk = s.mark, kq = AT(s, mk.at, .5, 1), mx = X(mk.v);
       h += `<div style="position:absolute;left:${mx - 2}px;top:${Y - 40}px;width:4px;height:${BH + 80}px;background:rgba(255,255,255,.85);${op(kq)}"></div><div style="position:absolute;left:${mx - 200}px;width:400px;top:${Y - 92}px;text-align:center;font-size:34px;font-weight:900;white-space:nowrap;${op(kq)}">${esc(mk.lab || '')}</div>`; }
     /* 실제 여유 변화(추정) */
     if (s.trend) { const tr = s.trend, rq = AT(s, tr.at, .5, 1), x2 = X(cap);
-      const arrow = tr.dir === 'up' ? '▲' : tr.dir === 'down' ? '▼' : '?';
-      h += `<div style="position:absolute;left:${Math.min(1808 - 640, x2 - 300)}px;width:600px;top:${Y + BH + 150}px;text-align:center;${up(rq, 16)}"><span style="display:inline-flex;align-items:center;gap:14px;padding:10px 26px;border-radius:18px;border:3px dashed ${YEL};font-size:40px;font-weight:900;color:${YEL};white-space:nowrap"><span style="font-size:36px">${arrow}</span>${esc(tr.lab || '')}</span></div>`; }
+      const arrow = tr.dir === 'up' ? '▲' : tr.dir === 'down' ? '▼' : tr.dir === 'none' ? '' : '?';
+      h += `<div style="position:absolute;left:${Math.min(1808 - 640, x2 - 300)}px;width:600px;top:${Y + BH + 150}px;text-align:center;${up(rq, 16)}"><span style="display:inline-flex;align-items:center;gap:14px;padding:10px 26px;border-radius:18px;border:3px dashed ${YEL};font-size:40px;font-weight:900;color:${YEL};white-space:nowrap">${arrow ? `<span style="font-size:36px">${arrow}</span>` : ''}${esc(tr.lab || '')}</span></div>`; }
     /* 상한선(맨 위에) */
     if (cap) { const cx = X(cap);
       h += `<div style="position:absolute;left:${cx - 3}px;top:${Y - 60}px;width:6px;height:${BH + 120}px;background:#fff;box-shadow:0 0 14px rgba(255,255,255,.6);${op(cq)}"></div><div style="position:absolute;left:${cx - 300}px;width:600px;top:${Y - 108}px;text-align:center;font-size:40px;font-weight:900;white-space:nowrap;${op(cq)}${s.minus ? ';display:none' : ''}">${esc(s.capLab || '')}</div>`; }
@@ -4733,6 +4815,8 @@ function MK_tr(s, t, start) {
         ${open ? `<div style="width:200px;text-align:center;font-size:40px;font-weight:900;color:${tc};white-space:nowrap">${esc(r[1])}</div><div style="flex:1;text-align:center;font-size:32px;font-weight:800;color:${last ? '#FFF1B8' : MUTE2};white-space:nowrap">${esc(r[2])}</div><div class="num" style="width:${s.valW || 130}px;text-align:right;font-size:42px;font-weight:900;color:${tc};white-space:nowrap">${esc(r[3])}</div>`
                : `<div style="width:200px;text-align:center;font-size:40px;font-weight:900;color:${YEL};white-space:nowrap;${nx && s.nextName ? up(AT(s, s.nextNameAt, .45, 1), 14) : 'opacity:0'}">${nx && s.nextName ? esc(s.nextName) : ''}</div><div style="flex:1;text-align:center;font-size:40px;font-weight:900;color:${nx ? YEL : 'rgba(255,255,255,.3)'}">?</div><div style="width:${s.valW || 130}px"></div>`}</div>`;   /* 11/4 16:46 사용자 "물음표 위치 위에꺼랑 가운데 정렬 안 맞아": '?'는 계약 칸 가운데(열린 줄과 같은 칸 구조) */
     });
+    if (s.hint) { const hq = AT(s, s.hintAt, .45, 1);   /* 11/7 검수: 순위 공개 힌트(말한 숫자)를 표 아래에 */
+      h += `<div style="position:absolute;left:0;right:0;top:${Y0 + half * (RH + RG) + 44}px;text-align:center;${up(hq, 18)}"><span style="display:inline-block;padding:10px 34px;border-radius:20px;background:rgba(255,212,59,.16);border:3px solid ${YEL};color:${YEL};font-size:50px;font-weight:900;white-space:nowrap">${esc(s.hint)}</span></div>`; }
     ROOT(h);
   };
 
@@ -5892,6 +5976,9 @@ function __logoDedup(s) {
     /* 11/3 0시 검수: 여러 사람 카드(faces·people)에서 첫 사람 이름 옆에만 로고가 남던 것(11/2 사용자 '카스트로 이름 옆에만 로고… 없애') → 같은 구단 로고가 두 개 이상이면 모두 뺀다 */
     if (s.type === 'faces' || s.type === 'people') { const L0 = Object.values(LOGO || {}), cnt = {}; const ims = [...document.querySelectorAll('#body img')].filter(e => L0.includes(e.getAttribute('src')));
       ims.forEach(e => { const k = e.getAttribute('src'); cnt[k] = (cnt[k] || 0) + 1; }); ims.forEach(e => { if (cnt[e.getAttribute('src')] > 1) e.style.display = 'none'; }); return; }
+    /* 11/8 검수본4: 여러 팀 얼굴판에서 같은 팀 둘째 카드만 로고가 빠져 '김휘집만 로고 없음'처럼 보였다 → 이름 옆 로고 중 같은 구단이 두 번 이상이면 그 장면 이름 옆 로고를 모두 뺀다(한 장면 같은 로고 한 번 + 카드끼리 모양 같게) */
+    if (s.type === 'facegrid') { const L1 = Object.values(LOGO || {}), c1 = {}; const ch = [...document.querySelectorAll('#body .row .chip img')].filter(e => L1.includes(e.getAttribute('src')));
+      ch.forEach(e => { const k = e.getAttribute('src'); c1[k] = (c1[k] || 0) + 1; }); if (Object.values(c1).some(v => v > 1)) ch.forEach(e => { e.closest('.chip').style.display = 'none'; }); }
     const L = Object.values(LOGO || {}), seen = new Set();
     document.querySelectorAll('#body img').forEach(e => { const src = e.getAttribute('src'); if (!L.includes(src)) return;
       if (seen.has(src)) e.style.display = 'none'; else seen.add(src); });
@@ -5998,6 +6085,406 @@ function __logoDedup(s) {
 })();
 /* @@KS1102END */
 
+/* 11/8 밤 APBC 롱폼 — 카드·글 장면 대신 인포그래픽·모션 장면 (사용자 "카드만 주구장창, 인포그래픽·모션그래픽·애니메이션 없음")
+   이어지는 장면(cont, 같은 type)은 이미 나온 요소를 다시 띄우지 않는다(사라졌다 나타나기 ✗ — F-218).
+   도형은 판 안에서 좌표 계산(잘림 ✗ — "저 도형 안잘리게"). */
+(function () {
+  const ZM = {"apbc_slots": 1.4, "apbc_move": 1.3, "apbc_rank": 1.12, "apbc_innings": 1.15, "apbc_sched": 1.12, "apbc_hist": 1.2, "apbc_wild": 1.25, "apbc_waffle": 1.35, "apbc_ages": 1.2, "apbc_rot": 1.15, "apbc_games": 1.15, "apbc_lineup": 1.15, "apbc_field": 1.12, "apbc_zone": 1.2, "apbc_path": 1.3};
+  const wrapZ = (s, h) => wrapC(`<div style="zoom:${s.zoom || (s.type === "apbc_slots" && (s.slots || []).length > 4 ? 1.18 : ZM[s.type]) || 1}" class="col">${h}</div>`);
+  const W_ = '#FFFFFF', PANEL = 'rgba(255,255,255,.07)', PLINE = 'rgba(255,255,255,.18)', GOLDC = '#E8A100', BLUE = '#3D7BFF';
+  const same = s => !!(s.cont && s._prev && s._prev.type === s.type);
+  const A = (s, at, d) => at == null ? 1 : (at < 0 ? 1 : pk(s, at, d || .4, 1));
+  const pill = (t, bg, fg, fs, extra) => `<div style="display:inline-block;background:${bg};color:${fg};font-size:${fs}px;font-weight:900;letter-spacing:-1px;padding:10px 30px;border-radius:999px;white-space:nowrap;${extra || ''}">${br(t)}</div>`;
+  const gpill = (t, fs) => pill(t, 'rgba(255,255,255,.12)', W_, fs || 46, 'border:2px solid ' + PLINE);
+  const ttl = (lt, s) => s.title ? `<div style="margin-bottom:30px;${same(s) ? '' : pop(seg(lt, 0, .35))}">${gpill(s.title)}</div>` : '';
+  const face = (img, sz, ring, extra) => { const src = photoSrc(img); return `<div style="width:${sz}px;height:${sz}px;border-radius:50%;overflow:hidden;position:relative;flex:0 0 auto;border:${Math.max(3, Math.round(sz / 22))}px solid ${ring || 'rgba(255,255,255,.9)'};box-shadow:0 8px 22px rgba(0,0,0,.35);background:#2a3550;${extra || ''}">${src ? faceImg(src, {}, '50% 22%') : ''}</div>`; };
+  const logo = (team, sz) => { const tt = T(team); return `<div class="chip" style="width:${sz}px;height:${sz}px;border-radius:${Math.round(sz * .22)}px;background:#fff;flex:0 0 auto"><img src="${LOGO[tt.code] || ''}"></div>`; };
+  const xmark = (p, sz) => `<svg viewBox="0 0 100 100" width="${sz}" height="${sz}" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);opacity:${c01(p * 1.5)}"><path d="M18 18 L82 82 M82 18 L18 82" stroke="${RED}" stroke-width="12" stroke-linecap="round" stroke-dasharray="91" stroke-dashoffset="${91 * (1 - eo(p))}"/></svg>`;
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  /* ── 구단별 인원: 로고 위로 얼굴 동그라미가 쌓인다 ── */
+  SCENE.apbc_teams = (lt, s) => {
+    if (s.logoOnly) {   /* 11/8 밤 사용자: 선수 사진 빼고 구단 로고와 인원수만 — 이름 부르는 호흡에 막대·숫자가 선다 */
+      const tm = s.teams || [], CW = 150, U = 78, tot = tm.reduce((a, t) => a + t.n, 0);
+      let h = `<div style="display:flex;align-items:center;gap:22px;margin-bottom:34px;${same(s) ? '' : pop(seg(lt, 0, .35))}">${gpill(s.title || '')}
+        <div class="num" style="font-size:64px;font-weight:900;color:${GOLDC};letter-spacing:-2px">${tot}<span style="font-size:36px;color:${W_};margin-left:6px">명</span></div></div>`;
+      h += `<div style="display:flex;align-items:flex-end;gap:20px">` + tm.map(t => {
+        const p = same(s) ? 1 : A(s, t.at), g = eo(c01(p)), col = t.top ? GOLDC : t.low ? RED : BLUE;
+        return `<div style="width:${CW}px;display:flex;flex-direction:column;align-items:center">
+          <div class="num" style="font-size:56px;font-weight:900;color:${col};height:70px;${pop(p)}">${t.n}명</div>
+          <div style="height:${4 * U}px;display:flex;align-items:flex-end"><div style="width:${CW - 40}px;height:${t.n * U * g}px;border-radius:14px 14px 4px 4px;background:${col};box-shadow:0 0 24px ${col}55"></div></div>
+          <div style="margin-top:18px;width:${CW - 10}px;height:6px;border-radius:3px;background:${PLINE}"></div>
+          <div style="margin-top:16px">${logo(t.team, 116)}</div></div>`;
+      }).join('') + `</div>`;
+      return wrapZ(s, h);
+    }
+    const tm = s.teams || [], CW = 158, FS = 124;
+    let k = 0; const tot = tm.reduce((a, t) => a + t.faces.length, 0);
+    const cascade = i => same(s) ? 1 : seg(lt, .1 + i * .045, .28);
+    const hiT = s.hiTop != null ? pk(s, s.hiTop, .4, 0) : 0, hiL = s.hiLow != null ? pk(s, s.hiLow, .4, 0) : 0;
+    const shown = Math.min(tot, Math.round(tot * c01((lt - .1) / (tot * .045 * SPD + .2))));
+    let h = `<div style="display:flex;align-items:center;gap:22px;margin-bottom:26px;${same(s) ? '' : pop(seg(lt, 0, .35))}">${gpill(s.title || '')}
+      <div class="num" style="font-size:64px;font-weight:900;color:${GOLDC};letter-spacing:-2px">${same(s) ? tot : shown}<span style="font-size:36px;color:${W_};margin-left:6px">명</span></div></div>`;
+    h += `<div style="display:flex;align-items:flex-end;gap:18px">` + tm.map(t => {
+      const top = t.top, low = t.low, act = top ? hiT : low ? hiL : 0, dim = (hiT > 0 || hiL > 0) && !act ? .42 : 1, ring = top ? GOLDC : RED;
+      const faces = t.faces.map(f => face(f, FS, act ? ring : null, 'margin-top:10px;' + pop(cascade(k++)))).join('');
+      const badge = (top || low) ? `<div class="num" style="height:64px;font-size:54px;font-weight:900;color:${ring};${pop(act)}">${t.faces.length}명</div>` : `<div style="height:64px"></div>`;
+      return `<div style="width:${CW}px;display:flex;flex-direction:column;align-items:center;opacity:${dim}">${badge}
+        <div style="display:flex;flex-direction:column-reverse;align-items:center;min-height:${4 * (FS + 10)}px">${faces}</div>
+        <div style="margin-top:14px;width:${CW - 20}px;height:6px;border-radius:3px;background:${act ? ring : PLINE}"></div>
+        <div style="margin-top:12px">${logo(t.team, 78)}</div></div>`;
+    }).join('') + `</div>`;
+    wrapZ(s, h);
+  };
+
+  /* ── 대진: 왼쪽 다이아몬드(4개국 · 서로 한 번씩) + 오른쪽 단계별 판 ── */
+  SCENE.apbc_sched = (lt, s) => {
+    const SZ = 560, R = 210, cx = SZ / 2, cy = SZ / 2, FW = 140;
+    const pos = { '한국': [cx, cy - R], '일본': [cx + R, cy], '대만': [cx, cy + R], '호주': [cx - R, cy] };
+    const pairs = [['한국', '일본'], ['한국', '대만'], ['한국', '호주'], ['일본', '대만'], ['일본', '호주'], ['대만', '호주']];
+    const sm = same(s), rr = sm || s.rrAt == null && s.phase !== 'rr' ? 1 : A(s, s.rrAt, .9), flagP = sm ? 1 : seg(lt, .05, .35);
+    const korHi = s.korHi || [];
+    const svg = `<svg width="${SZ}" height="${SZ}" style="position:absolute;inset:0">` + pairs.map(([a, b], i) => {
+      const [x1, y1] = pos[a], [x2, y2] = pos[b], L = Math.hypot(x2 - x1, y2 - y1), pi = c01(rr * 1.6 - i * .12);
+      const kh = korHi.find(q => a === '한국' && q.vs === b), kp = kh ? pk(s, kh.at, .35, 0) : 0;
+      const col = kp > 0 ? GOLDC : (s.dimLines ? 'rgba(255,255,255,.22)' : 'rgba(255,255,255,.75)');
+      return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${6 + kp * 6}" stroke-linecap="round" stroke-dasharray="${L}" stroke-dashoffset="${L * (1 - pi)}"/>`;
+    }).join('') + `</svg>`;
+    const flags = Object.entries(pos).map(([n, [x, y]]) => {
+      const glow = n === '한국' && korHi.length;
+      return `<div style="position:absolute;left:${x - FW / 2}px;top:${y - FW * .333}px;${pop(flagP)}"><div style="${glow ? `box-shadow:0 0 0 6px ${GOLDC};border-radius:16px` : ''}">${flagBox(n, FW)}</div>
+        <div style="text-align:center;margin-top:8px;font-size:32px;font-weight:900;color:#fff">${n}</div></div>`;
+    }).join('');
+    const center = `<div style="position:absolute;left:${cx - 80}px;top:${cy - 34}px;width:160px;height:68px;border-radius:34px;background:#12161F;border:3px solid ${PLINE};display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#fff;${pop(flagP)}">도쿄돔</div>`;
+    const left = `<div data-anchor style="position:relative;width:${SZ}px;height:${SZ + 40}px;flex:0 0 auto">${svg}${flags}${center}</div>`;
+    let right = '';
+    if (s.phase === 'rr') {
+      right = `<div class="col" style="align-items:center;gap:26px;width:820px">
+        <div style="${pop(A(s, s.whenAt ?? 0))}">${pill(s.when || '', GOLDC, '#12161F', 48)}</div>
+        <div style="font-size:84px;font-weight:900;color:#fff;letter-spacing:-3px;line-height:1.1;${rise(A(s, s.rrAt, .4), 24)}">${br(s.big || '')}</div></div>`;
+    } else if (s.phase === 'final') {
+      const a0 = A(s, s.fAt0), a1 = A(s, s.fAt1), a2 = A(s, s.fAt2);
+      const slot = `<div style="width:120px;height:80px;border-radius:16px;border:4px dashed rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;font-size:52px;font-weight:900;color:#fff">?</div>`;
+      const fimg = s.fImg ? `<div style="${pop(A(s, s.fImgAt))}">${face(s.fImg, 150, GOLDC)}</div>` : '';
+      right = `<div class="col" style="align-items:center;gap:22px;width:820px">
+        ${s.l0 ? `<div style="${pop(a0)}">${gpill(s.l0, 44)}</div>` : ''}
+        ${s.l1 ? `<div style="display:flex;align-items:center;gap:22px;${pop(a1)}"><div style="font-size:44px;font-weight:900;color:#fff">${esc(s.l1)}</div>${slot}${slot}</div>` : ''}
+        <div style="display:flex;align-items:center;gap:22px;${pop(a2)}"><div style="font-size:70px;color:${GOLDC};font-weight:900">→</div>${pill(s.l2 || '', GOLDC, '#12161F', 60)}${fimg}</div>
+        ${s.fCap ? `<div style="font-size:46px;font-weight:900;color:#fff;${rise(A(s, s.fCapAt), 20)}">${esc(s.fCap)}</div>` : ''}</div>`;
+    } else if (s.phase === 'kor') {
+      right = `<div class="col" style="align-items:stretch;gap:18px;width:820px">` + (s.games || []).map(g => {
+        const p = A(s, g.at, .35);
+        return `<div style="display:flex;align-items:center;gap:26px;background:${PANEL};border:2px solid ${p > .5 ? GOLDC : PLINE};border-radius:24px;padding:16px 28px;${rise(p, 30)}">
+          <div class="num" style="width:220px;font-size:46px;font-weight:900;color:${GOLDC};letter-spacing:-1px">${esc(g.d)}</div>
+          <div style="width:220px;font-size:40px;font-weight:800;color:#fff">${esc(g.t)}</div>
+          <div style="display:flex;align-items:center;gap:16px">${flagBox('한국', 84)}<span style="font-size:34px;color:#fff;font-weight:900">vs</span>${flagBox(g.vs, 84)}<span style="font-size:40px;font-weight:900;color:#fff">${esc(g.vs)}</span></div></div>`;
+      }).join('') + `</div>`;
+    }
+    wrapZ(s, `${ttl(lt, s)}<div style="display:flex;align-items:center;gap:80px">${left}${right}</div>`);
+  };
+
+  /* ── 1~9회 띠: rows:[{label, groups}] 또는 groups 하나. 그룹 = {from,to,label,at,c,img,imgs,bad,badAt,relabel,relabelAt} ── */
+  SCENE.apbc_innings = (lt, s) => {
+    const rows = s.rows || [{ groups: s.groups || [] }], SW = s.sw || (rows.some(r => r.label) ? 128 : 160), SH = s.sh || (rows.length > 1 ? 112 : 140), GAP = 10, sm = same(s), LW = rows.some(r => r.label) ? 230 : 0;
+    let h = ttl(lt, s);
+    h += `<div class="col" style="gap:${rows.length > 1 ? 34 : 0}px;align-items:flex-start">` + rows.map(r => {
+      const G = r.groups || [];
+      const cells = [];
+      for (let i = 1; i <= 9; i++) {
+        const g = G.find(q => i >= q.from && i <= q.to);
+        if (!g) { cells.push(`<div style="width:${SW}px;height:${SH}px;border-radius:18px;background:${PANEL};border:3px solid ${PLINE};display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:900;color:rgba(255,255,255,.45)" class="num">${i}회</div>`); continue; }
+        const n = g.to - g.from + 1, gi = i - g.from, gp = g.at == null || g.at < 0 || (sm && g.keep) ? 1 : pk(s, g.at, .7, 0);
+        const fill = c01(gp * n - gi), col = g.bad ? RED : g.c || '#fff', dimB = g.badAt != null ? 1 - .6 * pk(s, g.badAt, .4, 0) : 1;
+        cells.push(`<div style="width:${SW}px;height:${SH}px;border-radius:18px;position:relative;overflow:hidden;background:${PANEL};border:3px solid ${PLINE}">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:${fill * 100}%;background:${col};opacity:${dimB}"></div>
+          <div class="num" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:900;color:${fill > .5 ? (col === '#fff' ? '#12161F' : '#fff') : 'rgba(255,255,255,.55)'}">${i}회</div></div>`);
+      }
+      /* 그룹 머리(얼굴·이름표): 빈 칸 자리도 폭을 맞춘다 */
+      const heads = []; let i = 1;
+      while (i <= 9) {
+        const g = G.find(q => i >= q.from && i <= q.to);
+        if (!g) { heads.push(`<div style="width:${SW}px"></div>`); i++; continue; }
+        const n = g.to - g.from + 1, w = n * SW + (n - 1) * GAP, p = g.at == null || g.at < 0 || (sm && g.keep) ? 1 : pk(s, g.at, .5, 0);
+        const lab = g.relabelAt != null && pk(s, g.relabelAt, .3, 0) > .5 ? g.relabel : g.label;
+        const imgs = (g.imgs || (g.img ? [g.img] : [])).map((im, q) => `<div style="${pop(g.imgAt != null ? A(s, Array.isArray(g.imgAt) ? g.imgAt[q] : g.imgAt) : p)}">${face(im, s.fs || (rows.length > 1 ? 100 : 140), g.c && g.c !== '#fff' ? g.c : null)}</div>`).join('');
+        heads.push(`<div style="width:${w}px;display:flex;flex-direction:column;align-items:center;gap:10px">${imgs ? `<div style="display:flex;gap:14px">${imgs}</div>` : ''}<div style="font-size:${rows.length > 1 ? 40 : 50}px;font-weight:900;color:${g.bad ? RED : g.c || '#fff'};white-space:nowrap;${pop(p)}">${br(lab || '')}</div></div>`);
+        i = g.to + 1;
+      }
+      const lab = LW ? `<div style="width:${LW}px;flex:0 0 auto;font-size:44px;font-weight:900;color:#fff;${pop(seg(lt, 0, .3))}">${esc(r.label || '')}</div>` : '';
+      return `<div style="display:flex;align-items:flex-end;gap:20px">${lab}<div class="col" style="gap:14px;align-items:flex-start"><div style="display:flex;gap:${GAP}px;align-items:flex-end">${heads.join('')}</div><div style="display:flex;gap:${GAP}px">${cells.join('')}</div></div></div>`;
+    }).join('') + `</div>`;
+    h += textH(lt, s, .8, 60);
+    wrapZ(s, h);
+  };
+
+  /* ── 야구장: 수비 자리 점 · 선수 얼굴(players:[{img,pos,from,at,moveAt,swap}]) · 범위 원(range) · 옆 알약(side) ── */
+  SCENE.apbc_field = (lt, s) => {
+    const FW = 1000, FH = 780, hx = 500, hy = 690, sm = same(s), d = 170, R = 580;
+    const P9 = { '포수': [hx, hy + 52], '투수': [hx, hy - d], '1루수': [hx + 128, hy - 196], '2루수': [hx + 78, hy - 292], '3루수': [hx - 128, hy - 196], '유격수': [hx - 78, hy - 292],
+      '좌익수': [hx - 255, hy - 395], '중견수': [hx, hy - 470], '우익수': [hx + 255, hy - 395] };
+    const LBL = { '3루수': 'L', '1루수': 'R', '유격수': 'U', '2루수': 'U', '투수': 'R' };
+    const fp = sm ? 1 : seg(lt, .05, .5), hi = s.hi || [], ex = R * .7071, players = s.players || [];
+    const svg = `<svg width="${FW}" height="${FH}" viewBox="0 0 ${FW} ${FH}" style="position:absolute;inset:0;overflow:visible;opacity:${c01(fp * 1.5)}">
+      <path d="M ${hx} ${hy} L ${hx - ex} ${hy - ex} A ${R} ${R} 0 0 1 ${hx + ex} ${hy - ex} Z" fill="rgba(46,140,80,.30)" stroke="rgba(255,255,255,.35)" stroke-width="4"/>
+      <path d="M ${hx} ${hy} L ${hx + d} ${hy - d} L ${hx} ${hy - 2 * d} L ${hx - d} ${hy - d} Z" fill="rgba(196,150,96,.42)" stroke="rgba(255,255,255,.75)" stroke-width="4"/>
+      ${[[hx + d, hy - d], [hx, hy - 2 * d], [hx - d, hy - d], [hx, hy]].map(([x, y]) => `<rect x="${x - 12}" y="${y - 12}" width="24" height="24" fill="#fff" transform="rotate(45 ${x} ${y})"/>`).join('')}
+      <circle cx="${hx}" cy="${hy - d}" r="22" fill="rgba(196,150,96,.85)"/>
+      ${s.range ? (() => { const [x, y] = P9[s.range.pos], p = A(s, s.range.at, .9); return `<circle cx="${x}" cy="${y}" r="${30 + 120 * eo(p)}" fill="rgba(232,161,0,.18)" stroke="${GOLDC}" stroke-width="4" stroke-dasharray="10 8" opacity="${c01(p * 2)}"/>`; })() : ''}</svg>`;
+    const occupied = new Set(players.map(q => q.pos));
+    const dots = Object.entries(P9).map(([n, [x, y]]) => {
+      const q = hi.find(z => z.pos === n), p = q ? pk(s, q.at, .4, 0) : 0, col = q ? (q.c || RED) : '#fff';
+      if (occupied.has(n) && !q) return '';
+      const pulse = p > 0 ? .5 + .5 * Math.sin(lt * 5) : 0, sz = 34 + p * 14;
+      const lp = LBL[n] === 'L' ? `right:${sz / 2 + 10}px;top:-22px;text-align:right;width:240px` : LBL[n] === 'R' ? `left:${sz / 2 + 10}px;top:-22px;text-align:left;width:240px` : LBL[n] === 'U' ? `left:-120px;width:240px;bottom:${sz / 2 + 4}px;text-align:center` : `left:-120px;width:240px;top:${sz / 2 + 4}px;text-align:center`;
+      return `<div style="position:absolute;left:${x}px;top:${y}px;width:0;height:0">
+        <div style="position:absolute;left:${-sz / 2}px;top:${-sz / 2}px;width:${sz}px;height:${sz}px;border-radius:50%;background:${p > 0 ? col : 'rgba(255,255,255,.85)'};box-shadow:0 0 0 ${p * (8 + pulse * 10)}px ${p > 0 ? col + '55' : 'transparent'}"></div>
+        <div style="position:absolute;${lp};font-size:${p > 0 ? 36 : 26}px;font-weight:900;color:${p > 0 ? '#fff' : 'rgba(255,255,255,.75)'};text-shadow:0 2px 8px rgba(0,0,0,.7)">${esc(q && q.label ? q.label : n)}</div></div>`;
+    }).join('');
+    const pl = players.map(q => {
+      const p = A(s, q.at, .4), mv = q.from ? A(s, q.moveAt, .9) : 1, a = P9[q.from || q.pos], b = P9[q.pos];
+      const x = lerp(a[0], b[0], eo(mv)), y = lerp(a[1], b[1], eo(mv)), SZ = q.sz || 170;
+      const vis = q.outAt != null ? 1 - A(s, q.outAt, .3) : 1;
+      const tag = q.tag ? `<div style="position:absolute;left:-150px;width:300px;top:${SZ / 2 + 6}px;text-align:center"><span style="${pop(A(s, q.tagAt ?? q.at))};display:inline-block;background:${q.tagC || GOLDC};color:#12161F;font-size:32px;font-weight:900;padding:4px 18px;border-radius:999px;white-space:nowrap">${esc(q.tag)}</span></div>` : '';
+      return `<div style="position:absolute;left:${x}px;top:${y}px;width:0;height:0;opacity:${vis}"><div style="position:absolute;left:${-SZ / 2}px;top:${-SZ / 2}px;${pop(p)}">${face(q.img, SZ, q.ring || GOLDC)}</div>${tag}</div>`;
+    }).join('');
+    const side = s.side ? `<div class="col" style="align-items:flex-start;justify-content:flex-start;gap:20px;width:540px;height:300px">${s.side.map(z => `<div style="${rise(A(s, z.at), 24)}">${pill(z.t, z.gold ? GOLDC : z.red ? RED : 'rgba(255,255,255,.12)', z.gold ? '#12161F' : '#fff', z.fs || 44, z.gold || z.red ? '' : 'border:2px solid ' + PLINE)}</div>`).join('')}</div>` : '';
+    const sc = s.fieldScale || .92;
+    wrapZ(s, `${ttl(lt, s)}<div style="display:flex;align-items:center;gap:40px"><div data-anchor style="width:${FW * sc}px;height:${FH * sc}px;position:relative;flex:0 0 auto"><div style="position:absolute;left:0;top:0;width:${FW}px;height:${FH}px;transform:scale(${sc});transform-origin:0 0">${svg}${dots}${pl}</div></div>${side}</div>`);
+  };
+
+  /* ── 자격·와일드카드: 기본 자격 무리 + 와일드카드 세 자리 ── */
+  SCENE.apbc_wild = (lt, s) => {
+    const sm = same(s), N = 25, cols = 5;
+    const crowd = Array.from({ length: N }, (_, i) => `<div style="width:56px;height:84px;${pop(sm ? 1 : seg(lt, .1 + i * .025, .25))}">${ICON.person('rgba(255,255,255,.85)')}</div>`).join('');
+    const left = `<div data-anchor class="col" style="align-items:center;gap:22px;background:${PANEL};border:2px solid ${PLINE};border-radius:32px;padding:30px 40px">
+      <div style="display:grid;grid-template-columns:repeat(${cols},56px);gap:10px 16px">${crowd}</div>
+      <div class="col" style="gap:12px;align-items:center">${(s.rules || []).map(r => `<div style="${pop(A(s, r.at))}">${pill(r.t, 'rgba(255,255,255,.14)', '#fff', 40)}</div>`).join('')}</div></div>`;
+    const wp = A(s, s.wildAt);
+    const slots = [0, 1, 2].map(i => {
+      const f = (s.faces || [])[i], fp = f ? A(s, f.at) : 0;
+      return `<div style="position:relative;width:170px;height:170px;border-radius:50%;border:5px dashed ${GOLDC};display:flex;align-items:center;justify-content:center;${pop(sm ? 1 : seg(lt, 0, .1) * wp)}">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:72px;font-weight:900;color:${GOLDC};opacity:${1 - fp}">?</div>
+        ${f ? (f.img ? `<div style="position:absolute;inset:-5px;${pop(fp)}">${face(f.img, 170, GOLDC)}</div>` : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;${pop(fp)}">${logo(f.team, 120)}</div>`) : ''}</div>`;
+    }).join('');
+    const right = `<div class="col" style="align-items:center;justify-content:flex-start;gap:26px;width:760px;height:440px;padding-top:70px;box-sizing:border-box;${pop(wp)}">${pill('와일드카드', GOLDC, '#12161F', 50)}<div style="display:flex;gap:28px">${slots}</div>
+      ${s.badge ? `<div style="${rise(A(s, s.badgeAt), 20)}">${gpill(s.badge, 46)}</div>` : ''}</div>`;
+    wrapZ(s, `${ttl(lt, s)}<div style="display:flex;align-items:center;gap:60px">${left}<div style="font-size:120px;font-weight:900;color:${GOLDC};${pop(wp)}">+</div>${right}</div>`);
+  };
+
+  /* ── 대회 연혁(마디 타임라인) · 사람이 마디 사이를 건너간다 ── */
+  SCENE.apbc_hist = (lt, s) => {
+    const nodes = s.nodes || [], n = nodes.length, GAP = s.gap || 460, X0 = 120, W = X0 * 2 + GAP * (n - 1), Y = 150, sm = same(s);
+    const lineP = sm ? 1 : seg(lt, .05, .8);
+    let h = ttl(lt, s);
+    let svg = `<svg width="${W}" height="300" style="position:absolute;left:0;top:0;overflow:visible"><line x1="${X0}" y1="${Y}" x2="${X0 + GAP * (n - 1) * lineP}" y2="${Y}" stroke="rgba(255,255,255,.5)" stroke-width="8" stroke-linecap="round"/></svg>`;
+    const nd = nodes.map((q, i) => {
+      const x = X0 + GAP * i, p = sm && q.keep !== false ? 1 : A(s, q.at), rp = q.res ? A(s, q.resAt) : 0, hiC = q.hi ? GOLDC : '#fff';
+      return `<div style="position:absolute;left:${x}px;top:${Y}px;width:0;height:0">
+        <div style="position:absolute;left:-36px;top:-36px;width:72px;height:72px;border-radius:50%;background:${q.hi ? GOLDC : '#12161F'};border:6px solid ${hiC};${pop(p)}"></div>
+        ${q.flag ? `<div style="position:absolute;left:-46px;top:-150px;${pop(p)}">${flagBox(q.flag, 92)}</div>` : ''}
+        <div style="position:absolute;left:-200px;width:400px;top:-${q.flag ? 210 : 120}px;text-align:center;font-size:60px;font-weight:900;color:${hiC};${pop(p)}" class="num">${esc(q.y)}</div>
+        ${q.sub ? `<div style="position:absolute;left:-200px;width:400px;top:${s.walker ? 84 : 56}px;text-align:center;font-size:40px;font-weight:800;color:rgba(255,255,255,.85);${pop(p)}">${esc(q.sub)}</div>` : ''}
+        ${q.res ? `<div style="position:absolute;left:-200px;width:400px;top:${q.sub ? 116 : 60}px;text-align:center;${pop(rp)}">${pill(q.res, q.resC || RED, '#fff', 42)}</div>` : ''}</div>`;
+    }).join('');
+    /* 건너가는 사람들: carry:{imgs, from, to, at, moveAt} — from 마디 아래에 나타났다가 to 마디로 옮겨 간다 */
+    let cr = '';
+    if (s.carry) {
+      const c = s.carry, ap = A(s, c.at), mv = A(s, c.moveAt, 1.1), x = lerp(X0 + GAP * c.from, X0 + GAP * c.to, eo(mv)), m = c.imgs.length, FS = 100;
+      cr = `<div style="position:absolute;left:${x - (m * (FS + 12)) / 2}px;top:${Y + (nodes.some(q => q.sub) ? 132 : 70)}px;display:flex;gap:12px" class="mb">` + c.imgs.map((im, i) => `<div style="${pop(c.ats ? A(s, c.ats[i]) : ap)}">${face(im, FS, GOLDC)}</div>`).join('') + `</div>`;
+    }
+    if (s.walker) {
+      const wk = s.walker; let pos = 0;
+      wk.path.forEach((q, i) => { if (i > 0) pos = lerp(pos, i, eo(A(s, q.at, .8))); });
+      const x = X0 + GAP * pos;
+      cr += `<div style="position:absolute;left:${x - 70}px;top:${Y - 70}px;${pop(A(s, wk.at ?? 0))}">${face(wk.img, 140, GOLDC)}</div>`;
+    }
+    h += `<div data-anchor style="position:relative;width:${W}px;height:${s.carry ? 400 : 300}px;margin-top:${nodes.some(q => q.flag) ? 210 : 120}px">${svg}${nd}${cr}</div>`;
+    h += textH(lt, s, .8, 60);
+    wrapZ(s, h);
+  };
+
+  /* ── 사람 칸(waffle): 33명 → 빠진 5명 → 28명 포지션별 무리 ── */
+
+  /* 11/9 00:05 사용자 "좀 더 이해 잘되게 직관적으로": 결승 가는 길 = 한국의 세 경기 줄 + 승/패 칩 + 결과 한 줄 */
+  SCENE.apbc_path = (lt, s) => {
+    const sm = same(s), rows = s.rows || [];
+    const R = rows.map((r, i) => {
+      const rp = r.res ? A(s, r.res.at) : 0, hp = r.hi ? A(s, r.hi.at) : 0, win = r.res && r.res.t === '승', col = r.res ? (win ? '#16A34A' : RED) : PLINE;
+      if (s.rec) {   /* 11/9 00:12 사용자 "대만에 지고 이기고… 불친절해" → 맞대결 기록을 시간 순 한 줄씩(대회 · 점수 · 승패) */
+        const ap = r.at == null ? 1 : A(s, r.at);
+        return `<div style="display:flex;align-items:center;gap:30px;padding:16px 34px;border-radius:26px;background:${PANEL};opacity:${ap};transform:translateY(${(1 - eo(c01(ap))) * 16}px)">
+          <div style="width:430px;font-size:44px;font-weight:900;color:${W_}">${esc(r.d)}</div>${flagBox(r.vs, 96)}
+          <div class="num" style="width:200px;text-align:center;font-size:56px;font-weight:900;color:${W_}">${esc(r.sc || '')}</div>
+          <div style="width:130px;height:86px;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:900;color:#fff;background:${col};opacity:${Math.max(.15, rp)};transform:scale(${.8 + .2 * eo(c01(rp))})">${esc(r.res ? r.res.t : '?')}</div></div>`;
+      }
+      return `<div style="position:relative;display:flex;align-items:center;gap:26px;padding:18px 34px;border-radius:26px;background:${PANEL};border:4px solid ${hp > .5 ? GOLDC : 'transparent'};${sm ? '' : pop(seg(lt, .05 + i * .08, .3))}">
+        ${r.d ? `<div class="num" style="width:110px;font-size:46px;font-weight:900;color:${W_}">${esc(r.d)}</div>` : ""}${flagBox('한국', 110)}<div style="font-size:40px;font-weight:900;color:${W_}">vs</div>${flagBox(r.vs, 110)}
+        <div style="width:110px;font-size:46px;font-weight:900;color:${W_}">${esc(r.vs)}</div>
+        ${r.hi ? `<div class="mb" style="position:absolute;left:100%;margin-left:24px;top:50%;translate:0 -50%;white-space:nowrap;opacity:${hp}">${pill(r.hi.t, GOLDC, '#12161F', 40)}</div>` : ''}<div style="width:150px;height:96px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:900;color:#fff;background:${col};opacity:${r.res ? Math.max(.15, rp) : .15};transform:scale(${r.res ? .8 + .2 * eo(c01(rp)) : 1})">${esc(r.res ? r.res.t : '?')}</div>
+        </div>`;
+    }).join('');
+    const sum = s.sum ? `<div style="height:90px;margin-top:26px;${rise(A(s, s.sum.at), 20)}">${s.sum.red ? pill(s.sum.t, RED, '#fff', 54) : pill(s.sum.t, GOLDC, '#12161F', 54)}</div>` : '<div style="height:116px"></div>';
+    wrapZ(s, `${ttl(lt, s)}<div data-anchor class="col" style="gap:20px;align-items:stretch">${R}</div>${sum}`);
+  };
+  SCENE.apbc_waffle = (lt, s) => {
+    const N = s.n || 33, cols = 11, CW = 70, CH = 100, G = 18, sm = same(s);
+    const out = s.out || [];   // [{idx:[...], at, c, label}]
+    const groups = s.groups;   // [{n, label, c, at}] — 있으면 남은 사람을 무리로 다시 줄 세운다
+    const outSet = {}; out.forEach(o => o.idx.forEach(i => outSet[i] = o));
+    const keep = []; for (let i = 0; i < N; i++) if (!outSet[i]) keep.push(i);
+    const W = cols * (CW + G), H = 3 * (CH + G) + 80;
+    let gx = [], gl = '';
+    if (groups) {   /* 무리 자리: 무리마다 5칸 폭 블록을 가로로 */
+      let x = 0; const gpos = [];
+      groups.forEach((g, gi) => { const gc = Math.min(g.n, g.n > 6 ? 5 : 3), rowsN = Math.ceil(g.n / gc), w = gc * (CW * .8 + 10); gpos.push({ x, gc, w }); x += w + 60; });
+      const tw = x - 60, ox = (W - tw) / 2;
+      let k = 0;
+      groups.forEach((g, gi) => { const { x: gx0, gc, w } = gpos[gi]; for (let j = 0; j < g.n; j++) { gx[keep[k++]] = { x: ox + gx0 + (j % gc) * (CW * .8 + 10), y: 60 + Math.floor(j / gc) * (CH * .8 + 10), c: g.c, gi };
+        }
+        const gp = A(s, g.at);
+        gl += `<div style="position:absolute;left:${ox + gx0}px;width:${w}px;top:${60 + Math.ceil(g.n / gc) * (CH * .8 + 10) + 10}px;text-align:center;${rise(gp, 16)}"><div style="font-size:44px;font-weight:900;color:${g.c}">${esc(g.label)}</div></div>`;
+      });
+    }
+    const icons = Array.from({ length: N }, (_, i) => {
+      const o = outSet[i], ap = sm ? 1 : seg(lt, .05 + i * .02, .25);
+      const x0 = (i % cols) * (CW + G), y0 = Math.floor(i / cols) * (CH + G);
+      if (o) {
+        const op = A(s, o.at, .4), gone = groups ? 1 - seg(lt, 0, .3) : 1;
+        if (gone <= 0) return '';
+        return `<div style="position:absolute;left:${x0}px;top:${y0}px;width:${CW}px;height:${CH}px;opacity:${gone * (1 - .55 * op)};${groups ? '' : pop(ap)}">${ICON.person(op > .5 ? o.c || RED : 'rgba(255,255,255,.85)')}${xmark(op, 80)}</div>`;
+      }
+      let x = x0, y = y0, sc = 1, col = 'rgba(255,255,255,.85)';
+      if (groups && gx[i]) { const g = groups[gx[i].gi], mv = A(s, groups[0].at, .9), mp = A(s, g.at, .9); x = lerp(x0, gx[i].x, eo(mv)); y = lerp(y0, gx[i].y, eo(mv)); sc = lerp(1, .8, eo(mv)); col = mp > .3 ? g.c : col; }   /* 11/8 23:50 사용자 "선수 이미지가 겹치고": 무리마다 따로 옮기면 아직 안 옮긴 칸과 겹침 → 전원 한 번에 자리로, 색만 무리 차례대로 */
+      return `<div style="position:absolute;left:${x}px;top:${y}px;width:${CW * sc}px;height:${CH * sc}px;${groups ? '' : pop(ap)}">${ICON.person(col)}</div>`;
+    }).join('');
+    const labs = out.filter(o => o.label).map((o, j) => `<div style="${pop(A(s, o.at))}">${pill(o.label, o.c || RED, '#fff', 42)}</div>`).join('');
+    wrapZ(s, `${ttl(lt, s)}<div class="col" style="align-items:center;gap:30px"><div data-anchor style="position:relative;width:${W}px;height:${groups ? 470 : H - 80}px">${icons}${gl}</div><div style="display:flex;gap:22px;height:70px;align-items:center">${labs}</div></div>`);   /* 11/8 23:51 "최종 28명 알약도 왼쪽에": 빠진 사람 알약을 오른쪽 대신 아래에 → 판이 늘 가운데 */
+  };
+
+  /* ── 팀 칸: 로고 + 자리(투수·야수) — 빠진 자리는 빨간 X ── */
+  SCENE.apbc_slots = (lt, s) => {
+    const sm = same(s), SZ = 190;
+    const slots = (s.slots || []).map(q => {
+      const p = sm && q.keep ? 1 : A(s, q.at), xp = q.xAt != null ? A(s, q.xAt) : 0;
+      const inner = q.img ? face(q.img, SZ - 16, q.ring || 'rgba(255,255,255,.9)') : `<div style="width:${SZ * .5}px;height:${SZ * .5}px">${(ICON[q.icon || 'person'] || ICON.person)(xp > .5 ? 'rgba(255,255,255,.35)' : '#fff')}</div>`;
+      return `<div class="col" style="align-items:center;gap:14px;${pop(p)}"><div style="position:relative;width:${SZ}px;height:${SZ}px;border-radius:36px;background:${PANEL};border:3px solid ${xp > .5 ? RED : PLINE};display:flex;align-items:center;justify-content:center">${inner}${q.xAt != null ? xmark(xp, SZ * .8) : ''}</div>
+        ${q.img && q.xLabel ? `<div class="col" style="align-items:center;gap:4px"><div style="font-size:38px;font-weight:900;color:#fff;white-space:nowrap">${esc(q.label || '')}</div><div style="font-size:32px;font-weight:900;color:${RED};white-space:nowrap;opacity:${c01(xp * 2)}">${esc(q.xLabel)}</div></div>`
+          : `<div style="display:grid;font-size:38px;font-weight:900;white-space:nowrap;text-align:center"><div style="grid-area:1/1;color:#fff;opacity:${xp > .5 && q.xLabel ? 0 : 1}">${esc(q.label || '')}</div><div style="grid-area:1/1;color:${RED};opacity:${xp > .5 && q.xLabel ? 1 : 0}">${esc(q.xLabel || '')}</div></div>`}</div>`;   /* 11/8 23:57 빠진 선수는 얼굴+이름+빨간 사유 · 글이 바뀌어도 칸 폭이 안 변하게(겹쳐 두고 보이기만 바꿈) */
+    }).join('');
+    const badges = (s.badges || []).map(b => `<div style="${rise(A(s, b.at), 20)}">${b.gold ? pill(b.t, GOLDC, '#12161F', 44) : gpill(b.t, 44)}</div>`).join('');
+    if (!s.team) { wrapZ(s, `${ttl(lt, s)}<div data-anchor style="display:flex;gap:40px;align-items:flex-start">${slots}</div><div class="col" style="gap:14px;align-items:center;margin-top:30px;height:70px">${badges}</div>`); return; }   /* 11/9 구단 없는 칸판(예: 빠진 왼손 불펜) = 칸 줄 + 아래 알약 */
+    wrapZ(s, `${ttl(lt, s)}<div style="display:flex;align-items:center;gap:60px"><div class="col" style="align-items:center;gap:20px;${sm ? '' : pop(seg(lt, 0, .35))}">${logo(s.team, 170)}${badges ? `<div class="col" style="gap:14px;align-items:center">${badges}</div>` : ''}</div>
+      <div style="width:6px;height:260px;border-radius:3px;background:${PLINE}"></div><div style="display:flex;gap:30px;align-items:flex-start">${slots}</div></div>`);
+  };
+
+  /* ── 합류: 구단 로고 → 태극기, 얼굴이 곡선을 따라 이동 ── */
+  SCENE.apbc_move = (lt, s) => {
+    const W = 1300, H = 420, x0 = 170, x1 = W - 170, y = 230, sm = same(s);
+    const p0 = sm ? 1 : seg(lt, .05, .4), mv = A(s, s.moveAt, 1.2), m = (s.imgs || []).length;
+    const path = `M ${x0} ${y} C ${x0 + 300} ${y - 230}, ${x1 - 300} ${y - 230}, ${x1} ${y}`;
+    const bez = (t) => { const P = [[x0, y], [x0 + 300, y - 230], [x1 - 300, y - 230], [x1, y]], u = 1 - t; return [u * u * u * P[0][0] + 3 * u * u * t * P[1][0] + 3 * u * t * t * P[2][0] + t * t * t * P[3][0], u * u * u * P[0][1] + 3 * u * u * t * P[1][1] + 3 * u * t * t * P[2][1] + t * t * t * P[3][1]]; };
+    const svg = `<svg width="${W}" height="${H}" style="position:absolute;inset:0;overflow:visible"><path d="${path}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="6" stroke-dasharray="14 12"/></svg>`;
+    const faces = (s.imgs || []).map((im, i) => { const t = c01(eo(mv) - i * .08), [fx, fy] = bez(t); return `<div style="position:absolute;left:${fx - 60}px;top:${fy - 60 - (m > 1 ? (i - (m - 1) / 2) * 0 : 0)}px;${pop(A(s, s.at ?? 0))}">${face(im, 120, GOLDC)}</div>`; }).join('');
+    const L = `<div style="position:absolute;left:${x0 - 85}px;top:${y - 85}px;${pop(p0)}">${logo(s.team, 170)}</div><div style="position:absolute;left:${x0 - 150}px;width:300px;top:${y + 100}px;text-align:center;font-size:40px;font-weight:900;color:#fff;${pop(p0)}">${esc(s.fromLabel || '')}</div>`;
+    const R = `<div style="position:absolute;left:${x1 - 95}px;top:${y - 63}px;${pop(p0)}">${flagBox('한국', 190)}</div><div style="position:absolute;left:${x1 - 150}px;width:300px;top:${y + 100}px;text-align:center;font-size:40px;font-weight:900;color:${GOLDC};${pop(p0)}">대표팀</div>`;
+    const cap = s.cap ? `<div style="margin-top:20px;${rise(A(s, s.capAt), 20)}">${gpill(s.cap, 46)}</div>` : '';
+    wrapZ(s, `${ttl(lt, s)}<div style="position:relative;width:${W}px;height:${H}px">${svg}${L}${R}${faces}</div>${cap}`);
+  };
+
+  /* ── 대표팀 안 순위 막대: rows:[{img, v, lab, hi, at}] — 숫자는 말한 사람(lab)만 ── */
+  SCENE.apbc_rank = (lt, s) => {
+    const rows = s.rows || [], mx = s.max || Math.max(...rows.map(r => r.v)), BW = s.bw || 980, RH = rows.length > 4 ? 92 : 120, sm = same(s);
+    let h = ttl(lt, s);
+    h += `<div class="col" style="gap:${rows.length > 4 ? 14 : 24}px;align-items:flex-start">` + rows.map((r, i) => {
+      const ap = sm ? 1 : r.at != null ? A(s, r.at) : seg(lt, .15 + i * .07, .35), gp = sm ? 1 : r.at != null ? A(s, r.at, .7) : seg(lt, .25 + i * .07, .7);
+      const hp = r.hi ? (r.hiAt != null ? A(s, r.hiAt) : gp) : 0, w = Math.max(40, BW * (s.inv ? (mx - r.v + (s.invPad || 0)) / (mx - Math.min(...rows.map(q => q.v)) + (s.invPad || 0)) : r.v / mx));
+      const col = r.hi ? (r.c || GOLDC) : 'rgba(255,255,255,.28)';
+      return `<div style="display:flex;align-items:center;gap:24px;opacity:${r.hi ? 1 : .85};${pop(ap)}">${r.anon && !r.hi ? `<div style="width:${RH}px;height:${RH}px;display:flex;align-items:center;justify-content:center"><div style="width:${Math.round(RH * .55)}px;height:${Math.round(RH * .8)}px">${ICON.person('rgba(255,255,255,.55)')}</div></div>` : face(r.img, RH, r.hi ? (r.c || GOLDC) : null)}
+        <div style="position:relative;width:${BW}px;height:${Math.round(RH * .58)}px;border-radius:${Math.round(RH * .29)}px;background:rgba(255,255,255,.06)"><div style="position:absolute;left:0;top:0;bottom:0;width:${w * eo(gp)}px;border-radius:inherit;background:${col};box-shadow:${r.hi ? `0 0 ${24 * hp}px ${col}` : 'none'}"></div></div>
+        ${r.lab ? `<div class="num" style="font-size:${RH > 100 ? 64 : 54}px;font-weight:900;color:${r.c || GOLDC};white-space:nowrap;${pop(r.labAt != null ? A(s, r.labAt) : gp)}">${esc(r.lab)}</div>` : ''}</div>`;
+    }).join('') + `</div>`;
+    if (s.note) h += `<div style="margin-top:26px;${rise(A(s, s.noteAt), 20)}">${pill(s.note, GOLDC, '#12161F', 50)}</div>`;
+    wrapZ(s, h);
+  };
+
+  /* ── 나이 축: 출생연도 축 위에 얼굴(연도마다 쌓임), 대상 강조 ── */
+  SCENE.apbc_ages = (lt, s) => {
+    const ys = s.years || [1999, 2006], y0 = ys[0], y1 = ys[1], W = 1500, X0 = 60, step = (W - 2 * X0) / (y1 - y0), FS = 54, sm = same(s);
+    const ppl = s.people || [], stack = {};
+    const items = ppl.map((q, i) => { const k = stack[q.y] = (stack[q.y] || 0) + 1; return { ...q, k, i }; });
+    const BASE = 470;
+    const faces = items.map(q => {
+      const x = X0 + (q.y - y0) * step, y = BASE - 10 - q.k * (FS + 4), p = sm ? 1 : seg(lt, .1 + q.i * .03, .3), hp = q.hi ? A(s, s.hiAt) : 0;
+      return `<div style="position:absolute;left:${x - FS / 2}px;top:${y}px;opacity:${q.hi ? 1 : .75};${pop(p)}">${q.hi ? face(q.img, 130, GOLDC, `margin-left:-38px;margin-top:-76px`) : `<div style="width:${FS}px;height:${FS}px;display:flex;align-items:center;justify-content:center"><div style="width:${Math.round(FS * .5)}px;height:${Math.round(FS * .75)}px">${ICON.person('rgba(255,255,255,.6)')}</div></div>`}</div>`;
+    }).join('');
+    const axis = `<div style="position:absolute;left:${X0}px;top:${BASE}px;width:${W - 2 * X0}px;height:6px;border-radius:3px;background:rgba(255,255,255,.4)"></div>`;
+    const lab = (s.labels || []).map(l => `<div class="num" style="position:absolute;left:${X0 + (l.y - y0) * step - 150}px;width:300px;top:${BASE + 20}px;text-align:center;font-size:48px;font-weight:900;color:${GOLDC};${pop(A(s, l.at))}">${esc(l.t)}</div>`).join('');
+    const ends = `<div style="position:absolute;left:0;top:${BASE + 90}px;font-size:36px;font-weight:800;color:rgba(255,255,255,.7)">← 나이 많음</div><div style="position:absolute;right:0;top:${BASE + 90}px;font-size:36px;font-weight:800;color:rgba(255,255,255,.7)">나이 적음 →</div>`;
+    wrapZ(s, `${ttl(lt, s)}<div style="position:relative;width:${W}px;height:${BASE + 150}px">${faces}${axis}${lab}${ends}</div>${(s.notes || []).length ? `<div style="display:flex;gap:20px;margin-top:10px">${s.notes.map(z => `<div style="${rise(A(s, z.at), 20)}">${pill(z.t, z.gold ? GOLDC : 'rgba(255,255,255,.12)', z.gold ? '#12161F' : '#fff', 46, z.gold ? '' : 'border:2px solid ' + PLINE)}</div>`).join('')}</div>` : ''}`);
+  };
+
+  /* ── 선발 로테이션: 4일 칸(상대 국기) + 얼굴 + 꼬리표 ── */
+  SCENE.apbc_rot = (lt, s) => {
+    const days = s.days || [], sm = same(s), CW = 330;
+    const cols = days.map((d, i) => {
+      const p = sm ? 1 : seg(lt, .1 + i * .08, .35), f = d.img, fp = f ? A(s, d.at) : 0;
+      const tags = (d.tags || []).map(t => `<div style="${pop(A(s, t.at))}">${pill(t.t, t.red ? RED : GOLDC, t.red ? '#fff' : '#12161F', 34)}</div>`).join('');
+      return `<div class="col" style="width:${CW}px;align-items:center;gap:18px;${pop(p)}">
+        <div style="display:flex;align-items:center;gap:12px">${d.flag ? flagBox(d.flag, 80) : ''}<span style="font-size:40px;font-weight:900;color:#fff">${esc(d.label)}</span></div>
+        <div style="position:relative;width:200px;height:200px;border-radius:50%;border:5px dashed rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;font-size:80px;font-weight:900;color:rgba(255,255,255,.6);opacity:${1 - fp}">?</div>
+          ${f ? `<div style="position:absolute;inset:-5px;${pop(fp)}">${face(f, 200, d.ring || GOLDC)}</div>` : ''}</div>
+        <div class="col" style="gap:10px;align-items:center;min-height:100px">${tags}</div></div>`;
+    }).join('');
+    wrapZ(s, `${ttl(lt, s)}<div style="display:flex;gap:40px;align-items:flex-start">${cols}</div>${textH(lt, s, .8, 56)}`);
+  };
+
+  /* ── 경기 결과 타일: tiles:[{y, stage, a, b, res(W/L), note, at, hi, hiAt}] ── */
+  SCENE.apbc_games = (lt, s) => {
+    const sm = same(s), tiles = s.tiles || [];
+    const tt = tiles.map((q, i) => {
+      const p = sm && q.keep ? 1 : A(s, q.at), hp = q.hi ? A(s, s.hiAt) : 0, dim = s.hiAt != null && !q.hi ? 1 - .55 * A(s, s.hiAt) : 1;
+      const rc = q.res === 'W' ? BLUE : q.res === 'D' ? GRAY : RED;
+      return `<div class="col" style="width:330px;align-items:center;gap:14px;padding:26px 10px;border-radius:30px;background:${PANEL};border:4px solid ${hp > .5 ? GOLDC : PLINE};opacity:${dim};${rise(p, 30)}">
+        <div class="num" style="font-size:48px;font-weight:900;color:#fff">${esc(q.y)}</div><div style="font-size:36px;font-weight:800;color:rgba(255,255,255,.8)">${esc(q.stage || '')}</div>
+        <div style="display:flex;align-items:center;gap:14px">${flagBox('한국', 70)}<span class="num" style="font-size:64px;font-weight:900;color:#fff;letter-spacing:-2px">${esc(q.a)} : ${esc(q.b)}</span>${flagBox(q.vs || '일본', 70)}</div>
+        <div style="display:flex;gap:10px;align-items:center">${pill(q.res === 'W' ? '승' : q.res === 'D' ? '무' : '패', rc, '#fff', 36)}${q.note ? `<span style="font-size:32px;font-weight:800;color:rgba(255,255,255,.8)">${esc(q.note)}</span>` : ''}</div>
+        ${q.hi && s.hiLabel ? `<div style="${pop(hp)}">${pill(s.hiLabel, GOLDC, '#12161F', 34)}</div>` : `<div style="height:${s.hiLabel || s.hiSpace ? 58 : 0}px"></div>`}</div>`;
+    }).join('');
+    wrapZ(s, `${ttl(lt, s)}<div style="display:flex;gap:30px;align-items:stretch">${tt}</div>${textH(lt, s, .8, 56)}`);
+  };
+
+  /* ── 타순: 김도영 앞·뒤 칸 — 얼굴이 칸 사이를 오간다 ── */
+  SCENE.apbc_lineup = (lt, s) => {
+    const sm = same(s), CW = 300, CH = 300, G = 90, X = [0, CW + G, 2 * (CW + G)], W = 3 * CW + 2 * G;
+    const box = (i, q) => { const p = sm ? 1 : seg(lt, .05 + i * .1, .35), hp = q.hiAt != null ? A(s, q.hiAt) : 0;
+      return `<div style="position:absolute;left:${X[i]}px;top:60px;width:${CW}px;height:${CH}px;border-radius:40px;background:${PANEL};border:5px ${q.dash ? 'dashed' : 'solid'} ${hp > .5 ? GOLDC : PLINE};${pop(p)}">
+        <div style="position:absolute;left:0;right:0;top:-62px;text-align:center;font-size:40px;font-weight:900;color:${hp > .5 ? GOLDC : '#fff'}">${esc(q.label || '')}</div>
+        ${q.q ? `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:120px;font-weight:900;color:rgba(255,255,255,.35)">?</div>` : ''}</div>`; };
+    const slots = (s.slots || []).map((q, i) => box(i, q)).join('');
+    const ppl = (s.people || []).map(q => {
+      let pos = q.slot; (q.moves || []).forEach(m => { pos = lerp(pos, m.to, eo(A(s, m.at, .9))); });
+      const x = (CW + G) * pos + CW / 2, p = A(s, q.at), out = q.outAt != null ? 1 - A(s, q.outAt, .3) : 1, SZ = 240;
+      return `<div style="position:absolute;left:${x - SZ / 2}px;top:${60 + (CH - SZ) / 2}px;opacity:${out};${pop(p)}">${face(q.img, SZ, q.ring || GOLDC)}</div>`;
+    }).join('');
+    const chips = (s.chips || []).map(c => `<div style="${pop(A(s, c.at))}">${pill(c.t, c.gold ? GOLDC : 'rgba(255,255,255,.14)', c.gold ? '#12161F' : '#fff', 40, c.gold ? '' : 'border:2px solid ' + PLINE)}</div>`).join('');
+    wrapZ(s, `${ttl(lt, s)}<div style="position:relative;width:${W}px;height:${CH + 80}px">${slots}${ppl}</div>${chips ? `<div style="display:flex;gap:20px;margin-top:26px">${chips}</div>` : ''}`);
+  };
+
+  /* ── 스트라이크 존: 존 밖 공 · 삼진 표시 ── */
+  SCENE.apbc_zone = (lt, s) => {
+    const sm = same(s), ZW = 380, ZH = 470, W = 860, H = 700, zx = (W - ZW) / 2, zy = 120;
+    const zp = sm ? 1 : seg(lt, .05, .4), op = s.outAt != null ? A(s, s.outAt, .6) : 0, pulse = op > 0 ? .5 + .5 * Math.sin(lt * 4) : 0;
+    const grid = `<div style="position:absolute;left:${zx}px;top:${zy}px;width:${ZW}px;height:${ZH}px;border:6px solid #fff;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);${pop(zp)}">${Array.from({ length: 9 }, () => `<div style="border:1px solid rgba(255,255,255,.25)"></div>`).join('')}</div>`;
+    const shade = `<div style="position:absolute;left:${zx - 140}px;top:${zy - 110}px;width:${ZW + 280}px;height:${ZH + 220}px;border-radius:40px;background:rgba(229,72,77,${.12 + .12 * pulse});opacity:${op}"></div><div style="position:absolute;left:${zx}px;top:${zy}px;width:${ZW}px;height:${ZH}px;background:#0B1634;opacity:${op}"></div>`;
+    const balls = (s.balls || []).map(b => `<div style="position:absolute;left:${zx + b.x * ZW - 30}px;top:${zy + b.y * ZH - 30}px;width:60px;height:60px;${pop(A(s, b.at))}">${ICON.ball(RED)}${b.t ? `<div style="position:absolute;left:-80px;width:220px;top:64px;text-align:center;font-size:30px;font-weight:900;color:#fff;white-space:nowrap">${esc(b.t)}</div>` : ''}</div>`).join('');
+    const ks = (s.ks || 0) ? `<div style="display:flex;gap:16px">${Array.from({ length: s.ks }, (_, i) => `<div style="width:96px;height:96px;border-radius:20px;background:${RED};display:flex;align-items:center;justify-content:center;font-size:66px;font-weight:900;color:#fff;${pop(A(s, s.ksAt != null ? s.ksAt + i * .12 : null))}">K</div>`).join('')}</div>` : '';
+    const side = `<div class="col" style="gap:22px;align-items:flex-start;justify-content:flex-start;width:620px;height:520px">${s.who ? `<div style="display:flex;align-items:center;gap:20px;${sm ? '' : pop(seg(lt, 0, .3))}">${face(s.who, 130, GOLDC)}<span style="font-size:48px;font-weight:900;color:#fff">${esc(s.whoLabel || '')}</span></div>` : ''}${ks}
+      ${(s.side || []).map(z => `<div style="${rise(A(s, z.at), 20)}">${pill(z.t, z.gold ? GOLDC : z.red ? RED : 'rgba(255,255,255,.12)', z.gold ? '#12161F' : '#fff', 44, z.gold || z.red ? '' : 'border:2px solid ' + PLINE)}</div>`).join('')}</div>`;
+    wrapZ(s, `${ttl(lt, s)}<div style="display:flex;align-items:center;gap:60px"><div data-anchor style="position:relative;width:${W}px;height:${H}px">${shade}${grid}${balls}</div>${side}</div>`);
+  };
+})();
+
 function render(t) {
   prepAll();
   let k = 0; while (k < BD.length && t >= BD[k]) k++;
@@ -6028,7 +6515,7 @@ function render(t) {
     const lim = +el.dataset.fit; let fs = parseFloat(el.style.fontSize || getComputedStyle(el).fontSize), g = 0;
     while (el.scrollWidth > lim && fs > 46 && g++ < 60) { fs -= 3; el.style.fontSize = fs + 'px'; }
   });
-  document.getElementById('body').style.opacity = (s._keep || s._chain || /^rf_/.test(s.type)) ? '1' : String(c01((t - start - 0.05) / 0.25));   /* 11/4 16:06 사용자 "전 장면부터 그대로 있는데 또 사라졌다가 다시": 그림 장면(rf_*)은 장면 전체를 다시 띄우지 않는다 — 요소마다 자기 등장(같은 글은 그대로) + 앞 장면은 겹쳐 빠짐 */
+  document.getElementById('body').style.opacity = (s._keep || s._chain) ? '1' : /^(rf|bt)_/.test(s.type) ? (kk > 0 ? String(c01((t - start - 0.1) / 0.15)) : '1') : String(c01((t - start - 0.05) / 0.25));   /* 11/7 19:13 사용자 "장면 넘어갈 때 이미지가 아주 잠깐 겹쳐": 이어지지 않는 그림 장면은 앞 장면이 0.1초에 빠진 뒤 0.1~0.25초에 들어옴(겹침 0) */   /* 11/4 16:06 사용자 "전 장면부터 그대로 있는데 또 사라졌다가 다시": 그림 장면(rf_*)은 장면 전체를 다시 띄우지 않는다 — 요소마다 자기 등장(같은 글은 그대로) + 앞 장면은 겹쳐 빠짐 */
   const gx = 50 + 4 * Math.sin(t * .5), gy = 22 + 2 * Math.cos(t * .37);
   document.getElementById('stage').style.background = window.__TPC ? `radial-gradient(60% 55% at ${gx}% ${gy}%, ${window.__TPC.glow} 0%, rgba(0,0,0,0) 70%),${window.__TPC.bg}` : `radial-gradient(60% 50% at ${gx}% ${gy}%, ${ACC}22 0%, rgba(244,246,250,0) 70%),#E4E8EE`;
   if (!sbgOv && kk > 0 && SC[kk - 1] && SC[kk - 1].post) sbgOv = { cur: (SC[kk] || {}).bg || null, prv: SC[kk - 1].post.bg || null };   /* 11/4 14:52 사용자 "전 장면이 아주 잠깐": 순위표 다음 장면은 순위표 바탕에서 넘어간다(그 전 장면 바탕이 비치던 것) */
