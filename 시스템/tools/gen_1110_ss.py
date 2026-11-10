@@ -266,28 +266,40 @@ SC['a6'] = KEEP(SC['a5']); SC['a6']['cards'][1]['at'] = 0; SC['a6']['cards'][1][
 # ⑥ 샐러리캡
 SC['c1'] = Qs("두 사람을 다 잡을 돈이 있을까?")
 SC['c1b'] = BANDs("2027년 삼성 여유 자금 계산", [V("옵션 + 인상", "", 0.3), V("래리 버드 룰", "", 1, hi=True)], bgk="삼성bg")
-SC['c2'] = CAPS("샐러리캡(경쟁균형세)", 0.01, capLab="상한", totalLab="", totalAt=-1, capAt=2, tag="국내 선수 상위 40명 연봉 합", tagAt=1, chain="cap0")
+# 11/10 10:33 사용자 "이런 장면 안 나오게"(빈 막대 + 제목만) → 40명 그림이 처음부터 보이고, 마흔 명에서 채워지며 합계 막대, 상한에서 금색 선
+SC['c2'] = BANDs("샐러리캡(경쟁균형세)", [], tag="팀마다", top=170, figY=330,
+                 fig=dict(type="squad", at=0, n=40, fillAt=1, sumLab="국내 선수 상위 40명 연봉 합", capAt=2, capLab="상한"))
 SC['c2b'] = BANDs("합계에 넣는 돈", [], tag="외국인·신인 제외", top=170, figY=400,
                   fig=dict(type="steps", at=0, items=[dict(lab="연봉", w=260, at=1), dict(lab="받은 옵션", join="+", at=1.3), dict(lab="계약금 ÷ 연수", join="+", hi=True, at=2)]))
 SC['c3'] = BANDs("샐러리캡 상한", [V("151억 1700만", "2027년 상한", 1, hi=True)], bgk="구장B")
 SC['c4'] = CAPS("삼성 라이온즈 · 2025년", 132.07, cap=137.12, capLab="2025 상한", tag="10개 구단 1위", tagAt=2, totalLab="상위 40명 합계", totalTxt="132억", leftLab="남은 돈", leftTxt="5억", totalAt=0, totalTxtAt=1, capAt=0, leftAt=3, chain="c4")
 SC['c5'] = TCs("구자욱E", "구자욱", "2025년 합계 안에 든 돈", big=BIGV("20억", "2025년 연봉", 0.3, size=170), minor=[MI("은퇴 선수", "연봉도 포함", 1)], at=0)
+# 11/10 10:42 사용자 "남는 돈에서 시청자에게 설명이 충분히 들어가야" + 10:49 "그렇게 잡은 근거도 살짝"
+SC['c6a'] = CAPS("삼성 라이온즈 · 2027년", 94.12, capLab="2027 상한", totalLab="이미 정해진 돈", totalTxt="", totalAt=2, capAt=1, leftLab="남는 돈", leftTxt="두 사람에게 쓸 몫", leftAt=3, chain="c6a")
 SC['c6b'] = DUOs("계산에서 뺀 선수 · FA 4명 · 방출 10명", [DCT("원태인H", "원태인", SS, 0, [dict(k="FA", v="제외", at=1)]), DCT("구자욱D", "구자욱", SS, 0, [dict(k="FA", v="제외", at=1)])])
 SC['c7'] = RBARS("2027년에 나갈 돈", [dict(label="계약 남은 8명 · 1년 몫 넉넉히", v=63.5, txt="63억 5천만", at=0, valAt=2), dict(label="나머지 32명 · 2026 연봉", v=30.6, txt="30억 6천만", at=3, valAt=4)], 75, bw=330, gap=200, lfs=34)
 SC['c7']['bg'] = BG_SS
 SC['c8'] = CAPS("삼성 라이온즈 · 2027년", 94.12, capLab="2027 상한 151억 1700만", totalLab="2027년에 나갈 돈", totalTxt="94억 1천만", totalAt=-1, capAt=-1, chain="c27")
 SC['c9'] = BANDs("같은 방식으로 다시 센 2025년", [V("공식 발표보다", "", 0.3), V("10억 가까이 적게", "옵션 같은 비공개 몫", 2, hi=True)], bgk="구장A")
-SC['c9a'] = CAPS("삼성 라이온즈 · 2027년", 94.12, capLab="2027 상한 151억 1700만", totalLab="2027년에 나갈 돈", totalTxt="94억 1천만", totalAt=-1, capAt=-1, capBelow=True, tag="옵션 최대 11억", tagAt=1, minus=dict(v=5.5, lab="옵션 절반", txt="5억 5천만", sign="+ ", at=2), chain="c27a")
-SC['c9b'] = KEEP(SC['c9a'], tag="연봉 15% 인상(가정)", tagAt=1.5); SC['c9b']['minus2'] = dict(v=4.59, lab="연봉 32명 15% 인상", txt="4억 5천만", at=3)
+SC['c9a'] = CAPS("삼성 라이온즈 · 2027년", 94.12, capLab="2027 상한 151억 1700만", totalLab="2027년에 나갈 돈", totalTxt="94억 1천만", totalAt=-1, capAt=-1, capBelow=True, tag="옵션 최대 11억", tagAt=1, minus=dict(v=5.5, lab="옵션 절반", txt="5억 5천만", sign="+ ", at=3), chain="c27a")
+SC['c9b'] = KEEP(SC['c9a'], tag="기본 가정 · 연봉 15% 인상", tagAt=2); SC['c9b']['minus2'] = dict(v=4.59, lab="연봉 32명 15% 인상", txt="4억 5천만", at=3)
+SC['c9b2'] = RBARS("15%로 잡은 근거 · 2026년 삼성 연봉 인상률", [dict(label="선수 전체", v=8.6, txt="9% 가까이", at=1, valAt=2), dict(label="많이 오른 선수들", v=17, txt="16~18%", at=3, valAt=4), dict(label="2027년 가정", v=15, txt="15%", at=5, valAt=5, hi=True)], 24, bw=300, gap=110, lfs=40)
+SC['c9b2']['bg'] = BG_SS
 SC['c9c'] = CAPS("삼성 라이온즈 · 2027년", 104.2, capLab="2027 상한 151억 1700만", totalLab="2027년에 나갈 돈(추정)", totalTxt="104억 안팎", totalAt=0.3, capAt=-1, tag="옵션 절반 + 연봉 인상", tagAt=-1, chain="c27b")
-SC['c10'] = KEEP(SC['c9c']); SC['c10'].update(leftLab="남는 돈", leftTxt="47억 가까이", leftAt=1)
-SC['c10b'] = CAPS("삼성 라이온즈 · 2027년", 112.7, capLab="2027 상한 151억 1700만", totalLab="최악의 경우", totalTxt="112억 7천만", totalAt=0.3, totalTxtAt=2, capAt=0, tag="옵션 전부 + 연봉 25% 인상", tagAt=0, leftLab="남는 돈", leftTxt="38억", leftAt=3, chain="c27c")
-SC['c12'] = CAPS("두 사람을 다 잡으면", 104.2, capLab="2027 상한 151억 1700만", totalLab="2027년에 나갈 돈", totalTxt="104억", totalAt=-1, capAt=-1, capBelow=True, minus=dict(v=49.2, lab="연평균 25억씩 두 사람", txt="50억", sign="+ ", at=2), result=dict(lab="상한", txt="2억쯤 초과 또는 겨우 맞춤", at=3), tag="래리 버드 룰 = 프랜차이즈 선수 특례", tagAt=50, chain="c12")
-SC['c13'] = KEEP(SC['c12'], tag="래리 버드 룰 = 프랜차이즈 선수 특례", tagAt=1)
+SC['c10'] = KEEP(SC['c9c']); SC['c10'].update(leftLab="남는 돈 · 두 사람에게 쓸 몫", leftTxt="47억 가까이", leftAt=2)
+SC['c10b'] = CAPS("삼성 라이온즈 · 2027년", 112.7, capLab="2027 상한 151억 1700만", totalLab="최악의 경우", totalTxt="112억 7천만", totalAt=0.3, totalTxtAt=4, capAt=0, tag="옵션 전부 + 연봉 25% 인상", tagAt=1, leftLab="남는 돈", leftTxt="38억", leftAt=5, chain="c27c")
+# 11/10 11:00 사용자 "최악의 경우라고 말을 해야지 · 기본 가정과 최악의 경우 둘 다 50억씩 더했을 때를 보여줘야지" + 11:01 "25억씩 잡은 근거"
+SC['c12'] = CAPS("두 사람을 다 잡으면", 104.2, capLab="2027 상한 151억 1700만", totalLab="기본 가정 · 2027년에 나갈 돈", totalTxt="104억", totalAt=0, capAt=-1, capBelow=True, tag="몸값 전망 100억+ · 4년 100억이면 한 해 25억", tagAt=3, minus=dict(v=49.2, lab="두 사람 한 해 25억씩", txt="50억", sign="+ ", at=5), chain="c12")
+SC['c12a'] = KEEP(SC['c12']); SC['c12a']['result'] = dict(lab="기본 가정", txt="상한 2억쯤 초과 · 겨우 맞출 수도", at=4)
+SC['c12b'] = CAPS("두 사람을 다 잡으면", 112.7, capLab="2027 상한 151억 1700만", totalLab="최악의 경우 · 2027년에 나갈 돈", totalTxt="112억 7천만", totalAt=0, capAt=-1, capBelow=True, tag="몸값 전망 100억+ · 4년 100억이면 한 해 25억", tagAt=-1, minus=dict(v=49.1, lab="두 사람 한 해 25억씩", txt="50억", sign="+ ", at=2), result=dict(lab="최악의 경우", txt="상한보다 10억 넘게 많음", at=3), chain="c12", cont=True)
+SC['c13'] = KEEP(SC['c12b'], tag="래리 버드 룰 = 프랜차이즈 선수 특례", tagAt=1)
 SC['c14'] = BANDs("프랜차이즈 선수 특례", [V("해마다 1명", "한 팀에서 7시즌 이상", 0.4), V("절반만 계산", "그 선수 몫", 3, hi=True)], bgk="구장A")
-SC['c15'] = CAPS("한 명을 특례로 지정하면", 104.2, capLab="2027 상한 151억 1700만", totalLab="2027년에 나갈 돈", totalTxt="104억", totalAt=-1, capAt=-1, capBelow=True, minus=dict(v=36.65, lab="두 사람(한 명은 절반만 계산)", txt="", sign="", at=0.3), ghost=dict(v=12.5, lab="특례로 빠지는 몫", txt="− 12억 5천만", at=1), result=dict(lab="", txt="10억쯤 남음", at=2), chain="c15")
+SC['c15'] = CAPS("한 명을 특례로 지정하면", 104.2, capLab="2027 상한 151억 1700만", totalLab="기본 가정 · 2027년에 나갈 돈", totalTxt="104억", totalAt=-1, capAt=-1, capBelow=True, minus=dict(v=36.65, lab="두 사람(한 명은 절반만 계산)", txt="", sign="", at=0.3), ghost=dict(v=12.5, lab="특례로 빠지는 몫", txt="− 12억 5천만", at=1), result=dict(lab="", txt="10억쯤 남음", at=2), chain="c15")
+SC['c15']['chain'] = "c15"
+SC['c15b'] = CAPS("한 명을 특례로 지정하면", 112.7, capLab="2027 상한 151억 1700만", totalLab="최악의 경우 · 2027년에 나갈 돈", totalTxt="112억 7천만", totalAt=0, capAt=-1, capBelow=True, minus=dict(v=36.6, lab="두 사람(한 명은 절반만 계산)", txt="", sign="", at=-1), result=dict(lab="최악의 경우", txt="2억 가까이 남음", at=1), chain="c15", cont=True)
 SC['c16'] = BANDs("삼성 구상 · 보도", [V("특례 활용", "", 1), V("250억 원+", "두 사람에게", 3, hi=True)], bgk="우승")
-SC['c16b'] = CAPS("4년 250억 원이면", 104.2, capLab="2027 상한 151억 1700만", totalLab="2027년에 나갈 돈", totalTxt="104억", totalAt=-1, capAt=-1, capBelow=True, minus=dict(v=45.0, lab="한 해 몫 · 특례 적용", txt="4년 250억", sign="+ ", at=1), result=dict(lab="남는 돈", txt="1억 미만 ~ 4억", at=3))
+SC['c16b'] = CAPS("4년 250억 원이면", 104.2, capLab="2027 상한 151억 1700만", totalLab="기본 가정 · 2027년에 나갈 돈", totalTxt="104억", totalAt=-1, capAt=-1, capBelow=True, minus=dict(v=45.0, lab="한 해 몫 · 특례 적용", txt="4년 250억", sign="+ ", at=1), result=dict(lab="기본 가정 · 남는 돈", txt="1억 미만 ~ 4억", at=4), chain="c16")
+SC['c16c'] = CAPS("4년 250억 원이면", 112.7, capLab="2027 상한 151억 1700만", totalLab="최악의 경우 · 2027년에 나갈 돈", totalTxt="112억 7천만", totalAt=0, capAt=-1, capBelow=True, minus=dict(v=45.0, lab="한 해 몫 · 특례 적용", txt="4년 250억", sign="+ ", at=-1), result=dict(lab="최악의 경우", txt="상한 4억 ~ 8억 초과", at=1), chain="c16", cont=True)
 SC['c17'] = CAPS("상한을 넘으면", CAP, capLab="상한", totalLab="연봉 합계", totalAt=-1, capAt=-1, tag="2026년에 안 넘었다면", tagAt=1, over=dict(v=12, lab="넘은 돈", at=0.4), rate=dict(txt="넘은 돈 × 30%", at=2))
 SC['c18'] = BANDs("아직 모르는 것", [V("12월", "KBO 2026 합계 발표", 1, hi=True), V("연봉 배분 · 군 입대", "옛 계약 · 방출", 2), V("몇억 원", "달라질 수 있음", 4)], bgk="구장B")
 SC['k1'] = RBARS("2027년 남는 돈 · 옵션·인상 뺀 같은 방식", [dict(label="롯데", v=65.5, txt="삼성보다 8억+ ↑", at=2, valAt=3), dict(label="삼성", v=57.1, txt="삼성 기준", at=0.3, valAt=0.3, hi=True), dict(label="두산", v=49.7, txt="양의지 남으면 최대 7억 ↓", at=4, valAt=5)], 80, bw=260, gap=140, lfs=36)
@@ -312,6 +324,7 @@ SC['g3b'] = KEEP(SC['g3']); SC['g3b']['items'][3]['at'] = 0.3; SC['g3b']['items'
 SC['g4'] = PS("강민호", "강민호", "포수", [VST("2027년까지 계약", 1, size=56)], stats=[STT("한국시리즈", "옆구리 부상 안고 출전", 3)], chain="kmh")
 SC['g5'] = DUOs("삼성 안방", [DCT("강민호", "강민호", SS, 0, [dict(k="2026년 7월", v="“주전 포수는 김도환”", at=2, hi=True)]), DCT("김도환", "김도환", SS, 3)], chain="g5")
 SC['g6'] = DUOs("2027년 삼성 안방", [DCT("박세혁", "박세혁", SS, 0, [dict(k="백업 포수", v="FA", at=0.4)]), DCT("김도환", "김도환", SS, -1, [dict(k="2027년", v="얼마나 크느냐", at=2, hi=True)])])
+for _k in ('g5', 'g6'): SC[_k]['cards'][1].update(zoom=1.6, zo="56% 50%")   # 11/10 11:04 사용자 "김도환 사진 너무 밑으로 치우쳐" → 얼굴 쪽으로 키움(원본 2046px라 화질 여유)
 SC['g7'] = PS("김재윤", "김재윤", "마무리", [VST("불펜 과제", 0.2, "bad", size=56), VST("35세이브 · 세이브왕", 1, size=56)], stats=[STT("2027년", "30대 후반", 3, hi=True)], imgAt=2)
 # ⑨ 결론
 SC['e1'] = DUOs("삼성의 2027년", [DCT("원태인G", "원태인", SS, 0, [dict(k="한 명만 빠져도", v="2연패 어려움", at=50)]), DCT("구자욱G", "구자욱", SS, 0, [dict(k="한 명만 빠져도", v="2연패 어려움", at=50)])], chain="e1")
@@ -429,6 +442,9 @@ if __name__ == '__main__':
         if l.get('pauseMax') is None and any(x.rstrip().endswith('?') for x in sg[:-1]): l['pauseMax'] = 0.5
         if l.get('holdAfter') is None and l.get('gapAfter') is None and (i + 1) in _chs: l["gapAfter"] = 0.55
         if sg[-1].rstrip().endswith('?') and l.get('pauseMax') is None: l['pauseMax'] = 0.5
+    # 11/10 10:50 남는 돈 설명 2줄 추가 → 뒤 줄 번호가 밀림. 옛 번호 음성(대사가 같은 줄만)을 새 번호로 옮김(build.py voiceRemap, 재합성 없음)
+    _VR = {54: 53, 55: 54, 56: 55, 66: 62, 67: 63, 70: 65, 73: 67, 74: 68, 75: 69, 76: 70, 77: 71, 78: 72, 79: 73, 80: 74, 81: 75, 82: 76, 83: 77, 84: 78, 85: 79, 86: 80, 87: 81, 88: 82, 89: 83, 90: 84, 91: 85, 92: 86, 93: 87, 94: 88, 95: 89, 96: 90, 97: 91, 98: 92, 99: 93, 100: 94, 101: 95, 102: 96, 103: 97, 104: 98}
+    EP['voiceRemap'] = [_VR.get(j) for j in range(len(EP['lines']))]
     out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(OUT, '2026-11-10_롱폼.json')
     json.dump(EP, open(out, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     tot = sum(len(l['narr'].replace(' / ', ' ')) for l in EP['lines'][:-1])

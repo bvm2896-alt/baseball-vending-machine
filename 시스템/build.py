@@ -1107,6 +1107,7 @@ def write_chapters(ep, st, yt_path):
         return f'{m}:{s_:02d}'
     rows, prev = [], -99.0
     intro = ep.get('introChapter')   # 10/18 검수: 첫 챕터 앞에 머리말(훅)이 있으면 '0:00 <머리말>' 을 따로 두고 첫 챕터는 실제 시작 시각으로
+    if intro and ch and str(ch[0].get('title', '')).strip() == str(intro).strip() and int(ch[0].get('from', 0)) == 0: intro = None   # 11/10 삼성 2027: 머리말과 첫 챕터가 같은 이름이면 '0:00 오프닝' 이 두 줄 나왔다 → 한 줄만
     if intro: rows.append(f'0:00 {intro}'); prev = 0.0
     for i, c in enumerate(ch):
         k = int(c.get('from', 0))
@@ -1118,7 +1119,8 @@ def write_chapters(ep, st, yt_path):
     except Exception: cur = ''
     # 10/14 사용자 지시: 챕터는 머리말([챕터 — …]) 없이 해시태그 줄 바로 밑에 챕터 줄만 넣는다([태그] 칸 위)
     cur = re.sub(r'\n*\[챕터[^\n]*\](?:\n[^\n]+)*', '', cur).rstrip()
-    i = cur.find('\n\n[태그]')
+    i = cur.find('\n\n등장 구단:'); i = i if i >= 0 else cur.find('\n\n등장 선수:')   # 11/10: 타임라인은 해시태그 다음, 등장 구단·선수 앞
+    i = i if i >= 0 else cur.find('\n\n[태그]')
     out = (cur[:i] + '\n\n' + '\n'.join(rows) + cur[i:]) if i >= 0 else (cur + '\n\n' + '\n'.join(rows))
     io.open(yt_path, 'w', encoding='utf-8').write(out.rstrip() + '\n')
     print('챕터', len(rows), '개')
@@ -1259,7 +1261,19 @@ def write_youtube_txt(ep, path, dur=0):
         base = ['#야구자판기', stag, '#프로야구', '#KBO', '#야구']
         hashtags = base + ['#' + t.replace(' ', '') for t in y.get('tags', []) if '#' + t.replace(' ', '') not in base][:10] + ['#야구스타그램', '#야구팬', '#Shorts']
     # 9/30 사용자 지시: 해시태그는 [해시태그] 머리글 없이 설명 맨 밑에 한 줄 띄고 → [설명] 칸을 통째로 복사하면 해시태그까지 한 번에
-    body = ['[제목]', title_with_date(ep), '', '[설명]', desc, '', ' '.join(hashtags), '', '[태그]  (유튜브 태그 칸에 그대로)', ', '.join(y.get('tags', []))]
+    # 11/10 17:17 사용자: 캡션에서 '야구자판기는 매일 야구 이슈를 정리해요' 빼기 + 순서 = 내용 → 댓글 유도 → 지난 영상 → 해시태그 → 타임라인(롱폼) → 등장 구단·등장 선수 → (그 밖에 더하는 것은 무조건 맨 끝)
+    desc = re.sub(r'야구자판기는 매일[^\n.!?]*[.!?]?[ \t]*', '', desc)
+    desc = re.sub(r'\n{3,}', '\n\n', '\n'.join(l.rstrip() for l in desc.split('\n'))).strip()
+    sec = [desc]
+    if y.get('cta'): sec.append(str(y['cta']).strip())
+    if y.get('prev'): sec.append('▶ 지난 영상: ' + str(y['prev']).strip())
+    sec.append(' '.join(hashtags))
+    tail = []
+    if y.get('teams'): tail.append('등장 구단: ' + ', '.join(y['teams']))
+    if y.get('players'): tail.append('등장 선수: ' + ', '.join(y['players']))
+    if tail: sec.append('\n'.join(tail))   # 롱폼 타임라인은 write_chapters 가 이 칸 바로 위에 끼운다
+    for x in (y.get('extra') or []): sec.append(str(x).strip())
+    body = ['[제목]', title_with_date(ep), '', '[설명]', '\n\n'.join(x for x in sec if x), '', '[태그]  (유튜브 태그 칸에 그대로)', ', '.join(y.get('tags', []))]
     # 11/1 23:31 사용자 "출처는 TXT파일에 넣지마" → 기록·기사·사진 출처 줄은 유튜브 txt 에 쓰지 않는다
     if y.get('pinned'): body += ['', '[고정 댓글]  (영상 올린 뒤 댓글로 달고 고정)', y['pinned']]   # 10/24 롱폼㉙ 검수: 게시 전 고정 댓글 문안까지 준비
     io.open(path, 'w', encoding='utf-8').write('\n'.join(body) + '\n')

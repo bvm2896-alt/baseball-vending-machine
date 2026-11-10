@@ -57,25 +57,25 @@
    "key": "삼성 지갑 계산 · 래리 버드 룰",
    "title": "삼성 지갑 계산 · 래리 버드 룰",
    "from": 45,
-   "to": 70
+   "to": 76
   },
   {
    "key": "외국인 선수 · 디아즈·후라도·페덱·매닝",
    "title": "외국인 선수 · 디아즈·후라도·페덱·매닝",
-   "from": 71,
-   "to": 80
+   "from": 77,
+   "to": 86
   },
   {
    "key": "2연패 과제 · 안방과 불펜",
    "title": "2연패 과제 · 안방과 불펜",
-   "from": 81,
-   "to": 88
+   "from": 87,
+   "to": 94
   },
   {
    "key": "결론 · 누가 남을까",
    "title": "결론 · 누가 남을까",
-   "from": 89,
-   "to": 97
+   "from": 95,
+   "to": 103
   }
  ],
  "lines": [
@@ -316,8 +316,12 @@
    "sub": "구자욱의 2025년\n연봉 20억 원과|은퇴한 선수들 연봉도|그 안에 들어 있어요"
   },
   {
-   "narr": "원태인 구자욱 등 / 에프에이 자격을 얻을 네 명과 / 방출된 열 명을 빼고 / 이천이십칠년에 나갈 돈을 셌어요",
-   "sub": "원태인·구자욱 등|FA 자격을 얻을 4명과|방출된 10명을 빼고|2027년에 나갈 돈을 셌어요"
+   "narr": "남는 돈은 / 이천이십칠년 상한에서 / 이미 정해진 돈을 뺀 거예요 / 두 사람을 잡는 데 / 쓸 수 있는 몫이죠",
+   "sub": "남는 돈은|2027년 상한에서|이미 정해진 돈을 뺀 거예요|두 사람을 잡는 데|쓸 수 있는 몫이죠"
+  },
+  {
+   "narr": "원태인 구자욱처럼 / 아직 계약하지 않은 에프에이 네 명과 / 방출된 열 명은 빼고 / 이천이십칠년에 나가기로 정해진 돈만 셌어요",
+   "sub": "원태인·구자욱처럼|아직 계약하지\n않은 FA 4명과|방출된 10명은 빼고|2027년에 나가기로\n정해진 돈만 셌어요"
   },
   {
    "narr": "계약이 남은 여덟 명은 / 일년 몫을 넉넉히 잡아 / 육십삼억 오천만 원 / 나머지 서른두 명은 이천이십육년 연봉으로 / 삼십억 육천만 원이에요",
@@ -332,30 +336,43 @@
    "sub": "2025년을 같은\n방식으로 세 보면|공식 발표보다|10억 원 가까이 적게 나와요|받은 옵션 같은|공개되지 않은 몫 때문이죠"
   },
   {
-   "narr": "이천이십칠년 옵션은 / 다 받으면 최대 십일억 원이에요 / 절반만 잡으면 / 오억 오천만 원이죠",
-   "sub": "2027년 옵션은|다 받으면 최대\n11억 원이에요|절반만 잡으면|5억 5천만 원이죠"
+   "narr": "이천이십칠년 옵션은 / 다 받으면 최대 십일억 원이에요 / 다 받을지는 알 수 없어서 / 절반인 오억 오천만 원을 넣었어요",
+   "sub": "2027년 옵션은|다 받으면 최대\n11억 원이에요|다 받을지는 알 수 없어서|절반인 5억 5천만 원을\n넣었어요"
   },
   {
-   "narr": "우승 팀이라 / 연봉 계약 선수 서른두 명이 / 십오퍼센트씩 오른다고 잡으면 / 사억 오천만 원이 더 늘어요",
-   "sub": "우승 팀이라|연봉 계약 선수 32명이|15퍼센트씩 오른다고 잡으면|4억 5천만 원이 더 늘어요"
+   "narr": "연봉은 기본으로 / 연봉 계약 선수 서른두 명이 / 십오퍼센트씩 오른다고 잡았어요 / 그러면 사억 오천만 원이 더 늘어요",
+   "sub": "연봉은 기본으로|연봉 계약 선수 32명이|15퍼센트씩 오른다고 잡았어요|그러면 4억 5천만 원이\n더 늘어요"
   },
   {
-   "narr": "그러면 묶인 돈은 / 백사억 원 안팎이 돼요",
-   "sub": "그러면 묶인 돈은|104억 원 안팎이 돼요"
+   "narr": "이천이십육년 연봉을 보면 / 삼성 선수들은 전체로 / 구퍼센트 가까이 올랐고 / 많이 오른 선수들은 / 십육에서 십팔퍼센트 올랐었어요 / 우승한 해라 / 그 사이에서 높게 잡았죠",
+   "sub": "2026년 연봉을 보면|삼성 선수들은 전체로|9퍼센트 가까이 올랐고|많이 오른 선수들은|16에서 18퍼센트 올랐었어요|우승한 해라|그 사이에서 높게 잡았죠"
   },
   {
-   "narr": "상한에서 빼면 / 남는 돈은 사십칠억 원 가까이예요",
-   "sub": "상한에서 빼면|남는 돈은\n47억 원 가까이예요",
+   "narr": "옵션 절반과 연봉 인상을 더하면 / 묶인 돈은 백사억 원 안팎이 돼요",
+   "sub": "옵션 절반과 연봉\n인상을 더하면|묶인 돈은 104억 원\n안팎이 돼요"
+  },
+  {
+   "narr": "상한 백오십일억 원에서 / 백사억 원을 빼면 / 두 사람에게 쓸 수 있는 돈은 / 사십칠억 원 가까이예요",
+   "sub": "상한 151억 원에서|104억 원을 빼면|두 사람에게 쓸 수 있는 돈은|47억 원 가까이예요",
    "pace": "slow",
    "holdAfter": 0.8
   },
   {
-   "narr": "옵션을 다 받고 / 연봉이 이십오퍼센트씩 오르면 / 백십이억 칠천만 원까지 늘어서 / 남는 돈은 삼십팔억 원으로 줄어요",
-   "sub": "옵션을 다 받고|연봉이 25퍼센트씩 오르면|112억 7천만 원까지 늘어서|남는 돈은\n38억 원으로 줄어요"
+   "narr": "최악의 경우로 / 옵션을 다 받고 / 많이 오른 선수들보다도 높은 / 이십오퍼센트씩 연봉이 오르면 / 백십이억 칠천만 원까지 늘어서 / 남는 돈은 삼십팔억 원으로 줄어요",
+   "sub": "최악의 경우로|옵션을 다 받고|많이 오른 선수들보다도 높은|25퍼센트씩 연봉이 오르면|112억 7천만 원까지 늘어서|남는 돈은\n38억 원으로 줄어요"
   },
   {
-   "narr": "두 사람을 / 연평균 이십오억 원씩 주고 잡으면 / 오십억 원이 들어서 / 상한을 이억 원쯤 넘거나 / 겨우 맞추는 / 아슬아슬한 선이에요",
-   "sub": "두 사람을|연평균 25억 원씩\n주고 잡으면|50억 원이 들어서|상한을 2억 원쯤 넘거나|겨우 맞추는|아슬아슬한 선이에요"
+   "narr": "그럼 두 사람을 잡으면 어떨까요? / 두 사람 몸값은 / 둘 다 백억 원 넘게 전망돼요 / 가장 낮게 사년 백억 원씩 잡으면 / 한 해에 이십오억 원씩 / 둘이면 오십억 원이 더 들어요",
+   "sub": "그럼 두 사람을\n잡으면 어떨까요?|두 사람 몸값은|둘 다 100억 원\n넘게 전망돼요|가장 낮게\n4년 100억 원씩 잡으면|한 해에 25억 원씩|둘이면 50억 원이 더 들어요",
+   "pauseMax": 0.5
+  },
+  {
+   "narr": "기본 가정이면 / 백사억 원에 오십억 원이 더해지고 / 사십위 밖으로 밀려나는 / 선수 두 명 몫이 빠져서 / 상한을 이억 원쯤 넘어요 / 옛 계약 선수들 연봉 배분에 따라선 / 겨우 맞출 수도 있어요",
+   "sub": "기본 가정이면|104억 원에\n50억 원이 더해지고|40위 밖으로 밀려나는|선수 두 명 몫이 빠져서|상한을 2억 원쯤 넘어요|옛 계약 선수들\n연봉 배분에 따라선|겨우 맞출 수도 있어요"
+  },
+  {
+   "narr": "최악의 경우면 / 백십이억 칠천만 원에 / 오십억 원이 더해져서 / 상한보다 십억 원 넘게 많아요",
+   "sub": "최악의 경우면|112억 7천만 원에|50억 원이 더해져서|상한보다 10억 원\n넘게 많아요"
   },
   {
    "narr": "여기서 쓸 수 있는 게 / 흔히 래리 버드 룰이라 부르는 / 프랜차이즈 선수 특례예요",
@@ -366,10 +383,14 @@
    "sub": "구단은 해마다|한 팀에서 7시즌 이상 뛴|선수 1명을 골라|그 선수 몫을|절반만 계산에 넣을 수 있어요"
   },
   {
-   "narr": "두 사람 중 한 명을 지정하면 / 십이억 오천만 원이 줄어서 / 십억 원쯤 남아요",
-   "sub": "두 사람 중 한 명을 지정하면|12억 5천만 원이 줄어서|10억 원쯤 남아요",
+   "narr": "두 사람 중 한 명을 지정하면 / 십이억 오천만 원이 줄어서 / 기본 가정에선 십억 원쯤 남아요",
+   "sub": "두 사람 중 한 명을 지정하면|12억 5천만 원이 줄어서|기본 가정에선\n10억 원쯤 남아요",
    "pace": "slow",
    "holdAfter": 0.8
+  },
+  {
+   "narr": "최악의 경우에도 / 이억 원 가까이 남아요",
+   "sub": "최악의 경우에도|2억 원 가까이 남아요"
   },
   {
    "narr": "삼성은 / 이 특례를 써서 / 두 사람에게 / 이백오십억 원 이상을 쓸 구상이라는 / 보도도 나왔어요",
@@ -377,8 +398,12 @@
    "noMerge": true
   },
   {
-   "narr": "사년 계약으로 치면 / 이백오십억 원은 / 특례를 써도 / 남는 돈이 일억 원이 안 되거나 / 많아야 사억 원 정도예요",
-   "sub": "4년 계약으로 치면|250억 원은|특례를 써도|남는 돈이\n1억 원이 안 되거나|많아야 4억 원 정도예요"
+   "narr": "사년 계약으로 치면 / 이백오십억 원은 / 특례를 써도 / 기본 가정에선 / 남는 돈이 일억 원이 안 되거나 / 많아야 사억 원 정도예요",
+   "sub": "4년 계약으로 치면|250억 원은|특례를 써도|기본 가정에선|남는 돈이\n1억 원이 안 되거나|많아야 4억 원 정도예요"
+  },
+  {
+   "narr": "최악의 경우엔 / 상한을 사억에서 팔억 원쯤 넘어요",
+   "sub": "최악의 경우엔|상한을 4억에서\n8억 원쯤 넘어요"
   },
   {
    "narr": "상한을 넘더라도 / 이천이십육년에 넘지 않았다면 / 넘은 돈의 삼십퍼센트만 내요",
@@ -2064,26 +2089,26 @@
    "startLine": 46
   },
   {
-   "type": "rf_capbar",
+   "type": "rf_band",
    "who": "샐러리캡(경쟁균형세)",
+   "tag": "팀마다",
    "team": "삼성",
-   "cap": 151.17,
-   "capLab": "상한",
-   "total": 0.01,
-   "totalLab": "",
-   "totalTxt": "",
-   "leftLab": "",
-   "leftTxt": "",
-   "totalAt": -1,
-   "leftAt": 50,
-   "capAt": 2,
-   "noCenter": true,
+   "vals": [],
    "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "tag": "국내 선수 상위 40명 연봉 합",
-   "tagAt": 1,
-   "chain": "cap0",
+   "noCenter": true,
+   "top": 170,
+   "figY": 330,
+   "fig": {
+    "type": "squad",
+    "at": 0,
+    "n": 40,
+    "fillAt": 1,
+    "sumLab": "국내 선수 상위 40명 연봉 합",
+    "capAt": 2,
+    "capLab": "상한"
+   },
    "startLine": 47
   },
   {
@@ -2195,6 +2220,27 @@
    "startLine": 51
   },
   {
+   "type": "rf_capbar",
+   "who": "삼성 라이온즈 · 2027년",
+   "team": "삼성",
+   "cap": 151.17,
+   "capLab": "2027 상한",
+   "total": 94.12,
+   "totalLab": "이미 정해진 돈",
+   "totalTxt": "",
+   "leftLab": "남는 돈",
+   "leftTxt": "두 사람에게 쓸 몫",
+   "totalAt": 2,
+   "leftAt": 3,
+   "capAt": 1,
+   "noCenter": true,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "chain": "c6a",
+   "startLine": 52
+  },
+  {
    "type": "rf_duo",
    "title": "계산에서 뺀 선수 · FA 4명 · 방출 10명",
    "cards": [
@@ -2230,7 +2276,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 52
+   "startLine": 53
   },
   {
    "type": "rf_bars",
@@ -2260,7 +2306,7 @@
    "bw": 330,
    "gap": 200,
    "lfs": 34,
-   "startLine": 53
+   "startLine": 54
   },
   {
    "type": "rf_capbar",
@@ -2281,7 +2327,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "c27",
-   "startLine": 54
+   "startLine": 55
   },
   {
    "type": "rf_band",
@@ -2308,7 +2354,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 55
+   "startLine": 56
   },
   {
    "type": "rf_capbar",
@@ -2336,10 +2382,10 @@
     "lab": "옵션 절반",
     "txt": "5억 5천만",
     "sign": "+ ",
-    "at": 2
+    "at": 3
    },
    "chain": "c27a",
-   "startLine": 56
+   "startLine": 57
   },
   {
    "type": "rf_capbar",
@@ -2360,8 +2406,8 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "capBelow": true,
-   "tag": "연봉 15% 인상(가정)",
-   "tagAt": 1.5,
+   "tag": "기본 가정 · 연봉 15% 인상",
+   "tagAt": 2,
    "minus": {
     "v": 5.5,
     "lab": "옵션 절반",
@@ -2377,7 +2423,45 @@
     "txt": "4억 5천만",
     "at": 3
    },
-   "startLine": 57
+   "startLine": 58
+  },
+  {
+   "type": "rf_bars",
+   "title": "15%로 잡은 근거 · 2026년 삼성 연봉 인상률",
+   "items": [
+    {
+     "label": "선수 전체",
+     "v": 8.6,
+     "txt": "9% 가까이",
+     "at": 1,
+     "valAt": 2
+    },
+    {
+     "label": "많이 오른 선수들",
+     "v": 17,
+     "txt": "16~18%",
+     "at": 3,
+     "valAt": 4
+    },
+    {
+     "label": "2027년 가정",
+     "v": 15,
+     "txt": "15%",
+     "at": 5,
+     "valAt": 5,
+     "hi": true
+    }
+   ],
+   "max": 24,
+   "glass": false,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "bw": 300,
+   "gap": 110,
+   "lfs": 40,
+   "startLine": 59
   },
   {
    "type": "rf_capbar",
@@ -2400,7 +2484,7 @@
    "tag": "옵션 절반 + 연봉 인상",
    "tagAt": -1,
    "chain": "c27b",
-   "startLine": 58
+   "startLine": 60
   },
   {
    "type": "rf_capbar",
@@ -2411,10 +2495,10 @@
    "total": 104.2,
    "totalLab": "2027년에 나갈 돈(추정)",
    "totalTxt": "104억 안팎",
-   "leftLab": "남는 돈",
+   "leftLab": "남는 돈 · 두 사람에게 쓸 몫",
    "leftTxt": "47억 가까이",
    "totalAt": -1,
-   "leftAt": 1,
+   "leftAt": 2,
    "capAt": -1,
    "noCenter": true,
    "bg": {
@@ -2424,7 +2508,7 @@
    "tagAt": -1,
    "chain": "c27b",
    "cont": true,
-   "startLine": 59
+   "startLine": 61
   },
   {
    "type": "rf_capbar",
@@ -2438,17 +2522,17 @@
    "leftLab": "남는 돈",
    "leftTxt": "38억",
    "totalAt": 0.3,
-   "leftAt": 3,
+   "leftAt": 5,
    "capAt": 0,
    "noCenter": true,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "totalTxtAt": 2,
+   "totalTxtAt": 4,
    "tag": "옵션 전부 + 연봉 25% 인상",
-   "tagAt": 0,
+   "tagAt": 1,
    "chain": "c27c",
-   "startLine": 60
+   "startLine": 62
   },
   {
    "type": "rf_capbar",
@@ -2457,7 +2541,38 @@
    "cap": 151.17,
    "capLab": "2027 상한 151억 1700만",
    "total": 104.2,
-   "totalLab": "2027년에 나갈 돈",
+   "totalLab": "기본 가정 · 2027년에 나갈 돈",
+   "totalTxt": "104억",
+   "leftLab": "",
+   "leftTxt": "",
+   "totalAt": 0,
+   "leftAt": 50,
+   "capAt": -1,
+   "noCenter": true,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "capBelow": true,
+   "tag": "몸값 전망 100억+ · 4년 100억이면 한 해 25억",
+   "tagAt": 3,
+   "minus": {
+    "v": 49.2,
+    "lab": "두 사람 한 해 25억씩",
+    "txt": "50억",
+    "sign": "+ ",
+    "at": 5
+   },
+   "chain": "c12",
+   "startLine": 63
+  },
+  {
+   "type": "rf_capbar",
+   "who": "두 사람을 다 잡으면",
+   "team": "삼성",
+   "cap": 151.17,
+   "capLab": "2027 상한 151억 1700만",
+   "total": 104.2,
+   "totalLab": "기본 가정 · 2027년에 나갈 돈",
    "totalTxt": "104억",
    "leftLab": "",
    "leftTxt": "",
@@ -2469,22 +2584,60 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "capBelow": true,
+   "tag": "몸값 전망 100억+ · 4년 100억이면 한 해 25억",
+   "tagAt": -1,
    "minus": {
     "v": 49.2,
-    "lab": "연평균 25억씩 두 사람",
+    "lab": "두 사람 한 해 25억씩",
+    "txt": "50억",
+    "sign": "+ ",
+    "at": -1
+   },
+   "chain": "c12",
+   "cont": true,
+   "result": {
+    "lab": "기본 가정",
+    "txt": "상한 2억쯤 초과 · 겨우 맞출 수도",
+    "at": 4
+   },
+   "startLine": 64
+  },
+  {
+   "type": "rf_capbar",
+   "who": "두 사람을 다 잡으면",
+   "team": "삼성",
+   "cap": 151.17,
+   "capLab": "2027 상한 151억 1700만",
+   "total": 112.7,
+   "totalLab": "최악의 경우 · 2027년에 나갈 돈",
+   "totalTxt": "112억 7천만",
+   "leftLab": "",
+   "leftTxt": "",
+   "totalAt": 0,
+   "leftAt": 50,
+   "capAt": -1,
+   "noCenter": true,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "capBelow": true,
+   "tag": "몸값 전망 100억+ · 4년 100억이면 한 해 25억",
+   "tagAt": -1,
+   "minus": {
+    "v": 49.1,
+    "lab": "두 사람 한 해 25억씩",
     "txt": "50억",
     "sign": "+ ",
     "at": 2
    },
    "result": {
-    "lab": "상한",
-    "txt": "2억쯤 초과 또는 겨우 맞춤",
+    "lab": "최악의 경우",
+    "txt": "상한보다 10억 넘게 많음",
     "at": 3
    },
-   "tag": "래리 버드 룰 = 프랜차이즈 선수 특례",
-   "tagAt": 50,
    "chain": "c12",
-   "startLine": 61
+   "cont": true,
+   "startLine": 65
   },
   {
    "type": "rf_capbar",
@@ -2492,9 +2645,9 @@
    "team": "삼성",
    "cap": 151.17,
    "capLab": "2027 상한 151억 1700만",
-   "total": 104.2,
-   "totalLab": "2027년에 나갈 돈",
-   "totalTxt": "104억",
+   "total": 112.7,
+   "totalLab": "최악의 경우 · 2027년에 나갈 돈",
+   "totalTxt": "112억 7천만",
    "leftLab": "",
    "leftTxt": "",
    "totalAt": -1,
@@ -2505,23 +2658,23 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "capBelow": true,
+   "tag": "래리 버드 룰 = 프랜차이즈 선수 특례",
+   "tagAt": 1,
    "minus": {
-    "v": 49.2,
-    "lab": "연평균 25억씩 두 사람",
+    "v": 49.1,
+    "lab": "두 사람 한 해 25억씩",
     "txt": "50억",
     "sign": "+ ",
     "at": -1
    },
    "result": {
-    "lab": "상한",
-    "txt": "2억쯤 초과 또는 겨우 맞춤",
+    "lab": "최악의 경우",
+    "txt": "상한보다 10억 넘게 많음",
     "at": -1
    },
-   "tag": "래리 버드 룰 = 프랜차이즈 선수 특례",
-   "tagAt": 1,
    "chain": "c12",
    "cont": true,
-   "startLine": 62
+   "startLine": 66
   },
   {
    "type": "rf_band",
@@ -2548,7 +2701,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 63
+   "startLine": 67
   },
   {
    "type": "rf_capbar",
@@ -2557,7 +2710,7 @@
    "cap": 151.17,
    "capLab": "2027 상한 151억 1700만",
    "total": 104.2,
-   "totalLab": "2027년에 나갈 돈",
+   "totalLab": "기본 가정 · 2027년에 나갈 돈",
    "totalTxt": "104억",
    "leftLab": "",
    "leftTxt": "",
@@ -2588,7 +2741,42 @@
     "at": 2
    },
    "chain": "c15",
-   "startLine": 64
+   "startLine": 68
+  },
+  {
+   "type": "rf_capbar",
+   "who": "한 명을 특례로 지정하면",
+   "team": "삼성",
+   "cap": 151.17,
+   "capLab": "2027 상한 151억 1700만",
+   "total": 112.7,
+   "totalLab": "최악의 경우 · 2027년에 나갈 돈",
+   "totalTxt": "112억 7천만",
+   "leftLab": "",
+   "leftTxt": "",
+   "totalAt": 0,
+   "leftAt": 50,
+   "capAt": -1,
+   "noCenter": true,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "capBelow": true,
+   "minus": {
+    "v": 36.6,
+    "lab": "두 사람(한 명은 절반만 계산)",
+    "txt": "",
+    "sign": "",
+    "at": -1
+   },
+   "result": {
+    "lab": "최악의 경우",
+    "txt": "2억 가까이 남음",
+    "at": 1
+   },
+   "chain": "c15",
+   "cont": true,
+   "startLine": 69
   },
   {
    "type": "rf_band",
@@ -2615,7 +2803,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 65
+   "startLine": 70
   },
   {
    "type": "rf_capbar",
@@ -2624,7 +2812,7 @@
    "cap": 151.17,
    "capLab": "2027 상한 151억 1700만",
    "total": 104.2,
-   "totalLab": "2027년에 나갈 돈",
+   "totalLab": "기본 가정 · 2027년에 나갈 돈",
    "totalTxt": "104억",
    "leftLab": "",
    "leftTxt": "",
@@ -2644,11 +2832,47 @@
     "at": 1
    },
    "result": {
-    "lab": "남는 돈",
+    "lab": "기본 가정 · 남는 돈",
     "txt": "1억 미만 ~ 4억",
-    "at": 3
+    "at": 4
    },
-   "startLine": 66
+   "chain": "c16",
+   "startLine": 71
+  },
+  {
+   "type": "rf_capbar",
+   "who": "4년 250억 원이면",
+   "team": "삼성",
+   "cap": 151.17,
+   "capLab": "2027 상한 151억 1700만",
+   "total": 112.7,
+   "totalLab": "최악의 경우 · 2027년에 나갈 돈",
+   "totalTxt": "112억 7천만",
+   "leftLab": "",
+   "leftTxt": "",
+   "totalAt": 0,
+   "leftAt": 50,
+   "capAt": -1,
+   "noCenter": true,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "capBelow": true,
+   "minus": {
+    "v": 45.0,
+    "lab": "한 해 몫 · 특례 적용",
+    "txt": "4년 250억",
+    "sign": "+ ",
+    "at": -1
+   },
+   "result": {
+    "lab": "최악의 경우",
+    "txt": "상한 4억 ~ 8억 초과",
+    "at": 1
+   },
+   "chain": "c16",
+   "cont": true,
+   "startLine": 72
   },
   {
    "type": "rf_capbar",
@@ -2679,7 +2903,7 @@
     "txt": "넘은 돈 × 30%",
     "at": 2
    },
-   "startLine": 67
+   "startLine": 73
   },
   {
    "type": "rf_band",
@@ -2712,7 +2936,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 68
+   "startLine": 74
   },
   {
    "type": "rf_bars",
@@ -2750,7 +2974,7 @@
    "bw": 260,
    "gap": 140,
    "lfs": 36,
-   "startLine": 69
+   "startLine": 75
   },
   {
    "type": "rf_card",
@@ -2777,7 +3001,7 @@
    "noCenter": true,
    "imgAt": 0,
    "nameAt": 0,
-   "startLine": 70
+   "startLine": 76
   },
   {
    "type": "rf_band",
@@ -2804,7 +3028,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 71
+   "startLine": 77
   },
   {
    "type": "rf_duo",
@@ -2842,7 +3066,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 72
+   "startLine": 78
   },
   {
    "type": "pstat",
@@ -2888,7 +3112,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "dz",
-   "startLine": 73
+   "startLine": 79
   },
   {
    "type": "pstat",
@@ -2941,7 +3165,7 @@
    },
    "chain": "dz",
    "cont": true,
-   "startLine": 74
+   "startLine": 80
   },
   {
    "type": "pstat",
@@ -2994,7 +3218,7 @@
    },
    "chain": "dz",
    "cont": true,
-   "startLine": 75
+   "startLine": 81
   },
   {
    "type": "pstat",
@@ -3023,7 +3247,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 76
+   "startLine": 82
   },
   {
    "type": "pstat",
@@ -3065,7 +3289,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "pd",
-   "startLine": 77
+   "startLine": 83
   },
   {
    "type": "pstat",
@@ -3108,7 +3332,7 @@
    },
    "chain": "pd",
    "cont": true,
-   "startLine": 78
+   "startLine": 84
   },
   {
    "type": "pstat",
@@ -3137,7 +3361,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 79
+   "startLine": 85
   },
   {
    "type": "rf_band",
@@ -3164,7 +3388,7 @@
     "f": "blur(12px) brightness(.42) saturate(1.2)"
    },
    "noCenter": true,
-   "startLine": 80
+   "startLine": 86
   },
   {
    "type": "speech",
@@ -3195,7 +3419,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "team": "삼성",
-   "startLine": 81
+   "startLine": 87
   },
   {
    "type": "speech",
@@ -3227,7 +3451,7 @@
    },
    "team": "삼성",
    "cont": true,
-   "startLine": 82
+   "startLine": 88
   },
   {
    "type": "tline",
@@ -3262,7 +3486,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 83
+   "startLine": 89
   },
   {
    "type": "tline",
@@ -3298,7 +3522,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "cont": true,
-   "startLine": 84
+   "startLine": 90
   },
   {
    "type": "pstat",
@@ -3328,7 +3552,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "kmh",
-   "startLine": 85
+   "startLine": 91
   },
   {
    "type": "rf_duo",
@@ -3354,7 +3578,9 @@
      "team": "삼성",
      "at": 3,
      "stats": [],
-     "focus": "50% 22%"
+     "focus": "50% 22%",
+     "zoom": 1.6,
+     "zo": "56% 50%"
     }
    ],
    "bg": {
@@ -3362,7 +3588,7 @@
    },
    "noCenter": true,
    "chain": "g5",
-   "startLine": 86
+   "startLine": 92
   },
   {
    "type": "rf_duo",
@@ -3396,14 +3622,16 @@
        "hi": true
       }
      ],
-     "focus": "50% 22%"
+     "focus": "50% 22%",
+     "zoom": 1.6,
+     "zo": "56% 50%"
     }
    ],
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 87
+   "startLine": 93
   },
   {
    "type": "pstat",
@@ -3440,7 +3668,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "imgAt": 2,
-   "startLine": 88
+   "startLine": 94
   },
   {
    "type": "rf_duo",
@@ -3480,7 +3708,7 @@
    },
    "noCenter": true,
    "chain": "e1",
-   "startLine": 89
+   "startLine": 95
   },
   {
    "type": "rf_duo",
@@ -3521,7 +3749,7 @@
    "noCenter": true,
    "chain": "e1",
    "cont": true,
-   "startLine": 90
+   "startLine": 96
   },
   {
    "type": "pstat",
@@ -3560,7 +3788,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "e2",
-   "startLine": 91
+   "startLine": 97
   },
   {
    "type": "pstat",
@@ -3600,7 +3828,7 @@
    },
    "chain": "e2",
    "cont": true,
-   "startLine": 92
+   "startLine": 98
   },
   {
    "type": "pstat",
@@ -3649,7 +3877,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "e4",
-   "startLine": 93
+   "startLine": 99
   },
   {
    "type": "pstat",
@@ -3699,7 +3927,7 @@
    },
    "chain": "e4",
    "cont": true,
-   "startLine": 94
+   "startLine": 100
   },
   {
    "type": "pstat",
@@ -3749,7 +3977,7 @@
    },
    "chain": "e4",
    "cont": true,
-   "startLine": 95
+   "startLine": 101
   },
   {
    "type": "pstat",
@@ -3806,7 +4034,7 @@
    },
    "chain": "e4",
    "cont": true,
-   "startLine": 96
+   "startLine": 102
   },
   {
    "type": "rf_duo",
@@ -3834,7 +4062,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 97
+   "startLine": 103
   },
   {
    "type": "question",
@@ -3853,7 +4081,7 @@
    ],
    "logoSize": 150,
    "size": 72,
-   "startLine": 98,
+   "startLine": 104,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3891,5 +4119,112 @@
    "#KBO",
    "#야구자판기"
   ]
- }
+ },
+ "voiceRemap": [
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  53,
+  54,
+  55,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  null,
+  62,
+  63,
+  null,
+  null,
+  65,
+  null,
+  null,
+  67,
+  68,
+  69,
+  70,
+  71,
+  72,
+  73,
+  74,
+  75,
+  76,
+  77,
+  78,
+  79,
+  80,
+  81,
+  82,
+  83,
+  84,
+  85,
+  86,
+  87,
+  88,
+  89,
+  90,
+  91,
+  92,
+  93,
+  94,
+  95,
+  96,
+  97,
+  98
+ ]
 }
