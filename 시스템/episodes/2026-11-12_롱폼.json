@@ -27,43 +27,43 @@
    "key": "직장폐쇄가 뭐길래",
    "title": "직장폐쇄가 뭐길래",
    "from": 6,
-   "to": 25
+   "to": 26
   },
   {
    "key": "2026년엔 왜 멈추나",
    "title": "2026년엔 왜 멈추나",
-   "from": 26,
-   "to": 36
+   "from": 27,
+   "to": 38
   },
   {
    "key": "아침 7시 · 노시환 협상 마감",
    "title": "아침 7시 · 노시환 협상 마감",
-   "from": 37,
-   "to": 66
+   "from": 39,
+   "to": 69
   },
   {
    "key": "오후 2시 · FA 시장과 김하성",
    "title": "오후 2시 · FA 시장과 김하성",
-   "from": 67,
-   "to": 80
+   "from": 70,
+   "to": 84
   },
   {
    "key": "오후 2시 · KBO 외국인 영입 창구",
    "title": "오후 2시 · KBO 외국인 영입 창구",
-   "from": 81,
-   "to": 106
+   "from": 85,
+   "to": 111
   },
   {
    "key": "멈춘 뒤 · 2월 1일과 3월 중순",
    "title": "멈춘 뒤 · 2월 1일과 3월 중순",
-   "from": 107,
-   "to": 118
+   "from": 112,
+   "to": 124
   },
   {
    "key": "날짜 정리",
    "title": "날짜 정리",
-   "from": 119,
-   "to": 126
+   "from": 125,
+   "to": 132
   }
  ],
  "toc": [
@@ -104,7 +104,13 @@
   {
    "narr": "멈춤이 길어지면 / 이월 일일과 삼월 중순이라는 / 다음 마감이 기다려요",
    "sub": "멈춤이 길어지면|2월 1일과 3월 중순이라는|다음 마감이 기다려요",
-   "holdAfter": 3.0
+   "gapAfter": 0.55
+  },
+  {
+   "narr": "그럼 직장폐쇄는 뭐고 / 노사협약과는 어떤 관계일까요?",
+   "sub": "그럼 직장폐쇄는 뭐고|노사협약과는 어떤 관계일까요?",
+   "holdAfter": 0.6,
+   "pauseMax": 0.5
   },
   {
    "narr": "노사협약은 구단주와 선수노조가 맺는 / 리그 운영 규칙이에요",
@@ -185,7 +191,13 @@
   {
    "narr": "끝난 건 이듬해 삼월 십일 / 구십구 일 동안 멈췄죠",
    "sub": "끝난 건 이듬해 3월 10일|99일 동안 멈췄죠",
-   "holdAfter": 2.4
+   "gapAfter": 0.55
+  },
+  {
+   "narr": "그렇다면 이천이십육 년엔 / 왜 또 멈출 수 있다는 걸까요?",
+   "sub": "그렇다면 2026년엔|왜 또\n멈출 수 있다는 걸까요?",
+   "holdAfter": 0.6,
+   "pauseMax": 0.5
   },
   {
    "narr": "이천이십육 년 협상의 쟁점은 샐러리캡이에요",
@@ -230,11 +242,17 @@
   {
    "narr": "언론에서는 십이월 일일 전에 / 합의할 가능성은 낮다고 봤어요",
    "sub": "언론에서는 12월 1일 전에|합의할 가능성은 낮다고 봤어요",
-   "holdAfter": 2.4
+   "gapAfter": 0.55
   },
   {
-   "narr": "첫 번째 마감은 / 십이월 이일 아침 일곱 시예요",
-   "sub": "첫 번째 마감은|12월 2일 아침 7시예요",
+   "narr": "그럼 십이월 이일 아침 일곱 시엔 / 어떤 마감이 있을까요?",
+   "sub": "그럼 12월 2일 아침 7시엔|어떤 마감이 있을까요?",
+   "holdAfter": 0.6,
+   "pauseMax": 0.5
+  },
+  {
+   "narr": "노시환의 포스팅 협상이 / 끝나는 시각이에요",
+   "sub": "노시환의 포스팅 협상이|끝나는 시각이에요",
    "pace": "slow"
   },
   {
@@ -356,11 +374,17 @@
   {
    "narr": "진출 가능성을 묻는 한 글엔 / 어렵다는 댓글과 / 간다는 댓글이 엇갈렸어요",
    "sub": "진출 가능성을 묻는 한 글엔|어렵다는 댓글과|간다는 댓글이 엇갈렸어요",
-   "holdAfter": 2.4
+   "gapAfter": 0.55
   },
   {
-   "narr": "두 번째 마감은 / 일곱 시간 뒤인 오후 두 시예요",
-   "sub": "두 번째 마감은|7시간 뒤인 오후 2시예요",
+   "narr": "그리고 일곱 시간 뒤 오후 두 시엔 / 무엇이 멈출 수 있을까요?",
+   "sub": "그리고 7시간 뒤 오후 2시엔|무엇이 멈출 수 있을까요?",
+   "holdAfter": 0.6,
+   "pauseMax": 0.5
+  },
+  {
+   "narr": "오후 두 시는 / 노사협약이 끝나는 시각이에요",
+   "sub": "오후 2시는|노사협약이 끝나는 시각이에요",
    "pace": "slow"
   },
   {
@@ -415,7 +439,12 @@
   {
    "narr": "언론에서도 직장폐쇄가 오면 / 김하성의 행선지 찾기가 / 길어질 수 있다고 봤어요",
    "sub": "언론에서도 직장폐쇄가 오면|김하성의 행선지 찾기가|길어질 수 있다고 봤어요",
-   "holdAfter": 2.4
+   "gapAfter": 0.55
+  },
+  {
+   "narr": "그런데 오후 두 시를 지켜보는 건 / 메이저리그만이 아니에요",
+   "sub": "그런데 오후\n2시를 지켜보는 건|메이저리그만이 아니에요",
+   "holdAfter": 0.6
   },
   {
    "narr": "같은 오후 두 시에 / 케이비오 구단의 창구도 / 하나 닫힐 수 있어요",
@@ -523,11 +552,17 @@
   {
    "narr": "한화 팬들 사이에서도 / 외국인 타자 결정을 / 포스팅 결과 뒤로 미루는 걸 / 걱정하는 글이 나왔어요",
    "sub": "한화 팬들 사이에서도|외국인 타자 결정을|포스팅 결과 뒤로 미루는 걸|걱정하는 글이 나왔어요",
-   "holdAfter": 2.4
+   "gapAfter": 0.55
   },
   {
-   "narr": "오후 두 시를 넘겨 멈추면 / 그다음 마감은 이월 일일이에요",
-   "sub": "오후 2시를 넘겨 멈추면|그다음 마감은 2월 1일이에요",
+   "narr": "만약 정말 멈춘다면 / 그다음엔 어떻게 될까요?",
+   "sub": "만약 정말 멈춘다면|그다음엔 어떻게 될까요?",
+   "holdAfter": 0.6,
+   "pauseMax": 0.5
+  },
+  {
+   "narr": "멈춘 뒤 첫 마감은 / 이월 일일이에요",
+   "sub": "멈춘 뒤 첫 마감은|2월 1일이에요",
    "pace": "slow"
   },
   {
@@ -574,11 +609,12 @@
   {
    "narr": "직장폐쇄가 이렇게 삼월까지 가면 / 김하성처럼 팀을 못 찾은 에프에이는 / 새 팀에서 캠프를 짧게 치르고 / 시즌을 맞을 수 있어요",
    "sub": "직장폐쇄가 이렇게\n3월까지 가면|김하성처럼 팀을\n못 찾은 FA는|새 팀에서 캠프를 짧게 치르고|시즌을 맞을 수 있어요",
-   "holdAfter": 2.4
+   "gapAfter": 0.55
   },
   {
    "narr": "날짜로 다시 정리해 볼게요",
-   "sub": "날짜로 다시 정리해 볼게요"
+   "sub": "날짜로 다시 정리해 볼게요",
+   "holdAfter": 0.6
   },
   {
    "narr": "십이월 이일 아침 일곱 시엔 / 노시환의 협상이 끝나요",
@@ -703,7 +739,7 @@
    "title": "12월 2일 · 한국 야구의 마감",
    "cards": [
     {
-     "img": "카드/FA11_노시환_한화",
+     "img": "카드/P29w_노시환_0512",
      "name": "노시환",
      "team": "한화",
      "at": 0,
@@ -719,7 +755,7 @@
      "zoom": 1.09
     },
     {
-     "img": "MLB/김하성",
+     "img": "카드/P29w_김하성_SD",
      "name": "김하성",
      "team": "",
      "at": 1,
@@ -742,24 +778,41 @@
    "startLine": 3
   },
   {
-   "type": "lo_clock",
-   "title": "한국 시간 · 12월 2일 오후 2시",
-   "marks": [
+   "type": "lo_flow",
+   "title": "오후 2시 무렵 · KBO 외국인 영입 창구",
+   "nodes": [
     {
-     "h": 7,
-     "sub": "오전 7시",
-     "lab": "노시환 협상 마감",
-     "at": 0,
-     "c": "gold"
+     "id": "ros",
+     "x": 560,
+     "y": 600,
+     "ic": "roster",
+     "lab": "메이저리그 40인 로스터",
+     "sub": "",
+     "at": 0.1
     },
     {
-     "h": 14,
-     "sub": "오후 2시 무렵",
-     "lab": "KBO 외국인 영입 창구",
-     "at": 0.2,
-     "c": "bad"
+     "id": "kbo",
+     "x": 1360,
+     "y": 600,
+     "ic": "kbo",
+     "lab": "KBO 구단",
+     "sub": "",
+     "at": 0.2
     }
    ],
+   "edges": [
+    {
+     "a": "ros",
+     "b": "kbo",
+     "lab": "외국인 영입",
+     "at": 0.3,
+     "c": "gold",
+     "stopAt": 1.1
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": null,
    "noCenter": true,
    "startLine": 4,
    "bg": {
@@ -794,154 +847,333 @@
    "noCenter": true,
    "chain": "cd0",
    "uni": true,
-   "toc": {
-    "hi": 0,
-    "sec": 3.0,
-    "hiAt": 1.5
-   },
    "startLine": 5,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
   },
   {
-   "type": "rf_band",
-   "who": "노사협약",
-   "tag": null,
-   "team": "",
-   "vals": [],
-   "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "noCenter": true,
-   "fig": {
-    "type": "steps",
-    "at": 0,
-    "items": [
-     {
-      "lab": "구단주",
-      "at": 0.2
-     },
-     {
-      "lab": "선수노조",
-      "at": 0.5,
-      "join": "+"
-     },
-     {
-      "lab": "리그 운영 규칙",
-      "at": 1,
-      "join": "=",
-      "hi": true,
-      "w": 420
-     }
-    ]
-   },
-   "startLine": 6
-  },
-  {
-   "type": "rf_band",
-   "who": "노사협약이 끝나면",
-   "tag": null,
-   "team": "",
-   "vals": [],
-   "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "noCenter": true,
-   "fig": {
-    "type": "steps",
-    "at": 0,
-    "items": [
-     {
-      "lab": "노사협약 만료",
-      "at": 0.2,
-      "w": 300
-     },
-     {
-      "lab": "새 협약 없음",
-      "at": 0.6,
-      "w": 270
-     },
-     {
-      "lab": "구단주 문 닫음",
-      "at": 1,
-      "hi": true,
-      "w": 300
-     }
-    ]
-   },
-   "chain": "lk",
-   "startLine": 7
-  },
-  {
-   "type": "rf_band",
-   "who": "노사협약이 끝나면",
-   "tag": null,
-   "team": "",
-   "vals": [],
-   "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "noCenter": true,
-   "fig": {
-    "type": "steps",
-    "at": -1,
-    "items": [
-     {
-      "lab": "노사협약 만료",
-      "at": -1,
-      "w": 300
-     },
-     {
-      "lab": "새 협약 없음",
-      "at": -1,
-      "w": 270
-     },
-     {
-      "lab": "구단주 문 닫음",
-      "at": -1,
-      "hi": false,
-      "w": 300
-     },
-     {
-      "lab": "직장폐쇄",
-      "at": 0.2,
-      "join": "=",
-      "hi": true,
-      "w": 250
-     }
-    ]
-   },
-   "chain": "lk",
-   "cont": true,
-   "startLine": 8
-  },
-  {
-   "type": "rf_band",
-   "who": "직장폐쇄와 파업",
-   "tag": null,
-   "team": "",
-   "vals": [
+   "type": "tline",
+   "title": "마감 · 시간 순서대로",
+   "items": [
     {
-     "v": "파업",
-     "k": "선수 쪽",
-     "at": 0.2,
-     "hi": false,
-     "size": 120
+     "d": "12월 2일 아침 7시",
+     "t": "노시환\n협상 마감",
+     "at": -1
     },
     {
-     "v": "직장폐쇄",
-     "k": "구단주 쪽",
-     "at": 1,
-     "hi": true,
-     "size": 120
+     "d": "12월 2일 오후 2시",
+     "t": "노사협약\n만료",
+     "at": -1
+    },
+    {
+     "d": "2월 1일",
+     "t": "KBO\n캠프 시작",
+     "at": -1
+    },
+    {
+     "d": "3월 중순",
+     "t": "MLB 개막\n마지노선",
+     "at": -1
     }
    ],
+   "noCenter": true,
+   "chain": "cd0",
+   "uni": true,
+   "cont": true,
+   "toc": {
+    "hi": 0,
+    "full": true,
+    "hiAt": 1.4
+   },
+   "startLine": 6,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
+   }
+  },
+  {
+   "type": "lo_flow",
+   "title": "직장폐쇄가 뭐길래 · 노사협약",
+   "nodes": [
+    {
+     "id": "own",
+     "x": 420,
+     "y": 620,
+     "ic": "owner",
+     "lab": "구단주",
+     "sub": "",
+     "at": 0.3
+    },
+    {
+     "id": "doc",
+     "x": 960,
+     "y": 580,
+     "ic": "doc",
+     "lab": "노사협약",
+     "sub": "",
+     "at": 0.1,
+     "expAt": 50,
+     "goneAt": 50,
+     "stamp": "만료"
+    },
+    {
+     "id": "uni",
+     "x": 1500,
+     "y": 620,
+     "ic": "union",
+     "lab": "선수노조",
+     "sub": "",
+     "at": 0.5
+    }
+   ],
+   "edges": [
+    {
+     "a": "own",
+     "b": "doc",
+     "lab": "",
+     "at": 0.6,
+     "r1": 90
+    },
+    {
+     "a": "uni",
+     "b": "doc",
+     "lab": "",
+     "at": 0.7,
+     "r1": 90
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": "리그 운영 규칙",
    "noCenter": true,
-   "startLine": 9
+   "capAt": 1,
+   "capY": 810,
+   "chain": "deal",
+   "startLine": 7,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   }
+  },
+  {
+   "type": "lo_flow",
+   "title": "노사협약이 끝나면",
+   "nodes": [
+    {
+     "id": "own",
+     "x": 420,
+     "y": 620,
+     "ic": "owner",
+     "lab": "구단주",
+     "sub": "",
+     "at": -1
+    },
+    {
+     "id": "doc",
+     "x": 960,
+     "y": 580,
+     "ic": "doc",
+     "lab": "노사협약",
+     "sub": "",
+     "at": -1,
+     "expAt": 0.3,
+     "goneAt": 1,
+     "stamp": "만료"
+    },
+    {
+     "id": "uni",
+     "x": 1500,
+     "y": 620,
+     "ic": "union",
+     "lab": "선수노조",
+     "sub": "",
+     "at": -1
+    }
+   ],
+   "edges": [
+    {
+     "a": "own",
+     "b": "doc",
+     "lab": "",
+     "at": -1,
+     "r1": 90,
+     "stopAt": 0.7
+    },
+    {
+     "a": "uni",
+     "b": "doc",
+     "lab": "",
+     "at": -1,
+     "r1": 90,
+     "stopAt": 0.7
+    }
+   ],
+   "wall": {
+    "x": 960,
+    "at": 1
+   },
+   "boxes": [],
+   "cap": "새 협약 없음",
+   "noCenter": true,
+   "capAt": 0.7,
+   "capY": 810,
+   "chain": "deal",
+   "cont": true,
+   "capC": "bad",
+   "startLine": 8,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   }
+  },
+  {
+   "type": "lo_flow",
+   "title": "구단주가 문을 닫음 · 직장폐쇄",
+   "nodes": [
+    {
+     "id": "own",
+     "x": 420,
+     "y": 620,
+     "ic": "owner",
+     "lab": "구단주",
+     "sub": "",
+     "at": -1
+    },
+    {
+     "id": "doc",
+     "x": 960,
+     "y": 580,
+     "ic": "doc",
+     "lab": "노사협약",
+     "sub": "",
+     "at": -1,
+     "expAt": -1,
+     "goneAt": -1,
+     "stamp": "만료"
+    },
+    {
+     "id": "uni",
+     "x": 1500,
+     "y": 620,
+     "ic": "union",
+     "lab": "선수노조",
+     "sub": "",
+     "at": -1
+    }
+   ],
+   "edges": [
+    {
+     "a": "own",
+     "b": "doc",
+     "lab": "",
+     "at": -1,
+     "r1": 90,
+     "stopAt": -1
+    },
+    {
+     "a": "uni",
+     "b": "doc",
+     "lab": "",
+     "at": -1,
+     "r1": 90,
+     "stopAt": -1
+    }
+   ],
+   "wall": {
+    "x": 960,
+    "at": -1
+   },
+   "boxes": [],
+   "cap": "직장폐쇄",
+   "noCenter": true,
+   "capAt": 0.2,
+   "capY": 810,
+   "chain": "deal",
+   "cont": true,
+   "capC": "bad",
+   "startLine": 9,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   }
+  },
+  {
+   "type": "lo_flow",
+   "title": "직장폐쇄와 파업",
+   "nodes": [
+    {
+     "id": "st1",
+     "x": 330,
+     "y": 640,
+     "ic": "stadium",
+     "lab": "구장",
+     "sub": "",
+     "at": 0.2
+    },
+    {
+     "id": "pl1",
+     "x": 720,
+     "y": 640,
+     "ic": "union",
+     "lab": "선수",
+     "sub": "스스로 멈춤",
+     "at": 0.2,
+     "subC": "bad"
+    },
+    {
+     "id": "st2",
+     "x": 1210,
+     "y": 640,
+     "ic": "stadium",
+     "lab": "구장",
+     "sub": "",
+     "at": 1,
+     "lockAt": 1.3
+    },
+    {
+     "id": "ow2",
+     "x": 1590,
+     "y": 640,
+     "ic": "owner",
+     "lab": "구단주",
+     "sub": "문을 닫음",
+     "at": 1,
+     "subC": "bad"
+    }
+   ],
+   "edges": [
+    {
+     "a": "st1",
+     "b": "pl1",
+     "lab": "",
+     "at": 0.5,
+     "r0": 130,
+     "r1": 110
+    }
+   ],
+   "wall": null,
+   "boxes": [
+    {
+     "x": 120,
+     "y": 320,
+     "w": 800,
+     "h": 540,
+     "lab": "파업",
+     "at": 0.2
+    },
+    {
+     "x": 1000,
+     "y": 320,
+     "w": 800,
+     "h": 540,
+     "lab": "직장폐쇄",
+     "at": 1,
+     "c": "bad"
+    }
+   ],
+   "cap": null,
+   "noCenter": true,
+   "startLine": 10,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   }
   },
   {
    "type": "tline",
@@ -961,21 +1193,65 @@
     }
    ],
    "noCenter": true,
-   "startLine": 10,
+   "startLine": 11,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
   },
   {
-   "type": "lo_roster",
+   "type": "lo_flow",
    "title": "직장폐쇄가 되면 · 멈추는 것",
-   "sub": "메이저리그 구단 40인 로스터",
+   "nodes": [
+    {
+     "id": "fa",
+     "x": 420,
+     "y": 640,
+     "ic": "player",
+     "lab": "FA 선수",
+     "sub": "",
+     "at": 0
+    },
+    {
+     "id": "ta",
+     "x": 960,
+     "y": 640,
+     "ic": "team",
+     "lab": "구단 A",
+     "sub": "",
+     "at": 0
+    },
+    {
+     "id": "tb",
+     "x": 1500,
+     "y": 640,
+     "ic": "team",
+     "lab": "구단 B",
+     "sub": "",
+     "at": 0
+    }
+   ],
+   "edges": [
+    {
+     "a": "fa",
+     "b": "ta",
+     "lab": "FA 계약",
+     "at": 0,
+     "stopAt": 0.7
+    },
+    {
+     "a": "ta",
+     "b": "tb",
+     "lab": "트레이드",
+     "at": 0,
+     "two": true,
+     "stopAt": 1
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": null,
    "noCenter": true,
-   "cap": "FA 계약 · 트레이드 멈춤",
-   "capC": "bad",
-   "capAt": 0.6,
-   "chain": "ros1",
-   "startLine": 11,
+   "startLine": 12,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -989,7 +1265,7 @@
    "capC": null,
    "capAt": 1,
    "chain": "ros1",
-   "startLine": 12,
+   "startLine": 13,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1003,7 +1279,7 @@
    "capC": null,
    "capAt": 0.2,
    "chain": "ros1",
-   "startLine": 13,
+   "startLine": 14,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1017,7 +1293,7 @@
    "capC": null,
    "capAt": null,
    "chain": "ros1",
-   "startLine": 14,
+   "startLine": 15,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1033,7 +1309,7 @@
    "chain": "ros1",
    "hiN": 26,
    "hiAt": 0.4,
-   "startLine": 15,
+   "startLine": 16,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1051,7 +1327,7 @@
    "hiAt": -1,
    "mode": "lock",
    "at": 0.6,
-   "startLine": 16,
+   "startLine": 17,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1069,72 +1345,116 @@
    "hiAt": -1,
    "mode": "lock",
    "at": -1,
-   "startLine": 17,
+   "startLine": 18,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
   },
   {
-   "type": "rf_band",
-   "who": "40인 로스터 밖",
-   "tag": null,
-   "team": "",
-   "vals": [],
+   "type": "lo_flow",
+   "title": "40인 로스터 밖 · 마이너리그 선수",
+   "nodes": [
+    {
+     "id": "tm",
+     "x": 960,
+     "y": 400,
+     "ic": "team",
+     "lab": "메이저리그 구단",
+     "sub": "",
+     "at": 0
+    },
+    {
+     "id": "ros",
+     "x": 420,
+     "y": 690,
+     "ic": "roster",
+     "lab": "40인 로스터",
+     "sub": "직장폐쇄 대상",
+     "at": 0,
+     "lockAt": 0,
+     "subC": "bad"
+    },
+    {
+     "id": "min",
+     "x": 1500,
+     "y": 690,
+     "ic": "union",
+     "lab": "마이너리그 선수",
+     "sub": "직장폐쇄 대상 아님",
+     "at": 1,
+     "subC": "gold"
+    }
+   ],
+   "edges": [
+    {
+     "a": "tm",
+     "b": "ros",
+     "lab": "",
+     "at": 0,
+     "stopAt": 0.2,
+     "r0": 170,
+     "r1": 150
+    },
+    {
+     "a": "tm",
+     "b": "min",
+     "lab": "계약 이어 감",
+     "at": 2.6,
+     "okAt": 3,
+     "r0": 170,
+     "r1": 150,
+     "labDy": -60
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": null,
+   "noCenter": true,
+   "startLine": 19,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "noCenter": true,
-   "fig": {
-    "type": "steps",
-    "at": 0,
-    "items": [
-     {
-      "lab": "마이너리그 선수",
-      "at": 0.2,
-      "w": 360
-     },
-     {
-      "lab": "직장폐쇄 대상 아님",
-      "at": 2,
-      "hi": true,
-      "w": 400
-     },
-     {
-      "lab": "마이너 계약 가능",
-      "at": 3,
-      "w": 360
-     }
-    ]
-   },
-   "startLine": 18
+   }
   },
   {
-   "type": "rf_band",
-   "who": "뒤에서 다시",
-   "tag": null,
-   "team": "",
-   "vals": [],
+   "type": "lo_flow",
+   "title": "뒤에서 다시 · 40인 로스터와 KBO",
+   "nodes": [
+    {
+     "id": "ros",
+     "x": 560,
+     "y": 620,
+     "ic": "roster",
+     "lab": "40인 로스터",
+     "sub": "",
+     "at": 0.2
+    },
+    {
+     "id": "kbo",
+     "x": 1360,
+     "y": 620,
+     "ic": "kbo",
+     "lab": "KBO 외국인 영입",
+     "sub": "",
+     "at": 1
+    }
+   ],
+   "edges": [
+    {
+     "a": "ros",
+     "b": "kbo",
+     "lab": "",
+     "at": 1.3,
+     "c": "gold"
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": null,
+   "noCenter": true,
+   "startLine": 20,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "noCenter": true,
-   "fig": {
-    "type": "steps",
-    "at": 0,
-    "items": [
-     {
-      "lab": "40인 로스터",
-      "at": 0.2
-     },
-     {
-      "lab": "KBO 외국인 영입",
-      "at": 1,
-      "hi": true,
-      "w": 420
-     }
-    ]
-   },
-   "startLine": 19
+   }
   },
   {
    "type": "rf_band",
@@ -1174,7 +1494,7 @@
      }
     ]
    },
-   "startLine": 20
+   "startLine": 21
   },
   {
    "type": "rf_band",
@@ -1204,7 +1524,7 @@
      }
     ]
    },
-   "startLine": 21
+   "startLine": 22
   },
   {
    "type": "rf_band",
@@ -1233,7 +1553,7 @@
      }
     ]
    },
-   "startLine": 22
+   "startLine": 23
   },
   {
    "type": "tline",
@@ -1259,7 +1579,7 @@
    ],
    "noCenter": true,
    "chain": "tl21",
-   "startLine": 23,
+   "startLine": 24,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1293,7 +1613,7 @@
      }
     ]
    },
-   "startLine": 24
+   "startLine": 25
   },
   {
    "type": "tline",
@@ -1320,12 +1640,42 @@
    "noCenter": true,
    "chain": "tl21",
    "cont": true,
+   "startLine": 26,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   }
+  },
+  {
+   "type": "tline",
+   "title": "지난 직장폐쇄 · 2021~22년",
+   "items": [
+    {
+     "d": "2021년 12월 2일",
+     "t": "직장폐쇄 시작",
+     "at": -1,
+     "c": "bad"
+    },
+    {
+     "d": "2022년 3월 10일",
+     "t": "직장폐쇄 끝",
+     "at": -1
+    },
+    {
+     "d": "99일",
+     "t": "멈춘 기간",
+     "at": -1,
+     "c": "gold"
+    }
+   ],
+   "noCenter": true,
+   "chain": "tl21",
+   "cont": true,
    "toc": {
     "hi": 1,
-    "sec": 2.4,
+    "full": true,
     "hiAt": 0.35
    },
-   "startLine": 25,
+   "startLine": 27,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1347,7 +1697,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 26
+   "startLine": 28
   },
   {
    "type": "rf_band",
@@ -1383,7 +1733,7 @@
      }
     ]
    },
-   "startLine": 27
+   "startLine": 29
   },
   {
    "type": "rf_bars",
@@ -1404,7 +1754,7 @@
    ],
    "max": 340,
    "noCenter": true,
-   "startLine": 28,
+   "startLine": 30,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1434,7 +1784,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 29
+   "startLine": 31
   },
   {
    "type": "rf_bars",
@@ -1455,7 +1805,7 @@
    ],
    "max": 7,
    "noCenter": true,
-   "startLine": 30,
+   "startLine": 32,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1477,7 +1827,7 @@
     }
    ],
    "noCenter": true,
-   "startLine": 31,
+   "startLine": 33,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1519,7 +1869,7 @@
     ]
    },
    "chain": "pa",
-   "startLine": 32
+   "startLine": 34
   },
   {
    "type": "rf_band",
@@ -1559,7 +1909,7 @@
    },
    "chain": "pa",
    "cont": true,
-   "startLine": 33
+   "startLine": 35
   },
   {
    "type": "fa_quote",
@@ -1572,7 +1922,7 @@
    "mono": null,
    "at": 1,
    "noCenter": true,
-   "startLine": 34,
+   "startLine": 36,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1588,7 +1938,7 @@
    "mono": null,
    "at": 1,
    "noCenter": true,
-   "startLine": 35,
+   "startLine": 37,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1618,12 +1968,40 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
+   "startLine": 38
+  },
+  {
+   "type": "rf_band",
+   "who": "12월 1일 전 합의",
+   "tag": null,
+   "team": "",
+   "vals": [
+    {
+     "v": "12월 1일 전",
+     "k": "새 협약",
+     "at": -1,
+     "hi": false,
+     "size": 110
+    },
+    {
+     "v": "가능성 낮음",
+     "k": "언론 전망",
+     "at": -1,
+     "hi": true,
+     "size": 110
+    }
+   ],
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "cont": true,
    "toc": {
     "hi": 2,
-    "sec": 2.4,
+    "full": true,
     "hiAt": 0.35
    },
-   "startLine": 36
+   "startLine": 39
   },
   {
    "type": "tline",
@@ -1654,7 +2032,7 @@
    ],
    "noCenter": true,
    "uni": true,
-   "startLine": 37,
+   "startLine": 40,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1681,7 +2059,7 @@
     }
    ],
    "noCenter": true,
-   "startLine": 38,
+   "startLine": 41,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1712,7 +2090,7 @@
     "at": 1,
     "sub": "노사협약 만료 7시간 전"
    },
-   "startLine": 39,
+   "startLine": 42,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -1765,7 +2143,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "sz",
-   "startLine": 40
+   "startLine": 43
   },
   {
    "type": "pstat",
@@ -1816,7 +2194,7 @@
    },
    "chain": "sz",
    "cont": true,
-   "startLine": 41
+   "startLine": 44
   },
   {
    "type": "pstat",
@@ -1867,7 +2245,7 @@
    },
    "chain": "sz",
    "cont": true,
-   "startLine": 42
+   "startLine": 45
   },
   {
    "type": "pstat",
@@ -1918,7 +2296,7 @@
    },
    "chain": "sz",
    "cont": true,
-   "startLine": 43
+   "startLine": 46
   },
   {
    "type": "pstat",
@@ -1969,7 +2347,7 @@
    },
    "chain": "sz",
    "cont": true,
-   "startLine": 44
+   "startLine": 47
   },
   {
    "type": "pstat",
@@ -2001,7 +2379,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "imgAt": 1,
-   "startLine": 45
+   "startLine": 48
   },
   {
    "type": "tline",
@@ -2027,7 +2405,7 @@
    ],
    "noCenter": true,
    "chain": "p26",
-   "startLine": 46,
+   "startLine": 49,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -2057,14 +2435,14 @@
    "noCenter": true,
    "chain": "p26",
    "cont": true,
-   "startLine": 47,
+   "startLine": 50,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
   },
   {
    "type": "pstat",
-   "img": "카드/FA11_노시환_한화",
+   "img": "카드/P29w_노시환_0512",
    "name": "노시환",
    "team": "한화",
    "sub": "2026년 · 포스팅",
@@ -2086,11 +2464,11 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 48
+   "startLine": 51
   },
   {
    "type": "pstat",
-   "img": "카드/FA11_노시환_한화",
+   "img": "카드/P29w_노시환_0512",
    "name": "노시환",
    "team": "한화",
    "sub": "마감 전에 계약하면",
@@ -2118,11 +2496,11 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 49
+   "startLine": 52
   },
   {
    "type": "pstat",
-   "img": "카드/FA11_노시환_한화",
+   "img": "카드/P29w_노시환_0512",
    "name": "노시환",
    "team": "한화",
    "sub": "계약을 못 하면",
@@ -2156,11 +2534,11 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "nc2",
-   "startLine": 50
+   "startLine": 53
   },
   {
    "type": "pstat",
-   "img": "카드/FA11_노시환_한화",
+   "img": "카드/P29w_노시환_0512",
    "name": "노시환",
    "team": "한화",
    "sub": "계약을 못 하면",
@@ -2195,11 +2573,11 @@
    },
    "chain": "nc2",
    "cont": true,
-   "startLine": 51
+   "startLine": 54
   },
   {
    "type": "pstat",
-   "img": "카드/FA11_노시환_한화",
+   "img": "카드/P29w_노시환_0512",
    "name": "노시환",
    "team": "한화",
    "sub": "계약을 못 하면",
@@ -2234,94 +2612,141 @@
    },
    "chain": "nc2",
    "cont": true,
-   "startLine": 52
+   "startLine": 55
   },
   {
-   "type": "rf_band",
-   "who": "계약이 되면 · 한화가 받는 이적료",
-   "tag": null,
-   "team": "한화",
-   "vals": [],
-   "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "noCenter": true,
-   "fig": {
-    "type": "steps",
-    "at": 0,
-    "items": [
-     {
-      "lab": "한화 이적료",
-      "at": 0.2,
-      "w": 320
-     },
-     {
-      "lab": "노시환 보장 금액",
-      "at": 1,
-      "join": "=",
-      "w": 380
-     },
-     {
-      "lab": "20%",
-      "at": 1.4,
-      "join": "×",
-      "hi": true,
-      "w": 200
-     }
-    ]
-   },
-   "chain": "fee",
-   "startLine": 53
-  },
-  {
-   "type": "rf_band",
-   "who": "계약이 되면 · 한화가 받는 이적료",
-   "tag": null,
-   "team": "한화",
-   "vals": [
+   "type": "lo_flow",
+   "title": "계약이 되면 · 한화가 받는 이적료",
+   "nodes": [
     {
-     "v": "2500만 달러 이하",
-     "k": "보장 금액일 때",
-     "at": 0.2,
-     "hi": false,
-     "size": 100
+     "id": "mlb",
+     "x": 420,
+     "y": 600,
+     "ic": "team",
+     "lab": "미국 구단",
+     "sub": "",
+     "at": 0.6
+    },
+    {
+     "id": "nos",
+     "x": 1300,
+     "y": 400,
+     "ic": "player",
+     "lab": "노시환",
+     "sub": "",
+     "at": 1
+    },
+    {
+     "id": "hh",
+     "x": 1300,
+     "y": 720,
+     "ic": "team",
+     "lab": "한화",
+     "sub": "",
+     "at": 0.2
     }
    ],
+   "edges": [
+    {
+     "a": "mlb",
+     "b": "nos",
+     "lab": "보장 금액",
+     "at": 1,
+     "c": "gold",
+     "r0": 150,
+     "r1": 120
+    },
+    {
+     "a": "mlb",
+     "b": "hh",
+     "lab": "보장 금액의 20% = 이적료",
+     "at": 1.6,
+     "c": "gold",
+     "r0": 150,
+     "r1": 120,
+     "labDy": -56
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": null,
+   "noCenter": true,
+   "chain": "fee",
+   "startLine": 56,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
+   }
+  },
+  {
+   "type": "lo_flow",
+   "title": "계약이 되면 · 한화가 받는 이적료",
+   "nodes": [
+    {
+     "id": "mlb",
+     "x": 420,
+     "y": 600,
+     "ic": "team",
+     "lab": "미국 구단",
+     "sub": "",
+     "at": -1
+    },
+    {
+     "id": "nos",
+     "x": 1300,
+     "y": 400,
+     "ic": "player",
+     "lab": "노시환",
+     "sub": "",
+     "at": -1
+    },
+    {
+     "id": "hh",
+     "x": 1300,
+     "y": 720,
+     "ic": "team",
+     "lab": "한화",
+     "sub": "",
+     "at": -1
+    }
+   ],
+   "edges": [
+    {
+     "a": "mlb",
+     "b": "nos",
+     "lab": "보장 금액",
+     "at": -1,
+     "c": "gold",
+     "r0": 150,
+     "r1": 120
+    },
+    {
+     "a": "mlb",
+     "b": "hh",
+     "lab": "보장 금액의 20% = 이적료",
+     "at": -1,
+     "c": "gold",
+     "r0": 150,
+     "r1": 120,
+     "labDy": -56
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": "보장 금액 2500만 달러 이하일 때",
    "noCenter": true,
-   "fig": {
-    "type": "steps",
-    "at": -1,
-    "items": [
-     {
-      "lab": "한화 이적료",
-      "at": -1,
-      "w": 320
-     },
-     {
-      "lab": "노시환 보장 금액",
-      "at": -1,
-      "join": "=",
-      "w": 380
-     },
-     {
-      "lab": "20%",
-      "at": -1,
-      "join": "×",
-      "hi": true,
-      "w": 200
-     }
-    ]
-   },
    "chain": "fee",
    "cont": true,
-   "startLine": 54
+   "capX": 560,
+   "capY": 800,
+   "capAt": 0.2,
+   "startLine": 57,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   }
   },
   {
    "type": "pstat",
-   "img": "카드/FA11_노시환_한화",
+   "img": "카드/P29w_노시환_0512",
    "name": "노시환",
    "team": "한화",
    "sub": "2026년 성적",
@@ -2353,7 +2778,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 55
+   "startLine": 58
   },
   {
    "type": "rf_duo",
@@ -2396,11 +2821,11 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 56
+   "startLine": 59
   },
   {
    "type": "pstat",
-   "img": "카드/FA11_노시환_한화",
+   "img": "카드/P29w_노시환_0512",
    "name": "노시환",
    "team": "한화",
    "sub": "미국 구단 제안 · 언론 전망",
@@ -2433,11 +2858,11 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "nm",
-   "startLine": 57
+   "startLine": 60
   },
   {
    "type": "pstat",
-   "img": "카드/FA11_노시환_한화",
+   "img": "카드/P29w_노시환_0512",
    "name": "노시환",
    "team": "한화",
    "sub": "2026년 겨울 FA 시장",
@@ -2471,11 +2896,11 @@
    },
    "chain": "nm",
    "cont": true,
-   "startLine": 58
+   "startLine": 61
   },
   {
    "type": "pstat",
-   "img": "카드/FA11_노시환_한화",
+   "img": "카드/P29w_노시환_0512",
    "name": "노시환",
    "team": "한화",
    "sub": "노시환 · 언론 전망",
@@ -2510,11 +2935,11 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "n26",
-   "startLine": 59
+   "startLine": 62
   },
   {
    "type": "pstat",
-   "img": "카드/FA11_노시환_한화",
+   "img": "카드/P29w_노시환_0512",
    "name": "노시환",
    "team": "한화",
    "sub": "노시환 · 언론 전망",
@@ -2550,11 +2975,11 @@
    },
    "chain": "n26",
    "cont": true,
-   "startLine": 60
+   "startLine": 63
   },
   {
    "type": "pstat",
-   "img": "카드/FA11_노시환_한화",
+   "img": "카드/P29w_노시환_0512",
    "name": "노시환",
    "team": "한화",
    "sub": "노시환 · 언론 전망",
@@ -2590,7 +3015,7 @@
    },
    "chain": "n26",
    "cont": true,
-   "startLine": 61
+   "startLine": 64
   },
   {
    "type": "speech",
@@ -2615,7 +3040,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "team": "한화",
-   "startLine": 62
+   "startLine": 65
   },
   {
    "type": "speech",
@@ -2641,7 +3066,7 @@
    },
    "team": "한화",
    "cont": true,
-   "startLine": 63
+   "startLine": 66
   },
   {
    "type": "fa_fans",
@@ -2670,7 +3095,7 @@
    },
    "noCenter": true,
    "chain": "fan1",
-   "startLine": 64
+   "startLine": 67
   },
   {
    "type": "fa_fans",
@@ -2700,7 +3125,7 @@
    "noCenter": true,
    "chain": "fan1",
    "cont": true,
-   "startLine": 65
+   "startLine": 68
   },
   {
    "type": "fa_fans",
@@ -2730,12 +3155,42 @@
    "noCenter": true,
    "chain": "fan1",
    "cont": true,
+   "startLine": 69
+  },
+  {
+   "type": "fa_fans",
+   "team": "한화",
+   "title": "팬 반응",
+   "sub": "한화 이글스",
+   "bubbles": [
+    {
+     "t": "노시환 빠지면 공격도 3루 수비도 구멍",
+     "at": -1,
+     "c": null
+    },
+    {
+     "t": "3루는 누가? 대안 찾기",
+     "at": -1,
+     "c": null
+    },
+    {
+     "t": "진출 가능성? '어렵다' vs '간다'",
+     "at": -1,
+     "c": null
+    }
+   ],
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "chain": "fan1",
+   "cont": true,
    "toc": {
     "hi": 3,
-    "sec": 2.4,
+    "full": true,
     "hiAt": 0.35
    },
-   "startLine": 66
+   "startLine": 70
   },
   {
    "type": "tline",
@@ -2766,32 +3221,65 @@
    ],
    "noCenter": true,
    "uni": true,
-   "startLine": 67,
+   "startLine": 71,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
   },
   {
-   "type": "lo_clock",
-   "title": "한국 시간 · 12월 2일 오후 2시",
-   "marks": [
+   "type": "lo_flow",
+   "title": "오후 2시를 넘기면",
+   "nodes": [
     {
-     "h": 7,
-     "sub": "오전 7시",
-     "lab": "노시환 협상 마감",
-     "at": 0,
-     "c": "gold"
+     "id": "fa",
+     "x": 420,
+     "y": 640,
+     "ic": "player",
+     "lab": "FA 선수",
+     "sub": "",
+     "at": 0
     },
     {
-     "h": 14,
-     "sub": "오후 2시 무렵",
-     "lab": "넘기면 FA · 트레이드 멈춤",
-     "at": 0.4,
-     "c": "bad"
+     "id": "ta",
+     "x": 960,
+     "y": 640,
+     "ic": "team",
+     "lab": "구단 A",
+     "sub": "",
+     "at": 0
+    },
+    {
+     "id": "tb",
+     "x": 1500,
+     "y": 640,
+     "ic": "team",
+     "lab": "구단 B",
+     "sub": "",
+     "at": 0
     }
    ],
+   "edges": [
+    {
+     "a": "fa",
+     "b": "ta",
+     "lab": "FA 계약",
+     "at": 0,
+     "stopAt": 1
+    },
+    {
+     "a": "ta",
+     "b": "tb",
+     "lab": "트레이드",
+     "at": 0,
+     "two": true,
+     "stopAt": 1.4
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": null,
    "noCenter": true,
-   "startLine": 68,
+   "startLine": 72,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -2814,14 +3302,14 @@
     }
    ],
    "noCenter": true,
-   "startLine": 69,
+   "startLine": 73,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
   },
   {
    "type": "pstat",
-   "img": "MLB/김하성",
+   "img": "카드/P29w_김하성_SD",
    "name": "김하성",
    "team": "",
    "sub": "오후 2시 마감 · FA 유격수",
@@ -2862,11 +3350,11 @@
    },
    "chain": "kim",
    "imgAt": 1,
-   "startLine": 70
+   "startLine": 74
   },
   {
    "type": "pstat",
-   "img": "MLB/김하성",
+   "img": "카드/P29w_김하성_SD",
    "name": "김하성",
    "team": "",
    "sub": "오후 2시 마감 · FA 유격수",
@@ -2908,11 +3396,11 @@
    "chain": "kim",
    "imgAt": -1,
    "cont": true,
-   "startLine": 71
+   "startLine": 75
   },
   {
    "type": "pstat",
-   "img": "MLB/김하성",
+   "img": "카드/P29w_김하성_SD",
    "name": "김하성",
    "team": "",
    "sub": "오후 2시 마감 · FA 유격수",
@@ -2954,11 +3442,11 @@
    "chain": "kim",
    "imgAt": -1,
    "cont": true,
-   "startLine": 72
+   "startLine": 76
   },
   {
    "type": "pstat",
-   "img": "MLB/김하성",
+   "img": "카드/P29w_김하성_SD",
    "name": "김하성",
    "team": "",
    "sub": "오후 2시 마감 · FA 유격수",
@@ -3000,11 +3488,11 @@
    "chain": "kim",
    "imgAt": -1,
    "cont": true,
-   "startLine": 73
+   "startLine": 77
   },
   {
    "type": "pstat",
-   "img": "MLB/김하성",
+   "img": "카드/P29w_김하성_SD",
    "name": "김하성",
    "team": "",
    "sub": "오후 2시 마감 · FA 유격수",
@@ -3046,38 +3534,55 @@
    "chain": "kim",
    "imgAt": -1,
    "cont": true,
-   "startLine": 74
+   "startLine": 78
   },
   {
-   "type": "rf_band",
-   "who": "퀄리파잉 오퍼",
-   "tag": null,
-   "team": "",
-   "vals": [
+   "type": "lo_flow",
+   "title": "퀄리파잉 오퍼",
+   "nodes": [
     {
-     "v": "구단 → FA",
-     "k": "1년짜리 제안",
-     "at": 1,
-     "hi": false,
-     "size": 110
+     "id": "tm",
+     "x": 520,
+     "y": 620,
+     "ic": "team",
+     "lab": "구단",
+     "sub": "",
+     "at": 0.3
     },
     {
-     "v": "약 2315만 달러",
-     "k": "1년",
-     "at": 2,
-     "hi": true,
-     "size": 110
+     "id": "fa",
+     "x": 1400,
+     "y": 620,
+     "ic": "player",
+     "lab": "FA 선수",
+     "sub": "",
+     "at": 0.6
     }
    ],
+   "edges": [
+    {
+     "a": "tm",
+     "b": "fa",
+     "lab": "1년 약 2315만 달러",
+     "at": 2,
+     "c": "gold",
+     "r0": 150,
+     "r1": 130
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": "1년짜리 제안",
+   "noCenter": true,
+   "capAt": 3,
+   "startLine": 79,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "noCenter": true,
-   "startLine": 75
+   }
   },
   {
    "type": "pstat",
-   "img": "MLB/김하성",
+   "img": "카드/P29w_김하성_SD",
    "name": "김하성",
    "team": "",
    "sub": "애틀랜타의 선택",
@@ -3111,11 +3616,11 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "kim3",
-   "startLine": 76
+   "startLine": 80
   },
   {
    "type": "pstat",
-   "img": "MLB/김하성",
+   "img": "카드/P29w_김하성_SD",
    "name": "김하성",
    "team": "",
    "sub": "애틀랜타의 선택",
@@ -3150,7 +3655,7 @@
    },
    "chain": "kim3",
    "cont": true,
-   "startLine": 77
+   "startLine": 81
   },
   {
    "type": "tline",
@@ -3175,7 +3680,7 @@
     }
    ],
    "noCenter": true,
-   "startLine": 78,
+   "startLine": 82,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3198,14 +3703,14 @@
     }
    ],
    "noCenter": true,
-   "startLine": 79,
+   "startLine": 83,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
   },
   {
    "type": "pstat",
-   "img": "MLB/김하성",
+   "img": "카드/P29w_김하성_SD",
    "name": "김하성",
    "team": "",
    "sub": "김하성 · 언론 전망",
@@ -3232,27 +3737,83 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "toc": {
-    "hi": 4,
-    "sec": 2.4,
-    "hiAt": 0.35
-   },
-   "startLine": 80
+   "startLine": 84
   },
   {
-   "type": "lo_clock",
-   "title": "한국 시간 · 12월 2일 오후 2시",
-   "marks": [
+   "type": "pstat",
+   "img": "카드/P29w_김하성_SD",
+   "name": "김하성",
+   "team": "",
+   "sub": "김하성 · 언론 전망",
+   "viz": [
     {
-     "h": 14,
-     "sub": "오후 2시 무렵",
-     "lab": "KBO 외국인 영입 창구",
-     "at": 0.6,
-     "c": "bad"
+     "type": "steps",
+     "items": [
+      {
+       "d": "직장폐쇄가 오면",
+       "t": "",
+       "at": -1
+      },
+      {
+       "d": "행선지 찾기",
+       "t": "길어질 수도",
+       "at": -1,
+       "c": "bad"
+      }
+     ]
     }
    ],
+   "stats": [],
    "noCenter": true,
-   "startLine": 81,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "cont": true,
+   "toc": {
+    "hi": 4,
+    "full": true,
+    "hiAt": 0.35
+   },
+   "startLine": 85
+  },
+  {
+   "type": "lo_flow",
+   "title": "같은 오후 2시 · KBO 외국인 영입 창구",
+   "nodes": [
+    {
+     "id": "ros",
+     "x": 560,
+     "y": 600,
+     "ic": "roster",
+     "lab": "메이저리그 40인 로스터",
+     "sub": "",
+     "at": 0.2
+    },
+    {
+     "id": "kbo",
+     "x": 1360,
+     "y": 600,
+     "ic": "kbo",
+     "lab": "KBO 구단",
+     "sub": "",
+     "at": 0.2
+    }
+   ],
+   "edges": [
+    {
+     "a": "ros",
+     "b": "kbo",
+     "lab": "외국인 영입",
+     "at": 0.6,
+     "c": "gold",
+     "stopAt": 2
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": null,
+   "noCenter": true,
+   "startLine": 86,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3274,49 +3835,181 @@
    ],
    "logoSize": 200,
    "size": 96,
-   "startLine": 82,
+   "startLine": 87,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
   },
   {
-   "type": "lo_roster",
+   "type": "lo_flow",
    "title": "KBO가 노리는 외국인 · 40인 로스터",
-   "sub": "메이저리그 구단 40인 로스터",
+   "nodes": [
+    {
+     "id": "kbo",
+     "x": 1440,
+     "y": 660,
+     "ic": "kbo",
+     "lab": "KBO 구단",
+     "sub": "",
+     "at": 0.2
+    },
+    {
+     "id": "ros",
+     "x": 480,
+     "y": 660,
+     "ic": "roster",
+     "lab": "메이저리그 40인 로스터",
+     "sub": "외국인 선수",
+     "at": 1,
+     "subC": "gold"
+    },
+    {
+     "id": "org",
+     "x": 960,
+     "y": 420,
+     "ic": "team",
+     "lab": "원래 구단",
+     "sub": "풀어 줘야 이적",
+     "at": 50,
+     "subC": "gold"
+    }
+   ],
+   "edges": [
+    {
+     "a": "ros",
+     "b": "kbo",
+     "lab": "영입",
+     "at": 1.6,
+     "c": "gold",
+     "r0": 140,
+     "r1": 130,
+     "labDy": -62
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": null,
    "noCenter": true,
-   "cap": "40인 로스터에 든 선수도",
-   "capAt": 1.5,
-   "chain": "ros2",
-   "startLine": 83,
+   "chain": "pipe",
+   "startLine": 88,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
   },
   {
-   "type": "lo_roster",
+   "type": "lo_flow",
    "title": "40인 로스터 선수를 데려오려면",
-   "sub": "메이저리그 구단 40인 로스터",
+   "nodes": [
+    {
+     "id": "kbo",
+     "x": 1440,
+     "y": 660,
+     "ic": "kbo",
+     "lab": "KBO 구단",
+     "sub": "",
+     "at": -1
+    },
+    {
+     "id": "ros",
+     "x": 480,
+     "y": 660,
+     "ic": "roster",
+     "lab": "메이저리그 40인 로스터",
+     "sub": "외국인 선수",
+     "at": -1,
+     "subC": "gold"
+    },
+    {
+     "id": "org",
+     "x": 960,
+     "y": 420,
+     "ic": "team",
+     "lab": "원래 구단",
+     "sub": "풀어 줘야 이적",
+     "at": 1,
+     "subC": "gold"
+    }
+   ],
+   "edges": [
+    {
+     "a": "ros",
+     "b": "kbo",
+     "lab": "영입",
+     "at": -1,
+     "c": "gold",
+     "r0": 140,
+     "r1": 130,
+     "labDy": -62
+    }
+   ],
+   "wall": null,
+   "boxes": [],
+   "cap": null,
    "noCenter": true,
-   "cap": "원래 구단이 풀어 줘야",
-   "capAt": 1,
-   "chain": "ros2",
-   "startLine": 84,
+   "chain": "pipe",
+   "cont": true,
+   "startLine": 89,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
   },
   {
-   "type": "lo_roster",
+   "type": "lo_flow",
    "title": "직장폐쇄가 되면 · 40인 로스터는 잠김",
-   "sub": "메이저리그 구단 40인 로스터",
-   "noCenter": true,
+   "nodes": [
+    {
+     "id": "kbo",
+     "x": 1440,
+     "y": 660,
+     "ic": "kbo",
+     "lab": "KBO 구단",
+     "sub": "",
+     "at": -1
+    },
+    {
+     "id": "ros",
+     "x": 480,
+     "y": 660,
+     "ic": "roster",
+     "lab": "메이저리그 40인 로스터",
+     "sub": "외국인 선수",
+     "at": -1,
+     "subC": "gold",
+     "lockAt": 1
+    },
+    {
+     "id": "org",
+     "x": 960,
+     "y": 420,
+     "ic": "team",
+     "lab": "원래 구단",
+     "sub": "풀어 줘야 이적",
+     "at": -1,
+     "subC": "gold"
+    }
+   ],
+   "edges": [
+    {
+     "a": "ros",
+     "b": "kbo",
+     "lab": "영입",
+     "at": -1,
+     "c": "gold",
+     "r0": 140,
+     "r1": 130,
+     "labDy": -62,
+     "stopAt": 2
+    }
+   ],
+   "wall": null,
+   "boxes": [],
    "cap": "방출까지 멈춤",
-   "capAt": 2,
-   "chain": "ros2",
-   "mode": "lock",
-   "at": 0.5,
+   "noCenter": true,
+   "chain": "pipe",
+   "cont": true,
    "capC": "bad",
-   "startLine": 85,
+   "capAt": 2,
+   "startLine": 90,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3332,7 +4025,7 @@
    "mono": null,
    "at": 2,
    "noCenter": true,
-   "startLine": 86,
+   "startLine": 91,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3356,7 +4049,7 @@
    ],
    "noCenter": true,
    "chain": "pet",
-   "startLine": 87,
+   "startLine": 92,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3381,7 +4074,7 @@
    "noCenter": true,
    "chain": "pet",
    "cont": true,
-   "startLine": 88,
+   "startLine": 93,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3404,7 +4097,7 @@
     }
    ],
    "noCenter": true,
-   "startLine": 89,
+   "startLine": 94,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3451,7 +4144,7 @@
    },
    "chain": "beck",
    "imgAt": 1,
-   "startLine": 90
+   "startLine": 95
   },
   {
    "type": "pstat",
@@ -3496,7 +4189,7 @@
    "chain": "beck",
    "imgAt": -1,
    "cont": true,
-   "startLine": 91
+   "startLine": 96
   },
   {
    "type": "rf_band",
@@ -3523,7 +4216,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 92
+   "startLine": 97
   },
   {
    "type": "pstat",
@@ -3561,7 +4254,7 @@
    },
    "chain": "wat0",
    "imgAt": 1,
-   "startLine": 93
+   "startLine": 98
   },
   {
    "type": "pstat",
@@ -3600,7 +4293,7 @@
    "chain": "wat0",
    "imgAt": -1,
    "cont": true,
-   "startLine": 94
+   "startLine": 99
   },
   {
    "type": "lo_roster",
@@ -3615,7 +4308,7 @@
    "mode": "in",
    "at": 1,
    "chain": "wat",
-   "startLine": 95,
+   "startLine": 100,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3634,7 +4327,7 @@
    "at": 1,
    "chain": "wat",
    "toTeam": "한화",
-   "startLine": 96,
+   "startLine": 101,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3653,7 +4346,7 @@
    "at": -1,
    "chain": "wat",
    "toTeam": "한화",
-   "startLine": 97,
+   "startLine": 102,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3694,7 +4387,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "wei",
-   "startLine": 98
+   "startLine": 103
   },
   {
    "type": "pstat",
@@ -3733,7 +4426,7 @@
    },
    "chain": "wei",
    "cont": true,
-   "startLine": 99
+   "startLine": 104
   },
   {
    "type": "pstat",
@@ -3772,7 +4465,7 @@
    },
    "chain": "wei",
    "cont": true,
-   "startLine": 100
+   "startLine": 105
   },
   {
    "type": "pstat",
@@ -3811,7 +4504,7 @@
    },
    "chain": "wei",
    "cont": true,
-   "startLine": 101
+   "startLine": 106
   },
   {
    "type": "pstat",
@@ -3842,7 +4535,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 102
+   "startLine": 107
   },
   {
    "type": "fa_quote",
@@ -3855,7 +4548,7 @@
    "mono": null,
    "at": 1,
    "noCenter": true,
-   "startLine": 103,
+   "startLine": 108,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3881,7 +4574,7 @@
    ],
    "noCenter": true,
    "chain": "fh",
-   "startLine": 104,
+   "startLine": 109,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3914,7 +4607,7 @@
     "at": 1,
     "sub": "40인 로스터 선수라면"
    },
-   "startLine": 105,
+   "startLine": 110,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -3935,12 +4628,31 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
+   "startLine": 111
+  },
+  {
+   "type": "fa_fans",
+   "team": "한화",
+   "title": "팬 반응",
+   "sub": "한화 이글스",
+   "bubbles": [
+    {
+     "t": "외국인 타자 결정, 포스팅 결과 뒤로?",
+     "at": -1,
+     "c": "bad"
+    }
+   ],
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "noCenter": true,
+   "cont": true,
    "toc": {
     "hi": 5,
-    "sec": 2.4,
+    "full": true,
     "hiAt": 0.35
    },
-   "startLine": 106
+   "startLine": 112
   },
   {
    "type": "tline",
@@ -3971,7 +4683,7 @@
    ],
    "noCenter": true,
    "uni": true,
-   "startLine": 107,
+   "startLine": 113,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4008,7 +4720,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 108
+   "startLine": 114
   },
   {
    "type": "tline",
@@ -4028,7 +4740,7 @@
     }
    ],
    "noCenter": true,
-   "startLine": 109,
+   "startLine": 115,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4072,7 +4784,7 @@
     ]
    },
    "chain": "opp",
-   "startLine": 110
+   "startLine": 116
   },
   {
    "type": "rf_band",
@@ -4114,7 +4826,7 @@
    },
    "chain": "opp",
    "cont": true,
-   "startLine": 111
+   "startLine": 117
   },
   {
    "type": "fa_quote",
@@ -4127,7 +4839,7 @@
    "mono": null,
    "at": 2,
    "noCenter": true,
-   "startLine": 112,
+   "startLine": 118,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4165,7 +4877,7 @@
      }
     ]
    },
-   "startLine": 113
+   "startLine": 119
   },
   {
    "type": "tline",
@@ -4196,7 +4908,7 @@
    ],
    "noCenter": true,
    "uni": true,
-   "startLine": 114,
+   "startLine": 120,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4219,7 +4931,7 @@
     }
    ],
    "noCenter": true,
-   "startLine": 115,
+   "startLine": 121,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4248,7 +4960,7 @@
    ],
    "noCenter": true,
    "chain": "op22",
-   "startLine": 116,
+   "startLine": 122,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4278,14 +4990,14 @@
    "noCenter": true,
    "chain": "op22",
    "cont": true,
-   "startLine": 117,
+   "startLine": 123,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
   },
   {
    "type": "pstat",
-   "img": "MLB/김하성",
+   "img": "카드/P29w_김하성_SD",
    "name": "김하성",
    "team": "",
    "sub": "직장폐쇄가 3월까지 가면",
@@ -4318,12 +5030,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "toc": {
-    "hi": 6,
-    "sec": 2.4,
-    "hiAt": 0.35
-   },
-   "startLine": 118
+   "startLine": 124
   },
   {
    "type": "tline",
@@ -4352,7 +5059,12 @@
    ],
    "noCenter": true,
    "uni": true,
-   "startLine": 119,
+   "toc": {
+    "hi": 6,
+    "full": true,
+    "hiAt": 0.35
+   },
+   "startLine": 125,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4378,7 +5090,7 @@
    ],
    "noCenter": true,
    "chain": "clk3",
-   "startLine": 120,
+   "startLine": 126,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4405,7 +5117,7 @@
    "noCenter": true,
    "chain": "clk3",
    "cont": true,
-   "startLine": 121,
+   "startLine": 127,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4441,7 +5153,7 @@
    ],
    "noCenter": true,
    "uni": true,
-   "startLine": 122,
+   "startLine": 128,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4471,7 +5183,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 123
+   "startLine": 129
   },
   {
    "type": "question",
@@ -4480,7 +5192,7 @@
    "logoSize": 200,
    "size": 96,
    "chain": "eq",
-   "startLine": 124,
+   "startLine": 130,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4493,7 +5205,7 @@
    "size": 96,
    "chain": "eq",
    "cont": true,
-   "startLine": 125,
+   "startLine": 131,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4515,7 +5227,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 126
+   "startLine": 132
   },
   {
    "type": "question",
@@ -4534,7 +5246,7 @@
    ],
    "logoSize": 150,
    "size": 72,
-   "startLine": 127,
+   "startLine": 133,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    }
@@ -4596,135 +5308,5 @@
    "피터스",
    "라모스"
   ]
- },
- "voiceRemap": [
-  null,
-  1,
-  null,
-  null,
-  null,
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  null,
-  null,
-  12,
-  13,
-  14,
-  15,
-  16,
-  null,
-  18,
-  19,
-  null,
-  21,
-  22,
-  23,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  29,
-  30,
-  null,
-  32,
-  33,
-  null,
-  null,
-  null,
-  37,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  42,
-  44,
-  null,
-  null,
-  null,
-  47,
-  null,
-  null,
-  null,
-  50,
-  null,
-  null,
-  null,
-  null,
-  null,
-  55,
-  null,
-  null,
-  58,
-  59,
-  null,
-  null,
-  62,
-  null,
-  64,
-  null,
-  66,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  75,
-  null,
-  77,
-  78,
-  79,
-  null,
-  81,
-  null,
-  83,
-  null,
-  87,
-  88,
-  null,
-  90,
-  null,
-  93,
-  null,
-  null,
-  96,
-  null,
-  97,
-  98,
-  null,
-  null,
-  null,
-  null,
-  102,
-  103,
-  104,
-  105,
-  null,
-  107,
-  108,
-  null,
-  110,
-  111,
-  null,
-  113,
-  null,
-  null,
-  116,
-  117,
-  null,
-  119,
-  120,
-  121
- ]
+ }
 }

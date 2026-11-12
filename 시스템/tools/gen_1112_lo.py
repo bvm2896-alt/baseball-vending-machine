@@ -24,7 +24,7 @@ def NARR(sub):
     return n
 KEYS = [k for k, _ in LINES]
 ALL10 = ["KIA", "KT", "LG", "NC", "SSG", "두산", "롯데", "삼성", "키움", "한화"]
-P.update({"노시환": "카드/FA11_노시환_한화", "노시환2": "카드/FA11_노시환_한화", "와이스2": "카드/FA9_와이스_한화", "김하성": "MLB/김하성", "류지현": "경기/류지현_취임_한화_사용자제공",
+P.update({"노시환": "카드/P29w_노시환_0512", "노시환2": "카드/P29w_노시환_0512", "와이스2": "카드/FA9_와이스_한화", "김하성": "카드/P29w_김하성_SD", "류지현": "경기/류지현_취임_한화_사용자제공",
           "염경엽": "경기/염경엽_덕아웃_1014_LG제공", "차명석": "인물/차명석_스포츠서울", "와이스": "경기/와이스_모자_0423_한화제공",
           "벡": "경기/벡_계약_1105_LG제공", "왓슨": "경기/왓슨_계약_1111_한화제공"})
 def PSt(img, name, team, sub, viz, **k): sc = PS(img, name, sub, viz, team=team, **k); sc['bg'] = TBG(team) if team else BG_NEU; return sc
@@ -197,8 +197,56 @@ SC['e3'] = KEEP(SC['e2'])
 SC['e4'] = BN("다음 영상", [V("KBO FA 공시 총정리", "10개 구단별로", 1, hi=True)])
 # 11/12 00:28 사용자: 목차는 말로 읽지 않고 화면으로 — 오프닝 끝에 전체, 챕터가 바뀔 때마다 지금 칸 강조(말 없는 holdAfter 동안)
 TOC = ["직장폐쇄가 뭐길래", "2026년엔 왜 멈추나", "아침 7시 · 노시환 협상 마감", "오후 2시 · FA 시장과 김하성", "오후 2시 · KBO 외국인 영입 창구", "멈춘 뒤 · 2월 1일과 3월 중순", "날짜 정리"]
-TOCAT = {'o5': (0, 3.0, 1.5), 'l8': (1, 2.4, .35), 'l12': (2, 2.4, .35), 'nf4': (3, 2.4, .35), 'k11': (4, 2.4, .35), 'fh4': (5, 2.4, .35), 'k10': (6, 2.4, .35)}
-for _k, (_hi, _sec, _ha) in TOCAT.items(): SC[_k] = dict(SC[_k], toc=dict(hi=_hi, sec=_sec, hiAt=_ha))
+# ── 11/12 13:18 사용자 "어려운 설명은 단순 텍스트가 아니라 시각 자료로" → 그림 흐름도(lo_flow): 구단주·선수노조·협약 문서·문 닫힘, FA·트레이드 화살표 막힘, 40인 로스터 → KBO 영입 통로
+def ND(id, x, y, ic, lab="", sub="", at=0, **k): return dict(id=id, x=x, y=y, ic=ic, lab=lab, sub=sub, at=at, **k)
+def ED(a, b, lab="", at=0, **k): return dict(a=a, b=b, lab=lab, at=at, **k)
+def FL(title, nodes, edges=(), wall=None, boxes=(), cap=None, **k): return S(0, "lo_flow", title=title, nodes=list(nodes), edges=list(edges), wall=wall, boxes=list(boxes), cap=cap, noCenter=True, **k)
+def KEEPF(sc, **k):
+    sc = KEEP(sc, **k)
+    def f(o):
+        if isinstance(o, dict):
+            for kk in list(o):
+                if kk in ('stopAt', 'expAt', 'goneAt', 'lockAt', 'okAt') and isinstance(o[kk], (int, float)) and o[kk] < 50: o[kk] = -1
+                else: f(o[kk])
+        elif isinstance(o, list):
+            for v in o: f(v)
+    f(sc); return sc
+# 오프닝 · KBO 외국인 영입 창구 = 40인 로스터 → KBO 구단 통로가 막힐 수 있음
+SC['o4b'] = FL("오후 2시 무렵 · KBO 외국인 영입 창구", [ND("ros", 560, 600, "roster", "메이저리그 40인 로스터", at=0.1), ND("kbo", 1360, 600, "kbo", "KBO 구단", at=0.2)], [ED("ros", "kbo", "외국인 영입", 0.3, c="gold", stopAt=1.1)])
+# 1장 · 노사협약 = 구단주와 선수노조가 맺는 문서 → 만료 → 새 협약 없으면 구단주가 문을 닫음 = 직장폐쇄
+_DEAL = [ND("own", 420, 620, "owner", "구단주", at=0.3), ND("doc", 960, 580, "doc", "노사협약", at=0.1, expAt=50, goneAt=50, stamp="만료"), ND("uni", 1500, 620, "union", "선수노조", at=0.5)]
+SC['l1'] = FL("직장폐쇄가 뭐길래 · 노사협약", _DEAL, [ED("own", "doc", "", 0.6, r1=90), ED("uni", "doc", "", 0.7, r1=90)], cap="리그 운영 규칙", capAt=1, capY=810, chain="deal")
+SC['l2'] = KEEPF(SC['l1'], title="노사협약이 끝나면", cap="새 협약 없음", capC="bad"); SC['l2']['nodes'][1]['expAt'] = 0.3; SC['l2']['capAt'] = 0.7
+SC['l2']['edges'][0]['stopAt'] = 0.7; SC['l2']['edges'][1]['stopAt'] = 0.7
+SC['l2']['nodes'][1]['goneAt'] = 1; SC['l2']['wall'] = dict(x=960, at=1)
+SC['l3'] = KEEPF(SC['l2'], title="구단주가 문을 닫음 · 직장폐쇄", cap="직장폐쇄", capC="bad"); SC['l3']['capAt'] = 0.2
+SC['l3b'] = FL("직장폐쇄와 파업", [ND("st1", 330, 640, "stadium", "구장", at=0.2), ND("pl1", 720, 640, "union", "선수", "스스로 멈춤", at=0.2, subC="bad"),
+                                ND("st2", 1210, 640, "stadium", "구장", at=1, lockAt=1.3), ND("ow2", 1590, 640, "owner", "구단주", "문을 닫음", at=1, subC="bad")],
+               [ED("st1", "pl1", "", 0.5, r0=130, r1=110)], boxes=[dict(x=120, y=320, w=800, h=540, lab="파업", at=0.2), dict(x=1000, y=320, w=800, h=540, lab="직장폐쇄", at=1, c="bad")])
+# FA 계약·트레이드 화살표가 막힘
+_MKT = [ND("fa", 420, 640, "player", "FA 선수", at=0), ND("ta", 960, 640, "team", "구단 A", at=0), ND("tb", 1500, 640, "team", "구단 B", at=0)]
+SC['l4'] = FL("직장폐쇄가 되면 · 멈추는 것", _MKT, [ED("fa", "ta", "FA 계약", 0, stopAt=0.7), ED("ta", "tb", "트레이드", 0, two=True, stopAt=1)])
+SC['l5d'] = FL("40인 로스터 밖 · 마이너리그 선수", [ND("tm", 960, 400, "team", "메이저리그 구단", at=0), ND("ros", 420, 690, "roster", "40인 로스터", "직장폐쇄 대상", at=0, lockAt=0, subC="bad"), ND("min", 1500, 690, "union", "마이너리그 선수", "직장폐쇄 대상 아님", at=1, subC="gold")],
+               [ED("tm", "ros", "", 0, stopAt=0.2, r0=170, r1=150), ED("tm", "min", "계약 이어 감", 2.6, okAt=3, r0=170, r1=150, labDy=-60)])
+SC['l5e'] = FL("뒤에서 다시 · 40인 로스터와 KBO", [ND("ros", 560, 620, "roster", "40인 로스터", at=0.2), ND("kbo", 1360, 620, "kbo", "KBO 외국인 영입", at=1)], [ED("ros", "kbo", "", 1.3, c="gold")])
+# 2시 · 넘기면 FA·트레이드 멈춤
+SC['c2b'] = FL("오후 2시를 넘기면", _MKT, [ED("fa", "ta", "FA 계약", 0, stopAt=1), ED("ta", "tb", "트레이드", 0, two=True, stopAt=1.4)])
+# KBO 외국인 영입 통로
+SC['c3'] = FL("같은 오후 2시 · KBO 외국인 영입 창구", [ND("ros", 560, 600, "roster", "메이저리그 40인 로스터", at=0.2), ND("kbo", 1360, 600, "kbo", "KBO 구단", at=0.2)], [ED("ros", "kbo", "외국인 영입", 0.6, c="gold", stopAt=2)])
+_PIPE = [ND("kbo", 1440, 660, "kbo", "KBO 구단", at=0.2), ND("ros", 480, 660, "roster", "메이저리그 40인 로스터", "외국인 선수", at=1, subC="gold"), ND("org", 960, 420, "team", "원래 구단", "풀어 줘야 이적", at=50, subC="gold")]
+SC['f3'] = FL("KBO가 노리는 외국인 · 40인 로스터", _PIPE, [ED("ros", "kbo", "영입", 1.6, c="gold", r0=140, r1=130, labDy=-62)], chain="pipe")
+SC['f4'] = KEEPF(SC['f3'], title="40인 로스터 선수를 데려오려면"); SC['f4']['nodes'][2]['at'] = 1
+SC['f5'] = KEEPF(SC['f4'], title="직장폐쇄가 되면 · 40인 로스터는 잠김", cap="방출까지 멈춤", capC="bad"); SC['f5']['nodes'][1]['lockAt'] = 1; SC['f5']['edges'][0]['stopAt'] = 2; SC['f5']['capAt'] = 2
+# 이적료·퀄리파잉 오퍼도 그림으로
+SC['n18b'] = FL("계약이 되면 · 한화가 받는 이적료", [ND("mlb", 420, 600, "team", "미국 구단", at=0.6), ND("nos", 1300, 400, "player", "노시환", at=1), ND("hh", 1300, 720, "team", "한화", at=0.2)],
+                [ED("mlb", "nos", "보장 금액", 1, c="gold", r0=150, r1=120), ED("mlb", "hh", "보장 금액의 20% = 이적료", 1.6, c="gold", r0=150, r1=120, labDy=-56)], chain="fee")
+SC['n18c'] = KEEPF(SC['n18b'], cap="보장 금액 2500만 달러 이하일 때", capX=560, capY=800); SC['n18c']['capAt'] = 0.2
+SC['k6'] = FL("퀄리파잉 오퍼", [ND("tm", 520, 620, "team", "구단", at=0.3), ND("fa", 1400, 620, "player", "FA 선수", at=0.6)], [ED("tm", "fa", "1년 약 2315만 달러", 2, c="gold", r0=150, r1=130)], cap="1년짜리 제안", capAt=3)
+# 11/12 13:15 사용자 "목차가 나올 때 나레이션이 아무 말도 안 하는데 인트로 대사는 있어야지 — 그 목차에 대해 자연스럽게 말하고 진행" → 챕터 첫 줄(질문형 다리 대사) 동안 목차판을 띄움(말 없는 쉼 ✗)
+TOCAT = {'l0': (0, 1.4), 'w0': (1, .35), 'n0': (2, .35), 'k0': (3, .35), 'f0': (4, .35), 'g0': (5, .35), 'e0': (6, .35)}
+_TOCPREV = {'l0': 'o5', 'w0': 'l8', 'n0': 'l12', 'k0': 'nf4', 'f0': 'k11', 'g0': 'fh4'}
+for _k, _p in _TOCPREV.items(): SC[_k] = KEEP(SC[_p])
+for _k, (_hi, _ha) in TOCAT.items(): SC[_k] = dict(SC[_k], toc=dict(hi=_hi, full=True, hiAt=_ha))
 missing = [k for k in KEYS if k not in SC]; extra = [k for k in SC if k not in KEYS]
 assert not missing, missing
 for _k in extra: SC.pop(_k)
@@ -251,7 +299,7 @@ if __name__ == '__main__':
     for _k in ('n4', 'n9', 'f17'): EP['lines'][KEYS.index(_k)]["holdAfter"] = 0.8
     EP['lines'][KEYS.index('o4')]['gapAfter'] = 0.2; EP['lines'][KEYS.index('o4b')]['holdAfter'] = 0.8
     _k1 = EP['lines'][KEYS.index('k1')]; _b = _k1['narr'].split(' / '); _b[0] += '..'; _k1['narr'] = ' / '.join(_b); _k1['pauseMax'] = 0.8
-    for _k, (_hi, _sec, _ha) in TOCAT.items(): EP['lines'][KEYS.index(_k)]["holdAfter"] = _sec
+    for _k in TOCAT: EP['lines'][KEYS.index(_k)]["holdAfter"] = 0.6
     _chs = {c['from'] for c in CH}
     for i, l in enumerate(EP['lines'][:-1]):
         sg_ = l['narr'].split(' / ')
