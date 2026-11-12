@@ -13,6 +13,14 @@ TYPECAST_VOICE_ID=
 TYPECAST_API_KEY2=
 TYPECAST_VOICE_ID2=여기에_보이스ID
 
+# --- 목소리 고르기 (11/13) ---
+# 목소리 A = 위 TYPECAST_VOICE_ID (지금까지 쓴 장운)
+# 목소리 B = 아래 칸. 타입캐스트에서 고른 새 목소리의 voice ID(tc_로 시작)를 = 오른쪽에 붙여넣으세요.
+# 영상마다 A·B 중 어느 걸로 할지는 만들기 전에 Claude 가 물어보고 콘티에 적습니다(1번·2번 계정 모두 같은 목소리로 합성).
+TYPECAST_VOICE_ID_B=
+# (메모) 목소리 B 이름 — Claude 가 물어볼 때 이 이름으로 부릅니다
+TYPECAST_VOICE_B_NAME=
+
 # --- 음성 옵션 ---
 # 감정: smart(앞뒤 문맥 자동) | normal | happy | toneup(높은 톤) | tonedown | whisper
 TTS_EMOTION=toneup

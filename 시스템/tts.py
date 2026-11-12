@@ -53,6 +53,25 @@ if NO_API: ACCOUNTS = [{'key': '', 'voice': '', 'name': '없음'}]
 ACC = 0   # 지금 쓰는 계정 번호 (크레딧 소진·인증 오류 시 다음으로)
 API_KEY, VOICE = ACCOUNTS[0]['key'], ACCOUNTS[0]['voice']
 
+# 11/13 사용자("목소리를 다른걸로 한번 바꿔보고싶어 … 보이스아이디 하나 더 넣을 수 있는 칸 만들어줘, 만들기 전에 어떤걸로 할지 물어봐줘"):
+#   목소리 A = TYPECAST_VOICE_ID(장운), 목소리 B = TYPECAST_VOICE_ID_B. 편마다 콘티 "ttsVoice": "B" 로 고른다
+#   (build prep 이 work\tts_voice.txt 에 적음, 비어 있으면 A). 어느 목소리로 할지는 Claude 가 만들기 전에 사용자에게 묻는다.
+VOICE_A = CFG.get('TYPECAST_VOICE_ID', '').strip()
+VOICE_PICK = ''
+try: VOICE_PICK = io.open(os.path.join(os.environ.get('KBO_WORK', 'work'), 'tts_voice.txt'), encoding='utf-8').read().strip()
+except Exception: pass
+if VOICE_PICK.upper() in ('', 'A'): VOICE_PICK, VOICE_ID_NOW = 'A', VOICE_A
+elif VOICE_PICK.upper() == 'B': VOICE_PICK, VOICE_ID_NOW = 'B', CFG.get('TYPECAST_VOICE_ID_B', '').strip()
+else: VOICE_ID_NOW = VOICE_PICK   # 콘티에 voice ID(tc_…)를 바로 적은 경우
+if VOICE_PICK != 'A':
+    if not VOICE_ID_NOW and __name__ == '__main__' and '--test' not in sys.argv:
+        sys.exit(f'목소리 {VOICE_PICK} 로 고른 편인데 설정.txt 의 TYPECAST_VOICE_ID_B 칸이 비어 있어요 — 타입캐스트 voice ID 를 붙여넣고 다시 실행하세요 (장운으로 대신 만들지 않음)')
+    if VOICE_ID_NOW and not NO_API:
+        for _a in ACCOUNTS: _a['voice'] = VOICE_ID_NOW   # 1번·2번 계정 모두 같은 새 목소리
+        API_KEY, VOICE = ACCOUNTS[0]['key'], ACCOUNTS[0]['voice']
+    print(f'목소리 {VOICE_PICK}: {VOICE_ID_NOW}')
+VOICE_TAG = 'A' if (VOICE_PICK == 'A' or VOICE_ID_NOW == VOICE_A) else VOICE_ID_NOW   # 음성 폴더 voice.id 에 적는 값(없으면 A = 장운)
+
 # 10/7 사용자 규칙: 스마트 이모션은 사용자가 말할 때만 켠다("목소리 너무 이상해. 스마트 이모션 끄고 다시 만들자").
 #   기본은 normal. 설정.txt·환경 변수에 smart 가 있어도 무시하고, 콘티에 "ttsEmotion": "smart" 가 있을 때만 smart.
 #   (회사 PC 는 설정.txt 를 못 읽어 예전 기본값 smart 로 합성됐던 게 원인)
@@ -210,6 +229,29 @@ def voice_dir():
     return d
 VDIR = voice_dir()
 
+def voice_swap(vdir, tag):
+    """11/13: 한 편 음성 폴더엔 한 목소리만. 폴더의 voice.id(없으면 A = 장운)와 이번 목소리가 다르면
+    지금 파일들을 _목소리_<전 목소리> 폴더로 치워 두고, 이번 목소리로 예전에 만든 게 치워져 있으면 되살린다.
+    → 목소리를 바꿔도 한 편에 섞이지 않고, 다시 원래 목소리로 돌아가면 크레딧 0"""
+    if not tag: return
+    mark = os.path.join(vdir, 'voice.id')
+    files = [f for f in os.listdir(vdir) if os.path.isfile(os.path.join(vdir, f)) and f != 'voice.id']
+    try: cur = io.open(mark, encoding='utf-8').read().strip() or 'A'
+    except Exception: cur = 'A'
+    if cur != tag:
+        st = os.path.join(vdir, '_목소리_' + cur)
+        os.makedirs(st, exist_ok=True)
+        for f in files: os.replace(os.path.join(vdir, f), os.path.join(st, f))
+        back, got = os.path.join(vdir, '_목소리_' + tag), 0
+        if os.path.isdir(back):
+            for f in os.listdir(back):
+                if os.path.isfile(os.path.join(back, f)): os.replace(os.path.join(back, f), os.path.join(vdir, f)); got += 1
+            try: os.rmdir(back)
+            except Exception: pass
+        print(f'목소리 바뀜({cur} → {tag}): 이전 음성 {len(files)}개는 {os.path.basename(st)} 폴더로 옮김' + (f', 이 목소리로 예전에 만든 {got}개 되살림' if got else ''))
+    io.open(mark, 'w', encoding='utf-8').write(tag)
+if VOICE_PICK != 'A' or os.path.exists(os.path.join(VDIR, 'voice.id')): voice_swap(VDIR, VOICE_TAG)
+
 if __name__ == '__main__' and '--test' in sys.argv:
     ok = synth('야구자판기 음성 테스트예요. 삼성이 일위, 케이티가 영점오 게임 차예요.', out_path=os.path.join(VDIR, 'test.mp3'))
     print(f'OK → {VDIR}/test.mp3 재생해 보세요.' if ok else '실패')
@@ -225,6 +267,7 @@ PIN_DIR = os.path.join(HERE, '고정음성')
 def _pin_norm(t): return re.sub(r'[\s/.,!?~·]', '', t or '')
 def pinned_idx(lines):
     src = os.path.join(PIN_DIR, '구독멘트.mp3')
+    if VOICE_TAG != 'A': return []   # 11/13: 고정 구독 멘트는 장운 목소리 → 다른 목소리 편에서는 그 줄도 새로 합성
     try: key = _pin_norm(io.open(os.path.join(PIN_DIR, '구독멘트.txt'), encoding='utf-8-sig').read())
     except Exception: return []
     if not key or not os.path.exists(src): return []

@@ -425,6 +425,17 @@ def voice_dir(key=None):
     return d
 
 def VW(*a): return os.path.join(voice_dir(), *a)
+def _vtag(d):
+    try: return io.open(os.path.join(d, 'voice.id'), encoding='utf-8').read().strip() or 'A'
+    except Exception: return 'A'
+def voice_same(src, dst):
+    """11/13: 두 음성 폴더가 같은 목소리인지(voice.id, 없으면 A = 장운). 다르면 음성을 복사하지 않는다(한 편에 목소리가 섞이지 않게).
+    음성이 하나도 없는 새 폴더는 원본 목소리를 따른다"""
+    a, b = _vtag(src), _vtag(dst)
+    if a == b: return True
+    if os.path.isdir(dst) and not any(f.endswith('.mp3') for f in os.listdir(dst)):
+        io.open(os.path.join(dst, 'voice.id'), 'w', encoding='utf-8').write(a); return True
+    print(f'목소리가 달라 음성 복사 안 함({os.path.basename(src)}: {a} / {os.path.basename(dst)}: {b})'); return False
 
 def prep(ep, ep_path=None):
     lines = [l['narr'].strip() for l in ep['lines']]
@@ -435,8 +446,9 @@ def prep(ep, ep_path=None):
     if ep_path and vf.get('ep'):
         # 10/2 컷 쇼츠: 롱폼에서 이미 만든 음성을 줄 번호를 바꿔 복사(대사가 같은 줄만) → tts.py 는 새 줄만 합성
         src_dir, dst_dir, cp = voice_dir(vf['ep']), voice_dir(ep_key(ep_path)), 0
+        same_v = voice_same(src_dir, dst_dir)
         rd = lambda f: io.open(f, encoding='utf-8').read().strip() if os.path.exists(f) else None
-        for j, i in enumerate(vf.get('lines') or []):
+        for j, i in enumerate((vf.get('lines') or []) if same_v else []):
             if i is None or j >= len(lines): continue
             s3, st_ = os.path.join(src_dir, f'{int(i):02d}.mp3'), os.path.join(src_dir, f'{int(i):02d}.txt')
             if not os.path.exists(s3) or rd(st_) != lines[j]: continue
@@ -474,6 +486,8 @@ def prep(ep, ep_path=None):
     io.open(W('tts_tempo_lines.txt'), 'w', encoding='utf-8').write('\n'.join(tempo_lines(ep)))
     # 10/7: 콘티 "ttsEmotion" (예 "smart") → tts.py 감정. 없으면 빈 파일 = 기본 normal(스마트 이모션은 사용자가 말할 때만)
     io.open(W('tts_emotion.txt'), 'w', encoding='utf-8').write(str(ep.get('ttsEmotion') or ''))
+    # 11/13: 콘티 "ttsVoice": "B" → 설정.txt TYPECAST_VOICE_ID_B 목소리(비어 있으면 A = 장운). 만들기 전에 Claude 가 사용자에게 묻고 적는다
+    io.open(W('tts_voice.txt'), 'w', encoding='utf-8').write(str(ep.get('ttsVoice') or ''))
     # 9/26: 콘티 "ttsWhole": true → 한 편(구독 멘트 뺀 줄)을 API 한 번으로 이어 읽고 줄별로 자른다(줄마다 억양이 따로 놀지 않게)
     io.open(W('tts_whole.txt'), 'w', encoding='utf-8').write('1' if ep.get('ttsWhole') else '')
     print(f'work/narration.txt {len(lines)}줄')
@@ -1167,6 +1181,7 @@ def cut_chapter(ep, ep_path, which):
         'scenes': [],
     }
     if ep.get('speed') is not None: out['speed'] = ep['speed']   # 9/20: 롱폼 음성이 타입캐스트 1.2x 원음이면 쇼츠도 atempo 안 태운다(설정 SPEED 무시)
+    if ep.get('ttsVoice'): out['ttsVoice'] = ep['ttsVoice']   # 11/13: 컷 쇼츠도 롱폼과 같은 목소리
     for j, (i, ov) in enumerate(seq):
         sc = by_line.get(i)
         if sc is None: continue
@@ -1192,7 +1207,8 @@ def cut_chapter(ep, ep_path, which):
     # 음성 복사 (롱폼 → 쇼츠)
     src_dir, dst_dir = voice_dir(ep_key(ep_path)), voice_dir(ep_key(dst))
     moved = 0
-    for j, (i, _) in enumerate(seq):
+    same_v = voice_same(src_dir, dst_dir)
+    for j, (i, _) in enumerate(seq if same_v else []):
         for ext in ('.mp3', '.txt', '.segs.json'):   # 9/20: 호흡 경계(segs)도 같이 — 없으면 자막이 한 덩어리로 나온다
             f = os.path.join(src_dir, f'{i:02d}{ext}')
             if os.path.exists(f):
