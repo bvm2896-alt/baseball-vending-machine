@@ -50,6 +50,21 @@ async function worker(browser, idx, from, to, fps, scale, W, H, out, quality, on
    장면 하나 = 조각 하나. 조각의 j번째 프레임은 t0 + j/fps (장면 시작 기준)로 찍는다 → 앞 줄 길이가 바뀌어 장면이 통째로 밀려도 그림이 같다.
    찍기 전에 warm 시각들(앞 장면들의 마지막 프레임)을 한 번씩 그려 둔다(앞 장면 DOM·폭을 이어받는 장면이 전체 렌더와 똑같이 나오게).
    진행 막대는 window.__NOPROG 로 끄고 build.py 가 ffmpeg 로 따로 그린다. */
+const ST = { shots: 0, skip: 0, redo: 0, fixprev: 0, off: 0 };
+const SIG = () => {
+  /* 화면 지문: DOM 을 훑어 태그·속성·글자를 해시. 긴 속성(사진 data URI)은 길이+앞·뒤·중간 표본만. #stage 자신의 style 은 뺀다(가려진 바탕 — 첫 건너뜀 때 실제 캡처로 확인) */
+  let h1 = 0x811c9dc5, h2 = 7, cnt = 0;
+  const add = s => { for (let i = 0; i < s.length; i++) { const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 16777619); h2 = (Math.imul(h2, 31) + c) | 0; } };
+  const addA = v => { const n = v.length; if (n <= 1500) add(v); else { add(String(n)); add(v.slice(0, 200)); add(v.slice(n - 300)); for (let k = 1; k < 8; k++) { const o = Math.floor(n * k / 8); add(v.slice(o, o + 64)); } } };
+  const stage = document.getElementById('stage');
+  const w = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, { acceptNode: n => n.nodeType === 1 && (n.tagName === 'SCRIPT' || n.tagName === 'STYLE') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
+  for (let n = w.currentNode; n; n = w.nextNode()) { cnt++;
+    if (n.nodeType === 3) { add(n.nodeValue); continue; }
+    add(n.tagName); const at = n.attributes;
+    for (let i = 0; i < at.length; i++) { const a = at[i]; if (n === stage && a.name === 'style') continue; add(a.name); addA(a.value); }
+    if (n.tagName === 'INPUT' || n.tagName === 'CANVAS') add('!' + Math.random()); }
+  return cnt + ':' + h1 + ':' + h2;
+};
 function ffNullArgs(fps) { return ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(fps), '-i', '-', '-f', 'null', '-']; }
 async function chunkMode(jobsFile) {
   const J = JSON.parse(fs.readFileSync(jobsFile, 'utf-8'));
@@ -74,11 +89,33 @@ async function chunkMode(jobsFile) {
       const closed = new Promise(res => ff.on('close', res));
       const write = buf => new Promise(res => { if (!ff.stdin.write(buf)) ff.stdin.once('drain', res); else res(); });
       let shot = 0;
+      /* 11/14 사용자 "바뀌는 부분만 찍어야지" + 최종본(2K 60프레임)에 한 프레임짜리 깨진 화면이 끼던 것(상한선·자막 둘째 줄이 한 프레임 사라짐):
+         ① 화면 지문(DOM 해시)이 앞 프레임과 같으면 다시 찍지 않고 앞 그림을 그대로 넣는다 — 단, 같은 구간의 첫 프레임은 실제로 찍어 앞 그림과 바이트까지 같은지 확인한다.
+         ② 움직이는 프레임은 두 번 찍어 두 장이 같을 때만 쓴다(다르면 한 번 더 찍어 같은 두 장) — 크롬이 다 그리기 전에 찍힌 그림을 걸러 낸다. FRAME_VERIFY=0 이면 한 번만.
+         ③ 지문이 같은데 그림이 계속 다르면(지문에 안 잡히는 움직임) 그 조각은 전부 찍는다. FRAME_DEDUP=0 이면 ① 을 끈다. */
+      const DEDUP = process.env.FRAME_DEDUP !== '0', VERIFY = process.env.FRAME_VERIFY ? process.env.FRAME_VERIFY !== '0' : scale > 1.01;
+      const snap = () => p.screenshot({ type: 'jpeg', quality });
+      const sure = async () => { let a = await snap(); if (!VERIFY) return a; ST.shots++;
+        for (let n = 0; n < 3; n++) { const b = await snap(); ST.shots++; if (b.equals(a)) return a; ST.redo++; a = b; } return a; };
+      let prevSig = null, prevBuf = null, runOk = false, dedup = DEDUP, miss = 0;
       try {
         for (let j = 0; j < job.n && !err; j++) {
           const t = Math.min(job.t0 + j / fps, job.t1 - 1e-4);
           await p.evaluate(tt => window.render(tt), t);
-          await write(await p.screenshot({ type: 'jpeg', quality }));
+          const sig = dedup ? await p.evaluate(SIG) : null;
+          let buf;
+          if (dedup && prevBuf && sig === prevSig) {
+            if (runOk) { buf = prevBuf; ST.skip++; }
+            else { const a = await snap(); ST.shots++;
+              if (a.equals(prevBuf)) { buf = prevBuf; runOk = true; }
+              else { const b = await snap(); ST.shots++;
+                if (b.equals(prevBuf)) { buf = prevBuf; runOk = true; ST.redo++; }          // a 가 깨진 그림
+                else if (b.equals(a)) { buf = a; runOk = true; miss++; ST.fixprev++; }       // 앞 그림이 깨졌거나, 지문에 안 잡히는 변화
+                else { buf = b; miss++; ST.redo++; }
+                if (miss >= 4) { dedup = false; ST.off++; } } }
+          } else { buf = await sure(); ST.shots++; runOk = false; }
+          prevSig = sig; prevBuf = buf;
+          await write(buf);
           shot++;
         }
       } finally { ff.stdin.end(); }
@@ -109,6 +146,7 @@ async function chunkMode(jobsFile) {
   const ws = []; for (let w = 0; w < Math.min(NW, Math.max(1, J.jobs.length)); w++) ws.push(runWorker(w));
   await Promise.all(ws);
   if (J.accentOut) fs.writeFileSync(J.accentOut, JSON.stringify({ accent }));
+  console.log(`  같은 화면이라 안 찍은 프레임 ${ST.skip}/${total} (${Math.round(100 * ST.skip / Math.max(1, total))}%) · 실제 캡처 ${ST.shots}번 · 깨진 캡처 다시 찍음 ${ST.redo}번 · 앞 그림 바로잡음 ${ST.fixprev}번${ST.off ? ' · 전부 찍은 조각 ' + ST.off + '개' : ''}`);
   console.log(`chunks ${J.jobs.length}개 · frames ${total} → ${W}x${H} ${fps}fps, ${Math.round((Date.now() - t0all) / 1000)}초`);
 }
 

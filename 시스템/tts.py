@@ -900,6 +900,52 @@ if __name__ == '__main__':
         if need:
             sys.exit(f'음성 실패: 줄 {need} 의 음성이 없고 API 키도 없습니다(회사 PC 는 야구롱폼\\API키등록.cmd 로 키를 한 번 등록한 뒤 새 창에서 다시 실행) — 또는 타입캐스트 웹 zip 을 ' + os.path.abspath(drop_paths()[0]) + ' 에 넣어 주세요 (zip 파일 수 = 줄 수)')
         print('완료 (웹 zip 음성 그대로 사용, API 없음)'); sys.exit(0)
+    # 11/14: 줄이 끼어들거나 순서가 바뀌어 번호만 밀린 줄은, 같은 대사·같은 배속으로 이미 만든 음성을 새 번호로 옮겨 쓴다(크레딧 0).
+    #   (FA 공시 편: 명단 소개 4줄을 앞에 넣고 구단 순서를 바꿨더니 103줄 7,000자를 통째로 다시 합성하려 했음)
+    def remap_by_text():
+        old = {}
+        for fn in os.listdir(VDIR):
+            b0, ext = os.path.splitext(fn)
+            if ext != '.txt' or not b0.isdigit(): continue
+            if not os.path.exists(os.path.join(VDIR, b0 + '.mp3')): continue
+            try: t = io.open(os.path.join(VDIR, fn), encoding='utf-8').read().strip()
+            except Exception: continue
+            try: tp = float(io.open(os.path.join(VDIR, b0 + '.tempo'), encoding='utf-8').read().strip())
+            except Exception: tp = TEMPO
+            old.setdefault(int(b0), (t, tp, b0))
+        def same(i, j): return i in old and old[i][0] == lines[j].strip() and (not any(TEMPO_LINES) or abs(old[i][1] - tempo_of(j)) < 0.005)
+        moves = {}
+        for j in range(len(lines)):
+            if j in PINNED or same(j, j): continue
+            for i in sorted(old):
+                if i != j and same(i, j): moves[j] = i; break
+        # 옛 구독 멘트 자리 표시(NN.keep)가 지금은 다른 줄이면 지운다(글자 수 계산이 틀어짐)
+        for j in range(len(lines)):
+            k = os.path.join(VDIR, f'{j:02d}.keep')
+            if j not in PINNED and os.path.exists(k):
+                try:
+                    if io.open(k, encoding='utf-8').read().startswith('고정음성'): os.remove(k)
+                except Exception: pass
+        if not moves: return 0
+        data = {}   # 서로 자리를 바꾸는 줄이 있어도 안전하게: 먼저 전부 읽고, 그다음에 쓴다
+        for j, i in moves.items():
+            data[j] = {}
+            for suf in ('.mp3', '.tempo', '.segs.json', '.src'):
+                p0 = os.path.join(VDIR, old[i][2] + suf)
+                data[j][suf] = open(p0, 'rb').read() if os.path.exists(p0) else None
+        for j, d in data.items():
+            for suf, raw in d.items():
+                p1 = os.path.join(VDIR, f'{j:02d}{suf}')
+                if raw is None:
+                    if os.path.exists(p1): os.remove(p1)
+                else: open(p1, 'wb').write(raw)
+            io.open(os.path.join(VDIR, f'{j:02d}.txt'), 'w', encoding='utf-8').write(lines[j])
+        print(f'번호만 바뀐 줄 {len(moves)}곳 — 예전 음성을 옮겨 씀(크레딧 0): ' + ' '.join(f'{i}→{j}' for j, i in sorted(moves.items())[:40]) + (' …' if len(moves) > 40 else ''))
+        return len(moves)
+    if only is None and '--fresh' not in sys.argv and not whole_mode():
+        try: remap_by_text()
+        except Exception as e:
+            import traceback; print(f'  예전 음성 옮겨 쓰기 건너뜀: {e!r}'); traceback.print_exc()
     # 9/27 사고 뒤: 합성 전에 이번에 새로 만들 줄·글자 수를 보여 주고, 평소보다 많으면 멈춘다
     def _made(i):
         mp3 = os.path.join(VDIR, f'{i:02d}.mp3'); txt = mp3.replace('.mp3', '.txt'); ff = os.path.join(VDIR, 'fresh.flag')
