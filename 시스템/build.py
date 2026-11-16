@@ -674,6 +674,63 @@ def compress_pauses(path, pmax, thr_db=-38.0):
     w = wave.open(path, 'wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(sr); w.writeframes(y.tobytes()); w.close()
     return rem
 
+SENT_END = re.compile(r'([았었였했겠꿨웠쳤났갔왔졌렸봤줬됐섰켰혔렀]다|니다|[요죠]|\?)$')   # 줄 가운데서 문장이 끝나는 호흡(tts.py tts_text 와 같은 기준)
+
+CLAUSE_END = re.compile(r'([는은인던건]데|지만|니까)$')   # 11/14: 줄 가운데서 절이 끝나고 다른 얘기로 넘어가는 호흡(~는데·~인데·~건데·~지만·~니까)
+
+def stretch_pauses(path, targets, pmin, thr_db=-38.0, win=0.30):
+    """11/14 사용자("이 대사가 전 대사를 말하고 너무 빨리 나와" — 한 줄 안에서 '~나와요' 뒤 다음 문장이 0.09초 만에 시작):
+    줄 음성(t*.wav)에서 targets(문장이 끝나는 호흡 경계 시각, 초) 근처의 쉼이 pmin 초보다 짧으면 그 쉼 가운데에 무음을 끼워 pmin 으로 늘린다.
+    타입캐스트는 마침표 뒤 쉼이 들쭉날쭉(0.1~0.6초)이라 다시 합성하지 않고 여기서 맞춘다. 경계 근처(±win)에 조용한 자리(40ms 이상)가 없으면 건드리지 않는다(말 중간을 자르지 않게).
+    돌려주는 값 = [(끼운 자리 시각(끼우기 전 기준), 끼운 길이)] — 자막 경계를 그만큼 미는 데 쓴다."""
+    import numpy as np, wave
+    if not targets: return []
+    w = wave.open(path); sr = w.getframerate(); ch = w.getnchannels(); sw = w.getsampwidth(); n = w.getnframes()
+    if sw != 2: w.close(); return []
+    x = np.frombuffer(w.readframes(n), dtype=np.int16).astype(np.float32); w.close()
+    if ch > 1: x = x.reshape(-1, ch).mean(axis=1)
+    hop = int(sr * 0.01); fr = len(x) // hop
+    if fr < 20: return []
+    rms = np.sqrt(np.mean((x[:fr * hop].reshape(fr, hop) / 32768.0) ** 2, axis=1) + 1e-12)
+    quiet = 20 * np.log10(rms) < thr_db
+    runs, k = [], 0
+    while k < fr:
+        if quiet[k]:
+            j = k
+            while j < fr and quiet[j]: j += 1
+            if k > 0 and j < fr: runs.append((k, j))   # 줄 앞뒤 쉼은 빼고
+            k = j
+        else: k += 1
+    ins, used = [], set()
+    for t in sorted((x if isinstance(x, tuple) else (x, pmin)) for x in targets):   # targets 항목 = 시각 또는 (시각, 그 자리 최소 쉼)
+        t, pm_ = t
+        c = t * 100; best = None
+        for a, b in runs:
+            if (a, b) in used or b - a < 4: continue
+            d = 0 if a <= c <= b else min(abs(a - c), abs(b - c))
+            if d <= win * 100 and (best is None or d < best[0]): best = (d, a, b)
+        if not best: continue
+        _, a, b = best; used.add((a, b))
+        add = pm_ - (b - a) * 0.01
+        if add < 0.03: continue
+        ins.append((((a + b) // 2) * hop, int(add * sr)))
+    if not ins: return []
+    ins.sort(); out, prev, xf = [], 0, int(sr * 0.004)
+    for p, m in ins:
+        seg = x[prev:p].copy()
+        if len(seg) > xf: seg[-xf:] *= np.linspace(1, 0, xf, dtype=np.float32)
+        out.append(seg); out.append(np.zeros(m, dtype=np.float32)); prev = p
+    tail = x[prev:].copy()
+    if len(tail) > xf: tail[:xf] *= np.linspace(0, 1, xf, dtype=np.float32)
+    out.append(tail)
+    y = np.clip(np.concatenate(out), -32768, 32767).astype(np.int16)
+    w = wave.open(path, 'wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(sr); w.writeframes(y.tobytes()); w.close()
+    return [(p / sr, m / sr) for p, m in ins]
+
+def _after_ins(t, ins):
+    """무음을 끼우기 전 시각 t → 끼운 뒤 시각(끼운 자리보다 뒤면 그만큼 밀림)"""
+    return t + sum(m for p, m in ins if p <= t + 0.02)
+
 def _after_comp(t, rem):
     """자르기 전 시각 t → 자른 뒤 시각"""
     d = 0.0
@@ -695,6 +752,7 @@ def render(ep, ep_path):
     # 1) 음성 확인 + 트리밍 (자르기는 atrim 필터로, 속도 조절은 그 다음에 → -to 가 느려진 소리 끝을 잘라먹지 않는다)
     clips, warns, seg_start, seg_rate = [], [], [], []
     comp = {}   # 10/8: 줄마다 compress_pauses 로 잘라 낸 쉼(자막 경계 보정용)
+    ins = {}    # 11/14: 줄마다 stretch_pauses 로 끼운 쉼(자막 경계 보정용)
     retried = set()
     i = 0
     while i < N:
@@ -738,6 +796,27 @@ def render(ep, ep_path):
         if pm and not lines[i].get('rate'):   # 10/8: 줄 안 쉼 줄이기(구독 멘트처럼 rate 지정 줄은 그대로)
             comp[i] = compress_pauses(dst, float(pm))
             if comp[i]: warns.append(f"{i:02d} 쉼 {len(comp[i])}곳 줄임(-{sum(r for _, r in comp[i]):.2f}s)")
+        ins[i] = []
+        spm = lines[i].get('sentPauseMin', ep.get('sentPauseMin'))   # 11/14: 줄 가운데 문장 끝 쉼의 최소 길이(초) — 콘티에 있을 때만
+        cpm = lines[i].get('clausePauseMin', ep.get('clausePauseMin'))   # 11/14 11:52 사용자("옵트아웃으로 나오면 — 이 말이 너무 빨리 나오는데"): '~건데' 같은 절 끝 뒤 쉼의 최소 길이
+        if (spm or cpm) and not lines[i].get('rate'):
+            try:
+                segf_ = VW(f'{i:02d}.segs.json')
+                nsegs = [x_.strip() for x_ in lines[i]['narr'].split('/') if x_.strip()]
+                if len(nsegs) > 1 and os.path.exists(segf_):
+                    sg_ = json.load(open(segf_))
+                    if len(sg_.get('durs') or []) == len(nsegs):
+                        tg, acc_ = [], 0.0
+                        for k_, d_ in enumerate(sg_['durs']):
+                            if k_ > 0 and not nsegs[k_].startswith('+'):
+                                pv_ = nsegs[k_ - 1].lstrip('+').rstrip(' ,.')
+                                if spm and SENT_END.search(pv_): tg.append((_after_comp(max(0, acc_ - ss) / rate, comp[i]), float(spm)))
+                                elif cpm and CLAUSE_END.search(pv_): tg.append((_after_comp(max(0, acc_ - ss) / rate, comp[i]), float(cpm)))
+                            acc_ += d_ + sg_.get('pause', 0.0)
+                        ins[i] = stretch_pauses(dst, tg, float(spm or cpm))
+                        if ins[i]: warns.append(f"{i:02d} 문장·절 끝 쉼 {len(ins[i])}곳 늘림(+{sum(m for _, m in ins[i]):.2f}s)")
+            except Exception as e_:
+                ins[i] = []; print(f'  {i:02d} 문장 끝 쉼 늘리기 건너뜀:', e_)
         clips.append(dur_of(dst)); seg_start.append(ss); seg_rate.append(rate)
         # 검수: 글자 수 대비 너무 짧으면(말이 잘린 음성) 중단
         syl = len(re.findall(r'[가-힣]', lines[i]['narr'])) or 1
@@ -799,7 +878,7 @@ def render(ep, ep_path):
                 ss_i = seg_start[i]; rate = seg_rate[i]
                 starts_k, acc = [], 0.0
                 for k, d_ in enumerate(durs):
-                    starts_k.append(st[i] + _after_comp(max(0, (acc - ss_i)) / rate, comp.get(i) or [])); acc += d_ + pause
+                    starts_k.append(st[i] + _after_ins(_after_comp(max(0, (acc - ss_i)) / rate, comp.get(i) or []), ins.get(i) or [])); acc += d_ + pause
                 segT[-1] = [round(max(sp_start, x_), 2) for x_ in starts_k]
                 items = []
                 for k, pc in enumerate(pieces):
@@ -954,7 +1033,7 @@ def render(ep, ep_path):
 def hashlib_short(t):
     import hashlib; return hashlib.sha1(t.encode('utf-8')).hexdigest()[:8]
 CHUNK_VER = 'c1'   # 조각 렌더 방식이 바뀌면 올린다(옛 조각 전부 무효)
-def chunk_plan(EP, total, fps, scale, cw, ch, tpl_raw, font_sig=''):
+def chunk_plan(EP, total, fps, scale, cw, ch, tpl_raw, font_sig='', tpl_prev=None):
     """장면마다 조각 하나: (시작 초, 끝 초, 프레임 수, 지문, 워밍업 시각들). 지문 = 그 조각 그림을 정하는 모든 것(장면 기준 상대 시각으로).
     앞 줄 길이가 바뀌어 장면이 통째로 밀려도 지문이 같으면 지난번 조각을 그대로 쓴다."""
     import hashlib, math
@@ -963,9 +1042,44 @@ def chunk_plan(EP, total, fps, scale, cw, ch, tpl_raw, font_sig=''):
     edges = [0.0] + BD + [total]
     fr = [0] + [int(round(b * fps)) for b in BD] + [n_all]
     q = lambda x: round(x, 3)   # 숫자는 지문에 넣지 않고 따로 모아 허용 오차(0.021초)로 비교한다 — 절대 시각을 0.01초로 반올림한 값이라 상대 시각이 ±0.01 흔들림
-    G = hashlib.sha1((CHUNK_VER + '|' + tpl_raw + '|' + font_sig + '|' + json.dumps(
+    G = hashlib.sha1((CHUNK_VER + '|' + (tpl_prev or tpl_raw) + '|' + font_sig + '|' + json.dumps(   # 옛 지문(넘겨받기용) — tpl_prev = 옛 조각을 그릴 때의 템플릿
+
         {k: EP.get(k) for k in ('chapters', 'dateLabel', 'focusTeam', 'logos', 'photoSizes', 'photos', 'railTitle', 'standings')},
         ensure_ascii=False, sort_keys=True) + f'|{fps}|{scale}|{cw}x{ch}').encode('utf-8')).hexdigest()
+    # 11/14 사용자 "고친 장면만 다시 렌더링하고 아닌 장면은 그대로 사용": 템플릿을 '장면 종류별 그리기 함수(R.xxx)'와 '공통 부분'으로 나눠,
+    #   공통 부분이 그대로면 고친 종류의 장면만 다시 그린다. 사진도 그 장면(과 이어지는 장면)이 쓰는 것만 지문에 넣는다(새 사진 1장에 전부 다시 그리지 않게).
+    _rb = {}; _common = tpl_raw
+    for _m in re.finditer(r'^  R\.([A-Za-z0-9_]+) = \(lt, s\) => \{.*?^  \};$', tpl_raw, re.M | re.S):
+        _rb[_m.group(1)] = hashlib.sha1(_m.group(0).encode('utf-8')).hexdigest()[:12]
+    _common = re.sub(r'^  R\.([A-Za-z0-9_]+) = \(lt, s\) => \{.*?^  \};$', lambda m_: '  R.' + m_.group(1) + ' = @;', tpl_raw, flags=re.M | re.S)
+    _tpl_all = hashlib.sha1(tpl_raw.encode('utf-8')).hexdigest()[:12]
+    _mgf = {}   # 사진 얼굴 위치표(window.MGF)는 공통에서 빼고, 그 사진을 쓰는 장면 지문에만 넣는다(사진 한 장의 얼굴 위치를 고쳐도 그 장면만 다시 그림)
+    _mm = re.search(r'window\.MGF = (\{[^{}]*\});?', _common)
+    if _mm:
+        try: _mgf = json.loads(_mm.group(1)); _common = _common[:_mm.start()] + 'window.MGF = @;' + _common[_mm.end():]
+        except Exception: _mgf = {}
+    _common = re.sub(r'\n\s*\n+', '\n', _common)   # 빈 줄 수는 그림과 무관(템플릿을 다시 끼울 때마다 빈 줄이 늘어도 지문은 그대로)
+    G2 = hashlib.sha1(('c2|' + _common + '|' + font_sig + '|' + json.dumps(
+        {k: EP.get(k) for k in ('chapters', 'dateLabel', 'focusTeam', 'logos', 'railTitle', 'standings')},
+        ensure_ascii=False, sort_keys=True) + f'|{fps}|{scale}|{cw}x{ch}').encode('utf-8')).hexdigest()
+    _ph = EP.get('photos') or {}; _psz = EP.get('photoSizes') or {}; _phh = {}
+    def _photo_sig(objs):
+        names = set()
+        def walk(o):
+            if isinstance(o, dict):
+                for v in o.values(): walk(v)
+            elif isinstance(o, list):
+                for v in o: walk(v)
+            elif isinstance(o, str) and o in _ph: names.add(o)
+        walk(objs)
+        out = []
+        for n_ in sorted(names):
+            if n_ not in _phh: _phh[n_] = hashlib.sha1(str(_ph[n_]).encode('utf-8')).hexdigest()[:12]
+            out.append([n_, _phh[n_], _psz.get(n_), _mgf.get(n_)])
+        return out
+    def _type_sig(objs):
+        ts = sorted({o.get('type') for o in objs if isinstance(o, dict) and o.get('type')})
+        return [[t_, _rb.get(t_, _tpl_all)] for t_ in ts]   # 그리기 함수를 못 찾은 종류는 템플릿 전체에 묶는다(안전한 쪽)
     plan = []
     for k in range(len(BD) + 1):
         t0, t1 = edges[k], edges[k + 1]; f0, f1 = fr[k], fr[k + 1]
@@ -991,9 +1105,11 @@ def chunk_plan(EP, total, fps, scale, cw, ch, tpl_raw, font_sig=''):
         while g0 > 0 and _link(SC[g0 - 1], SC[g0]): g0 -= 1
         while g1 + 1 < len(SC) and _link(SC[g1], SC[g1 + 1]): g1 += 1
         grp = SC[g0:g1 + 1] if g1 > g0 else []
-        fp = hashlib.sha1((G + json.dumps([sc, nb, run_, subs_txt, segT_n, f1 - f0, k == len(BD)] + ([grp] if grp else []), ensure_ascii=False, sort_keys=True)).encode('utf-8')).hexdigest()[:20]
+        fp_old = hashlib.sha1((G + json.dumps([sc, nb, run_, subs_txt, segT_n, f1 - f0, k == len(BD)] + ([grp] if grp else []), ensure_ascii=False, sort_keys=True)).encode('utf-8')).hexdigest()[:20]
+        _rel = [sc] + [x for x in (nb[2], nb[3]) if x] + list(run_) + list(grp)   # 이 장면·바로 앞·바로 뒤·이어지는 묶음
+        fp = hashlib.sha1((G2 + json.dumps([sc, nb, run_, subs_txt, segT_n, f1 - f0, k == len(BD)] + ([grp] if grp else []) + [_type_sig(_rel), _photo_sig(_rel)], ensure_ascii=False, sort_keys=True)).encode('utf-8')).hexdigest()[:20]
         warm = [round(edges[j + 1] - 1.0 / fps, 4) for j in (k - 3, k - 2, k - 1) if j >= 0]
-        plan.append({'k': k, 't0': t0, 't1': t1, 'n': f1 - f0, 'fp': fp, 'nums': nums, 'warm': warm})
+        plan.append({'k': k, 't0': t0, 't1': t1, 'n': f1 - f0, 'fp': fp, 'fp_old': fp_old, 'nums': nums, 'warm': warm})
     return plan
 
 def _font_sig():
@@ -1005,7 +1121,15 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
     """장면 조각 렌더 → 이어 붙이기 → 진행 막대(ffmpeg) → W('silent.mp4'). subprocess 결과처럼 returncode 를 가진 객체를 돌려준다."""
     import types, math
     tpl_raw = io.open(tpl, encoding='utf-8').read()
-    plan = chunk_plan(EP, total, fps, scale, cw, ch, tpl_raw, _font_sig())
+    _rd = os.path.join('work', 'ready', os.path.basename(ep_path)[:-5])
+    try: tpl_prev = io.open(_rd + '.tplprev.html', encoding='utf-8').read()
+    except Exception: tpl_prev = None
+    plan = chunk_plan(EP, total, fps, scale, cw, ch, tpl_raw, _font_sig(), tpl_prev)
+    # 옛 조각은 '이 장면에 영향을 주는 템플릿 부분(그리기 함수·얼굴 위치)'이 그때와 같을 때만 넘겨받는다
+    _same_tpl = {}
+    if tpl_prev:
+        try: _same_tpl = {c_['k']: c_['fp'] for c_ in chunk_plan(EP, total, fps, scale, cw, ch, tpl_prev, _font_sig(), None)}
+        except Exception: _same_tpl = {}
     cdir = os.path.abspath(W(f'chunks_{ep_key(ep_path)}_{fps}x{scale}'))
     os.makedirs(cdir, exist_ok=True)
     idx_path = os.path.join(cdir, 'index.json')
@@ -1017,9 +1141,30 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
             if len(e['nums']) == len(c['nums']) and all(abs(x - y) <= 0.021 for x, y in zip(e['nums'], c['nums'])) and os.path.exists(f) and os.path.getsize(f) > 1000:
                 return f
         return None
-    jobs, used = [], set()
+    # 11/14: 지문 방식을 바꾸기 전(옛 지문)에 그린 조각은 한 번 넘겨받는다 — PC 의 콘티·템플릿이 그 조각을 그릴 때와 같을 때만 옛 지문이 맞는다.
+    #   work\\ready\\<콘티 이름>.tplprev.html = 옛 조각을 그릴 때의 템플릿(있으면 옛 지문을 그것으로 계산 → 템플릿을 고친 뒤에도 안 바뀐 장면은 넘겨받는다).
+    #   work\\ready\\<콘티 이름>.redo.json = {"scenes":[장면 지문...]} 에 든 장면은 넘겨받지 않고 다시 그린다(깨진 프레임이 낀 조각).
+    def find_old(c):
+        for e in idx.get(c['fp_old'], []):
+            f = os.path.join(cdir, e['file'])
+            if len(e['nums']) == len(c['nums']) and all(abs(x - y) <= 0.021 for x, y in zip(e['nums'], c['nums'])) and os.path.exists(f) and os.path.getsize(f) > 1000:
+                return e
+        return None
+    try: redo_s = set(json.load(io.open(_rd + '.redo.json', encoding='utf-8')).get('scenes', []))
+    except Exception: redo_s = set()
+    _SC = EP.get('scenes') or []
+    _LN = EP.get('lines') or []
+    def _scsig(k_):   # 장면 첫 줄의 자막 글로 장면을 가리킨다(빌드가 장면에 덧붙이는 값과 무관)
+        try: return hashlib_short(str(_LN[int(_SC[min(k_, len(_SC) - 1)].get('startLine', k_))].get('sub', '')))
+        except Exception: return ''
+    jobs, used = [], set(); n_take = n_redo = 0
     for c in plan:
         hit = find(c)
+        if not hit:
+            e_old = find_old(c)
+            if e_old and _scsig(c['k']) in redo_s: n_redo += 1
+            elif e_old and (not tpl_prev or _same_tpl.get(c['k']) == c['fp']):
+                idx.setdefault(c['fp'], []).append({'nums': c['nums'], 'file': e_old['file']}); hit = os.path.join(cdir, e_old['file']); n_take += 1
         if hit: c['out'] = hit
         else:
             name = c['fp'] + '_' + hashlib_short(json.dumps(c['nums'])) + '.mp4'
@@ -1029,6 +1174,7 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
         used.add(os.path.basename(c['out']))
     new_f = sum(j['n'] for j in jobs); all_f = sum(c['n'] for c in plan)
     print(f'조각 렌더: 장면 {len(plan)}개 중 {len(jobs)}개만 새로 그림 ({new_f}/{all_f} 프레임, {100 * new_f / max(1, all_f):.0f}%)')
+    if n_take or n_redo: print(f'  (옛 조각 {n_take}개 넘겨받음 · 깨진 프레임이 있어 다시 그리는 장면 {n_redo}개)')
     sw = float(scale); Wd, Hd = int(round(cw * sw / 2)) * 2, int(round(ch * sw / 2)) * 2
     acc_file = os.path.abspath(W('chunk_accent.json'))
     J = {'fps': fps, 'scale': sw, 'W': Wd, 'H': Hd, 'quality': int(os.environ.get('FRAME_JPEG_Q', '95')), 'jobs': jobs, 'accentOut': acc_file}
@@ -1059,7 +1205,7 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
     except Exception: acc = ''
     m = re.match(r'rgba?\((\d+),\s*(\d+),\s*(\d+)', acc or '')
     col = '0x%02X%02X%02X' % tuple(int(x) for x in m.groups()) if m else '0x1E5EFF'
-    X0, Y0 = (int(round(90 * sw)), int(round(290 * sw))) if EP.get('vertical') else (int(round(56 * sw)), int(round(122 * sw)))   # 10/2: 세로 컷 쇼츠는 레일 밑줄 바로 아래
+    X0, Y0 = (int(round(140 * sw)), int(round(246 * sw))) if EP.get('vglass') else (int(round(90 * sw)), int(round(290 * sw))) if EP.get('vertical') else (int(round(56 * sw)), int(round(122 * sw)))   # 11/15 12:40 사용자: 컷 쇼츠(글래스) 막대가 제목을 그어 보임 → 위 이음 판(y186~232) 바로 아래로   # 10/2: 세로 컷 쇼츠는 레일 밑줄 바로 아래
     BW, BH = Wd - 2 * X0, max(2, int(round(5 * sw)))
     fc = (f'[0:v]split[a][b];[b]crop={BW}:{BH}:{X0}:{Y0}[tr];color=c={col}:s={BW}x{BH}:r={fps}[bar];'
           f"[tr][bar]overlay=x='-w+W*min(1,t/{total:.3f})':y=0:eval=frame:shortest=1[trf];[a][trf]overlay={X0}:{Y0}:shortest=1[v]")
