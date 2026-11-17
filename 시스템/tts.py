@@ -41,6 +41,8 @@ def load_cfg():
     return cfg
 
 CFG = load_cfg()
+# 11/17 회사 PC 설정.txt 는 TYPECAST_VOICE_ID_A 칸을 씀 → A 칸을 기본 목소리로도 읽는다
+if not CFG.get('TYPECAST_VOICE_ID', '').strip() and CFG.get('TYPECAST_VOICE_ID_A', '').strip(): CFG['TYPECAST_VOICE_ID'] = CFG['TYPECAST_VOICE_ID_A'].strip()
 # 계정(키)을 여러 개 등록해 두면 크레딧이 떨어진 계정은 건너뛰고 다음 계정으로 자동 전환한다.
 #   TYPECAST_API_KEY=…  TYPECAST_VOICE_ID=…            (1번 계정)
 #   TYPECAST_API_KEY2=… TYPECAST_VOICE_ID2=…(없으면 1번 목소리)   (2번 계정)  … KEY3, KEY4 도 가능
@@ -163,7 +165,7 @@ def prompt_variants(prev, nxt):
     return [{'emotion_type': 'preset', 'emotion_preset': EMOTION, 'emotion_intensity': INTENSITY},
             {'emotion_preset': EMOTION, 'emotion_intensity': INTENSITY}]
 
-def synth(text, prev='', nxt='', out_path=None, tempo=None):
+def synth(text, prev='', nxt='', out_path=None, tempo=None, ts=False):
     out_path = out_path or os.path.join(VDIR, 'out.mp3')
     tempo = TEMPO if tempo is None else tempo   # 10/8: 줄별 배속(tempo_of) — 없으면 편 전체 TEMPO
     """한 줄 합성. 앞뒤 문장을 같이 보내면 억양이 자연스럽게 이어진다."""
@@ -178,13 +180,27 @@ def synth(text, prev='', nxt='', out_path=None, tempo=None):
     pi = 0
     for attempt in range(6 + len(ACCOUNTS)):
         payload['voice_id'] = ACCOUNTS[ACC]['voice']
-        r = requests.post(URL, headers=head(), json=payload, timeout=60)
+        r = requests.post(URL + ('/with-timestamps?granularity=char' if ts else ''), headers=head(), json=payload, timeout=180 if ts else 60)
         if r.status_code in (402, 401, 403) or (r.status_code == 200 and not r.content):
             # 크레딧 소진(402) / 키 오류(401·403) → 다음 계정으로
             why = ('크레딧 소진' if r.status_code == 402 else f'거부 {r.status_code}') + f' {err_code(r)}'
             if next_account(why): continue
             print(f'  실패 {r.status_code}: {r.text[:200]}')
             return False
+        if r.status_code == 200 and ts:
+            # 11/17: 통 음성 — 글자마다 읽은 시각(characters)을 같이 받아 줄 경계를 정확히 자른다(받아쓰기로 짐작 ✗)
+            import base64
+            try: js = r.json()
+            except Exception: print(f'  타임스탬프 응답을 못 읽음: {r.text[:200]}'); return False
+            raw = base64.b64decode(js.get('audio') or '')
+            fmt = js.get('audio_format') or 'mp3'
+            print(f'  응답(타임스탬프) {fmt} {len(raw)} bytes · 글자 시각 {len(js.get("characters") or [])}개 · {js.get("audio_duration")}s')
+            if fmt == 'wav':
+                tmp = out_path + '.wav'; open(tmp, 'wb').write(raw)
+                subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-ignore_length', '1', '-i', tmp, '-b:a', '192k', out_path], check=True); os.remove(tmp)
+            else: open(out_path, 'wb').write(raw)
+            json.dump({'characters': js.get('characters') or [], 'words': js.get('words') or [], 'duration': js.get('audio_duration')}, io.open(out_path + '.ts.json', 'w', encoding='utf-8'), ensure_ascii=False)
+            return True
         if r.status_code == 200:
             ctype = r.headers.get('Content-Type', '')
             print(f'  응답 {ctype} {len(r.content)} bytes')
@@ -580,10 +596,28 @@ def whole_bounds(path, texts):
         cuts.append(iv); prev = (iv[0] + iv[1]) / 2
     return cuts, d, '글자 수 추정(부정확할 수 있음 — 영상에서 자막·장면 타이밍 확인)'
 
-def whole_split(full, idx, lines):
+def ts_cuts(full, ttexts):
+    """11/17: 타입캐스트 with-timestamps 의 글자 시각으로 줄 경계(앞 줄 마지막 글자 끝, 다음 줄 첫 글자 시작) N-1 개"""
+    try: js = json.load(io.open(full + '.ts.json', encoding='utf-8'))
+    except Exception: return None, None
+    ch = [c for c in js.get('characters') or [] if str(c.get('text', '')).strip()]
+    need = [len(re.sub(r'\s', '', t)) for t in ttexts]
+    if not ch or sum(need) == 0: return None, None
+    if abs(len(ch) - sum(need)) > max(3, sum(need) * 0.02):
+        print(f'  글자 시각 수가 대본과 다름({len(ch)} vs {sum(need)}) — 비율로 맞춤')
+    sc = len(ch) / sum(need); cuts = []; acc = 0
+    for k in range(len(need) - 1):
+        acc += need[k]; j = min(len(ch) - 1, max(1, round(acc * sc)))
+        cuts.append((float(ch[j - 1]['end']), float(ch[j]['start'])))
+    d = float(js.get('duration') or ch[-1]['end'])
+    return cuts, d
+
+def whole_split(full, idx, lines, ttexts=None):
     """통 음성 full 을 idx 줄들로 잘라 NN.mp3 + NN.txt + 호흡 경계(segs.json)"""
     texts = [lines[i] for i in idx]
-    cuts, d, how = whole_bounds(full, texts)
+    cuts, d = ts_cuts(full, ttexts) if ttexts else (None, None)
+    how = '타입캐스트 글자 시각(정확)'
+    if cuts is None: cuts, d, how = whole_bounds(full, texts)
     if cuts is None: raise RuntimeError(f'통 음성을 줄로 못 자름({how})')
     print(f'  줄 경계 찾기: {how}')
     io.open(os.path.join(VDIR, 'whole_split.txt'), 'w', encoding='utf-8').write(how + '\n' + ' '.join(f'{(a + c) / 2:.2f}' for a, c in cuts))
@@ -610,12 +644,25 @@ def synth_whole(lines):
         return not (os.path.exists(ff) and os.path.getmtime(txt) < os.path.getmtime(ff))
     if all(fresh(i) for i in idx):
         print('통 합성: 이미 만든 음성 재사용'); return True
-    text = '\n\n'.join(tts_text([x.strip() for x in lines[i].split('/') if x.strip()]) for i in idx)
-    full = os.path.join(VDIR, 'whole.mp3')
-    print(f'통 합성: {len(idx)}줄 {len(text)}자 한 번에 (배속 {TEMPO}, 감정 {EMOTION})')
-    if not synth(text, out_path=full): return False
-    io.open(os.path.join(VDIR, 'whole.txt'), 'w', encoding='utf-8').write(text)
-    whole_split(full, idx, lines)
+    # 11/17 사용자 "하나의 음성파일로 만들어서 잘라" — 타입캐스트 API 한 번에 최대 2000자 → 1900자 안으로 줄 단위 묶음(롱폼은 3~4번), 묶음마다 통 음성 → 줄로 자름
+    tt = {i: tts_text([x.strip() for x in lines[i].split('/') if x.strip()]) for i in idx}
+    MAXC = int(CFG.get('TTS_WHOLE_MAX', '1900'))
+    packs, cur, n = [], [], 0
+    for i in idx:
+        add = len(tt[i]) + (2 if cur else 0)
+        if cur and n + add > MAXC: packs.append(cur); cur, n = [], 0; add = len(tt[i])
+        cur.append(i); n += add
+    if cur: packs.append(cur)
+    for pk, ids in enumerate(packs):
+        text = '\n\n'.join(tt[i] for i in ids)
+        full = os.path.join(VDIR, 'whole.mp3' if len(packs) == 1 else f'whole_{pk + 1}.mp3')
+        print(f'통 합성 {pk + 1}/{len(packs)}: {len(ids)}줄 {len(text)}자 한 번에 (배속 {TEMPO}, 감정 {EMOTION})')
+        if not synth(text, out_path=full, ts=True): return False
+        io.open(full.replace('.mp3', '.txt'), 'w', encoding='utf-8').write(text)
+        whole_split(full, ids, lines, [tt[i] for i in ids])
+        if len(packs) > 1:
+            try: os.replace(os.path.join(VDIR, 'whole_split.txt'), os.path.join(VDIR, f'whole_split_{pk + 1}.txt'))
+            except Exception: pass
     return True
 
 def drop_external(lines):
@@ -961,6 +1008,13 @@ if __name__ == '__main__':
     else: todo = [i for i in range(len(lines)) if '--fresh' in sys.argv or not _made(i)]
     chars = sum(len(lines[i].replace('/', ' ').replace('  ', ' ').strip()) for i in todo)
     LIMIT = 3500 if '롱폼' in VDIR else 800   # 숏폼 1편 보통 300~500자, 롱폼 보통 2,000~3,000자(공백 포함)
+    # 11/17 14:03 사용자 "배치파일 실행하면 어떤 목소리로 설정되어있는지 알려주게 해줘"
+    _vn = CFG.get('TYPECAST_VOICE_%s_NAME' % VOICE_PICK, '').strip() if VOICE_PICK in ('A', 'B') else ''
+    if not _vn and VOICE_PICK == 'A': _vn = '장운'
+    print('=' * 70)
+    print(f"  목소리: {VOICE_PICK} · {_vn or '(설정.txt 에 TYPECAST_VOICE_%s_NAME 이름 칸이 비어 있음)' % VOICE_PICK} · voice ID {(VOICE_ID_NOW or '')[:6]}…{(VOICE_ID_NOW or '')[-4:]}")
+    print(f"  합성 방식: {'통 음성(이어 읽고 줄로 자름)' if whole_mode() else '줄마다 따로'} · 배속 {TEMPO} · 감정 {EMOTION}")
+    print('=' * 70)
     print(f'이번 합성: {len(todo)}줄 / 약 {chars}자(공백 포함) — 이 글자 수만큼 타입캐스트 크레딧이 듭니다 · 음성 폴더 {VDIR}')
     # 10/6: cmd 창에서 input() 이 기다리지 않고 빈 값으로 넘어가 '멈춤'이 됨 → 사용자가 채팅에서 승인한 글자 수를 콘티 ttsCharsOk 에 적고,
     #       _two_build 가 KBO_CHARS_OK 로 넘기면 그 수까지는 묻지 않는다

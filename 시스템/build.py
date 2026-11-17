@@ -1205,7 +1205,7 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
     except Exception: acc = ''
     m = re.match(r'rgba?\((\d+),\s*(\d+),\s*(\d+)', acc or '')
     col = '0x%02X%02X%02X' % tuple(int(x) for x in m.groups()) if m else '0x1E5EFF'
-    X0, Y0 = (int(round(140 * sw)), int(round(246 * sw))) if EP.get('vglass') else (int(round(90 * sw)), int(round(290 * sw))) if EP.get('vertical') else (int(round(56 * sw)), int(round(122 * sw)))   # 11/15 12:40 사용자: 컷 쇼츠(글래스) 막대가 제목을 그어 보임 → 위 이음 판(y186~232) 바로 아래로   # 10/2: 세로 컷 쇼츠는 레일 밑줄 바로 아래
+    X0, Y0 = (0, int(round(246 * sw))) if EP.get('vF') else (int(round(140 * sw)), int(round(246 * sw))) if EP.get('vglass') else (int(round(90 * sw)), int(round(290 * sw))) if EP.get('vertical') else (int(round(56 * sw)), int(round(122 * sw)))   # 11/17 11:20 사용자: 재생 막대는 좌우 끝까지(vF) · 11/15 12:40 사용자: 컷 쇼츠(글래스) 막대가 제목을 그어 보임 → 위 이음 판(y186~232) 바로 아래로   # 10/2: 세로 컷 쇼츠는 레일 밑줄 바로 아래
     BW, BH = Wd - 2 * X0, max(2, int(round(5 * sw)))
     fc = (f'[0:v]split[a][b];[b]crop={BW}:{BH}:{X0}:{Y0}[tr];color=c={col}:s={BW}x{BH}:r={fps}[bar];'
           f"[tr][bar]overlay=x='-w+W*min(1,t/{total:.3f})':y=0:eval=frame:shortest=1[trf];[a][trf]overlay={X0}:{Y0}:shortest=1[v]")

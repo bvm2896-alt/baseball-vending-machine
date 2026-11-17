@@ -15,6 +15,31 @@
 import glob, json, io, os, re, subprocess, sys, hashlib
 def load(p): return json.load(io.open(p, encoding='utf-8-sig'))
 def fp(p): return hashlib.sha1(open(p, 'rb').read()).hexdigest()[:16]
+
+# 11/17 14:05 사용자 "배치파일 실행하면 어떤 목소리로 설정되어있는지 알려주게 해줘" — 대본 확인 화면에 편마다 목소리·합성 방식을 보여 준다
+def _cfg():
+    c = {}
+    for enc in ('utf-8-sig', 'cp949'):
+        try:
+            for ln in io.open('설정.txt', encoding=enc):
+                ln = ln.strip()
+                if ln and not ln.startswith('#') and '=' in ln:
+                    k, v = ln.split('=', 1); c[k.strip()] = v.strip().strip('"').strip("'")
+            break
+        except Exception: c = {}
+    for k, v in os.environ.items():
+        if k.upper().startswith(('TYPECAST_', 'TTS_')) and v.strip(): c[k.upper()] = v.strip().strip('"').strip("'")
+    return c
+CFGV = _cfg()
+def voice_line(e):
+    v = str(e.get('ttsVoice') or 'A').strip()
+    if v.upper() in ('A', 'B'):
+        v = v.upper(); vid = CFGV.get('TYPECAST_VOICE_ID_B' if v == 'B' else 'TYPECAST_VOICE_ID', '') or (CFGV.get('TYPECAST_VOICE_ID_A', '') if v == 'A' else '')
+        name = CFGV.get(f'TYPECAST_VOICE_{v}_NAME', '') or ('장운' if v == 'A' else '')
+    else: vid, name = v, '(콘티에 voice ID 직접)'
+    idt = (vid[:6] + '…' + vid[-4:]) if len(vid) > 10 else (vid or '비어 있음!')
+    how = '통 음성(이어 읽고 줄로 자름)' if e.get('ttsWhole') else '줄마다 따로'
+    return f"목소리: {v} · {name or '(이름 칸 TYPECAST_VOICE_' + v + '_NAME 비어 있음)'} · voice ID {idt} · 합성: {how} · 배속 {e.get('ttsTempo', '설정값')}"
 DRAFT = '검수' if os.environ.get('KBO_DRAFT') else '최종'
 BUILT = os.path.join('work', 'long_built.json')
 try: built = json.load(io.open(BUILT, encoding='utf-8'))
@@ -85,6 +110,9 @@ if _ready_bad:
     print('   → 이 화면을 Claude 에게 보여 주세요. Claude 가 최신본을 다시 넣고 확인 파일을 만든 뒤에 다시 누르면 됩니다.')
     sys.exit(1)
 
+# 11/17 14:32 사용자 "처음에 나오는 부분과 엔터를 누르고 나오는 부분을 확연하게 구분, 완료된 건 이모지로"
+BIG = '█' * 70
+print('\n' + BIG + '\n█' + ' ' * 68 + '█\n█   📋  1단계 · 대본 확인 — 아직 아무것도 만들지 않았어요' + ' ' * 9 + '█\n█' + ' ' * 68 + '█\n' + BIG)
 print('=' * 70)
 print(f'이번에 만들 것({DRAFT}판):', ', '.join(os.path.basename(x) for x in todo))
 for x in (longs if MODE != 'cuts' else []):
@@ -93,18 +121,28 @@ if MODE == 'cuts':
     skip = [c for c in cuts if c not in todo]
     if skip: print('  (이미 만들어져 있어 건너뜀: ' + ', '.join(os.path.basename(c) for c in skip) + ')')
     print('  롱폼은 만들지 않습니다(컷 쇼츠만). 롱폼에서 만든 음성은 그대로 가져다 씁니다.')
-for x in todo:
+# 11/17 14:09 사용자 "==== 로 제목, 대본, 줄수, 목소리 나누고, 여러 편이라면 5줄로 쳐서 해줘"
+SEP = '=' * 70
+for n_, x in enumerate(todo):
     e = load(x); L = e.get('lines', [])
-    print('=' * 70)
-    print(('롱폼: ' if x in longs else '컷 쇼츠: ') + x)
+    if n_: print('\n' + '\n'.join([SEP] * 5) + '\n')   # 편과 편 사이: ==== 다섯 줄
+    print(SEP)
+    print(f'[{n_ + 1}/{len(todo)}] ' + ('롱폼: ' if x in longs else '컷 쇼츠: ') + os.path.basename(x))
+    print(SEP)
     print('  제목:', (e.get('youtube') or {}).get('title', '')[:80])
-    print('  줄 수:', len(L), ' / 타입캐스트 API' if e.get('ttsApi') else ' / 음성 zip', f" / 말 속도 {e.get('speed')}배" if e.get('vertical') else '')
+    print(SEP)
+    print('  대본:')
     ch = {c.get('from'): c for c in e.get('chapters', [])}
     vf = (e.get('voiceFrom') or {}).get('lines') or []
     for i, l in enumerate(L):
-        if i in ch: print(f"\n[챕터] {ch[i].get('title', '')}  ({ch[i].get('from')}~{ch[i].get('to')}줄)")
+        if i in ch: print(f"\n  [챕터] {ch[i].get('title', '')}  ({ch[i].get('from')}~{ch[i].get('to')}줄)")
         tag = '' if not e.get('vertical') else ('  [롱폼 %02d번 음성]' % vf[i] if i < len(vf) and vf[i] is not None else '  [새 줄]')
-        print(f"  {i:02d}  {l.get('narr', '').replace(' / ', ' ')}{tag}")
+        print(f"  {i:02d}  {l.get('narr', '').replace(' / +', ' ').replace(' / ', ' ')}{tag}")
+    print(SEP)
+    print('  줄 수:', len(L), ' / 타입캐스트 API' if e.get('ttsApi') else ' / 음성 zip', f" / 말 속도 {e.get('speed')}배" if e.get('vertical') else '')
+    print(SEP)
+    print('  ' + voice_line(e))
+    print(SEP)
 # 10/23 사용자("카드가 너무 늦게 떠서 나오자마자 다음 장면으로 넘어가"): 음성 zip 이 있으면 늦게 뜨는 글·카드(1.5초 미만 보임)를 먼저 잰다
 for x in todo:
     vf = (load(x).get('voiceFrom') or {}).get('ep') if load(x).get('vertical') else None   # 10/23: 컷 쇼츠는 롱폼 음성 zip 으로 잰다
@@ -120,12 +158,16 @@ print('  위 대본이 맞는지 보고 결정하세요. 이미 만든 줄·구�
 # 10/14: KBO_YES=1(롱폼검수_자동.cmd)이면 묻지 않고 시작 — Claude 가 PC 를 클릭만으로 돌릴 때(사용자 지시 "너가 컴퓨터 조작해서 영상 만들고 검수까지")
 a = '' if os.environ.get('KBO_YES') else input('이대로 만들까요? (Enter 또는 y = 시작, 그 외 = 취소) ').strip().lower()
 if a not in ('', 'y', 'ㅛ'): sys.exit('취소했습니다')
-for x in todo:
-    print('\n' + '#' * 70 + f'\n# {os.path.basename(x)}\n' + '#' * 70)
+print('\n' * 3 + BIG + '\n█' + ' ' * 68 + '█\n█   🎬  2단계 · 만들기 시작 (Enter 누름) — 음성 합성 → 화면 그리기' + ' ' * 2 + '█\n█' + ' ' * 68 + '█\n' + BIG)
+DONE = []
+for n_, x in enumerate(todo):
+    print('\n' + '#' * 70 + f'\n# ▶ [{n_ + 1}/{len(todo)}] {os.path.basename(x)} 만드는 중\n' + '#' * 70)
     for c in (['build.py', 'prep', x], ['tts.py'], ['build.py', 'render', x]):
         r = subprocess.call([sys.executable, '-X', 'utf8'] + c, env=dict(os.environ, KBO_ASK='1'))   # tts.py 가 글자 수 초과·계정 전환 때 여기 콘솔에서 묻는다
         if r: sys.exit(f'{os.path.basename(x)} 에서 멈췄어요 — 위 오류를 Claude 에게 보여 주세요' + (' (이 롱폼이 안 끝나서 뒤의 편·컷 쇼츠는 만들지 않았어요)' if x in longs else ''))
     built[f'{DRAFT}|{os.path.basename(x)}'] = fp(x)
     os.makedirs('work', exist_ok=True); json.dump(built, io.open(BUILT, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
-print(f'\n완료({DRAFT}판): ' + ', '.join(os.path.basename(x) for x in todo))
+    DONE.append(os.path.basename(x))
+    print('\n' + '=' * 70 + f'\n  ✅ 완료 [{n_ + 1}/{len(todo)}] {os.path.basename(x)}\n' + '=' * 70)
+print('\n' + BIG + f'\n█   🎉  전부 완료({DRAFT}판) — {len(DONE)}편\n' + '\n'.join(f'█      ✅ {d}' for d in DONE) + '\n' + BIG)
 if MODE == 'cuts' and todo: print('영상 폴더: 야구롱폼\\영상\\' + os.path.basename(todo[0])[:10] + ' (그다음 깃저장)')
