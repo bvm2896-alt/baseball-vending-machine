@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset=utf-8><style>@font-face{font-family:K;src:url('__ROOT__/폰트/YG-KR-Black.otf');font-weight:900}@font-face{font-family:K;src:url('__ROOT__/폰트/YG-KR-Bold.otf');font-weight:700}
+*{margin:0;padding:0;box-sizing:border-box}body{width:1920px;height:1080px;overflow:hidden;font-family:K;position:relative}.ab{position:absolute}
+.sub{position:absolute;left:0;right:0;top:960px;text-align:center}.sub span{display:inline-block;font-size:50px;font-weight:700;line-height:1;padding:14px 26px}
+.tile{position:absolute;top:450px;height:200px;width:346px;padding:28px 30px}.tl{font-size:30px;font-weight:700;line-height:1}.tv{font-size:88px;font-weight:900;line-height:1;margin-top:30px;letter-spacing:-2px;white-space:nowrap}
+@font-face{font-family:KBO;src:url('__ROOT__/폰트/KBO Dia Gothic_bold.ttf')}@font-face{font-family:WANT;src:url('__ROOT__/시스템/fonts/WantedSans-ExtraBlack.otf')}@font-face{font-family:DOH;src:url('__ROOT__/시스템/fonts/DoHyeon-Regular.ttf')}@font-face{font-family:GA1;src:url('__ROOT__/시스템/fonts/GothicA1-Black.ttf')}@font-face{font-family:JUA;src:url('__ROOT__/시스템/fonts/Jua-Regular.ttf')}body,body *{font-family:KBO,K!important}</style></head><body>
+<div class=ab style="inset:0;background:#7C2230"></div>
+<div class=ab id=band style="left:-200px;top:610px;width:2400px;height:300px;background:#64192A;transform:rotate(-6deg)"></div>
+<div class=ab style="left:56px;top:40px;display:flex"><span style="background:#ECE5D8;color:#7C2230;font-weight:900;font-size:28px;padding:8px 18px">야구자판기</span><span style="background:#16171C;color:#fff;font-weight:700;font-size:28px;padding:8px 18px">기아 · FA 공시</span></div>
+<div class=ab id=ph style="left:120px;top:150px;width:520px;height:640px;background:#ECE5D8;padding:12px"><img src="__ROOT__/선수이미지/경기/김호령_만루포_0821_KIA제공.jpg" style="width:100%;height:100%;object-fit:cover;object-position:52% 30%;display:block"></div>
+<div class=ab id=eb style="left:720px;top:150px;color:#fff;font-size:36px;font-weight:700;line-height:1">기아 · 중견수 · 생애 첫 FA</div>
+<div class=ab id=nm style="left:712px;top:196px;color:#fff;font-size:170px;font-weight:900;letter-spacing:-6px;line-height:1;transform-origin:0 50%">김호령</div>
+<div class=tile id=t0 style="left:720px;background:#16171C;color:#fff"><div class=tl>리그 연봉 순위</div><div class=tv id=v0 style="color:#E9C46A">61위</div></div>
+<div class=tile id=t1 style="left:1087px;background:#ECE5D8;color:#1A1A1E"><div class=tl>FA 등급</div><div class=tv style="color:#7C2230">C</div></div>
+<div class=tile id=t2 style="left:1454px;background:#16171C;color:#fff"><div class=tl>보상금</div><div class=tv>3.75억</div></div>
+<div class=ab id=yb style="left:720px;top:720px;height:70px;background:#E9C46A;color:#111;font-size:40px;font-weight:900;line-height:70px;padding:0 28px;white-space:nowrap">딱 한 끗 차이로 C등급</div>
+<div class=sub><span style="background:#16171C;color:#fff">리그 연봉 순위 61위로 FA C등급이 됐어요</span></div>
+<script>const c01=x=>Math.max(0,Math.min(1,x)), eo=x=>1-Math.pow(1-c01(x),3), eb=x=>{x=c01(x);const s=1.7;return 1+(s+1)*Math.pow(x-1,3)+s*Math.pow(x-1,2)};
+const seg=(t,a,d)=>c01((t-a)/d);
+
+window.render=t=>{
+ const S=(id,css)=>Object.assign(document.getElementById(id).style,css);
+ S('band',{transform:`rotate(-6deg) translateX(${(1-eo(seg(t,0,.45)))*-2400}px)`});
+ const p=seg(t,.1,.35); S('ph',{transform:`translateX(${(1-eo(p))*-160}px)`,opacity:c01(p*3)});
+ S('eb',{clipPath:`inset(0 ${(1-eo(seg(t,.3,.3)))*100}% 0 0)`});
+ const n=seg(t,.38,.3); S('nm',{opacity:c01(n*4),transform:`scale(${1.18-.18*eo(n)})`});
+ [0,1,2].forEach(i=>{const q=seg(t,.7+i*.14,.22); S('t'+i,{clipPath:`inset(${(1-eo(q))*100}% 0 0 0)`});});
+ const k=Math.round(eo(seg(t,.7,.6))*61); document.getElementById('v0').textContent=(t<1.3?Math.max(1,k):61)+'위';
+ S('yb',{clipPath:`inset(0 ${(1-eo(seg(t,1.3,.35)))*100}% 0 0)`});
+};window.render(0);window.__ready=true</script></body></html>
