@@ -1,0 +1,1443 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+episode.json 하나로 영상을 만든다.
+  python build.py prep   episodes/2026-09-06_1.json   → work/narration.txt 생성 (tts.py 가 읽음)
+  python build.py render episodes/2026-09-06_1.json   → work/voice/NN.mp3 로 타임라인 계산 → 렌더 → ../영상/2026-09-06/1_두산.mp4 (+ 썸네일, 유튜브 제목설명 txt)
+  python build.py thumb  episodes/2026-09-06_1.json   → 썸네일만
+중간 파일은 전부 work/ 에, 결과물은 상위 폴더 영상/날짜/ 에 저장한다.
+필요: ffmpeg, node + playwright(chromium)
+"""
+import json, re, subprocess, os, shutil, sys, base64, io, datetime
+
+def open_cfg(path='설정.txt'):
+    """설정.txt 열기 — 메모장이 ANSI(cp949)로 저장해도 읽히게 utf-8 → cp949 순서로 시도"""
+    import io as _io
+    for enc in ('utf-8-sig', 'cp949', 'euc-kr'):
+        try:
+            f = _io.open(path, encoding=enc); f.read(); f.seek(0); return f
+        except UnicodeDecodeError:
+            try: f.close()
+            except Exception: pass
+    return _io.open(path, encoding='utf-8-sig', errors='replace')
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+os.chdir(HERE)
+
+LEAD, TAIL, SUBLEAD = 0.25, 1.30, 0.05   # SUBLEAD: 자막을 말보다 살짝(0.05초) 먼저 — 거의 동시
+FPS = 15   # (옛 값, 지금은 설정.txt VIDEO_FPS 사용)
+WORK = os.environ.get('KBO_WORK', 'work')            # 중간 파일(프레임, 임시 html) 폴더. 시리즈 창마다 다르게(work\순위, work\이슈) 주면 두 시리즈를 동시에 만들 수 있다
+VOICE_ROOT = 'work'                                  # 편별 음성 폴더(voice_<콘티이름>)는 시리즈와 상관없이 늘 여기
+OUT_ROOT = os.path.join(HERE, '..', '영상')           # 결과물: 영상/2026-09-06/1_두산.mp4
+def _cfg_raw(k, default=''):
+    try:
+        for line in open_cfg(os.path.join(HERE, '설정.txt')):
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                kk, v = line.split('=', 1)
+                if kk.strip() == k and v.strip(): return v.strip().strip('"')
+    except Exception: pass
+    return default
+# 설정.txt 에 OUTPUT_DIR=G:\내 드라이브\야구자판기 처럼 적으면 결과물을 그 폴더(구글 드라이브 동기화 폴더 등)에 저장
+_out_cfg = _cfg_raw('OUTPUT_DIR', '')
+if _out_cfg:
+    # 설정된 드라이브/폴더가 이 PC 에 없으면(예: 구글 드라이브 앱이 없는 PC) 상위 폴더 영상\ 로 대신 저장
+    _drive = os.path.splitdrive(_out_cfg)[0] + os.sep if os.path.splitdrive(_out_cfg)[0] else os.path.dirname(_out_cfg)
+    if os.path.isdir(_drive): OUT_ROOT = _out_cfg
+    else: print(f'경고: OUTPUT_DIR {_out_cfg} 를 찾을 수 없어 상위 폴더 영상\\ 에 저장합니다')
+os.makedirs(WORK, exist_ok=True)
+W = lambda *a: os.path.join(WORK, *a)
+
+def team_label(ep):
+    """파일 이름용 팀 이름: '두산' 또는 '롯데_한화'"""
+    th = ep.get('thumb') or {}
+    teams = th.get('teams') or ([th['team']] if th.get('team') else []) or ([ep['focusTeam']] if ep.get('focusTeam') else [])
+    lab = '_'.join(re.sub(r'[^0-9A-Za-z가-힣]', '', str(t)) for t in teams if t)
+    return lab or 'KBO'
+
+def topic_label(ep):
+    """파일 이름용 주제(9/24 사용자 지시: 이슈5_KT 가 아니라 이슈5_한일전미리보기 처럼 주제로).
+    콘티 "topic" → 없으면 썸네일 큰 글씨 첫 줄 → 그것도 없으면 예전처럼 팀 이름"""
+    clean = lambda t: re.sub(r'[^0-9A-Za-z가-힣]', '', str(t or ''))[:24]
+    t = clean(ep.get('topic'))
+    if not t:
+        big = str((ep.get('thumb') or {}).get('big') or '').split('\n')[0]
+        t = clean(big)
+    return t or team_label(ep)
+
+def game_date(ep):
+    """영상이 다루는 '경기 날짜'(YYYY-MM-DD). 콘티 gameDate 가 있으면 그것, 없으면 콘티 날짜 하루 전
+    (월요일 아침 영상 = 일요일 경기). 화요일 콘티는 전날 경기가 없으니 콘티 날짜 그대로."""
+    g = ep.get('gameDate')
+    if g: return g
+    d = ep.get('date') or datetime.date.today().isoformat()
+    try:
+        dt = datetime.date.fromisoformat(d)
+        if dt.weekday() != 1: dt -= datetime.timedelta(days=1)   # 1 = 화요일
+        return dt.isoformat()
+    except Exception: return d
+
+SERIES_BY_SLOT = {'순위': '야구순위', '이슈': '야구이슈', '분석': '야구분석', '롱폼': '야구롱폼', '1': '야구순위', '2': '야구이슈'}   # 하루 콘티 슬롯 → 시리즈 폴더 (콘티에 "series" 를 적으면 그게 우선)
+
+def series_of(ep, ep_path):
+    """결과물을 나눠 담을 시리즈 폴더 이름: 콘티의 series → 없으면 슬롯 번호(1=야구순위, 2=야구이슈)"""
+    if ep.get('series'): return str(ep['series']).strip()
+    stem = os.path.splitext(os.path.basename(ep_path))[0]
+    key = stem.rsplit('_', 1)[-1] if '_' in stem else stem
+    return SERIES_BY_SLOT.get(key, '야구순위')
+
+def out_paths(ep, ep_path):
+    r"""(영상 mp4, 썸네일 jpg, 유튜브 제목설명 txt) 경로. 폴더는 <결과물 루트>/<시리즈>/경기날짜/, 이름은 번호_팀
+       결과물 루트: 설정 OUTPUT_DIR(드라이브) 또는 상위 폴더. 상위 폴더일 땐 야구자판기\야구순위\영상\날짜 처럼 시리즈 폴더 안의 영상\ 에 둔다"""
+    stem = os.path.splitext(os.path.basename(ep_path))[0]
+    key = stem.rsplit('_', 1)[-1] if '_' in stem else stem
+    date = game_date(ep)
+    series = series_of(ep, ep_path)
+    if series == '야구롱폼':   # 10/1 사용자: "롱폼은 만든 날짜로 폴더 생기게" (숏폼은 그대로 경기 날짜)
+        # 10/25 사용자("파일 또 따로 만들지 말고 롱폼검수 누르면 생성되게 — 수정본을 생성하는 거잖아"): 다음 날 고쳐 다시 만들어도 새 날짜 폴더를 만들지 않고
+        #       처음 만든 날(콘티 파일 이름 앞 날짜 = 만든 날) 폴더의 같은 파일을 덮어쓴다
+        m_ = re.match(r'(\d{4}-\d{2}-\d{2})_', os.path.basename(ep_path)); date = m_.group(1) if m_ else datetime.date.today().isoformat()
+    if os.path.abspath(OUT_ROOT) == os.path.abspath(os.path.join(HERE, '..', '영상')):
+        d = os.path.abspath(os.path.join(HERE, '..', series, '영상', date))       # 드라이브 없을 때: 야구자판기\<시리즈>\영상\날짜
+    else:
+        d = os.path.abspath(os.path.join(OUT_ROOT, series, date))                # 드라이브: 야구자판기_영상확인\<시리즈>\날짜
+    base = os.path.join(d, f'{key}_{topic_label(ep)}')
+    return base + '.mp4', base + '_썸네일.jpg', base + '_유튜브.txt'
+
+# 구단 코드 → KBO_logos 폴더의 파일 이름
+LOGO_FILES = {'HT': '기아', 'SS': '삼성', 'LG': 'LG', 'OB': '두산', 'KT': 'KT',
+              'NC': 'NC', 'LT': '롯데', 'SK': 'SSG', 'HH': '한화', 'WO': '키움',
+              'KBO': 'KBO_공식',   # 10/25 사용자 "KBO 공식 로고가 아닌데": 리그 타이틀 엠블럼(신한 SOL) → KBO 공식 워드마크(위키미디어 공용 'Korea Baseball Organization - 2022 wordmark', 퍼블릭 도메인)
+              # 10/24 롱폼㉙: 메이저리그 로고(mlbstatic.com 공식 SVG) — 콘티에서 '샌디에이고'·'다저스' 등 한글 이름으로 쓴다(템플릿 ALIAS)
+              'NPB': 'NPB_공식',   # 10/25 사용자 "일본 구단도 NPB 로 바꿔야지" — 위키미디어 공용 'NPB logo.svg'(퍼블릭 도메인)
+              'MLB': 'MLB_MLB', 'SD': 'MLB_샌디에이고', 'LAD': 'MLB_다저스', 'SF': 'MLB_샌프란시스코', 'CHC': 'MLB_컵스', 'PIT': 'MLB_피츠버그',
+              'MIN': 'MLB_미네소타', 'NYY': 'MLB_양키스', 'TOR': 'MLB_토론토', 'KC': 'MLB_캔자스시티', 'DET': 'MLB_디트로이트', 'MIA': 'MLB_마이애미'}   # 9/27: 리그 엠블럼(KBO 공식 로고 페이지) — 썸네일 teams:["KBO"]
+LOGO_DIRS = [os.path.join(HERE, '..', 'KBO_logos'), os.path.join(HERE, 'KBO_logos'), os.path.join(HERE, 'logos')]
+
+# 야구이슈 편 사진: 콘티 장면의 img("김도영_번트.jpg" 또는 확장자 없이 "김도영_번트")를 아래 순서로 찾는다.
+#   1) 야구자판기\야구이슈\재료\사진\<콘티 이름>\   (예: 사진\2026-09-11_이슈\ — 그 편 전용)
+#   2) 야구자판기\선수이미지\                        (선수·감독 프로필 — 사용자가 계속 모아 두는 공용 폴더. 파일명 = 이름, 예: 김도영.jpg)
+#   3) 야구자판기\야구이슈\재료\사진\공용\ , 야구자판기\야구이슈\재료\사진\  (옛 위치)
+# 없으면 템플릿이 로고로 대신 그린다.
+PHOTO_ROOT = os.path.join(HERE, '..', '야구이슈', '재료', '사진')
+PHOTO_ROOT2 = os.path.join(HERE, '..', '야구분석', '재료', '사진')   # 야구분석 편 전용 사진 (9/15)
+PLAYER_IMG_DIR = os.path.join(HERE, '..', '선수이미지')
+PHOTO_EXTS = ('.jpg', '.jpeg', '.png', '.webp')
+ASSETS = os.path.join(HERE, 'assets')   # 깃허브로 주고받는 사진 사본 (sync_assets.py 가 바깥 폴더와 맞춘다)
+def photo_dirs(ep_key_name=''):
+    return [os.path.join(PHOTO_ROOT, ep_key_name) if ep_key_name else '', os.path.join(PHOTO_ROOT2, ep_key_name) if ep_key_name else '', PLAYER_IMG_DIR, os.path.join(PHOTO_ROOT, '공용'), PHOTO_ROOT, PHOTO_ROOT2,
+            os.path.join(ASSETS, '이슈사진', ep_key_name) if ep_key_name else '', os.path.join(ASSETS, '선수이미지'), os.path.join(HERE, 'photos')]
+
+def is_long(ep):
+    """롱폼 편인가 — series 가 '야구롱폼' 이면 가로(1920x1080)로 그린다(9/18)"""
+    return str(ep.get('series', '')).strip() == '야구롱폼'
+
+def canvas_of(ep):
+    if ep.get('vertical'): return (1080, 1920)   # 10/2: 롱폼에서 잘라 세로로 다시 짠 컷 쇼츠(template_long 세로 틀)
+    return (1920, 1080) if is_long(ep) else (1080, 1920)
+
+def template_for(ep):
+    """시리즈별 템플릿: 야구이슈 이고 template_issue.html 이 있으면 그것(화이트), 아니면 template.html(순위 편, 다크)"""
+    ser = str(ep.get('series', '')).strip()
+    if ser == '야구롱폼' and ep.get('vertical') and os.path.exists('template_long_v.html'):   # 10/2: 컷 쇼츠(세로) 전용 — 롱폼 템플릿을 안 바꿔야 롱폼 조각이 그대로 재사용된다
+        return 'template_long_v.html'
+    if ser == '야구롱폼' and os.path.exists('template_long.html'):       # 9/18: 롱폼 전용(가로 1920x1080)
+        return 'template_long.html'
+    if ser == '야구분석' and os.path.exists('template_analysis.html'):   # 9/15: 분석 전용(팀 색 띠 리포트형)
+        return 'template_analysis.html'
+    if ser in ('야구이슈', '야구분석') and os.path.exists('template_issue.html'):
+        return 'template_issue.html'
+    return 'template.html'
+
+def _photo_names(ep):
+    """콘티 안의 모든 img 항목(장면·카드·목록 항목)을 모은다"""
+    names = set()
+    def walk(x):
+        if isinstance(x, dict):
+            for kk in ('img', 'img2'):   # 10/13: people 카드 교체 사진(img2) 도 모은다
+                v = x.get(kk)
+                if isinstance(v, str) and v.strip(): names.add(v.strip())
+            for f in (x.get('faces') or []) if isinstance(x.get('faces'), list) else []:   # 10/8: question·썸네일 faces 는 이름 문자열 목록 — 안 모으면 얼굴 원이 빈칸
+                if isinstance(f, str) and f.strip(): names.add(f.strip())
+            for vv in x.values(): walk(vv)
+        elif isinstance(x, list):
+            for vv in x: walk(vv)
+    walk(ep.get('scenes') or [])
+    walk(ep.get('thumb') or {})
+    return names
+
+PHOTO_SIZES = {}   # 이름 → [가로, 세로] (photos_data_uri 가 채움, EP.photoSizes 로 템플릿에 전달)
+# 선수이미지\ 는 하위 폴더로 나눠 둘 수 있다(9/14): KBO프로필\ · 국가대표프로필\ · 고등학교\(하현승·엄준상 같은 고교 선수) · 상황별\ (+ 그 외 폴더).
+# 콘티 img 가 "국가대표프로필/김도영" 처럼 폴더를 지정하면 그 폴더에서만, "김도영" 이면 KBO프로필 → 국가대표프로필 → 고등학교 → 상황별 → 나머지 순으로 찾는다.
+SUB_ORDER = ['KBO프로필', '국가대표프로필', '고등학교', '상황별']
+
+def _search_dirs(d):
+    out = [d]
+    if os.path.isdir(d):
+        subs = [x for x in os.listdir(d) if os.path.isdir(os.path.join(d, x))]
+        subs.sort(key=lambda x: (SUB_ORDER.index(x) if x in SUB_ORDER else len(SUB_ORDER), x))
+        out += [os.path.join(d, x) for x in subs]
+    return out
+
+def find_photo(name, ep_path=None):
+    """콘티에 적힌 사진 이름 → 실제 파일 경로(없으면 None). run_daily 의 사진 준비 확인도 이 함수를 쓴다(같은 규칙)."""
+    dirs = [d for d in photo_dirs(ep_key(ep_path) if ep_path else '') if d]
+    sub = ''
+    key = str(name).replace('\\', '/')
+    if '/' in key: sub, key = key.rsplit('/', 1)
+    base = os.path.splitext(key)[0]
+    for d0 in dirs:
+        cands = [os.path.join(d0, sub)] if sub else _search_dirs(d0)
+        for d in cands:
+            if not os.path.isdir(d): continue
+            for f in os.listdir(d):
+                if f.lower() == key.lower() or os.path.splitext(f)[0].lower() == base.lower() and f.lower().endswith(PHOTO_EXTS):   # 대소문자 무시(kt_2021우승 = KT_2021우승)
+                    return os.path.join(d, f)
+    return None
+
+def center_subject(src, base, origin=None):
+    """프로필 사진에서 인물이 좌우로 치우쳐 있으면 모자란 쪽에 배경을 덧대 인물을 가운데로 옮긴다(자르지 않는다).
+    10/1 사용자 지적("레이예스 왼쪽으로 치우쳐 있어") → 10/4 밤 사용자 지적("스기모토·오윤석·김현수 카드 안에서 치우침, 일부러 그러냐"):
+    옛 방식은 네 귀퉁이 색이 완전히 같을 때만 돌아가 KT 처럼 검은 배경에 조명 번짐이 있는 사진은 건너뛰었다.
+    새 방식: 줄마다 왼쪽·오른쪽 가장자리 색을 따로 재서(그라데이션 OK) 인물 마스크를 만들고, **머리(인물 맨 위 25% 높이) 가운데**를 기준으로 맞춘다
+    (들고 있는 공·방망이가 중심을 끌지 않게). 덧대는 배경은 그 줄의 가장자리 픽셀을 그대로 늘려 이음새가 안 생긴다.
+    가장자리가 매끈하지 않은(경기 사진 등) 사진은 건드리지 않는다. 누끼 폴더는 건드리지 않는다."""
+    sp = str(origin or src).replace('\\', '/')   # 폴더 판정은 원본 경로로(work\photo_*.jpg 로 줄인 뒤 불리기 때문)
+    if '/누끼/' in sp: return src
+    if not ('/KBO프로필/' in sp or '/MLB/' in sp): return src   # 스튜디오 프로필만. 경기 사진은 배경이 복잡해 덧대면 티가 난다 → 콘티 focus 로
+    try:
+        import numpy as np
+        from PIL import Image
+        im = Image.open(src); alpha = im.mode in ('RGBA', 'LA', 'P') and 'A' in im.getbands() or im.mode == 'P'
+        a = np.asarray(im.convert('RGBA')).astype(int); h, w = a.shape[:2]; k = max(4, w // 50)
+        if a[:, :, 3].min() < 250:
+            mask = a[:, :, 3] > 40; alpha = True
+        else:
+            alpha = False
+            sL = a[:, :k, :3].std(axis=1).max(1); sR = a[:, -k:, :3].std(axis=1).max(1)
+            if np.median(sL) > 12 or np.median(sR) > 12: return src   # 가장자리가 배경이 아니다(경기 사진)
+            # 전체 배경색(네 가장자리 띠 전체의 중앙값) → 줄별로는 그 색에 가까운(60 이내) 가장자리 픽셀만으로 다시 잼. 인물이 가장자리에 닿은 줄은 전체 배경색을 쓴다(흰 띠 방지)
+            edge = np.concatenate([a[:, :k, :3].reshape(-1, 3), a[:, -k:, :3].reshape(-1, 3), a[:k, :, :3].reshape(-1, 3)])
+            g = np.median(edge, axis=0)
+            def rowbg(strip):
+                v = np.repeat(g[None, :], h, 0).astype(float)
+                for y in range(h):
+                    px = strip[y]; near = px[np.abs(px - g).max(1) < 60]
+                    if len(near) >= 3: v[y] = np.median(near, axis=0)
+                return v
+            L = rowbg(a[:, :k, :3])[:, None, :]; R = rowbg(a[:, -k:, :3])[:, None, :]
+            use = (np.arange(w) < w / 2)[None, :, None]
+            bg = np.where(use, L, R)
+            mask = np.abs(a[:, :, :3] - bg).max(2) > 40
+        rows = np.where(mask.mean(1) > 0.02)[0]
+        if len(rows) < 4: return src
+        top = rows[0]; head = mask[top:top + max(8, int((rows[-1] - top) * 0.25))]
+        ys, xs = np.where(head)
+        if len(xs) < 20: return src
+        cx = float(np.median(xs)) / w   # 중앙값: 들고 있는 공·방망이(작은 덩어리)에 안 끌린다
+        if abs(cx - .5) < .025 or abs(cx - .5) > .25: return src
+        cxp = cx * w; nw = int(round(2 * max(cxp, w - cxp))); nw += nw % 2; x0 = int(round(nw / 2 - cxp))
+        out = np.zeros((h, nw, 4), np.uint8)
+        if alpha: out[:, x0:x0 + w] = a
+        else:
+            out[:, x0:x0 + w] = a
+            # 덧대는 색 = 그 줄의 바깥쪽 가장자리(폭 8%) 중 배경 픽셀의 중앙값(왼쪽 덧댐은 왼쪽 띠, 오른쪽은 오른쪽 띠).
+            # 인물에 가까운 픽셀(조명 번짐)을 섞으면 밝은 띠가 생긴다. 인물이 가장자리에 닿아 배경이 없는 줄은 위아래 줄에서 보간.
+            k2 = max(6, int(w * 0.08))
+            def strip_bg(cols):
+                v = np.full((h, 3), np.nan)
+                for y in range(h):
+                    px = a[y, cols][:, :3]; px = px[np.abs(px - g).max(1) < 60]   # 전체 배경색에 가까운 픽셀만(인물·장비 제외)
+                    if len(px) >= 4: v[y] = np.median(px, axis=0)
+                ok = ~np.isnan(v[:, 0])
+                if ok.sum() == 0: return np.repeat(g[None, :], h, 0).astype(float)
+                idx = np.arange(h)
+                for c in range(3): v[:, c] = np.interp(idx, idx[ok], v[ok, c])
+                return v
+            bl = strip_bg(slice(0, k2)); br = strip_bg(slice(w - k2, w))
+            out[:, :x0, :3] = np.clip(bl, 0, 255).astype(np.uint8)[:, None, :]; out[:, x0 + w:, :3] = np.clip(br, 0, 255).astype(np.uint8)[:, None, :]
+            out[:, :x0, 3] = 255; out[:, x0 + w:, 3] = 255
+        dst = W('photo_' + re.sub(r'[^0-9A-Za-z가-힣_.-]', '_', base) + ('_c.png' if alpha else '_c.jpg'))
+        (Image.fromarray(out, 'RGBA') if alpha else Image.fromarray(out[:, :, :3], 'RGB')).save(dst, quality=93)
+        print(f'사진 가운데 맞춤: "{base}" 머리 중심 {cx:.2f} → 0.50 (좌우 배경 덧댐 {w}→{nw}px)')
+        return dst
+    except Exception as e:
+        print('사진 가운데 맞춤 건너뜀:', base, e)
+    return src
+
+def photos_data_uri(ep, ep_path=None):
+    """콘티가 쓰는 사진만 data URI 로 (키 = 콘티에 적힌 이름 그대로). 큰 사진은 렌더 html 이 무거워지니 1600px 이하로 줄여 넣는다"""
+    out = {}; sizes = PHOTO_SIZES
+    names = _photo_names(ep)
+    if not names: return out
+    for name in names:
+        base = os.path.splitext(str(name).replace('\\', '/').rsplit('/', 1)[-1])[0]
+        found = find_photo(name, ep_path)
+        if not found:
+            print(f'경고: 사진 없음 "{name}" → 로고로 대신 표시 (야구이슈\\재료\\사진\\<콘티이름>\\ 또는 선수이미지\\ 에 넣어 주세요)')
+            continue
+        src = found
+        ext0 = os.path.splitext(found)[1].lower()
+        if ext0 != '.png':   # png 는 원본 그대로. webp 는 png 로(투명 배경이 있으면 지켜야 누끼 사진이 흐린 배경 없이 놓인다, 9/15), jpg 는 1600px jpg 로
+            try:
+                safe = re.sub(r'[^0-9A-Za-z가-힣_.-]', '_', base)
+                if ext0 == '.webp':
+                    tmp = W('photo_' + safe + '.png')
+                    r = run(['ffmpeg', '-y', '-loglevel', 'error', '-i', found, '-vf', "scale='min(1600,iw)':-2", tmp])
+                else:
+                    tmp = W('photo_' + safe + '.jpg')
+                    r = run(['ffmpeg', '-y', '-loglevel', 'error', '-i', found, '-vf', "scale='min(1600,iw)':-2", '-q:v', '3', tmp])
+                if r.returncode == 0 and os.path.exists(tmp): src = tmp
+            except Exception: pass
+        src = center_subject(src, base, origin=found)   # 10/1 사용자: 인물이 한쪽으로 치우친 프로필(레이예스) → 배경을 덧대 인물을 가운데로
+        ext = os.path.splitext(src)[1].lower()
+        mime = 'image/png' if ext == '.png' else 'image/webp' if ext == '.webp' else 'image/jpeg'
+        out[name] = f'data:{mime};base64,' + base64.b64encode(open(src, 'rb').read()).decode()
+        # 원본 크기(템플릿이 작은 사진은 늘리지 않고 흐린 배경 위에 원본 크기로 놓는다) + 투명 배경 여부(변환된 파일 기준)
+        try:
+            pr = run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height,pix_fmt', '-of', 'csv=p=0', found])
+            parts = pr.stdout.strip().split(',')
+            w_, h_ = int(parts[0]), int(parts[1])
+            pf = run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=pix_fmt', '-of', 'csv=p=0', src]).stdout.strip().lower()
+            alpha = 1 if re.search(r'^(rgba|bgra|argb|abgr|ya8|ya16|gbrap|pal8|yuva)', pf) else 0   # 투명 배경(누끼) → 템플릿이 흐린 배경 대신 단색 배경에 놓는다
+            if alpha:   # 10/12 사용자 "이미지 비율 다른 거 불편": 알파 채널이 있어도 실제로 투명한 픽셀이 없으면(경기 사진 png) 보통 사진으로 → 카드에 cover 로 꽉 채움
+                try:
+                    from PIL import Image as _Im
+                    _im = _Im.open(src)
+                    if 'A' in _im.getbands() and _im.getchannel('A').getextrema()[0] >= 250: alpha = 0
+                    elif _im.mode == 'P' and 'transparency' not in _im.info: alpha = 0
+                except Exception: pass
+            sizes[name] = [w_, h_, alpha]
+            if min(w_, h_) < 500: print(f'참고: 사진 "{name}" 해상도 낮음({w_}x{h_}) → 화면에서 흐릿할 수 있음. 900px 이상 권장')
+        except Exception: pass
+    print(f'사진 {len(out)}/{len(names)}장 넣음')
+    return out
+
+def run(cmd, check=False):
+    r = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if check and r.returncode != 0:
+        raise SystemExit(f'실패: {" ".join(cmd)}\n{r.stderr[-800:]}')
+    return r
+
+def load_episode(path):
+    ep = json.load(io.open(path, encoding='utf-8-sig'))
+    if not ep.get('standings'):
+        rk = json.load(io.open('data/rank_latest.json', encoding='utf-8-sig'))
+        ep['standings'] = rk['standings']
+    # 화면 오른쪽 위 날짜 = '올리는 날짜'(콘티 date, 제목 해시태그와 같은 날) — 2026-09-17 사용자 지시
+    # 썸네일 날짜 배지·결과물 폴더는 그대로 '경기 날짜' 기준
+    ep['dateLabel'] = (ep.get('date') or game_date(ep)).replace('-', '.')
+    if ep.get('series') not in DATED: ep['dateLabel'] = ''   # 10/2 밤 사용자: 롱폼·컷 쇼츠(야구롱폼)는 날짜 없음, 처음부터 만드는 숏폼은 그대로
+    return ep
+
+def font_dir_url():
+    """상위 폴더 폰트\\ 의 file:// 주소 (템플릿의 __FONT_DIR__ 자리에 넣는다)"""
+    import pathlib
+    for d in (os.path.join(HERE, '..', '폰트'), os.path.join(HERE, 'fonts'), os.path.join(HERE, '폰트')):
+        if os.path.isdir(d): return pathlib.Path(os.path.abspath(d)).as_uri()
+    return ''
+
+def logos_data_uri():
+    out = {}
+    for code, name in LOGO_FILES.items():
+        for d in LOGO_DIRS:
+            for ext in ('.webp', '.png', '.PNG', '.jpg', '.svg'):
+                p = os.path.join(d, name + ext)
+                if os.path.exists(p):
+                    mime = 'image/webp' if ext == '.webp' else 'image/png' if ext.lower() == '.png' else 'image/svg+xml' if ext == '.svg' else 'image/jpeg'
+                    out[code] = f'data:{mime};base64,' + base64.b64encode(open(p, 'rb').read()).decode()
+                    break
+            if code in out: break
+        if code not in out:
+            print('경고: 로고 없음', code, name)
+    return out
+
+# ---------- prep ----------
+# 숫자 읽기 규칙: 나레이션은 한글로 적는다(타입캐스트가 숫자를 제멋대로 읽는 것 방지).
+#  고유어(하나·둘·셋…): 경기, 게임 차, 시, 가지, 장 → "스물두 경기", "두 시"; 개·명·번도 한 자리(1~9)는 고유어 → "세 개", "두 번"
+#  한자어(일·이·삼…): 승, 패, 위, 이닝, 회, 년, 월, 일, 분, 초, 억, 달러, 순위, 라운드, 연승/연패, 점수(삼 대 십구), 승률·타율 → "이 승 십 패", "이십사 이닝"
+#  10/1 밤 사용자 정정("서른여덟점이 아니라 삼십팔점", "칠백여든한점 → 칠백팔십일점", "예순세번 → 육십삼번", "여든한개 → 팔십일개"):
+#   **점(득점·실점·득실차·점수)은 항상 한자어**(삼 점, 삼십팔 점), **번은 10 이상이면 한자어**(육십삼 번), **개는 20 이상이면 한자어**(팔십일 개). 경고가 뜨면 합성 전에 반드시 고친다.
+#  10/10 사용자 정정(롱폼⑩ "이십이명=스물두명, 이십일명=스물한명"): **명은 1~99 모두 고유어**(스물두 명, 마흔여덟 명). 백 명 이상만 한자어.
+#  10/14 사용자 정정(WC 쇼츠 "십일번=열한번"): **번의 10~19 는 고유어**(열 번, 열한 번). 20 이상은 그대로 한자어(육십삼 번).
+#  10/5 사용자 정정(롱폼⑦ "한 구단 십 명=열 명, 십이 개 구단=열두 개 구단, 십이 명=열두 명"): **개·명의 10~19 는 고유어**(열 명, 열두 개 구단, 열두 명).
+NATIVE = r'(한|두|세|네|다섯|여섯|일곱|여덟|아홉|열\S*|스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*)'
+NATIVE10 = r'(열\S*|스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*|[가-힣]*(여든|아흔|예순|일흔|쉰|마흔|서른|스물|열)[가-힣]*)'
+NATIVE20 = r'(스물\S*|서른\S*|마흔\S*|쉰\S*|예순\S*|일흔\S*|여든\S*|아흔\S*|[가-힣]*(여든|아흔|예순|일흔|쉰|마흔|서른|스물)[가-힣]*)'
+SINO = r'(일|이|삼|사|오|육|칠|팔|구|십\S*|백\S*)'
+SINO1 = r'(일|이|삼|사|오|육|칠|팔|구)'
+def narr_check(lines):
+    warns = []
+    for i, t in enumerate(lines):
+        if re.search(r'\d', t): warns.append(f'{i:02d} 숫자는 한글로 적어 주세요: {t}')
+        for m in re.finditer(r'(?<![A-Za-z])(KIA|LG|KT|NC|SSG)(?![A-Za-z])', t):   # 10/13: 영어 팀명은 한글 발음(KIA 를 '케이아이에이'로 읽음)
+            warns.append(f'{i:02d} "{m.group(0)}" → 한글 발음으로 (기아/엘지/케이티/엔씨/에스에스지)')
+        for m in re.finditer(r'(?:^|/ )이 (위|승|패|무|점)', t):   # 10/13 밤 사용자 "2/위가 확정된 — 텀 없애줘": 호흡 첫머리 '이 위'는 지시어 '이'로 읽혀 끊김 → '이위'
+            warns.append(f'{i:02d} "{m.group(0).strip("/ ")}" → 호흡 첫머리 숫자 이는 붙여 쓰기 (이위가)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE + r' (승|패|위|이닝|회|년|월|일|분|초|억|달러|순위|라운드|점|타수|호|루)(?:[을를은는이가에도의로]|이에요|이고|이면|인데|이죠|이라|째|차|으로)?(?![가-힣])', t):   # 10/13 사용자 "열두 승=십이 승": 조사가 붙은 '열두 승을'도 잡는다(점만 고쳤던 걸 전 단위로)
+            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (이 승, 십 패, 삼 위, 삼십팔 점)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE + r' ?점(?:을|를|은|는|이에요|이고|이면|인데|이죠|이라|이|도|으로|차)?(?![가-힣])', t):   # 10/13 사용자 "세 점=삼 점": 조사가 붙은 '세 점을'도 잡는다
+            warns.append(f'{i:02d} "{m.group(0)}" → 점은 항상 한자어 (삼 점을)')
+        for m in re.finditer(r'[영일이삼사오육칠팔구십] 점 [영일이삼사오육칠팔구공]{1,3}(?![가-힣]*\s*(차|을|를|이|으로))', t):   # 10/15 사용자: 소수점은 '쩜'(사쩜이사), '사 점 이사' 금지
+            warns.append(f'{i:02d} "{m.group(0)}" → 소수점은 쩜으로 붙여 (사쩜이사)')
+        for m in re.finditer(r'(?<![가-힣])(영|일|이|삼|한|두|세) ?(스트라이크|볼)(?![가-힣])', t):   # 10/15 사용자 "이스트라이크 → 투스트라이크": 볼카운트는 영어 수사
+            warns.append(f'{i:02d} "{m.group(0)}" → 볼카운트는 영어 수사로 (투 스트라이크, 쓰리 볼)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE10 + r' ?(장)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (십이 장)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE20 + r' ?(번)(?![가-힣])', t):   # 10/14: 번은 20 이상만 한자어(육십삼 번)
+            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (육십삼 번)')
+        for m in re.finditer(r'(?<![가-힣])(십[일이삼사오육칠팔구]?) ?번(?!째|지|호|타)', t):   # 10/14 사용자 "십일번=열한번": 번 10~19 는 고유어
+            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (열한 번, 열 번)')
+        for m in re.finditer(r'(?<![가-힣])' + NATIVE20 + r' ?(개)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 한자어로 (팔십일 개)')
+        for m in re.finditer(r'(?<![가-힣])([이삼사오육칠팔구]십[일이삼사오육칠팔구]?) ?명(?![가-힣])', t):   # 10/10 사용자: 이십이 명=스물두 명, 이십일 명=스물한 명
+            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (스물두 명, 스물한 명, 마흔여덟 명)')
+        for m in re.finditer(r'(?<![가-힣])(십[일이삼사오육칠팔구]?) ?(개|명)(?!월|복|단|령|문|인|성|소)', t):   # 10/5: 10~19 개·명은 고유어
+            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (열 명, 열두 개 구단, 열두 명)')
+        for m in re.finditer(r'(?<![가-힣])' + SINO + r' ?(경기|게임|가지)(?![가-힣])', t):
+            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (스물두 경기, 세 게임 차)')
+        for m in re.finditer(r'(?<![가-힣십백천])' + SINO1 + r' (개|명|번|장)(?![가-힣])', t):   # 띄어 쓴 것만("이 번") — "이번 겨울"·"일 번"(등번호)은 제외
+            warns.append(f'{i:02d} "{m.group(0)}" → 고유어로 (세 개, 두 번)')
+    return warns
+
+def sub_check(ep):
+    """9/30 사용자 지적(자막 "매직넘버를 이로 줄였어요" → 2로): 자막에 한글 숫자(이로·오 위·삼 회 …)가 남아 있으면 경고"""
+    warns = []
+    for i, l in enumerate(ep.get('lines') or []):
+        for w in re.split(r'[\s|]+', str(l.get('sub', ''))):
+            core = re.sub(r'[^가-힣0-9A-Za-z]', '', w)
+            if core in ('이', '이번', '일찍', '이제', '일본', '이로써', '오늘', '사실'): continue
+            if re.fullmatch(r'[일이삼사오육칠팔구십백천영]+(로|대|위|회|승|패|개|점|게임|경기|이닝|번째|년|월|호|타점|실점|사|루|차|명|할|푼|리)?(를|은|는|이|가|에|와|과|로|으로|째|에서|엔|까지|부터)?', core):
+                warns.append(f'{i:02d} 자막에 한글 숫자 "{w}" → 아라비아 숫자로 (예: 이로 → 2로): {l.get("sub", "")!r}')
+    return warns
+
+def ep_key(ep_path):
+    stem = os.path.splitext(os.path.basename(ep_path))[0]
+    return stem
+
+def voice_dir(key=None):
+    """편마다 음성 폴더를 따로 둔다(work/voice_<콘티이름>/). 1편·2편 음성이 서로 덮어쓰지 않게"""
+    if key is None:
+        try: key = io.open(W('current.txt'), encoding='utf-8').read().strip()
+        except Exception: key = ''
+    d = os.path.join(VOICE_ROOT, 'voice_' + key) if key else os.path.join(VOICE_ROOT, 'voice')
+    os.makedirs(d, exist_ok=True)
+    return d
+
+def VW(*a): return os.path.join(voice_dir(), *a)
+def _vtag(d):
+    try: return io.open(os.path.join(d, 'voice.id'), encoding='utf-8').read().strip() or 'A'
+    except Exception: return 'A'
+def voice_same(src, dst):
+    """11/13: 두 음성 폴더가 같은 목소리인지(voice.id, 없으면 A = 장운). 다르면 음성을 복사하지 않는다(한 편에 목소리가 섞이지 않게).
+    음성이 하나도 없는 새 폴더는 원본 목소리를 따른다"""
+    a, b = _vtag(src), _vtag(dst)
+    if a == b: return True
+    if os.path.isdir(dst) and not any(f.endswith('.mp3') for f in os.listdir(dst)):
+        io.open(os.path.join(dst, 'voice.id'), 'w', encoding='utf-8').write(a); return True
+    print(f'목소리가 달라 음성 복사 안 함({os.path.basename(src)}: {a} / {os.path.basename(dst)}: {b})'); return False
+
+def prep(ep, ep_path=None):
+    lines = [l['narr'].strip() for l in ep['lines']]
+    if ep_path:
+        io.open(W('current.txt'), 'w', encoding='utf-8').write(ep_key(ep_path))
+        voice_dir(ep_key(ep_path))
+    vf = ep.get('voiceFrom') or {}
+    if ep_path and vf.get('ep'):
+        # 10/2 컷 쇼츠: 롱폼에서 이미 만든 음성을 줄 번호를 바꿔 복사(대사가 같은 줄만) → tts.py 는 새 줄만 합성
+        src_dir, dst_dir, cp = voice_dir(vf['ep']), voice_dir(ep_key(ep_path)), 0
+        same_v = voice_same(src_dir, dst_dir)
+        rd = lambda f: io.open(f, encoding='utf-8').read().strip() if os.path.exists(f) else None
+        for j, i in enumerate((vf.get('lines') or []) if same_v else []):
+            if i is None or j >= len(lines): continue
+            s3, st_ = os.path.join(src_dir, f'{int(i):02d}.mp3'), os.path.join(src_dir, f'{int(i):02d}.txt')
+            if not os.path.exists(s3) or rd(st_) != lines[j]: continue
+            if rd(os.path.join(dst_dir, f'{j:02d}.txt')) == lines[j] and os.path.exists(os.path.join(dst_dir, f'{j:02d}.mp3')): continue
+            for ext in ('.mp3', '.txt', '.segs.json', '.tempo'):   # 10/8: .tempo = 그 음성의 타입캐스트 배속
+                f = os.path.join(src_dir, f'{int(i):02d}{ext}')
+                if os.path.exists(f): shutil.copyfile(f, os.path.join(dst_dir, f'{j:02d}{ext}'))
+            cp += 1
+        print(f'롱폼 음성 재사용: {cp}줄 복사 ({vf["ep"]} → {ep_key(ep_path)})')
+    vr = ep.get('voiceRemap') or []
+    if ep_path and any(x is not None for x in vr):
+        # 10/8 밤: 같은 편 안에서 줄 순서만 바꿨을 때 — 옛 번호의 음성(대사가 같은 것만)을 새 번호로 옮긴다(재합성·크레딧 0).
+        #          먼저 전부 읽어 둔 뒤 쓴다(서로 자리를 바꾸는 줄끼리 덮어쓰지 않게). 이미 옮겨졌으면(새 번호 대사가 같으면) 건너뜀
+        d_ = voice_dir(ep_key(ep_path)); rd = lambda f: io.open(f, encoding='utf-8').read().strip() if os.path.exists(f) else None
+        buf = {}
+        for j, i in enumerate(vr):
+            if i is None or j >= len(lines) or i == j: continue
+            if rd(os.path.join(d_, f'{j:02d}.txt')) == lines[j] and os.path.exists(os.path.join(d_, f'{j:02d}.mp3')): continue
+            if rd(os.path.join(d_, f'{int(i):02d}.txt')) != lines[j] or not os.path.exists(os.path.join(d_, f'{int(i):02d}.mp3')): continue
+            buf[j] = {ext: open(os.path.join(d_, f'{int(i):02d}{ext}'), 'rb').read() for ext in ('.mp3', '.txt', '.segs.json', '.tempo', '.keep')
+                      if os.path.exists(os.path.join(d_, f'{int(i):02d}{ext}'))}
+        for j, files in buf.items():
+            for ext in ('.mp3', '.txt', '.segs.json', '.tempo', '.keep'):
+                f = os.path.join(d_, f'{j:02d}{ext}')
+                if ext in files: open(f, 'wb').write(files[ext])
+                elif os.path.exists(f): os.remove(f)
+        if buf: print(f'줄 순서 변경: 음성 {len(buf)}줄 옮김(재합성 없음)')
+    for w_ in narr_check(lines): print('숫자 읽기 경고:', w_)
+    for w_ in sub_check(ep): print('자막 숫자 경고:', w_)
+    io.open(W('narration.txt'), 'w', encoding='utf-8').write('\n'.join(lines) + '\n')
+    # 9/26: 콘티 "ttsTempo": 1.2 → 타입캐스트 API 가 직접 1.2배로 말하게(tts.py 가 읽음). 없으면 설정.txt TTS_TEMPO
+    io.open(W('tts_tempo.txt'), 'w', encoding='utf-8').write(str(ep.get('ttsTempo') or ''))
+    # 10/8: 줄별 타입캐스트 배속 — 줄 "ttsTempo" 가 있으면 그것, pace "slow" 면 콘티 "ttsTempoSlow"(예 1.15), 나머지는 빈칸(= ttsTempo).
+    #       이 모드(tempo_mode)에서는 렌더가 pace 배속(atempo)을 안 태운다 → 컷 쇼츠가 같은 음성을 그대로 쓴다
+    io.open(W('tts_tempo_lines.txt'), 'w', encoding='utf-8').write('\n'.join(tempo_lines(ep)))
+    # 10/7: 콘티 "ttsEmotion" (예 "smart") → tts.py 감정. 없으면 빈 파일 = 기본 normal(스마트 이모션은 사용자가 말할 때만)
+    io.open(W('tts_emotion.txt'), 'w', encoding='utf-8').write(str(ep.get('ttsEmotion') or ''))
+    # 11/13: 콘티 "ttsVoice": "B" → 설정.txt TYPECAST_VOICE_ID_B 목소리(비어 있으면 A = 장운). 만들기 전에 Claude 가 사용자에게 묻고 적는다
+    io.open(W('tts_voice.txt'), 'w', encoding='utf-8').write(str(ep.get('ttsVoice') or ''))
+    # 9/26: 콘티 "ttsWhole": true → 한 편(구독 멘트 뺀 줄)을 API 한 번으로 이어 읽고 줄별로 자른다(줄마다 억양이 따로 놀지 않게)
+    io.open(W('tts_whole.txt'), 'w', encoding='utf-8').write('1' if ep.get('ttsWhole') else '')
+    print(f'work/narration.txt {len(lines)}줄')
+    if ep_path:
+        # 타입캐스트 웹(구독)에 붙여 넣을 대본: 줄 사이 빈 줄(문단 쉼) → 통째로 내려받아 <시리즈>\음성\<콘티이름>.mp3 로 두면 tts.py 가 줄별로 자른다
+        try:
+            drop = os.path.join(HERE, '..', series_of(ep, ep_path), '음성'); os.makedirs(drop, exist_ok=True)
+            # 9/30: 구독 멘트는 고정 음성(시스템\고정음성\구독멘트.mp3)을 쓰므로 웹 대본에서 뺀다(크레딧 절약). zip 파일 수 = 줄 수 - 구독 멘트 줄 수
+            _pk = ''
+            try:
+                if os.path.exists(os.path.join(HERE, '고정음성', '구독멘트.mp3')):
+                    _pk = re.sub(r'[\s/.,!?~·]', '', io.open(os.path.join(HERE, '고정음성', '구독멘트.txt'), encoding='utf-8-sig').read())
+            except Exception: _pk = ''
+            _web = [l for l in lines if not (_pk and re.sub(r'[\s/.,!?~·]', '', l) == _pk)]
+            if len(_web) != len(lines): print(f'웹 대본: 구독 멘트 {len(lines) - len(_web)}줄 뺌(고정 음성 사용) → zip 파일 {len(_web)}개면 정상')
+            txt = '\n\n'.join(l.replace(' / +', ' ').replace(' / ', ', ') for l in _web) + '\n'   # 10/10: ' / +' = 쉼표 없이 이어 읽는 자리
+            io.open(os.path.join(drop, ep_key(ep_path) + '_대본.txt'), 'w', encoding='utf-8').write(txt)
+            print(f'대본 저장: {os.path.relpath(os.path.join(drop, ep_key(ep_path) + "_대본.txt"), os.path.join(HERE, ".."))}  (타입캐스트 웹에 붙여 넣고, 받은 mp3 를 같은 폴더에 {ep_key(ep_path)}.mp3 로)')
+        except Exception as e: print('대본 저장 실패(무시):', e)
+
+# ---------- render ----------
+def dur_of(f):
+    """영상/음성 길이(초). 파일이 깨져 있으면(N/A) 0"""
+    try: return float(run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).stdout.strip())
+    except (ValueError, TypeError): return 0.0
+
+def probe(f):
+    """앞뒤 무음 위치. 문턱 -40dB/0.12초 (말끝 여운을 자르지 않도록 넉넉하게)"""
+    d = dur_of(f)
+    r = run(['ffmpeg', '-i', f, '-af', 'silencedetect=n=-40dB:d=0.12', '-f', 'null', '-'])
+    starts = [float(x) for x in re.findall(r'silence_start: ([\d.]+)', r.stderr)]
+    ends = [float(x) for x in re.findall(r'silence_end: ([\d.]+)', r.stderr)]
+    lead = ends[0] if starts and ends and starts[0] < 0.02 else 0.0
+    tail = d
+    if starts and (len(ends) < len(starts) or ends[-1] >= d - 0.03):
+        tail = starts[-1]
+    return d, lead, tail
+
+TARGET_MEAN, PEAK_CAP = -19.0, -1.0   # 줄 평균 음량 목표(dB), 피크 상한(dB)
+def speech_level(f, ss, to):
+    """10/4: 말하는 구간만의 음량(dB, 20ms 창 RMS 의 중앙값). mean_volume 은 쉼이 길수록 낮게 나와 줄마다 들쭉날쭉했다"""
+    try:
+        import numpy as np
+        raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', f, '-af', f'atrim=start={ss:.3f}:end={to:.3f}', '-f', 'f32le', '-ac', '1', '-ar', '16000', '-'], capture_output=True).stdout
+        x = np.frombuffer(raw, dtype=np.float32)
+        w = 320; fr = x[:len(x) // w * w].reshape(-1, w)
+        if not len(fr): return None
+        db = 20 * np.log10(np.sqrt((fr ** 2).mean(1)) + 1e-9)
+        sp = db[db > -35]
+        return float(np.median(sp)) if len(sp) else None
+    except Exception:
+        return None
+
+def static_gain(f, ss, to):
+    """잘라낼 구간의 음량을 재서 한 번에 적용할 고정 이득(dB).
+    10/4 사용자 지적(롱폼⑥ 9:20 삼성 지갑 줄 "갑자기 목소리가 엄청 작아진다"): 전엔 피크 상한 때문에 작은 줄을 못 올렸다(65번 줄 평균 -23dB, 이득 +0.2).
+    이제 말소리 중앙값을 목표(TARGET_MEAN)에 맞추고, 피크는 cut() 의 alimiter 가 -1dB 로 누른다. 이득은 -6~+9dB 로 제한"""
+    lv = speech_level(f, ss, to)
+    if lv is None:
+        r = run(['ffmpeg', '-i', f, '-af', f'atrim=start={ss:.3f}:end={to:.3f},volumedetect', '-f', 'null', '-'])
+        m = re.search(r'mean_volume: ([\-\d.]+)', r.stderr)
+        if not m: return 0.0
+        lv = float(m.group(1))
+    return round(max(-6.0, min(4.0, TARGET_MEAN - lv)), 2)   # 10/18 23:16 사용자 '음성 깨짐' — 이득 상한 +9 → +4dB(리미터가 덜 눌러 찌그러짐 감소)
+
+def end_level(f, ms=30):
+    """파일 마지막 ms 구간의 평균 음량(dB). 말이 잘렸으면 크게 나온다"""
+    d = dur_of(f)
+    r = run(['ffmpeg', '-i', f, '-af', f'atrim=start={max(0, d - ms/1000):.3f},volumedetect', '-f', 'null', '-'])
+    m = re.search(r'mean_volume: ([\-\d.]+)', r.stderr)
+    return float(m.group(1)) if m else -99.0
+
+CONNECT_END = re.compile(r'(는데|고요|지만|면|니까|서|고|도|은|는|이|가)$')   # 말이 이어지는 어미
+TURN_START = ('그래서', '근데', '그런데', '그러니까', '변수는', '결론', '제 예측', '문제는', '이유는', '단 ', '그럼', '만약')
+
+GAP_OVERRIDE = None   # 9/24: 콘티 "gapScale" 가 있으면 그 편만 이 배율(설정.txt 보다 우선) — 사용자 "말 사이 텀이 너무 길다"
+def gap_scale():
+    """줄 사이 쉼 배율 (9/13 1.5배는 "텀이 너무 길어 지루" → 9/14 기본 1.25배). 설정.txt GAP_SCALE 로 조절, 콘티 gapScale 이 우선"""
+    if GAP_OVERRIDE is not None: return max(0.3, float(GAP_OVERRIDE))
+    try: return max(0.5, float(cfg_get('GAP_SCALE', '1.25')))
+    except Exception: return 1.25
+MAX_GAP = 0.6   # 어떤 쉼도 이보다 길지 않게(답답함 방지). 10/4: 콘티 gapAfter 는 0.8 까지 허용(챕터 제목·결론 뒤 뜸)
+
+def gap_after(i, line, n, nxt=None, scene_change=False):
+    """줄과 줄 사이 쉼(초). 말이 이어지면 거의 안 쉬고, 문장이 끝나면 짧게, 장면(이미지)이 바뀌거나 방향을 바꾸는 말 앞에서만 조금 더 (최대 0.5초)"""
+    h = line.get('holdAfter')   # 10/1 사용자(롱폼④ 트레이드 장면 "조상우→KIA 티켓 받자마자 다음 장면"): 애니메이션이 끝날 때까지 화면을 잡아 두는 쉼 — MAX_GAP 제한 없이(최대 3초)
+    if h is not None: return round(min(3.0, max(0.0, float(h))), 2)
+    g = line.get('gapAfter')
+    if g is not None: return min(0.8, float(g))
+    t = line['narr'].strip()
+    if CONNECT_END.search(t) and not t.endswith(('요', '죠')): gap = 0.10
+    elif t.endswith('?'): gap = 0.30
+    else: gap = 0.24
+    if nxt and nxt['narr'].strip().startswith(TURN_START): gap = max(gap, 0.38)
+    if scene_change: gap = max(gap, 0.32)
+    if i == 0: gap = min(gap, 0.18)   # 후킹 대사 뒤는 뜸 들이지 않고 바로 본론으로
+    return round(min(gap * gap_scale(), MAX_GAP), 2)
+
+def tempo_mode(ep):
+    """10/8: 콘티가 줄별 타입캐스트 배속을 쓰는지(ttsTempoSlow 또는 줄 ttsTempo)"""
+    return bool(ep.get('ttsTempoSlow') or any(l.get('ttsTempo') for l in ep.get('lines', [])))
+
+def tempo_lines(ep):
+    if not tempo_mode(ep): return []
+    out = []
+    for l in ep['lines']:
+        t = l.get('ttsTempo') or (ep.get('ttsTempoSlow') if l.get('pace') == 'slow' else None)
+        out.append(f'{float(t):.3f}' if t else '')
+    return out
+
+def pace_of(i, line, n):
+    """줄별 말 속도 배율. 기본은 그대로(1.0) — 느리게 하면 답답하다는 피드백. 콘티에 pace: slow|normal|fast 로만 조절"""
+    p = line.get('pace')
+    if p in ('slow', 'normal', 'fast'): return {'slow': 1.0, 'normal': 1.0, 'fast': 1.0435}[p]   # 10/4 밤 사용자 '완급은 1.15~1.2 사이에서만' → 보통 1.15(speed 1.0455×tts 1.1), 빠름 1.2(×1.0435), 느림 없음   # 10/4 사용자 '완급조절 없어 지루' → 폭을 키움(0.94/1.08 → 0.90/1.12)
+    return 1.0
+
+# 장면 종류별 최소 길이(초): 모션이 다 끝나기 전에 장면이 넘어가지 않도록, 나레이션이 짧으면 장면 끝에 여유를 둔다
+MIN_SCENE = {'streaks': 3.4, 'table': 3.2, 'verdict': 3.0, 'shift': 2.6, 'versus': 2.4, 'need': 2.4, 'rival': 2.2, 'matchup': 2.4, 'hook': 1.0, 'big': 1.4, 'question': 1.4}
+
+SUB_MAX = 16   # 자막 한 줄 최대 글자 수(공백 포함, 한글 기준)
+
+def wrap2(text):
+    """자막을 최대 2줄로. 이미 줄바꿈이 있으면 각 줄이 길지 않은지 확인하고, 없으면 띄어쓰기에서 균형 있게 나눈다"""
+    text = text.strip()
+    lines = [l.strip() for l in text.split('\n') if l.strip()]
+    if len(lines) == 2 and all(len(l) <= SUB_MAX for l in lines): return '\n'.join(lines)
+    flat = ' '.join(lines)
+    if len(flat) <= SUB_MAX: return flat
+    words = flat.split(' ')
+    best, bestd = None, 1e9
+    for k in range(1, len(words)):
+        a, b = ' '.join(words[:k]), ' '.join(words[k:])
+        d = abs(len(a) - len(b)) + (100 if max(len(a), len(b)) > SUB_MAX else 0)
+        if d < bestd: best, bestd = (a, b), d
+    return '\n'.join(best) if best else flat
+
+def sub_pieces(line):
+    """'sub' 가 '|' 로 나뉘어 있으면 호흡 단위 자막 조각들, 아니면 한 조각"""
+    sub = line.get('sub') or ''
+    pieces = [p_.strip() for p_ in sub.split('|')] if '|' in sub else [sub]
+    return [wrap2(p_) for p_ in pieces]
+
+def silence(name, sec):
+    run(['ffmpeg', '-y', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{sec:.3f}', name])
+
+def compress_pauses(path, pmax, thr_db=-38.0):
+    """10/8 사용자("말과 말 사이에 텀이 너무 길어, 전체적으로 짧게"): 줄 음성(t*.wav) 안의 쉼이 pmax 초보다 길면 가운데를 잘라 pmax 만 남긴다.
+    10ms RMS 가 thr_db 아래인 구간을 쉼으로 본다(줄 앞뒤 쉼은 그대로). 자른 자리마다 5ms 크로스페이드.
+    돌려주는 값 = [(자르기 전 시각, 잘라 낸 길이)] — 호흡 경계(segs) 시각을 같은 만큼 당기는 데 쓴다."""
+    import numpy as np, wave
+    w = wave.open(path); sr = w.getframerate(); ch = w.getnchannels(); sw = w.getsampwidth(); n = w.getnframes()
+    if sw != 2: w.close(); return []
+    x = np.frombuffer(w.readframes(n), dtype=np.int16).astype(np.float32); w.close()
+    if ch > 1: x = x.reshape(-1, ch).mean(axis=1)
+    hop = int(sr * 0.01)
+    if len(x) < hop * 10: return []
+    fr = len(x) // hop
+    rms = np.sqrt(np.mean((x[:fr * hop].reshape(fr, hop) / 32768.0) ** 2, axis=1) + 1e-12)
+    quiet = 20 * np.log10(rms) < thr_db
+    loud = np.nonzero(~quiet)[0]
+    if len(loud) < 2: return []
+    first, last = loud[0], loud[-1]
+    runs, k = [], first
+    while k <= last:
+        if quiet[k]:
+            j = k
+            while j <= last and quiet[j]: j += 1
+            runs.append((k, j)); k = j
+        else: k += 1
+    keep = int(pmax / 0.01)
+    cuts = [(a + keep // 2, b - (keep - keep // 2)) for a, b in runs if b - a > keep]
+    if not cuts: return []
+    xf = int(sr * 0.005); out, prev, rem = [], 0, []
+    for a, b in cuts:
+        a_s, b_s = a * hop, b * hop
+        seg = x[prev:a_s].copy()
+        nxt = x[b_s:b_s + xf].copy()
+        if len(seg) > xf and len(nxt) == xf:
+            r = np.linspace(1, 0, xf, dtype=np.float32); seg[-xf:] = seg[-xf:] * r + nxt * (1 - r); prev = b_s + xf
+        else: prev = b_s
+        out.append(seg); rem.append((a_s / sr, (b_s - a_s) / sr))
+    out.append(x[prev:])
+    y = np.clip(np.concatenate(out), -32768, 32767).astype(np.int16)
+    w = wave.open(path, 'wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(sr); w.writeframes(y.tobytes()); w.close()
+    return rem
+
+SENT_END = re.compile(r'([았었였했겠꿨웠쳤났갔왔졌렸봤줬됐섰켰혔렀]다|니다|[요죠]|\?)$')   # 줄 가운데서 문장이 끝나는 호흡(tts.py tts_text 와 같은 기준)
+
+def stretch_pauses(path, targets, pmin, thr_db=-38.0, win=0.30):
+    """11/14 사용자("이 대사가 전 대사를 말하고 너무 빨리 나와" — 한 줄 안에서 '~나와요' 뒤 다음 문장이 0.09초 만에 시작):
+    줄 음성(t*.wav)에서 targets(문장이 끝나는 호흡 경계 시각, 초) 근처의 쉼이 pmin 초보다 짧으면 그 쉼 가운데에 무음을 끼워 pmin 으로 늘린다.
+    타입캐스트는 마침표 뒤 쉼이 들쭉날쭉(0.1~0.6초)이라 다시 합성하지 않고 여기서 맞춘다. 경계 근처(±win)에 조용한 자리(40ms 이상)가 없으면 건드리지 않는다(말 중간을 자르지 않게).
+    돌려주는 값 = [(끼운 자리 시각(끼우기 전 기준), 끼운 길이)] — 자막 경계를 그만큼 미는 데 쓴다."""
+    import numpy as np, wave
+    if not targets: return []
+    w = wave.open(path); sr = w.getframerate(); ch = w.getnchannels(); sw = w.getsampwidth(); n = w.getnframes()
+    if sw != 2: w.close(); return []
+    x = np.frombuffer(w.readframes(n), dtype=np.int16).astype(np.float32); w.close()
+    if ch > 1: x = x.reshape(-1, ch).mean(axis=1)
+    hop = int(sr * 0.01); fr = len(x) // hop
+    if fr < 20: return []
+    rms = np.sqrt(np.mean((x[:fr * hop].reshape(fr, hop) / 32768.0) ** 2, axis=1) + 1e-12)
+    quiet = 20 * np.log10(rms) < thr_db
+    runs, k = [], 0
+    while k < fr:
+        if quiet[k]:
+            j = k
+            while j < fr and quiet[j]: j += 1
+            if k > 0 and j < fr: runs.append((k, j))   # 줄 앞뒤 쉼은 빼고
+            k = j
+        else: k += 1
+    ins, used = [], set()
+    for t in sorted(targets):
+        c = t * 100; best = None
+        for a, b in runs:
+            if (a, b) in used or b - a < 4: continue
+            d = 0 if a <= c <= b else min(abs(a - c), abs(b - c))
+            if d <= win * 100 and (best is None or d < best[0]): best = (d, a, b)
+        if not best: continue
+        _, a, b = best; used.add((a, b))
+        add = pmin - (b - a) * 0.01
+        if add < 0.03: continue
+        ins.append((((a + b) // 2) * hop, int(add * sr)))
+    if not ins: return []
+    ins.sort(); out, prev, xf = [], 0, int(sr * 0.004)
+    for p, m in ins:
+        seg = x[prev:p].copy()
+        if len(seg) > xf: seg[-xf:] *= np.linspace(1, 0, xf, dtype=np.float32)
+        out.append(seg); out.append(np.zeros(m, dtype=np.float32)); prev = p
+    tail = x[prev:].copy()
+    if len(tail) > xf: tail[:xf] *= np.linspace(0, 1, xf, dtype=np.float32)
+    out.append(tail)
+    y = np.clip(np.concatenate(out), -32768, 32767).astype(np.int16)
+    w = wave.open(path, 'wb'); w.setnchannels(1); w.setsampwidth(2); w.setframerate(sr); w.writeframes(y.tobytes()); w.close()
+    return [(p / sr, m / sr) for p, m in ins]
+
+def _after_ins(t, ins):
+    """무음을 끼우기 전 시각 t → 끼운 뒤 시각(끼운 자리보다 뒤면 그만큼 밀림)"""
+    return t + sum(m for p, m in ins if p <= t + 0.02)
+
+def _after_comp(t, rem):
+    """자르기 전 시각 t → 자른 뒤 시각"""
+    d = 0.0
+    for p, r in rem:
+        if p + r <= t: d += r
+        elif p < t: d += t - p
+    return t - d
+
+def render(ep, ep_path):
+    # 9/21: 음성 폴더는 콘티 이름으로 정한다 — current.txt(마지막 prep) 를 따르면 다른 편 음성이 붙는다(하현승⑥에 드래프트 편 음성이 들어간 사고)
+    io.open(W('current.txt'), 'w', encoding='utf-8').write(ep_key(ep_path))
+    global GAP_OVERRIDE; GAP_OVERRIDE = ep.get('gapScale')
+    lines = ep['lines']; N = len(lines)
+    spd = float(cfg_get('SPEED', '1.12'))   # 말 자체 배속(9/14 "말은 빠르되 문단 사이 텀은 적절히" → 기본 1.12). 타입캐스트는 1.0x 로 뽑고 여기서 올린다. 설정.txt SPEED 로 조절
+    # 9/18: 편마다 다르게 하고 싶을 때는 콘티에 "speed": 1.30 (설정.txt 는 건드리지 않는다).
+    # 줄 사이 쉼(gap_after)은 이 배속과 무관하게 따로 넣으므로, 이 값만 올리면 '텀은 그대로, 말만 빨라진다'
+    if ep.get('speed'):
+        spd = float(ep['speed']); print(f'말 속도: 콘티 지정 {spd:.2f}배')
+    # 1) 음성 확인 + 트리밍 (자르기는 atrim 필터로, 속도 조절은 그 다음에 → -to 가 느려진 소리 끝을 잘라먹지 않는다)
+    clips, warns, seg_start, seg_rate = [], [], [], []
+    comp = {}   # 10/8: 줄마다 compress_pauses 로 잘라 낸 쉼(자막 경계 보정용)
+    ins = {}    # 11/14: 줄마다 stretch_pauses 로 끼운 쉼(자막 경계 보정용)
+    retried = set()
+    i = 0
+    while i < N:
+        src = VW(f'{i:02d}.mp3')
+        if not os.path.exists(src): raise SystemExit(f'음성 없음: {src}')
+        # 대사가 바뀌었는데 음성은 옛 대사면 그 줄만 다시 합성
+        txt = src.replace('.mp3', '.txt')
+        if os.path.exists(txt) and i not in retried:
+            made = io.open(txt, encoding='utf-8').read().strip()
+            if made != lines[i]['narr'].strip():
+                print(f'음성 {i:02d} 은 옛 대사로 만든 것 → 다시 합성')
+                retried.add(i)
+                r = subprocess.run([sys.executable, '-X', 'utf8', 'tts.py', f'--only={i}'], capture_output=True, text=True, encoding='utf-8', errors='replace')
+                if r.returncode != 0: print('  다시 합성 실패(옛 음성 그대로 사용):', (r.stdout + r.stderr)[-200:])
+                else:
+                    subprocess.run([sys.executable, '-X', 'utf8', 'qa_voice.py', '--check'], capture_output=True)   # 자막 경계 다시
+        d, lead, tail = probe(src)
+        ss, to = max(0, lead - 0.06), min(d, tail + 0.12)
+        dst = VW(f't{i:02d}.wav')
+        # 9/26: 줄에 "rate" 가 있으면 콘티 speed 와 상관없이 그 배속(구독 멘트 줄은 1.0 — 본문만 1.2배)
+        rate = float(lines[i]['rate']) if lines[i].get('rate') else spd * (1.0 if tempo_mode(ep) else pace_of(i, lines[i], N))   # 10/8: 줄별 배속 모드면 속도는 타입캐스트가 이미 맞춤
+        gain = static_gain(src, ss, to)
+        def cut(ss, to):
+            af = f'atrim=start={ss:.3f}:end={to:.3f},asetpts=PTS-STARTPTS'
+            # 9/18: 콘티에 "tight": true 인 줄은 문장 안의 긴 쉼("한국 야구가 .. 대만한테 ..")을 잘라 붙인다.
+            # tightMs 로 남길 쉼 길이를 바꿀 수 있다(기본 0.12초). 줄과 줄 사이 쉼(gap_after)은 건드리지 않는다.
+            if lines[i].get('tight'):
+                keep = float(lines[i].get('tightMs', 120)) / 1000.0
+                af += f',silenceremove=stop_periods=-1:stop_duration={keep:.3f}:stop_threshold=-36dB:detection=peak'
+            if abs(rate - 1.0) > 0.01: af += f',atempo={rate:.3f}'
+            # 음량은 줄마다 '고정 이득'으로만 맞춘다(loudnorm 같은 동적 정규화는 짧은 클립의 앞뒤 음량을 출렁이게 해 기계음처럼 들림)
+            # + 앞뒤 12ms 페이드(딱 끊기는 소리 방지)
+            af += f',volume={gain:.2f}dB,alimiter=limit=0.89:attack=6:release=90:level=false,aresample=44100,afade=t=in:d=0.012,areverse,afade=t=in:d=0.012,areverse'   # 10/4: 피크는 리미터(-1dB)로
+            run(['ffmpeg', '-y', '-i', src, '-af', af, '-ar', '44100', '-ac', '1', dst], check=True)
+        cut(ss, to)
+        # 검수: 잘린 끝이 아직 말소리(-30dB 이상)면 끝을 자르지 않고 다시
+        if to < d and end_level(dst) > -30:
+            cut(ss, d); warns.append(f'{i:02d} 끝 여운 보존')
+        comp[i] = []
+        pm = lines[i].get('pauseMax', ep.get('pauseMax'))   # 10/13: 줄에 pauseMax 를 주면 그 줄만 다르게(훅 "돋았습니다.. / " 텀은 남기게)
+        if pm and not lines[i].get('rate'):   # 10/8: 줄 안 쉼 줄이기(구독 멘트처럼 rate 지정 줄은 그대로)
+            comp[i] = compress_pauses(dst, float(pm))
+            if comp[i]: warns.append(f"{i:02d} 쉼 {len(comp[i])}곳 줄임(-{sum(r for _, r in comp[i]):.2f}s)")
+        ins[i] = []
+        spm = lines[i].get('sentPauseMin', ep.get('sentPauseMin'))   # 11/14: 줄 가운데 문장 끝 쉼의 최소 길이(초) — 콘티에 있을 때만
+        if spm and not lines[i].get('rate'):
+            try:
+                segf_ = VW(f'{i:02d}.segs.json')
+                nsegs = [x_.strip() for x_ in lines[i]['narr'].split('/') if x_.strip()]
+                if len(nsegs) > 1 and os.path.exists(segf_):
+                    sg_ = json.load(open(segf_))
+                    if len(sg_.get('durs') or []) == len(nsegs):
+                        tg, acc_ = [], 0.0
+                        for k_, d_ in enumerate(sg_['durs']):
+                            if k_ > 0 and SENT_END.search(nsegs[k_ - 1].lstrip('+').rstrip(' ,.')) and not nsegs[k_].startswith('+'):
+                                tg.append(_after_comp(max(0, acc_ - ss) / rate, comp[i]))
+                            acc_ += d_ + sg_.get('pause', 0.0)
+                        ins[i] = stretch_pauses(dst, tg, float(spm))
+                        if ins[i]: warns.append(f"{i:02d} 문장 끝 쉼 {len(ins[i])}곳 늘림(+{sum(m for _, m in ins[i]):.2f}s)")
+            except Exception as e_:
+                ins[i] = []; print(f'  {i:02d} 문장 끝 쉼 늘리기 건너뜀:', e_)
+        clips.append(dur_of(dst)); seg_start.append(ss); seg_rate.append(rate)
+        # 검수: 글자 수 대비 너무 짧으면(말이 잘린 음성) 중단
+        syl = len(re.findall(r'[가-힣]', lines[i]['narr'])) or 1
+        if syl / (clips[-1] * rate) > 10.5:   # 9/14: 장운 1.1x 후킹 줄은 9~10음절/초가 정상이라 기준을 올림
+            if i not in retried:
+                # 잘린 음성으로 보임 → 그 줄만 자동으로 다시 만들고 한 번 더 시도
+                print(f'음성 {i:02d} 이 글자 수에 비해 너무 짧아요 ({clips[-1]:.2f}s/{syl}음절) → 다시 합성')
+                retried.add(i)
+                r = subprocess.run([sys.executable, '-X', 'utf8', 'tts.py', f'--only={i}'], capture_output=True, text=True, encoding='utf-8', errors='replace')
+                if r.returncode == 0:
+                    clips.pop(); seg_start.pop(); seg_rate.pop(); continue
+                print('  다시 합성 실패:', (r.stdout + r.stderr)[-300:])
+            # 다시 못 만들면(웹에서 받은 음성·API 없음) 멈추지 말고 경고만 남기고 그대로 쓴다 — 사람이 듣고 그 줄만 다시 뽑는다
+            warns.append(f'{i:02d} 글자 수 대비 짧음({clips[-1]:.2f}s/{syl}음절) — 잘렸는지 들어보세요')
+            print(f'음성 {i:02d} 이 글자 수에 비해 짧아요 ({clips[-1]:.2f}s/{syl}음절) — 그대로 진행')
+        i += 1
+    if warns: print('트리밍 조정:', ', '.join(warns))
+    # 2) 타임라인 (장면 최소 길이 보장: 장면의 마지막 줄 뒤 여유를 늘린다)
+    starts = [s.get('startLine', 0) for s in ep['scenes']]
+    scene_first = set(starts)
+    gaps = [gap_after(i, lines[i], N, lines[i + 1] if i + 1 < N else None, scene_change=(i + 1) in scene_first) for i in range(N)]
+    def line_starts():
+        st, t = [], LEAD
+        for i in range(N):
+            st.append(t); t += clips[i] + gaps[i]
+        return st
+    for k, s in enumerate(ep['scenes']):
+        a = starts[k]; b = starts[k + 1] if k + 1 < len(starts) else N
+        if b <= a or b > N: continue
+        st = line_starts()
+        span = (st[b] if b < N else st[N - 1] + clips[N - 1] + TAIL) - st[a]
+        need = float(s.get('minDur', MIN_SCENE.get(s.get('type'), 1.2)))
+        if span < need:
+            gaps[b - 1] = min(MAX_GAP, gaps[b - 1] + (need - span))   # 모션은 template 이 장면 길이에 맞춰 빨라지므로 쉼은 0.5초까지만
+    if is_long(ep) and cfg_get('CHUNK_CACHE', '1') != '0':
+        # 10/1 조각 렌더: 줄 시작을 프레임 칸에 맞춘다(쉼을 1프레임 미만으로 늘림) → 앞 줄 길이가 바뀌어도 뒤 장면 조각의 프레임 수가 그대로라 재사용된다
+        import math
+        _fps = 30 if os.environ.get('KBO_DRAFT') else int(cfg_get('VIDEO_FPS', '60'))
+        t = LEAD
+        for i in range(N - 1):
+            nxt = LEAD + math.ceil((t + clips[i] + gaps[i] - LEAD) * _fps - 1e-6) / _fps
+            gaps[i] = nxt - t - clips[i]; t = nxt
+    st = line_starts()
+    total = st[N - 1] + clips[N - 1] + TAIL
+    # 자막은 "실제로 말이 나오는 동안"만: 잘라낸 클립 안에서 말이 시작·끝나는 시각을 다시 재서 그 사이에만 띄운다
+    subs = []
+    segT = []   # 9/28: 줄마다 호흡 구간이 실제로 시작하는 시각(초) — 목차를 읽는 동안 그 칸을 강조하는 데 쓴다
+    for i in range(N):
+        segT.append([round(st[i], 2)])
+        dst = VW(f't{i:02d}.wav')
+        d2, lead2, tail2 = probe(dst)
+        sp_start, sp_end = st[i] + max(0, lead2 - SUBLEAD), st[i] + min(d2, tail2 + 0.05)
+        pieces = sub_pieces(lines[i])
+        segf = VW(f'{i:02d}.segs.json')
+        if len(pieces) > 1 and os.path.exists(segf):
+            # 호흡 구간(' / ')과 자막 조각('|') 수가 같으면 구간 시작마다 자막을 바꾼다 (조각 사이는 빈틈 없이 이어서)
+            sg = json.load(open(segf)); durs, pause = sg['durs'], sg['pause']
+            if len(durs) == len(pieces):
+                ss_i = seg_start[i]; rate = seg_rate[i]
+                starts_k, acc = [], 0.0
+                for k, d_ in enumerate(durs):
+                    starts_k.append(st[i] + _after_ins(_after_comp(max(0, (acc - ss_i)) / rate, comp.get(i) or []), ins.get(i) or [])); acc += d_ + pause
+                segT[-1] = [round(max(sp_start, x_), 2) for x_ in starts_k]
+                items = []
+                for k, pc in enumerate(pieces):
+                    a = sp_start if k == 0 else max(sp_start, starts_k[k] - SUBLEAD)
+                    b = min(sp_end, starts_k[k + 1] - SUBLEAD) if k + 1 < len(pieces) else sp_end
+                    items.append([a, b, pc])
+                # 너무 짧게(0.45초 미만) 스쳐 가는 조각은 앞 조각과 합쳐 보여준다(깜빡임 방지)
+                merged = []
+                for it in items:
+                    if merged and not lines[i].get('noMerge') and (it[1] - it[0] < 0.45 or merged[-1][1] - merged[-1][0] < 0.45):   # 11/5 롱폼 순위 공개 줄('8위는')은 짧아도 따로 보인다
+                        merged[-1] = [merged[-1][0], it[1], wrap2(merged[-1][2].replace('\n', ' ') + ' ' + it[2].replace('\n', ' '))]
+                    else: merged.append(it)
+                for a, b, pc in merged: subs.append([round(a, 2), round(b, 2), pc])
+                continue
+            print(f'경고: {i:02d} 자막 조각({len(pieces)})과 호흡 구간({len(durs)}) 수가 달라 한 덩어리로 표시')
+        subs.append([round(sp_start, 2), round(sp_end, 2), wrap2(' '.join(pieces)) if len(pieces) > 1 else pieces[0]])
+    bounds = [round(st[k] - 0.10, 2) for k in starts[1:]]
+    # 3) 나레이션 합치기
+    silence(VW('lead.wav'), LEAD); silence(VW('tail.wav'), TAIL)
+    with open(VW('list.txt'), 'w') as f:
+        f.write("file 'lead.wav'\n")
+        for i in range(N):
+            f.write(f"file 't{i:02d}.wav'\n")
+            if i < N - 1:
+                silence(VW(f'g{i:02d}.wav'), gaps[i]); f.write(f"file 'g{i:02d}.wav'\n")
+        f.write("file 'tail.wav'\n")
+    run(['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', VW('list.txt'), W('narration.wav')], check=True)
+    # 4) 템플릿에 데이터 주입
+    EP = dict(ep); EP['subs'] = subs; EP['segT'] = segT; EP['bounds'] = bounds; EP['logos'] = logos_data_uri(); EP['total'] = round(total, 2); EP['_path'] = ep_path
+    EP['photos'] = photos_data_uri(ep, ep_path)  # 야구이슈 편 사진(없으면 빈 dict)
+    EP['photoSizes'] = PHOTO_SIZES
+    tpl = template_for(ep); print('템플릿:', tpl)
+    html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
+    html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)
+    io.open(W('render.html'), 'w', encoding='utf-8').write(html)
+    json.dump({'total': round(total, 2), 'starts': st, 'durs': clips, 'gaps': gaps, 'bounds': bounds, 'subs': subs, 'segT': segT},
+              io.open(W('timeline.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    # 5) 프레임 렌더 → 무음 영상 (설정.txt VIDEO_FPS 기본 60, VIDEO_SCALE 기본 1.3333 = 1440x2560 2K)
+    fps = int(cfg_get('VIDEO_FPS', '60')); scale = cfg_get('VIDEO_SCALE', '1.3333')
+    DRAFT = bool(os.environ.get('KBO_DRAFT'))   # 10/1: 검수용 빠른 버전(롱폼검수.cmd) — 1080p·30fps, 파일 이름 끝 _검수
+    if DRAFT: fps, scale = 30, '1.0'; print('검수용 빠른 버전: 30fps x1.0')
+    shutil.rmtree(W('frames'), ignore_errors=True)
+    print(f'프레임 렌더 {fps}fps x{scale} ({round(total)}초) …')
+    cw, ch = canvas_of(ep)
+    fenv = dict(os.environ); fenv['FRAME_W'], fenv['FRAME_H'] = str(cw), str(ch)
+    # 10/2: 그래픽카드 없는 PC(회사)는 2K 에서 크롬 GPU 가 죽는다 → 한 번 죽으면 work\no_gpu.flag 를 남기고, 그 PC 는 다음부터 처음부터 GPU 없이 그린다
+    #       (work\ 는 깃에 안 올라가므로 그래픽카드 있는 집 PC 는 영향 없음. 다시 GPU 로 그리려면 이 파일을 지우면 된다)
+    NOGPU_FLAG = W('no_gpu.flag')
+    # 10/18 23:03 사용자: "집 PC 에서는 그 파일 절대 무슨 일이 있어도 안 생기게 해" — 그래픽카드(NVIDIA·AMD)가 있는 PC 는 표시 파일을 만들지도 따르지도 않고, 있으면 지운다
+    def _has_dgpu():
+        try:
+            import subprocess as _sp
+            o = _sp.run(['powershell', '-NoProfile', '-Command', '(Get-CimInstance Win32_VideoController).Name -join ";"'], capture_output=True, text=True, timeout=15).stdout
+            _GPU_NAME[0] = ', '.join(x.strip() for x in o.split(';') if any(k in x.upper() for k in ('NVIDIA', 'GEFORCE', 'RTX', 'GTX', 'RADEON', 'AMD')))
+            return any(k in o.upper() for k in ('NVIDIA', 'GEFORCE', 'RTX', 'GTX', 'RADEON', 'AMD'))
+        except Exception: return False
+    _GPU_NAME = ['']
+    HAS_DGPU = _has_dgpu()
+    if HAS_DGPU:
+        for _f in {NOGPU_FLAG, os.path.join('work', 'no_gpu.flag')}:
+            try:
+                if os.path.exists(_f): os.remove(_f); print('그래픽카드 있는 PC — GPU 끄기 표시 파일 지움:', _f)
+            except Exception: pass
+    # 10/2 2차: 회사 PC 는 GPU 를 꺼도 크롬 여러 개로 동시에 찍으면 터졌고(Unable to capture screenshot), 크롬 1개일 때만 끝까지 갔다 → 표시가 있는 PC 는 동시작업 1
+    def _mark_no_gpu():
+        fenv['FRAME_NO_GPU'] = '1'; fenv['FRAME_WORKERS'] = '1'
+        if HAS_DGPU: print('그래픽카드 있는 PC — 이번 렌더만 GPU 없이 이어서, 표시 파일은 만들지 않음'); return
+        try: io.open(NOGPU_FLAG, 'w', encoding='utf-8').write('이 PC 는 GPU 없이 그린다(10/2 build.py 가 GPU 오류 뒤 자동으로 만듦). 지우면 다시 GPU 로 그림.\n')
+        except Exception: pass
+    # 10/18 23:02 사용자: 집 PC 는 GPU 가 있다 — 빈(0바이트) 표시 파일은 무시. GPU 오류 뒤 자동으로 만든(글이 든) 표시만 따른다
+    if not HAS_DGPU and os.path.exists(NOGPU_FLAG) and os.path.getsize(NOGPU_FLAG) > 0: fenv['FRAME_NO_GPU'] = '1'; fenv['FRAME_WORKERS'] = '1'; print('이 PC 는 GPU 없이 크롬 1개로 그립니다(work\\no_gpu.flag) — 조각은 다 그린 것부터 저장')
+    # 10/20 00:43 사용자: "배치파일 누르면 gpu로 할 때 gpu로 한다고 나오게 해줘 앞으로" — 렌더 시작 때 어떤 방식으로 그리는지 크게 알린다
+    def _mode_banner(when):
+        if fenv.get('FRAME_NO_GPU') == '1': msg = 'GPU 없이(CPU) 그립니다 — 느림'
+        elif HAS_DGPU: msg = 'GPU(그래픽카드' + (': ' + _GPU_NAME[0] if _GPU_NAME[0] else '') + ')로 그립니다'
+        else: msg = '내장 그래픽으로 그립니다(그래픽카드 없음)'
+        print('=' * 60); print(f'  [{when}] {msg}'); print('=' * 60)
+    _mode_banner('렌더 시작')
+    r = None
+    if is_long(ep) and cfg_get('CHUNK_CACHE', '1') != '0':
+        # 10/1: 롱폼은 장면 조각으로 그리고, 지난번과 똑같은 조각은 다시 찍지 않는다(바뀐 장면만 새로)
+        try:
+            r = render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv)
+        except (Exception, SystemExit) as e:
+            # 10/2 회사 PC: 2K 렌더 중 크롬 GPU 가 죽음 → 다 그린 조각은 두고, GPU 끄고 남은 장면만 이어서
+            print('조각 렌더 실패:', str(e)[-500:])
+            print('→ 그래픽(GPU)을 끄고, 이미 그린 장면은 그대로 두고 남은 장면만 이어서 그립니다')
+            _mark_no_gpu()
+            r = None
+            for _try in (2, 3):   # 10/2 밤: 다 그린 조각은 남으니 같은 방식으로 이어서 두 번 더(전체 한 번에 그리기는 회사 PC 에서 더 잘 터짐)
+                try:
+                    r = render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv); break
+                except (Exception, SystemExit) as e2:
+                    print(f'조각 렌더 {_try}번째 실패:', str(e2)[-400:])
+            if r is None: print('조각 렌더 세 번 실패 → 전체를 한 번에 그립니다')
+    if r is None:
+        r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale], capture_output=True, text=True, encoding='utf-8', errors='replace', env=fenv)
+    if r.returncode != 0: print('프레임 렌더 1차 실패 → 동시작업 1 로 다시:\n' + ((r.stderr or '') + '\n' + (r.stdout or ''))[-1200:])
+    elif r.stdout: print((r.stdout or '').strip().splitlines()[-1])
+    vd = dur_of(W('silent.mp4')) if os.path.exists(W('silent.mp4')) else 0.0
+    if fenv.get('FRAME_NO_GPU') == '1': _mode_banner('렌더 중 바뀜')
+    if r.returncode != 0 or vd < total * 0.95:
+        # 조각 파일을 동시에 쓰다 깨진 경우(OneDrive 동기화 폴더에서 가끔) → 한 번 더, 이번엔 조각 없이 한 번에 그린다
+        print(f'경고: 무음 영상이 깨졌거나 짧음({vd:.1f}s / {total:.1f}s) → GPU 끄고 한 번 더 그립니다(동시작업 1)')
+        _mark_no_gpu()
+        try: os.remove(W('silent.mp4'))
+        except Exception: pass
+        r = subprocess.run(['node', 'frames.js', str(round(total, 2)), W('silent.mp4'), str(fps), scale, '1'], capture_output=True, text=True, encoding='utf-8', errors='replace', env=fenv)
+        if r.returncode != 0 or not os.path.exists(W('silent.mp4')): raise SystemExit('프레임 렌더 실패(재시도):\n' + ((r.stderr or '') + '\n' + (r.stdout or ''))[-1500:])
+        vd = dur_of(W('silent.mp4'))
+        if vd < total * 0.95: raise SystemExit(f'영상 길이 부족: {vd:.1f}s / {total:.1f}s (재시도 후에도)')
+    # 11/8 사용자 "자료 영상(실제 경기 장면)이 들어가면 좋겠다": 영상 장면(bt_clip) 자리에 경기 영상을 소리 없이 덮는다(clip_overlay.py · 영상은 선수이미지\영상\)
+    if any(s_.get('type') == 'bt_clip' for s_ in ep.get('scenes', [])):
+        import clip_overlay
+        print('경기 영상 덮는 중 …', flush=True)
+        clip_overlay.apply(ep, EP, W, os.path.join(PLAYER_IMG_DIR, '영상'), fps, float(scale), cw, ch, fenv)
+    # 6) 합성 → 결과물 폴더(영상/날짜/번호_팀.mp4)
+    out, thumb_path, yt_path = out_paths(ep, ep_path)
+    if DRAFT: out = out[:-4] + '_검수.mp4'
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    # 10/13 밤 사용자 "왜 자꾸 구글 드라이브에 저장이 안 돼?" — 예전엔 mp4 를 드라이브 폴더에 바로 쓰고, 엔딩 카드를 붙이며 한 번 더 덮어써서
+    # 드라이브가 올리는 도중에 파일이 바뀌어 '이름 (숫자).mp4' 충돌 사본이 생겼다 → work\ 에서 다 만든 뒤 마지막에 한 번만 복사한다.
+    final_out = out; out = W('final_out.mp4')
+    name = os.path.splitext(os.path.basename(ep_path))[0]
+    bgm = pick_bgm(ep)
+    if bgm:
+        # 배경음악: 나레이션 아래에 깔고(볼륨 설정.txt BGM_VOLUME, 기본 0.12), 말할 때 자동으로 더 낮춤(사이드체인), 끝에 페이드아웃
+        vol = float(cfg_get('BGM_VOLUME', '0.12'))
+        fade = max(0.5, total - 1.6)
+        fc = (f"[2:a]aloop=loop=-1:size=2e9,atrim=0:{total:.2f},volume={vol},afade=t=in:d=0.8,afade=t=out:st={fade:.2f}:d=1.5[bg];"
+              f"[1:a]asplit=2[n1][n2];[bg][n2]sidechaincompress=threshold=0.05:ratio=6:attack=40:release=500[bgd];"
+              f"[n1][bgd]amix=inputs=2:duration=first:dropout_transition=0:normalize=0[a]")
+        run(['ffmpeg', '-y', '-i', W('silent.mp4'), '-i', W('narration.wav'), '-i', bgm, '-filter_complex', fc, '-map', '0:v', '-map', '[a]',
+             '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], check=True)
+        print('배경음악:', os.path.basename(bgm))
+    else:
+        run(['ffmpeg', '-y', '-i', W('silent.mp4'), '-i', W('narration.wav'), '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], check=True)
+    if is_long(ep) and not ep.get('vertical'): append_endcard(EP, out)   # 9/20: 롱폼은 끝에 어두운 엔딩 카드(유튜브 최종 화면 자리)
+    d = dur_of(out)
+    tmp_copy = final_out + '.part'
+    shutil.copyfile(out, tmp_copy)
+    if os.path.exists(final_out): os.remove(final_out)
+    os.replace(tmp_copy, final_out); out = final_out   # 드라이브엔 완성된 파일이 한 번만 들어간다
+    thumb = make_thumb(EP, thumb_path)
+    write_youtube_txt(ep, yt_path, d)
+    srt_path = yt_path.replace('_유튜브.txt', '_자막.srt')
+    if ep.get('chapters'): write_chapters(ep, st, yt_path)   # 9/18 롱폼: 설명란 챕터 타임스탬프
+    write_srt(subs, srt_path)   # 9/15 SEO: 유튜브 업로드 때 자막 파일로 첨부 → 자동 자막보다 정확하게 검색 색인
+    print(f'완료: {out} {d:.2f}초 (자막 {len(subs)}개, 장면 {len(ep["scenes"])}개) 썸네일 {thumb}')
+    return out
+
+def hashlib_short(t):
+    import hashlib; return hashlib.sha1(t.encode('utf-8')).hexdigest()[:8]
+CHUNK_VER = 'c1'   # 조각 렌더 방식이 바뀌면 올린다(옛 조각 전부 무효)
+def chunk_plan(EP, total, fps, scale, cw, ch, tpl_raw, font_sig=''):
+    """장면마다 조각 하나: (시작 초, 끝 초, 프레임 수, 지문, 워밍업 시각들). 지문 = 그 조각 그림을 정하는 모든 것(장면 기준 상대 시각으로).
+    앞 줄 길이가 바뀌어 장면이 통째로 밀려도 지문이 같으면 지난번 조각을 그대로 쓴다."""
+    import hashlib, math
+    SC = EP.get('scenes') or []; BD = list(EP.get('bounds') or []); N = len(EP.get('lines') or [])
+    n_all = int(math.ceil(fps * total))
+    edges = [0.0] + BD + [total]
+    fr = [0] + [int(round(b * fps)) for b in BD] + [n_all]
+    q = lambda x: round(x, 3)   # 숫자는 지문에 넣지 않고 따로 모아 허용 오차(0.021초)로 비교한다 — 절대 시각을 0.01초로 반올림한 값이라 상대 시각이 ±0.01 흔들림
+    G = hashlib.sha1((CHUNK_VER + '|' + tpl_raw + '|' + font_sig + '|' + json.dumps(
+        {k: EP.get(k) for k in ('chapters', 'dateLabel', 'focusTeam', 'logos', 'photoSizes', 'photos', 'railTitle', 'standings')},
+        ensure_ascii=False, sort_keys=True) + f'|{fps}|{scale}|{cw}x{ch}').encode('utf-8')).hexdigest()
+    plan = []
+    for k in range(len(BD) + 1):
+        t0, t1 = edges[k], edges[k + 1]; f0, f1 = fr[k], fr[k + 1]
+        if f1 <= f0: continue
+        sc = SC[min(k, len(SC) - 1)] if SC else {}
+        a = sc.get('startLine', 0); b = SC[k + 1].get('startLine', N) if k + 1 < len(SC) else N
+        subs = [[q(max(x0, t0) - t0), q(min(x1, t1) - t0), tx] for x0, x1, tx in (EP.get('subs') or []) if x1 > t0 and x0 < t1]
+        segT = [[q(x - t0) for x in (EP.get('segT') or [])[i]] for i in range(a, min(b, len(EP.get('segT') or [])))]
+        nums = [x for s_ in subs for x in s_[:2]] + [x for r_ in segT for x in r_] + [q(t1 - t0)]
+        subs_txt = [s_[2] for s_ in subs]; segT_n = [len(r_) for r_ in segT]
+        nb = [SC[j] if 0 <= j < len(SC) else None for j in (k - 3, k - 2, k - 1, k + 1)]   # 앞 장면(이어 그리기·같은 사진)·뒤 장면(칩 수 맞춤)
+        run_ = []   # 같은 사진 profile 묶음 전체(칩 크기를 묶음 최대로 맞춤)
+        if sc.get('type') == 'profile':
+            j = k
+            while j > 0 and SC[j - 1].get('type') == 'profile' and SC[j - 1].get('img') == sc.get('img'): j -= 1
+            while j < len(SC) and SC[j].get('type') == 'profile' and SC[j].get('img') == sc.get('img'): run_.append(SC[j]); j += 1
+        # 10/15 사용자 "같은 장면에 항목이 추가되는데 왜 작아져?" — 세로 템플릿은 이어지는 묶음(cont·같은 chain) 전체로 확대 비율을 정하는데,
+        # 지문엔 앞 3·뒤 1 장면만 있어 묶음 뒤쪽이 바뀌면 앞 장면 조각은 옛 비율로 재사용됐다(컷5 1~3번 크고 4·5번 작음). 묶음 전체를 지문에 넣는다.
+        def _link(a_, b_):
+            return bool(b_.get('cont')) or (b_.get('chain') is not None and b_.get('chain') == a_.get('chain')) or \
+                (a_.get('type') == b_.get('type') and a_.get('type') in ('profile', 'speech', 'pstat') and (a_.get('img') == b_.get('img') or a_.get('name') == b_.get('name')))
+        g0 = g1 = min(k, len(SC) - 1) if SC else 0
+        while g0 > 0 and _link(SC[g0 - 1], SC[g0]): g0 -= 1
+        while g1 + 1 < len(SC) and _link(SC[g1], SC[g1 + 1]): g1 += 1
+        grp = SC[g0:g1 + 1] if g1 > g0 else []
+        fp = hashlib.sha1((G + json.dumps([sc, nb, run_, subs_txt, segT_n, f1 - f0, k == len(BD)] + ([grp] if grp else []), ensure_ascii=False, sort_keys=True)).encode('utf-8')).hexdigest()[:20]
+        warm = [round(edges[j + 1] - 1.0 / fps, 4) for j in (k - 3, k - 2, k - 1) if j >= 0]
+        plan.append({'k': k, 't0': t0, 't1': t1, 'n': f1 - f0, 'fp': fp, 'nums': nums, 'warm': warm})
+    return plan
+
+def _font_sig():
+    d = os.path.join(HERE, '..', '폰트')
+    try: return ';'.join(f'{f}:{os.path.getsize(os.path.join(d, f))}' for f in sorted(os.listdir(d)))
+    except Exception: return ''
+
+def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
+    """장면 조각 렌더 → 이어 붙이기 → 진행 막대(ffmpeg) → W('silent.mp4'). subprocess 결과처럼 returncode 를 가진 객체를 돌려준다."""
+    import types, math
+    tpl_raw = io.open(tpl, encoding='utf-8').read()
+    plan = chunk_plan(EP, total, fps, scale, cw, ch, tpl_raw, _font_sig())
+    cdir = os.path.abspath(W(f'chunks_{ep_key(ep_path)}_{fps}x{scale}'))
+    os.makedirs(cdir, exist_ok=True)
+    idx_path = os.path.join(cdir, 'index.json')
+    try: idx = json.load(io.open(idx_path, encoding='utf-8'))
+    except Exception: idx = {}
+    def find(c):   # 같은 구조 + 숫자가 모두 0.021초 안 → 재사용
+        for e in idx.get(c['fp'], []):
+            f = os.path.join(cdir, e['file'])
+            if len(e['nums']) == len(c['nums']) and all(abs(x - y) <= 0.021 for x, y in zip(e['nums'], c['nums'])) and os.path.exists(f) and os.path.getsize(f) > 1000:
+                return f
+        return None
+    jobs, used = [], set()
+    for c in plan:
+        hit = find(c)
+        if hit: c['out'] = hit
+        else:
+            name = c['fp'] + '_' + hashlib_short(json.dumps(c['nums'])) + '.mp4'
+            c['out'] = os.path.join(cdir, name)
+            jobs.append({'t0': c['t0'], 't1': c['t1'], 'n': c['n'], 'out': c['out'] + '.tmp.mp4', 'final': c['out'], 'warm': c['warm']})
+            if not any(e['file'] == name for e in idx.get(c['fp'], [])): idx.setdefault(c['fp'], []).append({'nums': c['nums'], 'file': name})
+        used.add(os.path.basename(c['out']))
+    new_f = sum(j['n'] for j in jobs); all_f = sum(c['n'] for c in plan)
+    print(f'조각 렌더: 장면 {len(plan)}개 중 {len(jobs)}개만 새로 그림 ({new_f}/{all_f} 프레임, {100 * new_f / max(1, all_f):.0f}%)')
+    sw = float(scale); Wd, Hd = int(round(cw * sw / 2)) * 2, int(round(ch * sw / 2)) * 2
+    acc_file = os.path.abspath(W('chunk_accent.json'))
+    J = {'fps': fps, 'scale': sw, 'W': Wd, 'H': Hd, 'quality': int(os.environ.get('FRAME_JPEG_Q', '95')), 'jobs': jobs, 'accentOut': acc_file}
+    jf = os.path.abspath(W('chunk_jobs.json')); json.dump(J, io.open(jf, 'w', encoding='utf-8'), ensure_ascii=False)
+    # 10/2: 목록을 먼저 적어 둔다 — 조각은 다 그려지는 대로 제 이름이 되므로, 도중에 터져도 다음 실행은 남은 장면만 그린다
+    json.dump(idx, io.open(idx_path, 'w', encoding='utf-8'), ensure_ascii=False)
+    # 10/31 사용자("몇 퍼센트 진행됐는지도 나오게, 하염없이 기다린다"): 화면 그리기 진행률을 그대로 창에 보여 준다
+    print(f'화면 그리기 시작 — {new_f} 프레임 (10초 분량마다 진행률 표시)', flush=True)
+    _p = subprocess.Popen(['node', 'frames.js', '--chunks', jf], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='replace', env=fenv)
+    _out = []
+    for _ln in _p.stdout:
+        _ln = _ln.rstrip()
+        if not _ln: continue
+        _out.append(_ln); print('  ' + _ln.strip(), flush=True)
+    _p.wait()
+    r = types.SimpleNamespace(returncode=_p.returncode, stdout='\n'.join(_out), stderr='')
+    if r.returncode != 0: raise RuntimeError('조각 렌더 오류:\n' + (r.stdout or '')[-1200:])
+    for j in jobs:
+        if os.path.exists(j['out']): os.replace(j['out'], j['final'])
+    # 이어 붙이기(다시 인코딩 없이)
+    lst = os.path.abspath(W('chunk_list.txt'))
+    with io.open(lst, 'w', encoding='utf-8') as f:
+        for c in plan: f.write("file '" + c['out'].replace('\\', '/').replace("'", "'\\''") + "'\n")
+    raw = W('silent_raw.mp4')
+    run(['ffmpeg', '-y', '-v', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-c', 'copy', raw], check=True)
+    # 진행 막대(템플릿 #prog: left 56 · right 56 · top 122 · 높이 5, CSS px) — 전체 길이 기준이라 조각에 넣지 않고 여기서 그린다
+    try: acc = json.load(io.open(acc_file, encoding='utf-8')).get('accent') or ''
+    except Exception: acc = ''
+    m = re.match(r'rgba?\((\d+),\s*(\d+),\s*(\d+)', acc or '')
+    col = '0x%02X%02X%02X' % tuple(int(x) for x in m.groups()) if m else '0x1E5EFF'
+    X0, Y0 = (int(round(90 * sw)), int(round(290 * sw))) if EP.get('vertical') else (int(round(56 * sw)), int(round(122 * sw)))   # 10/2: 세로 컷 쇼츠는 레일 밑줄 바로 아래
+    BW, BH = Wd - 2 * X0, max(2, int(round(5 * sw)))
+    fc = (f'[0:v]split[a][b];[b]crop={BW}:{BH}:{X0}:{Y0}[tr];color=c={col}:s={BW}x{BH}:r={fps}[bar];'
+          f"[tr][bar]overlay=x='-w+W*min(1,t/{total:.3f})':y=0:eval=frame:shortest=1[trf];[a][trf]overlay={X0}:{Y0}:shortest=1[v]")
+    print('화면 그리기 100% — 진행 막대 입히는 중(2~3분)', flush=True)
+    run(['ffmpeg', '-y', '-v', 'error', '-i', raw, '-filter_complex', fc, '-map', '[v]', '-c:v', 'libx264', '-preset', cfg_get('CHUNK_PRESET', 'veryfast'),
+         '-crf', '16', '-tune', 'animation', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-r', str(fps), '-movflags', '+faststart', W('silent.mp4')], check=True)
+    # 이번에 안 쓴 옛 조각은 지운다(용량) — 목록도 이번 것만 남긴다
+    idx = {k_: [e for e in v if e['file'] in used] for k_, v in idx.items()}
+    idx = {k_: v for k_, v in idx.items() if v}
+    json.dump(idx, io.open(idx_path, 'w', encoding='utf-8'), ensure_ascii=False)
+    for f in os.listdir(cdir):
+        if f not in used and f != 'index.json':
+            try: os.remove(os.path.join(cdir, f))
+            except Exception: pass
+    return types.SimpleNamespace(returncode=0, stdout=f'조각 {len(jobs)}/{len(plan)} 새로 그림', stderr='')
+
+def append_endcard(EP, out):
+    """롱폼 mp4 끝에 어두운 엔딩 카드(설정 ENDCARD_SEC, 기본 12초)를 붙인다(9/20 사용자 지시).
+       유튜브 '최종 화면'(구독·다음 영상)은 마지막 5~20초에 얹히는데, 본편 위에 얹히면 화면을 가린다 → 본편 뒤에 빈 화면을 둔다.
+       endcard.html → png → 본편과 같은 코덱(h264 High/Level/픽셀형식/60fps, aac 44.1k mono)으로 12초를 만들고 concat 으로 재인코딩 없이 이어 붙인다."""
+    sec = float(EP.get('endcardSec') or cfg_get('ENDCARD_SEC', '12'))   # 10/17 사용자: 엔딩은 보통 10초(8분 살짝 모자랄 때만 totalSec 으로 늘림)
+    if sec <= 0 or not os.path.exists('endcard.html'): return out
+    if EP.get('totalSec'):   # 10/15 사용자 "마지막 화면을 늘려서 8분 1초로 — 중간광고": 콘티 totalSec 이 있으면 전체 길이가 그 값이 되도록 엔딩 카드를 늘린다(줄이진 않음)
+        want = float(EP['totalSec']) - dur_of(out)
+        if want > sec: print(f'엔딩 카드 {sec:.0f}초 → {want:.1f}초(전체 {float(EP["totalSec"]):.1f}초에 맞춤)'); sec = want
+    html = io.open('endcard.html', encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
+    html = html.replace('<script>', '<script>window.EP=' + json.dumps({'lines': EP.get('lines', []), 'endTop': EP.get('endTop')}, ensure_ascii=False) + ';</script><script>', 1)
+    io.open(W('render_endcard.html'), 'w', encoding='utf-8').write(html)
+    png = W('endcard.png')
+    env = dict(os.environ); env['THUMB_W'], env['THUMB_H'] = '2560', '1440'
+    r = subprocess.run(['node', 'thumb.js', W('render_endcard.html'), png], capture_output=True, text=True, encoding='utf-8', errors='replace', env=env)
+    if r.returncode != 0 or not os.path.exists(png): print('엔딩 카드 그리기 실패(엔딩 없이 진행):', (r.stderr or r.stdout)[-200:]); return out
+    # 본편 코덱 파라미터를 읽어 똑같이 맞춘다(안 맞으면 concat 복사가 깨진다)
+    pr = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v', '-show_entries', 'stream=width,height,profile,level,pix_fmt,r_frame_rate', '-of', 'default=nw=1', out], capture_output=True, text=True).stdout
+    kv = dict(l.split('=', 1) for l in pr.strip().splitlines() if '=' in l)
+    w_, h_ = kv.get('width', '2560'), kv.get('height', '1440'); pix = kv.get('pix_fmt', 'yuvj420p'); lvl = kv.get('level', '51'); prof = (kv.get('profile') or 'High').lower()
+    fps = kv.get('r_frame_rate', '60/1').split('/'); fps = str(int(round(float(fps[0]) / float(fps[1] or 1))))
+    lvl = f'{int(lvl) // 10}.{int(lvl) % 10}' if lvl.isdigit() else lvl
+    tail = W('endcard.mp4')
+    r = subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-loop', '1', '-framerate', fps, '-i', png, '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{sec:.2f}',
+                        '-vf', f'scale={w_}:{h_},fade=t=in:st=0:d=0.6,format={pix}', '-c:v', 'libx264', '-profile:v', prof, '-level', lvl, '-pix_fmt', pix, '-r', fps, '-g', str(int(fps) * 2),
+                        '-preset', 'medium', '-crf', '20', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-ac', '1', '-shortest', tail], capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode != 0: print('엔딩 카드 인코딩 실패(엔딩 없이 진행):', r.stderr[-200:]); return out
+    lst = W('endcard_list.txt'); joined = W('with_endcard.mp4')
+    io.open(lst, 'w', encoding='utf-8').write("file '" + os.path.abspath(out).replace("'", "'\\''") + "'\nfile '" + os.path.abspath(tail).replace("'", "'\\''") + "'\n")
+    r = subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-c', 'copy', '-movflags', '+faststart', joined], capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode != 0 or not os.path.exists(joined) or dur_of(joined) < dur_of(out) + sec * 0.9:
+        print('엔딩 카드 붙이기 실패(엔딩 없이 진행):', (r.stderr or '')[-200:]); return out
+    shutil.move(joined, out); print(f'엔딩 카드 {sec:.0f}초 붙임')
+    return out
+
+def write_chapters(ep, st, yt_path):
+    """롱폼 설명란에 붙일 챕터 목록을 유튜브 txt 끝에 덧붙인다.
+       유튜브 챕터 규칙: 첫 줄이 반드시 0:00, 챕터 3개 이상, 각 10초 이상."""
+    ch = ep.get('chapters') or []
+    if len(ch) < 3: return None
+    def ts(t):
+        t = max(0.0, float(t)); m = int(t // 60); s_ = int(t % 60)
+        return f'{m}:{s_:02d}'
+    rows, prev = [], -99.0
+    intro = ep.get('introChapter')   # 10/18 검수: 첫 챕터 앞에 머리말(훅)이 있으면 '0:00 <머리말>' 을 따로 두고 첫 챕터는 실제 시작 시각으로
+    if intro and ch and str(ch[0].get('title', '')).strip() == str(intro).strip() and int(ch[0].get('from', 0)) == 0: intro = None   # 11/10 삼성 2027: 머리말과 첫 챕터가 같은 이름이면 '0:00 오프닝' 이 두 줄 나왔다 → 한 줄만
+    if intro: rows.append(f'0:00 {intro}'); prev = 0.0
+    for i, c in enumerate(ch):
+        k = int(c.get('from', 0))
+        t = 0.0 if (i == 0 and not intro) else float(st[k]) if k < len(st) else prev + 10
+        if i and t < prev + 10: t = prev + 10
+        prev = t
+        rows.append(f'{ts(t)} {c.get("title", "")}'.rstrip())
+    try: cur = io.open(yt_path, encoding='utf-8').read()
+    except Exception: cur = ''
+    # 10/14 사용자 지시: 챕터는 머리말([챕터 — …]) 없이 해시태그 줄 바로 밑에 챕터 줄만 넣는다([태그] 칸 위)
+    cur = re.sub(r'\n*\[챕터[^\n]*\](?:\n[^\n]+)*', '', cur).rstrip()
+    i = cur.find('\n\n등장 구단:'); i = i if i >= 0 else cur.find('\n\n등장 선수:')   # 11/10: 타임라인은 해시태그 다음, 등장 구단·선수 앞
+    i = i if i >= 0 else cur.find('\n\n[태그]')
+    out = (cur[:i] + '\n\n' + '\n'.join(rows) + cur[i:]) if i >= 0 else (cur + '\n\n' + '\n'.join(rows))
+    io.open(yt_path, 'w', encoding='utf-8').write(out.rstrip() + '\n')
+    print('챕터', len(rows), '개')
+    return rows
+
+def cut_chapter(ep, ep_path, which):
+    """롱폼 콘티의 챕터 하나를 쇼츠 콘티로 떼어낸다(9/18).
+       - lines/scenes 를 그 구간만 잘라 startLine 을 0 부터 다시 매긴다
+       - 챕터의 short 블록(thumb/youtube/date/slot)을 쇼츠 콘티에 얹는다
+       - 롱폼에서 이미 만든 음성 mp3 를 쇼츠 음성 폴더로 번호를 다시 매겨 복사한다(타입캐스트 재사용)
+       결과: episodes/<날짜>_<슬롯>.json  → 그대로 build.py prep/render 하면 된다"""
+    ch = ep.get('chapters') or []
+    if not ch: raise SystemExit('이 콘티에는 chapters 가 없습니다')
+    idx = None
+    for i, c in enumerate(ch):
+        if str(which) == str(i + 1) or str(which) == str(c.get('key', '')): idx = i; break
+    if idx is None: raise SystemExit(f'챕터를 못 찾음: {which} (1~{len(ch)} 또는 key)')
+    c = ch[idx]
+    a = int(c.get('from', 0)); b = int(c.get('to', len(ep['lines']) - 1))
+    if not (0 <= a <= b < len(ep['lines'])): raise SystemExit(f'챕터 구간이 이상합니다: {a}~{b}')
+    sh = c.get('short') or {}
+    # 9/20: 챕터를 그대로 자르면 첫마디가 "그 대만에서…" 처럼 앞 얘기를 받는 말이라 혼자서는 뜻이 안 통한다.
+    #   short.intro / short.outro : 롱폼의 다른 줄(번호)을 앞/뒤에 붙인다 — 음성·자막·장면을 그대로 가져오므로 재녹음 없음.
+    #   short.drop               : 챕터 안에서 뺄 줄 번호("그럼 마운드 말고 나머지는" 같은 연결용 문장)
+    #   항목은 숫자 또는 {"line": 0, "scene": {...덮어쓸 값}} — 훅 사진을 편마다 바꿀 때 scene 으로 덮는다.
+    def _norm(v):
+        return [(int(x), {}) if not isinstance(x, dict) else (int(x['line']), dict(x.get('scene') or {})) for x in (v or [])]
+    drop = set(int(x) for x in (sh.get('drop') or []))
+    seq = _norm(sh.get('intro')) + [(i, {}) for i in range(a, b + 1) if i not in drop] + _norm(sh.get('outro'))
+    n = len(ep['lines'])
+    for i, _ in seq:
+        if not (0 <= i < n): raise SystemExit(f'intro/outro 줄 번호가 범위 밖: {i}')
+    by_line = {}
+    for sc in ep.get('scenes', []):
+        by_line.setdefault(int(sc.get('startLine', 0)), sc)   # 줄마다 첫 장면 하나
+    out = {
+        'date': sh.get('date') or ep.get('date'), 'gameDate': ep.get('gameDate'),
+        'series': sh.get('series') or '야구이슈', 'railTitle': sh.get('railTitle') or 'KBO 이슈',
+        'focusTeam': sh.get('focusTeam') or ep.get('focusTeam'),
+        'source': f'롱폼 {os.path.basename(ep_path)} 챕터 {idx + 1}({c.get("title", "")}) 에서 잘라냄. ' + str(ep.get('source', '')),
+        'thumb': sh.get('thumb') or ep.get('thumb'),
+        'youtube': sh.get('youtube') or ep.get('youtube'),
+        'lines': [dict(ep['lines'][i]) for i, _ in seq],
+        'scenes': [],
+    }
+    if ep.get('speed') is not None: out['speed'] = ep['speed']   # 9/20: 롱폼 음성이 타입캐스트 1.2x 원음이면 쇼츠도 atempo 안 태운다(설정 SPEED 무시)
+    if ep.get('ttsVoice'): out['ttsVoice'] = ep['ttsVoice']   # 11/13: 컷 쇼츠도 롱폼과 같은 목소리
+    for j, (i, ov) in enumerate(seq):
+        sc = by_line.get(i)
+        if sc is None: continue
+        d = dict(sc); d.update(ov); d['startLine'] = j
+        if d.get('type') == 'chapter': d['type'] = 'hook'          # 챕터 표지는 쇼츠에서 훅으로
+        out['scenes'].append(d)
+    if not out['scenes'] or out['scenes'][0]['startLine'] != 0:
+        out['scenes'].insert(0, {'type': 'hook', 'startLine': 0, 'text': (c.get('title') or '')})
+    slot = sh.get('slot') or f'이슈{idx + 1}'
+    dst = os.path.join('episodes', f'{out["date"]}_{slot}.json')
+    os.makedirs('episodes', exist_ok=True)
+    # 9/18 사고: 롱폼 챕터의 date+slot 이 이미 있는 편과 같아 그 콘티와 음성을 통째로 덮어썼다.
+    # 남의 편을 지우지 않게, 이미 있으면 여기서 멈춘다(챕터 short.slot 을 바꿔서 다시 실행).
+    if os.path.exists(dst):
+        import json as _j
+        try: cur = _j.load(io.open(dst, encoding='utf-8-sig'))
+        except Exception: cur = {}
+        if cur.get('_fromLong') != os.path.basename(ep_path):
+            raise SystemExit(f'이미 있는 콘티라 덮어쓰지 않았습니다: {dst}\n'
+                             f'  → 롱폼 콘티의 chapters[].short.slot 을 다른 이름(이슈3 등)으로 바꾸고 다시 실행하세요.')
+    out['_fromLong'] = os.path.basename(ep_path)
+    json.dump(out, io.open(dst, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    # 음성 복사 (롱폼 → 쇼츠)
+    src_dir, dst_dir = voice_dir(ep_key(ep_path)), voice_dir(ep_key(dst))
+    moved = 0
+    same_v = voice_same(src_dir, dst_dir)
+    for j, (i, _) in enumerate(seq if same_v else []):
+        for ext in ('.mp3', '.txt', '.segs.json'):   # 9/20: 호흡 경계(segs)도 같이 — 없으면 자막이 한 덩어리로 나온다
+            f = os.path.join(src_dir, f'{i:02d}{ext}')
+            if os.path.exists(f):
+                shutil.copyfile(f, os.path.join(dst_dir, f'{j:02d}{ext}'))
+                if ext == '.mp3': moved += 1
+    # 줄 수가 줄었으면 남은 옛 번호 파일이 자막에 섞이지 않게 치운다
+    for f in os.listdir(dst_dir) if os.path.isdir(dst_dir) else []:
+        m = re.match(r'^(\d{2})\.(mp3|txt|segs\.json)$', f)
+        if m and int(m.group(1)) >= len(seq): os.remove(os.path.join(dst_dir, f))
+    print(f'잘라냄: {dst}  ({len(seq)}줄 = 도입 {len(sh.get("intro") or [])} + 본문 {b - a + 1 - len(drop)} + 마무리 {len(sh.get("outro") or [])}, 장면 {len(out["scenes"])}개, 음성 {moved}개 복사)')
+    print(f'  다음: python -X utf8 build.py prep {dst}  →  python -X utf8 build.py render {dst}')
+    return dst
+
+def write_srt(subs, path):
+    """영상 자막(subs: [시작초, 끝초, 글])을 SRT 로. 유튜브 업로드 화면 → 자막 → 파일 업로드에 쓴다(검색 색인용, 화면엔 이미 자막이 있으니 '자막 표시'는 꺼도 됨)"""
+    def ts(t):
+        t = max(0.0, float(t)); h = int(t // 3600); m = int(t % 3600 // 60); s = int(t % 60); ms = int(round((t - int(t)) * 1000))
+        if ms == 1000: s, ms = s + 1, 0
+        return f'{h:02d}:{m:02d}:{s:02d},{ms:03d}'
+    body = []
+    for k, (a, b_, text) in enumerate(subs, 1):
+        if b_ <= a: continue
+        body.append(f'{k}\n{ts(a)} --> {ts(b_)}\n{str(text).replace(chr(10), " ").strip()}\n')
+    io.open(path, 'w', encoding='utf-8').write('\n'.join(body) + '\n')
+    return path
+
+DATED = ('야구이슈', '야구순위', '야구분석')   # 10/2 밤 사용자: 롱폼·컷 쇼츠(야구롱폼)만 날짜(화면·썸네일·제목 해시태그) 없음
+
+def upload_tag(ep):
+    """제목 맨 앞 해시태그 = 영상 올리는 날짜(콘티 date, 밤 제작이면 다음날). 예: #9월13일"""
+    if ep.get('series') not in DATED: return ''
+    try:
+        d = datetime.date.fromisoformat(str(ep.get('date', ''))[:10])
+        return f'#{d.month}월{d.day}일'
+    except Exception: return ''
+
+def title_with_date(ep):
+    """제목의 첫 해시태그를 업로드 날짜로(9/13 규칙): '... 이유 #야구순위 #KT #삼성' → '... 이유 #9월13일 #야구순위 #KT #삼성'. 이미 있으면 그대로"""
+    t = ((ep.get('youtube') or {}).get('title') or '').strip()
+    t = re.sub(r'^\d{1,2}월\s*\d{1,2}일\s*', '', t)   # 제목 맨 앞 날짜는 쓰지 않는다(9/15) — 날짜는 해시태그(#9월15일)로만
+    tag = upload_tag(ep)
+    if not tag or not t: return t
+    if re.search(r'#\d+월\d+일', t): return t
+    m = re.search(r'\s#', t)   # 첫 해시태그 앞
+    return (t[:m.start()] + ' ' + tag + t[m.start():]) if m else (t + ' ' + tag)
+
+def write_youtube_txt(ep, path, dur=0):
+    """사용자가 확인하기 쉽게 유튜브 제목·설명·태그를 텍스트로 같이 저장"""
+    y = ep.get('youtube') or {}
+    desc = (y.get('description') or '').rstrip()
+    desc = re.sub(r'\n*📊 이 영상의 숫자\n(?:•[^\n]*\n?)+', '\n', desc)   # 옛 콘티의 숫자 목록은 빼고(9/15)
+    desc = re.sub(r'\n+(?:#\S+\s*)+$', '', desc).strip()   # 설명 끝 해시태그 줄은 [해시태그] 칸으로
+    # 9/30 사용자 지시: 사진 출처는 맨 밑([태그] 아래 한 줄 띄고)으로 옮기고, '재생목록: …' 줄은 쓰지 않는다
+    # 10/14 사용자 지시: '기록: …'(기록·자료 출처)도 사진 출처처럼 맨 밑으로 따로 뺀다. 한 줄에 '기록: … 사진: …'이 붙어 있으면 둘로 나눈다.
+    _dl = []
+    for l in desc.split('\n'):
+        m = re.match(r'(\s*(?:기록|자료|기록\s*출처|자료\s*출처)\s*[:：].*?)[.。]?\s*(사진\s*(?:출처)?\s*[:：].*)$', l)
+        _dl += [m.group(1).rstrip(' .'), m.group(2)] if m else [l]
+    rec = [re.sub(r'^\s*(?:기록|자료)\s*(?:출처)?\s*[:：]\s*', '기록 출처: ', l).strip() for l in _dl if re.match(r'\s*(?:기록|자료)\s*(?:출처)?\s*[:：]', l)]
+    credits = rec + [re.sub(r'^\s*사진\s*(?:출처)?\s*[:：]\s*', '사진 출처: ', l).strip() for l in _dl if re.match(r'\s*사진\s*(?:출처)?\s*[:：]', l)]
+    desc = re.sub(r'\n{3,}', '\n\n', '\n'.join(l for l in _dl if not re.match(r'\s*(?:사진\s*(?:출처)?|재생목록|기록\s*(?:출처)?|자료\s*(?:출처)?)\s*[:：]', l))).strip()
+    desc = re.sub(r'\n{3,}', '\n\n', '\n'.join(l for l in desc.split('\n') if not re.match(r'\s*\S*\s*출처\s*[:：]', l))).strip()   # 11/1 23:31 '기사 출처:' 등 모든 출처 줄 빼기
+    hashtags = y.get('hashtags') or []
+    if not hashtags:   # 콘티에 없으면 태그로 만든다(띄어쓰기 제거)
+        stag = {'야구이슈': '#야구이슈', '야구분석': '#야구분석'}.get(str(ep.get('series', '')), '#야구순위')
+        base = ['#야구자판기', stag, '#프로야구', '#KBO', '#야구']
+        hashtags = base + ['#' + t.replace(' ', '') for t in y.get('tags', []) if '#' + t.replace(' ', '') not in base][:10] + ['#야구스타그램', '#야구팬', '#Shorts']
+    # 9/30 사용자 지시: 해시태그는 [해시태그] 머리글 없이 설명 맨 밑에 한 줄 띄고 → [설명] 칸을 통째로 복사하면 해시태그까지 한 번에
+    # 11/10 17:17 사용자: 캡션에서 '야구자판기는 매일 야구 이슈를 정리해요' 빼기 + 순서 = 내용 → 댓글 유도 → 지난 영상 → 해시태그 → 타임라인(롱폼) → 등장 구단·등장 선수 → (그 밖에 더하는 것은 무조건 맨 끝)
+    desc = re.sub(r'야구자판기는 매일[^\n.!?]*[.!?]?[ \t]*', '', desc)
+    desc = re.sub(r'\n{3,}', '\n\n', '\n'.join(l.rstrip() for l in desc.split('\n'))).strip()
+    sec = [desc]
+    if y.get('cta'): sec.append(str(y['cta']).strip())
+    if y.get('prev'): sec.append('▶ 지난 영상: ' + str(y['prev']).strip())
+    sec.append(' '.join(hashtags))
+    tail = []
+    if y.get('teams'): tail.append('등장 구단: ' + ', '.join(y['teams']))
+    if y.get('players'): tail.append('등장 선수: ' + ', '.join(y['players']))
+    if tail: sec.append('\n'.join(tail))   # 롱폼 타임라인은 write_chapters 가 이 칸 바로 위에 끼운다
+    for x in (y.get('extra') or []): sec.append(str(x).strip())
+    body = ['[제목]', title_with_date(ep), '', '[설명]', '\n\n'.join(x for x in sec if x), '', '[태그]  (유튜브 태그 칸에 그대로)', ', '.join(y.get('tags', []))]
+    # 11/1 23:31 사용자 "출처는 TXT파일에 넣지마" → 기록·기사·사진 출처 줄은 유튜브 txt 에 쓰지 않는다
+    if y.get('pinned'): body += ['', '[고정 댓글]  (영상 올린 뒤 댓글로 달고 고정)', y['pinned']]   # 10/24 롱폼㉙ 검수: 게시 전 고정 댓글 문안까지 준비
+    io.open(path, 'w', encoding='utf-8').write('\n'.join(body) + '\n')
+
+def cfg_get(k, default=''):
+    try:
+        for line in open_cfg():
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                kk, v = line.split('=', 1)
+                if kk.strip() == k: return v.strip()
+    except Exception: pass
+    return default
+
+def pick_bgm(ep):
+    """bgm/ 폴더의 음악 중 하나. 콘티에 bgm 이름이 있으면 그것, 없으면 날짜로 돌아가며 선택"""
+    d = os.path.join(HERE, 'bgm')
+    if not os.path.isdir(d): return None
+    files = sorted(f for f in os.listdir(d) if f.lower().endswith(('.mp3', '.wav', '.m4a', '.ogg')))
+    if not files: return None
+    want = ep.get('bgm')
+    if want:
+        for f in files:
+            if want.lower() in f.lower(): return os.path.join(d, f)
+    try: idx = int((ep.get('date') or '2026-01-01').replace('-', '')) % len(files)
+    except Exception: idx = 0
+    return os.path.join(d, files[idx])
+
+def make_thumb(EP, out):
+    """thumb.html 에 데이터 주입 → out (jpg, 2MB 이하)"""
+    # 10/13 밤 사용자 "왜 자꾸 구글 드라이브에 저장이 안 돼?" — 썸네일을 따로 만든 편(롱폼⑫⑬)은 콘티 thumb 이 비어 있어
+    # 결과물 폴더(드라이브)에 썸네일이 안 들어갔다. 콘티 thumbFile(야구자판기\ 기준 경로)이 있으면 그 파일을 그대로 복사한다.
+    tf = str(EP.get('thumbFile') or '').strip()
+    if tf:
+        src = tf if os.path.isabs(tf) else os.path.join(HERE, '..', tf.replace('\\', os.sep).replace('/', os.sep))
+        if os.path.exists(src):
+            os.makedirs(os.path.dirname(out), exist_ok=True); shutil.copyfile(src, out); print('썸네일(따로 만든 파일) 복사:', out); return out
+        print('경고: thumbFile 을 찾을 수 없음:', src)
+    if not EP.get('thumb'): return None
+    # 야구이슈 편은 화이트 사진형 썸네일(thumb_issue.html), 순위 편은 기존 thumb.html
+    ser = str(EP.get('series', '')).strip()
+    if ser == '야구롱폼' and os.path.exists('thumb_long.html'): tpl = 'thumb_long.html'           # 9/18: 롱폼은 가로 1280x720
+    lay = str((EP.get('thumb') or {}).get('layout') or '').strip()
+    if ser == '야구롱폼' and lay and os.path.exists(f'thumb_long_{lay}.html'): tpl = f'thumb_long_{lay}.html'
+    elif ser == '야구롱폼' and EP.get('vertical') and os.path.exists('thumb_issue.html'): tpl = 'thumb_issue.html'   # 10/2: 컷 쇼츠는 세로 이슈 썸네일   # 9/30: 롱폼 썸네일 다른 구조(thumb.layout="crash" → thumb_long_crash.html 폭락 차트형)
+    elif ser == '야구분석' and os.path.exists('thumb_analysis.html'): tpl = 'thumb_analysis.html'   # 9/15: 분석은 구단 색 바탕 + 구단 로고 화면 가득
+    else: tpl = 'thumb_issue.html' if (ser in ('야구이슈', '야구분석') and os.path.exists('thumb_issue.html')) else 'thumb.html'
+    if 'photos' not in EP:
+        EP['photos'] = photos_data_uri(EP, EP.get('_path')); EP['photoSizes'] = PHOTO_SIZES
+    m = re.search(r'_(?:순위|이슈|분석)(\d*)\.json$', str(EP.get('_path') or ''))   # 그날 몇 번째 편인지(이슈=0, 이슈2=1 …) → 썸네일 큰 글씨 색을 편마다 바꾼다(9/15)
+    EP['epIndex'] = (int(m.group(1)) - 1) if (m and m.group(1)) else 0
+    html = io.open(tpl, encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
+    html = html.replace('<script>', '<script>window.EP=' + json.dumps(EP, ensure_ascii=False) + ';</script><script>', 1)
+    io.open(W('render_thumb.html'), 'w', encoding='utf-8').write(html)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    env = dict(os.environ)
+    if ser == '야구롱폼' and not EP.get('vertical'): env['THUMB_W'], env['THUMB_H'] = '1280', '720'     # 유튜브 롱폼 썸네일은 16:9
+    r = subprocess.run(['node', 'thumb.js', W('render_thumb.html'), out], capture_output=True, text=True, encoding='utf-8', errors='replace', env=env)
+    if r.returncode != 0: print('썸네일 실패:', (r.stderr or r.stdout)[-300:]); return None
+    if os.path.getsize(out) > 2 * 1024 * 1024:
+        run(['ffmpeg', '-y', '-i', out, '-q:v', '5', out])
+    return out
+
+if __name__ == '__main__':
+    if len(sys.argv) < 3: raise SystemExit(__doc__)
+    mode, path = sys.argv[1], sys.argv[2]
+    ep = load_episode(path)
+    if mode == 'prep': prep(ep, path)
+    elif mode == 'render': render(ep, path)
+    elif mode == 'thumb':
+        EP = dict(ep); EP['logos'] = logos_data_uri(); EP['_path'] = path
+        print(make_thumb(EP, out_paths(ep, path)[1]))
+    elif mode == 'cut':      # 9/18: 롱폼 콘티의 챕터 하나 → 쇼츠 콘티 + 음성.  build.py cut episodes/X_롱폼.json 2
+        if len(sys.argv) < 4: raise SystemExit('사용: build.py cut <롱폼 콘티> <챕터 번호 또는 key>')
+        cut_chapter(ep, path, sys.argv[3])
+    elif mode == 'cutall':   # 챕터 전부 한 번에
+        for i in range(len(ep.get('chapters') or [])): cut_chapter(ep, path, i + 1)
+    else: raise SystemExit(__doc__)
