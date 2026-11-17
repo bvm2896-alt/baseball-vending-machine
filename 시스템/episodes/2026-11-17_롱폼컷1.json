@@ -16,7 +16,7 @@
  "ttsTempoSlow": 1.15,
  "ttsVoice": "A",
  "ttsWhole": false,
- "rev": "1117-otg-v6",
+ "rev": "1117-otg-v7",
  "mascot": false,
  "topic": "FA 첫날 계약 오태곤",
  "vtitle": [
@@ -40,8 +40,8 @@
    "sub": "11월 17일,|FA 협상 첫날|도장을 찍은 선수가 있어요"
   },
   {
-   "narr": "네. / 바로 에스에스지 오태곤이에요",
-   "sub": "네.|바로 SSG 오태곤이에요"
+   "narr": "바로 에스에스지 오태곤이에요",
+   "sub": "바로 SSG 오태곤이에요"
   },
   {
    "narr": "삼 년 총액 십일억에 / +에스에스지 잔류를 택했어요",

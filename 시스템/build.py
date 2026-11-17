@@ -1269,6 +1269,7 @@ def write_chapters(ep, st, yt_path):
     intro = ep.get('introChapter')   # 10/18 검수: 첫 챕터 앞에 머리말(훅)이 있으면 '0:00 <머리말>' 을 따로 두고 첫 챕터는 실제 시작 시각으로
     if intro and ch and str(ch[0].get('title', '')).strip() == str(intro).strip() and int(ch[0].get('from', 0)) == 0: intro = None   # 11/10 삼성 2027: 머리말과 첫 챕터가 같은 이름이면 '0:00 오프닝' 이 두 줄 나왔다 → 한 줄만
     if intro: rows.append(f'0:00 {intro}'); prev = 0.0
+    ch = [c for c in ch if not c.get('ytSkip')]   # 11/17 검수: 팀을 숨기는 '다음 팀' 장 + 공개 장은 설명란엔 한 칸(숨김 장 시작 시각 · 팀 제목) — 10초 안 되는 칸 ✗
     for i, c in enumerate(ch):
         k = int(c.get('from', 0))
         t = 0.0 if (i == 0 and not intro) else float(st[k]) if k < len(st) else prev + 10

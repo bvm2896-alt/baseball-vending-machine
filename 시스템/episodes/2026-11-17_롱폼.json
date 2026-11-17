@@ -10,147 +10,155 @@
  "ttsWhole": false,
  "ttsTempo": 1.2,
  "ttsTempoSlow": 1.15,
- "rev": "1117-fa1st-v3",
+ "rev": "1117-fa1st-v5",
  "topic": "FA첫날10개구단지갑",
  "endcardSec": 10,
- "gapScale": 1.45,
- "pauseMax": 0.55,
- "sentPauseMin": 0.5,
- "clausePauseMin": 0.35,
+ "gapScale": 1.25,
+ "pauseMax": 0.45,
+ "sentPauseMin": 0.4,
+ "clausePauseMin": 0.3,
  "ttsCharsOk": 7000,
+ "totalSec": 481,
  "chapters": [
   {
    "key": "오프닝",
    "title": "FA 첫날 계약 두 건",
    "short": "FA 첫날",
    "from": 0,
-   "to": 10
+   "to": 9
   },
   {
    "key": "SSG",
    "title": "SSG, 오태곤 잔류와 두둑한 지갑",
    "short": "SSG",
-   "from": 11,
-   "to": 24
+   "from": 10,
+   "to": 23
   },
   {
    "key": "KT?",
-   "title": "정규시즌 90승 팀의 반전",
+   "title": "KT, FA 6명 지키기",
    "short": "다음 팀",
-   "from": 25,
-   "to": 27
+   "from": 24,
+   "to": 26
   },
   {
    "key": "KT",
    "title": "KT, FA 6명 지키기",
    "short": "KT",
-   "from": 28,
-   "to": 34
+   "from": 27,
+   "to": 33,
+   "ytSkip": true
   },
   {
    "key": "키움?",
-   "title": "지갑이 가장 두꺼운 팀",
+   "title": "키움, 돈은 1위인데 참전은?",
    "short": "다음 팀",
-   "from": 35,
-   "to": 36
+   "from": 34,
+   "to": 35
   },
   {
    "key": "키움",
    "title": "키움, 돈은 1위인데 참전은?",
    "short": "키움",
-   "from": 37,
-   "to": 42
+   "from": 36,
+   "to": 41,
+   "ytSkip": true
   },
   {
    "key": "롯데?",
-   "title": "큰 계약 셋이 끝난 팀",
+   "title": "롯데, 170억이 끝났다",
    "short": "다음 팀",
-   "from": 43,
-   "to": 45
+   "from": 42,
+   "to": 44
   },
   {
    "key": "롯데",
    "title": "롯데, 170억이 끝났다",
    "short": "롯데",
-   "from": 46,
-   "to": 55
+   "from": 45,
+   "to": 54,
+   "ytSkip": true
   },
   {
    "key": "한화?",
-   "title": "새 감독을 앉힌 팀",
+   "title": "한화, 새 감독 취임 선물",
    "short": "다음 팀",
-   "from": 56,
-   "to": 56
+   "from": 55,
+   "to": 55
   },
   {
    "key": "한화",
    "title": "한화, 새 감독 취임 선물",
    "short": "한화",
-   "from": 57,
-   "to": 64
+   "from": 56,
+   "to": 63,
+   "ytSkip": true
   },
   {
    "key": "기아",
    "title": "기아, 김호령 C등급",
    "short": "기아",
-   "from": 65,
-   "to": 77
+   "from": 64,
+   "to": 76
   },
   {
    "key": "LG?",
-   "title": "'반드시'가 빠진 팀",
+   "title": "LG, 홍창기·박동원 잡을까",
    "short": "다음 팀",
-   "from": 78,
-   "to": 80
+   "from": 77,
+   "to": 79
   },
   {
    "key": "LG",
-   "title": "LG, '반드시'가 빠졌다",
+   "title": "LG, 홍창기·박동원 잡을까",
    "short": "LG",
-   "from": 81,
-   "to": 88
+   "from": 80,
+   "to": 87,
+   "ytSkip": true
   },
   {
    "key": "두산?",
-   "title": "마흔 살을 앞둔 포수",
+   "title": "두산, 양의지 보상금 63억",
    "short": "다음 팀",
-   "from": 89,
-   "to": 90
+   "from": 88,
+   "to": 89
   },
   {
    "key": "두산",
    "title": "두산, 양의지 보상금 63억",
    "short": "두산",
-   "from": 91,
-   "to": 102
+   "from": 90,
+   "to": 101,
+   "ytSkip": true
   },
   {
    "key": "남은 선수들",
    "title": "권희동·문승원·전병우",
    "short": "남은 선수들",
-   "from": 103,
-   "to": 108
+   "from": 102,
+   "to": 107
   },
   {
    "key": "삼성?",
-   "title": "첫 타격왕에 오른 선수",
+   "title": "삼성, 구자욱 200억설",
    "short": "다음 팀",
-   "from": 109,
-   "to": 113
+   "from": 108,
+   "to": 112
   },
   {
    "key": "삼성",
    "title": "삼성, 구자욱 200억설",
    "short": "삼성",
-   "from": 114,
-   "to": 133
+   "from": 113,
+   "to": 132,
+   "ytSkip": true
   },
   {
    "key": "정리",
    "title": "구자욱은 어디로?",
    "short": "정리",
-   "from": 134,
-   "to": 139
+   "from": 133,
+   "to": 138
   }
  ],
  "lines": [
@@ -159,8 +167,8 @@
    "sub": "2025년 11월 18일|FA 시장이 열리고|무려 9일이 지나서야|첫 도장이 찍혔어요"
   },
   {
-   "narr": "사 년 총액 팔십억. / 네. / 바로 두산으로 간 박찬호였죠",
-   "sub": "4년 총액 80억|네|바로 두산으로 간 박찬호였죠"
+   "narr": "사 년 총액 팔십억. / 바로 두산으로 간 박찬호였죠",
+   "sub": "4년 총액 80억|바로 두산으로 간 박찬호였죠"
   },
   {
    "narr": "그보다 한 해 앞선 / +이천이십사년 십일월 육일엔 / +협상 첫날 / +에스에스지 최정이 / +사 년 백십억에 계약했고요",
@@ -180,16 +188,11 @@
   },
   {
    "narr": "두산 양의지 / +이 년 총액 오십오억, / 에스에스지 오태곤 / +삼 년 총액 십일억이에요",
-   "sub": "두산 양의지|이 년 총액 오십오억|SSG 오태곤|3년 총액 11억이에요"
+   "sub": "두산 양의지|2년 총액 55억|SSG 오태곤|3년 총액 11억이에요"
   },
   {
-   "narr": "아니, 근데 / 최정이 백십억이었는데 / 오태곤이 십일억이면 / +자릿수가 하나 빠진 거잖아요?",
-   "sub": "아니 근데|최정이 110억이었는데|오태곤이 11억이면|자릿수가 하나 빠진 거잖아요?",
-   "gapAfter": 0.55
-  },
-  {
-   "narr": "물론 진짜 큰 판은 / +이제부터입니다",
-   "sub": "물론 진짜 큰 판은|이제부터입니다"
+   "narr": "진짜 큰 판은 / +이제부터예요",
+   "sub": "진짜 큰 판은|이제부터예요"
   },
   {
    "narr": "그래서 이번 영상에서는 / +에프에이 첫날, / 열 개 구단 지갑 사정을 / +한 팀씩 전부 털어 보려고 해요",
@@ -198,7 +201,7 @@
   {
    "narr": "바로 들어가 볼게요",
    "sub": "바로 들어가 볼게요",
-   "gapAfter": 0.75
+   "gapAfter": 0.45
   },
   {
    "narr": "자, 첫 번째는 / +첫날 오태곤을 붙잡은 / +에스에스지예요",
@@ -223,13 +226,11 @@
   },
   {
    "narr": "이번 시장 중견수 최대어로 / +꼽히는 선수인데요",
-   "sub": "이번 시장 중견수 최대어로|꼽히는 선수인데요",
-   "gapAfter": 0.5
+   "sub": "이번 시장 중견수 최대어로|꼽히는 선수인데요"
   },
   {
-   "narr": "네. / 바로 비 등급 최지훈이에요",
-   "sub": "네|바로 B등급 최지훈이에요",
-   "noMerge": true
+   "narr": "바로 비 등급 최지훈이에요",
+   "sub": "바로 B등급 최지훈이에요"
   },
   {
    "narr": "최지훈은 / +에스에스지 잔류를 두고 / 세부 조율만 남았다는 말이 나와요",
@@ -253,13 +254,13 @@
    "sub": "프랜차이즈 선수\n한 명의 연봉을|절반만 넣는|래리 버드 룰까지 적용해서|제가 계산해 보면|SSG가|샐러리캡까지 쓸 수 있는 돈은|75억 9천만 원쯤이에요"
   },
   {
-   "narr": "그래서 에스에스지가 / +구자욱 시장까지 / +면밀하게 살펴보고 있다는 얘기도 있어요",
-   "sub": "그래서 SSG가|구자욱 시장까지|면밀하게 살펴보고 있다는\n얘기도 있어요"
+   "narr": "그래서 에스에스지가 / +구자욱 영입전까지 / +면밀하게 살펴보고 있다는 얘기도 있어요",
+   "sub": "그래서 SSG가|구자욱 영입전까지|면밀하게 살펴보고 있다는\n얘기도 있어요"
   },
   {
    "narr": "첫날 계약은 작았지만 / 지갑은 오히려 / +가장 두둑한 팀 가운데 하나가 / +아닌가 싶어요",
    "sub": "첫날 계약은 작았지만|지갑은 오히려|가장 두둑한 팀 가운데 하나가|아닌가 싶어요",
-   "gapAfter": 0.75
+   "gapAfter": 0.45
   },
   {
    "narr": "자, 이렇게 돈 쓸 준비가 된 팀이 있는가 하면 / 반대로 / +지갑을 닫는다는 팀도 있어요",
@@ -272,12 +273,11 @@
   {
    "narr": "그런데 한국시리즈에서 / 삼성에 무릎을 꿇었죠",
    "sub": "그런데 한국시리즈에서|삼성에 무릎을 꿇었죠",
-   "gapAfter": 0.5
+   "gapAfter": 0.45
   },
   {
-   "narr": "네. / 바로 케이티예요",
-   "sub": "네|바로 KT예요",
-   "noMerge": true
+   "narr": "바로 케이티예요",
+   "sub": "바로 KT예요"
   },
   {
    "narr": "케이티는 / +에프에이를 신청한 선수가 / +여섯 명으로 / +열 개 구단 가운데 가장 많아요",
@@ -297,13 +297,13 @@
    "sub": "2025년 겨울|외부 FA에|100억 넘게 썼기 때문에|이번엔 내부 단속에\n집중할 거라는 전망이고요"
   },
   {
-   "narr": "아니, 근데 / 여섯 명을 다 잡는 것도 / +웬만한 외부 영입만큼 / +돈이 들 텐데요",
-   "sub": "아니 근데|6명을 다 잡는 것도|웬만한 외부 영입만큼|돈이 들 텐데요"
+   "narr": "구십 승 팀이 / +이천이십육년 겨울엔 / +사는 쪽이 아니라 / 지키는 쪽에 서지 않을까 싶어요",
+   "sub": "90승 팀이|2026년 겨울엔|사는 쪽이 아니라|지키는 쪽에\n서지 않을까 싶어요"
   },
   {
-   "narr": "구십 승 팀이 / +이천이십육년 겨울엔 / +사는 쪽이 아니라 / 지키는 쪽에 서지 않을까 싶어요",
-   "sub": "90승 팀이|2026년 겨울엔|사는 쪽이 아니라|지키는 쪽에\n서지 않을까 싶어요",
-   "gapAfter": 0.75
+   "narr": "아니, 근데 / 여섯 명을 다 잡는 것도 / +웬만한 외부 영입만큼 / +돈이 들 텐데요",
+   "sub": "아니 근데|6명을 다 잡는 것도|웬만한 외부 영입만큼|돈이 들 텐데요...",
+   "gapAfter": 0.45
   },
   {
    "narr": "자, 다음은 / +지갑이 가장 두꺼운 팀이에요",
@@ -312,12 +312,11 @@
   {
    "narr": "샐러리캡까지 쓸 수 있는 돈이 / +백육억 천만 원쯤으로 / +열 개 구단 가운데 일위",
    "sub": "샐러리캡까지 쓸 수 있는 돈이|106억 1천만 원쯤으로|10개 구단 가운데 1위",
-   "gapAfter": 0.5
+   "gapAfter": 0.45
   },
   {
-   "narr": "네. / 바로 키움이에요",
-   "sub": "네|바로 키움이에요",
-   "noMerge": true
+   "narr": "바로 키움이에요",
+   "sub": "바로 키움이에요"
   },
   {
    "narr": "이천이십칠년부터는 / +샐러리캡 하한까지 생겨서 / 키움은 돈을 더 써야 하는 상황인데요",
@@ -334,13 +333,13 @@
   {
    "narr": "아니, 근데 / 구자욱 이백억 얘기까지 나오는 판에 / +이번 시장이 / +과열이 안 될 수가 있나요?",
    "sub": "아니 근데|구자욱 200억 얘기까지\n나오는 판에|이번 시장이|과열이 안 될 수가 있나요?",
-   "gapAfter": 0.55
+   "gapAfter": 0.4
   },
   {
    "narr": "키움은 / +시장을 구경만 하는 / +큰손이 되지 않을까 싶어요",
    "sub": "키움은|시장을 구경만 하는|큰손이 되지 않을까 싶어요",
    "noMerge": true,
-   "gapAfter": 0.75
+   "gapAfter": 0.45
   },
   {
    "narr": "자, 이번에는 / +큰 계약 셋이 한꺼번에 끝난 팀이에요",
@@ -353,12 +352,11 @@
   {
    "narr": "포수 유강남 사 년 팔십억, / 유격수 노진혁 사 년 오십억, / 투수 한현희 삼 플러스 일 년 사십억",
    "sub": "포수 유강남 4년 80억|유격수 노진혁 4년 50억|투수 한현희 3+1년 40억",
-   "gapAfter": 0.5
+   "gapAfter": 0.45
   },
   {
-   "narr": "네. / 바로 롯데예요",
-   "sub": "네|바로 롯데예요",
-   "noMerge": true
+   "narr": "바로 롯데예요",
+   "sub": "바로 롯데예요"
   },
   {
    "narr": "합치면 백칠십억인데 / 그 뒤로 롯데는 / +외부 에프에이를 / +한 명도 데려오지 않았어요",
@@ -395,17 +393,16 @@
   {
    "narr": "사 년 동안 잠겨 있던 지갑이 / +이번엔 진짜 열리지 않을까 싶어요",
    "sub": "4년 동안 잠겨 있던 지갑이|이번엔 진짜\n열리지 않을까 싶어요",
-   "gapAfter": 0.75
+   "gapAfter": 0.45
   },
   {
-   "narr": "자, 이천이십육년 시월 / +새 감독을 앉힌 팀이 / +또 있어요",
-   "sub": "자 2026년 10월|새 감독을 앉힌 팀이|또 있어요",
-   "gapAfter": 0.5
+   "narr": "자, 이천이십육년, / 시월, / 새 감독을 앉힌 팀이 / +또 있어요",
+   "sub": "자 2026년|10월|새 감독을 앉힌 팀이|또 있어요",
+   "gapAfter": 0.45
   },
   {
-   "narr": "네. / 바로 한화예요",
-   "sub": "네|바로 한화예요",
-   "noMerge": true
+   "narr": "바로 한화예요",
+   "sub": "바로 한화예요"
   },
   {
    "narr": "한화는 / +류지현 감독을 선임했어요",
@@ -437,7 +434,7 @@
   {
    "narr": "집토끼 둘을 잡으면서 / 선물까지 사려면 / 지갑이 꽤나 빠듯하지 않을까 싶어요",
    "sub": "집토끼 둘을 잡으면서|선물까지 사려면|지갑이 꽤나\n빠듯하지 않을까 싶어요",
-   "gapAfter": 0.75
+   "gapAfter": 0.45
   },
   {
    "narr": "자, 그럼 그 선물 후보가 / +어떤 선수인지 볼게요",
@@ -449,16 +446,14 @@
   },
   {
    "narr": "기아가 처음보다 조건을 올렸는데도 / +이 선수는 결국 거절하고 / 시장에 나왔죠",
-   "sub": "기아가 처음보다\n조건을 올렸는데도|이 선수는 결국 거절하고|시장에 나왔죠",
-   "gapAfter": 0.5
+   "sub": "기아가 처음보다\n조건을 올렸는데도|이 선수는 결국 거절하고|시장에 나왔죠"
   },
   {
-   "narr": "네. / 바로 김호령이에요",
-   "sub": "네|바로 김호령이에요",
-   "noMerge": true
+   "narr": "바로 김호령이에요",
+   "sub": "바로 김호령이에요"
   },
   {
-   "narr": "김호령은 / +이천이십육년 / +백사십일 경기에서 / 타율 이할 육푼 칠리, / 열세 홈런, / 육십팔 타점, / 열일곱 도루를 기록했어요",
+   "narr": "김호령은 / +이천이십육년 / +백사십일 경기에서 / 타율 이할 육푼 칠리, / 십삼 홈런, / 육십팔 타점, / 십칠 도루를 기록했어요",
    "sub": "김호령은|2026년|141경기에서|타율 2할 6푼 7리|13홈런|68타점|17도루를 기록했어요",
    "noMerge": true
   },
@@ -475,9 +470,9 @@
    "sub": "그래서 데려가는 팀은|보상선수 없이|2026년 연봉\n2억 5천만 원의|150%|3억 7,500만 원만\n내면 돼요"
   },
   {
-   "narr": "아니, 근데 / 열일곱 도루 주전 중견수를 / +보상선수도 없이 / +데려갈 수 있다고요?",
+   "narr": "아니, 근데 / 십칠 도루 주전 중견수를 / +보상선수도 없이 / +데려갈 수 있다고요?",
    "sub": "아니 근데|17도루 주전 중견수를|보상선수도 없이|데려갈 수 있다고요?",
-   "gapAfter": 0.55
+   "gapAfter": 0.4
   },
   {
    "narr": "그래서 한화, 롯데에 / +엔씨까지 / +김호령이 필요한 팀으로 꼽혀요",
@@ -494,11 +489,11 @@
   {
    "narr": "이천이십육년 겨울 / +가장 먼저 움직여야 할 팀은 / +기아가 아닐까 싶어요",
    "sub": "2026년 겨울|가장 먼저 움직여야 할 팀은|기아가 아닐까 싶어요",
-   "gapAfter": 0.75
+   "gapAfter": 0.45
   },
   {
-   "narr": "자, 다음은 / +반드시라는 단어가 빠진 팀이에요",
-   "sub": "자 다음은|반드시라는 단어가\n빠진 팀이에요"
+   "narr": "자, 다음은 / +잡을찌 말찌 애매한 팀이에요",
+   "sub": "자 다음은|잡을지 말지 애매한 팀이에요"
   },
   {
    "narr": "다년계약 제안을 거절하고 / 시장에 나온 / +두 선수가 있어요",
@@ -507,12 +502,11 @@
   {
    "narr": "그런데 거절한 뒤 / +둘 다 최악의 부진에 빠졌다는 / +평가를 받았죠",
    "sub": "그런데 거절한 뒤|둘 다 최악의 부진에 빠졌다는|평가를 받았죠",
-   "gapAfter": 0.5
+   "gapAfter": 0.45
   },
   {
-   "narr": "네. / 바로 엘지 홍창기와 박동원이에요",
-   "sub": "네|바로 LG\n홍창기와 박동원이에요",
-   "noMerge": true
+   "narr": "바로 엘지 홍창기와 박동원이에요",
+   "sub": "바로 LG\n홍창기와 박동원이에요"
   },
   {
    "narr": "박동원은 / +삼 년 연속 이십 홈런을 치다가 / +십사 홈런, / 타율 이할 이푼 오리에 그쳤고 / 홍창기도 / +타율 이할 삼푼 구리에 머물렀어요",
@@ -543,7 +537,7 @@
   {
    "narr": "개인적으로는 / +둘 중 한 명만 남아도 / +선방이 아닐까 싶어요",
    "sub": "개인적으로는|둘 중 한 명만 남아도|선방이 아닐까 싶어요",
-   "gapAfter": 0.75
+   "gapAfter": 0.45
   },
   {
    "narr": "자, 다음은 / +마흔 살을 앞둔 포수 얘기예요",
@@ -552,12 +546,11 @@
   {
    "narr": "남은 이 년 사십이억을 / +받을 수 있었는데도 / +그걸 두고 / 시장에 나온 포수가 있었어요",
    "sub": "남은 2년 42억을|받을 수 있었는데도|그걸 두고|시장에 나온 포수가 있었어요",
-   "gapAfter": 0.5
+   "gapAfter": 0.45
   },
   {
-   "narr": "네. / 바로 양의지예요",
-   "sub": "네|바로 양의지예요",
-   "noMerge": true
+   "narr": "바로 양의지예요",
+   "sub": "바로 양의지예요"
   },
   {
    "narr": "양의지는 / +이천이십이년 겨울 / +두산과 사 플러스 이 년, / 백오십이억에 계약했고 / 앞 사 년 백십억을 / +다 채웠어요",
@@ -576,15 +569,15 @@
   {
    "narr": "아니, 근데 / 보상금이 그 정도면 / 이게 무슨 씨 등급이에요?",
    "sub": "아니 근데|보상금이 그 정도면|이게 무슨 C등급이에요?",
-   "gapAfter": 0.55
+   "gapAfter": 0.4
   },
   {
    "narr": "결국 양의지는 / +협상 첫날 / +두산과 이 년 총액 오십오억에 / +다시 도장을 찍었어요",
-   "sub": "결국 양의지는|협상 첫날|두산과 이 년 총액 오십오억에|다시 도장을 찍었어요"
+   "sub": "결국 양의지는|협상 첫날|두산과 2년 총액 55억에|다시 도장을 찍었어요"
   },
   {
    "narr": "계약금 사십억, / 연봉 총액 십억, / 인센티브 오억 원이라고 해요",
-   "sub": "계약금 사십억|연봉 총액 십억|인센티브 5억 원이라고 해요"
+   "sub": "계약금 40억|연봉 총액 10억|인센티브 5억 원이라고 해요"
   },
   {
    "narr": "두산 김원형 감독은 / +내부 에프에이 양의지, 정수빈, 박치국부터 잡고 / 그다음에 외부 에프에이를 본다는 게 / +구단 생각이라고 밝혔는데요",
@@ -607,7 +600,7 @@
   {
    "narr": "양의지 계약은 / +두산에겐 시작일 뿐이지 않을까 싶어요",
    "sub": "양의지 계약은|두산에겐 시작일\n뿐이지 않을까 싶어요",
-   "gapAfter": 0.75
+   "gapAfter": 0.45
   },
   {
    "narr": "자, 남은 선수들은 / +하나하나 다 소개하면 너무 길어지니 / +짧게 모아 봤어요",
@@ -623,7 +616,7 @@
    "noMerge": true
   },
   {
-   "narr": "그동안 외부 에프에이에 / +소극적이었던 팀이라 / 이번에도 지갑을 열지는 / +두고 봐야 할 것 같아요",
+   "narr": "그동안 외부 에프에이에 / +소극적이었던 팀이라 / 이번에도 지갑을 열찌는 / +두고 봐야 할 것 같아요",
    "sub": "그동안 외부 FA에|소극적이었던 팀이라|이번에도 지갑을 열지는|두고 봐야 할 것 같아요"
   },
   {
@@ -633,7 +626,7 @@
   {
    "narr": "이 선수들은 / +대어 계약이 끝난 뒤에 / +움직이지 않을까 싶어요",
    "sub": "이 선수들은|대어 계약이 끝난 뒤에|움직이지 않을까 싶어요",
-   "gapAfter": 0.75
+   "gapAfter": 0.45
   },
   {
    "narr": "자, 마지막 팀이에요",
@@ -654,12 +647,11 @@
   {
    "narr": "그 선수가 / +이번 에프에이 시장에 / +나왔어요",
    "sub": "그 선수가|이번 FA 시장에|나왔어요",
-   "gapAfter": 0.5
+   "gapAfter": 0.45
   },
   {
-   "narr": "네. / 바로 삼성 구자욱입니다",
-   "sub": "네|바로 삼성 구자욱입니다",
-   "noMerge": true
+   "narr": "바로 삼성 구자욱이에요",
+   "sub": "바로 삼성 구자욱이에요"
   },
   {
    "narr": "그리고 이 선수를 두고 / 치열한 영입전이 예상돼요",
@@ -670,16 +662,16 @@
    "sub": "앞에서 말한 두산|그리고 지갑이 두둑한 SSG가|대표적으로 거론되는 팀이죠"
   },
   {
-   "narr": "몸값도 상상 이상입니다",
-   "sub": "몸값도 상상 이상입니다"
+   "narr": "몸값도 상상 이상이에요",
+   "sub": "몸값도 상상 이상이에요"
   },
   {
    "narr": "경쟁이 붙으면 / 육 년 이백억도 / +불가능하지 않다는 말까지 나왔어요",
    "sub": "경쟁이 붙으면|6년 200억도|불가능하지 않다는\n말까지 나왔어요"
   },
   {
-   "narr": "근데 / 여기서 진짜 놀라운 숫자가 / +하나 있어요",
-   "sub": "근데|여기서 진짜 놀라운 숫자가|하나 있어요",
+   "narr": "근데 / 여기서 진짜 놀라운 게 / +하나 있어요",
+   "sub": "근데|여기서 진짜 놀라운 게|하나 있어요",
    "noMerge": true
   },
   {
@@ -693,7 +685,7 @@
   {
    "narr": "아니, 근데 / 이백억 얘기가 나오는 선수인데 / 보상은 그 십분의 일도 / +안 된다고요?",
    "sub": "아니 근데|200억 얘기가\n나오는 선수인데|보상은 그 10분의 1도|안 된다고요?",
-   "gapAfter": 0.55
+   "gapAfter": 0.4
   },
   {
    "narr": "앞의 양의지 보상금 육십삼억이랑 비교하면 / 등급이 거꾸로 된 것 같아요",
@@ -702,7 +694,7 @@
   {
    "narr": "그럼 삼성은 / +어떻게 지킬까요?",
    "sub": "그럼 삼성은|어떻게 지킬까요?",
-   "gapAfter": 0.55
+   "gapAfter": 0.4
   },
   {
    "narr": "시작부터 / +따라오지 못할 규모로 베팅해서 / 경쟁 팀의 의지를 꺾는 방법이 / +거론돼요",
@@ -740,7 +732,7 @@
   {
    "narr": "개인적으로는 / +이천이십육년 에프에이 시장은 / +구자욱 행선지가 정해져야 / +본격적으로 움직이지 않을까 싶어요",
    "sub": "개인적으로는|2026년 FA 시장은|구자욱 행선지가 정해져야|본격적으로\n움직이지 않을까 싶어요",
-   "gapAfter": 0.75
+   "gapAfter": 0.45
   },
   {
    "narr": "자, 이렇게 / +에프에이 첫날, / 열 개 구단 지갑 사정을 / +한 바퀴 돌아봤어요",
@@ -750,31 +742,26 @@
    "narr": "구자욱은 / +삼성에 남을까요?",
    "sub": "구자욱은|삼성에 남을까요?",
    "noMerge": true,
-   "gapAfter": 0.55
+   "gapAfter": 0.4
   },
   {
    "narr": "아니면 / 두산이나 에스에스지 유니폼을 / +입을까요?",
    "sub": "아니면|두산이나 SSG 유니폼을|입을까요?",
    "noMerge": true,
-   "gapAfter": 0.55
+   "gapAfter": 0.4
   },
   {
    "narr": "여러분은 어떻게 보세요?",
    "sub": "여러분은 어떻게 보세요?",
-   "gapAfter": 0.55
+   "gapAfter": 0.4
   },
   {
    "narr": "계약 소식이 나오는 대로 / +제가 바로 정리해 드릴게요",
    "sub": "계약 소식이 나오는 대로|제가 바로 정리해 드릴게요"
   },
   {
-   "narr": "에프에이 소식은 / +야구자판기에서 확인하세요",
-   "sub": "FA 소식은|야구자판기에서 확인하세요"
-  },
-  {
-   "narr": "채널 구독하고 매일 야구 이슈 받아보세요",
-   "sub": "채널 구독하고\n매일 야구 이슈 받아보세요!",
-   "rate": 1.0
+   "narr": "채널 구독하고 / 에프에이 소식 받아보세요",
+   "sub": "채널 구독하고|FA 소식 받아보세요"
   }
  ],
  "scenes": [
@@ -814,7 +801,7 @@
     {
      "type": "stamp",
      "t": "두산행",
-     "at": 2,
+     "at": 1.4,
      "c": "gold",
      "size": 56
     }
@@ -1006,6 +993,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
+   "chain": "o_first",
    "startLine": 6,
    "_pics": [
     {
@@ -1018,70 +1006,22 @@
   },
   {
    "type": "rf_duo",
-   "title": "자릿수가 하나?",
-   "cards": [
-    {
-     "img": "경기/최정_타격_0716_SSG제공",
-     "name": "최정",
-     "team": "SSG",
-     "at": 0.8,
-     "stats": [
-      {
-       "k": "2024년 겨울 1호",
-       "v": "110억",
-       "at": 1
-      }
-     ],
-     "focus": "50% 22%"
-    },
-    {
-     "img": "경기/오태곤_FA계약_1117_SSG제공",
-     "name": "오태곤",
-     "team": "SSG",
-     "at": 1.8,
-     "stats": [
-      {
-       "k": "2026년 겨울 첫날",
-       "v": "11억",
-       "at": 2
-      }
-     ],
-     "focus": "50% 22%",
-     "zoom": 1
-    }
-   ],
-   "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#410B16 100%),repeating-linear-gradient(115deg,rgba(206,14,45,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "noCenter": true,
-   "chain": "o_duo",
-   "startLine": 7,
-   "_pics": [
-    {
-     "img": "경기/최정_타격_0716_SSG제공"
-    },
-    {
-     "img": "경기/오태곤_FA계약_1117_SSG제공"
-    }
-   ]
-  },
-  {
-   "type": "rf_duo",
    "title": "진짜 큰 판은 이제부터",
    "cards": [
     {
-     "img": "경기/최정_타격_0716_SSG제공",
-     "name": "최정",
-     "team": "SSG",
+     "img": "경기/양의지_FA계약_1117_두산제공",
+     "name": "양의지",
+     "team": "두산",
      "at": -1,
      "stats": [
       {
-       "k": "2024년 겨울 1호",
-       "v": "110억",
+       "k": "두산 잔류",
+       "v": "2년 총액 55억",
        "at": -1
       }
      ],
-     "focus": "50% 22%"
+     "focus": "50% 22%",
+     "zoom": 1
     },
     {
      "img": "경기/오태곤_FA계약_1117_SSG제공",
@@ -1090,8 +1030,8 @@
      "at": -1,
      "stats": [
       {
-       "k": "2026년 겨울 첫날",
-       "v": "11억",
+       "k": "SSG 잔류",
+       "v": "3년 총액 11억",
        "at": -1
       }
      ],
@@ -1100,15 +1040,15 @@
     }
    ],
    "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#410B16 100%),repeating-linear-gradient(115deg,rgba(206,14,45,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
    "cont": true,
-   "chain": "o_duo",
-   "startLine": 8,
+   "chain": "o_first",
+   "startLine": 7,
    "_pics": [
     {
-     "img": "경기/최정_타격_0716_SSG제공"
+     "img": "경기/양의지_FA계약_1117_두산제공"
     },
     {
      "img": "경기/오태곤_FA계약_1117_SSG제공"
@@ -1137,7 +1077,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 9
+   "startLine": 8
   },
   {
    "type": "question",
@@ -1162,7 +1102,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 10
+   "startLine": 9
   },
   {
    "type": "pstat",
@@ -1186,7 +1126,7 @@
    },
    "chain": "x_otg",
    "focus": "32% 22%",
-   "startLine": 11,
+   "startLine": 10,
    "tc": "#CE0E2D",
    "tc2": "#B5821E"
   },
@@ -1219,7 +1159,7 @@
    },
    "chain": "x_otg2",
    "focus": "18% 30%",
-   "startLine": 12,
+   "startLine": 11,
    "tc": "#CE0E2D",
    "tc2": "#B5821E"
   },
@@ -1256,7 +1196,7 @@
    },
    "chain": "x_otg3",
    "focus": "32% 22%",
-   "startLine": 13,
+   "startLine": 12,
    "tc": "#CE0E2D",
    "tc2": "#B5821E"
   },
@@ -1300,7 +1240,7 @@
    "chain": "x_otg3",
    "cont": true,
    "focus": "32% 22%",
-   "startLine": 14,
+   "startLine": 13,
    "tc": "#CE0E2D",
    "tc2": "#B5821E"
   },
@@ -1314,6 +1254,33 @@
     {
      "type": "stamp",
      "t": "진짜 눈여겨볼 선수는 따로",
+     "at": 0.6,
+     "c": "gold",
+     "size": 56
+    }
+   ],
+   "stats": [],
+   "noCenter": true,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#410B16 100%),repeating-linear-gradient(115deg,rgba(206,14,45,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "chain": "x_cjh0",
+   "sil": "실루엣/최지훈_타격_0920_SSG제공_실루엣",
+   "img2": "실루엣/최지훈_타격_0920_SSG제공_실루엣",
+   "startLine": 14,
+   "tc": "#CE0E2D",
+   "tc2": "#B5821E"
+  },
+  {
+   "type": "pstat",
+   "img": "경기/최지훈_타격_0920_SSG제공",
+   "name": "최지훈",
+   "team": "SSG",
+   "sub": "B등급 · 중견수",
+   "viz": [
+    {
+     "type": "stamp",
+     "t": "이번 시장 중견수 최대어",
      "at": 0.6,
      "c": "gold",
      "size": 56
@@ -1341,33 +1308,6 @@
     {
      "type": "stamp",
      "t": "이번 시장 중견수 최대어",
-     "at": 0.6,
-     "c": "gold",
-     "size": 56
-    }
-   ],
-   "stats": [],
-   "noCenter": true,
-   "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#410B16 100%),repeating-linear-gradient(115deg,rgba(206,14,45,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "chain": "x_cjh0",
-   "sil": "실루엣/최지훈_타격_0920_SSG제공_실루엣",
-   "img2": "실루엣/최지훈_타격_0920_SSG제공_실루엣",
-   "startLine": 16,
-   "tc": "#CE0E2D",
-   "tc2": "#B5821E"
-  },
-  {
-   "type": "pstat",
-   "img": "경기/최지훈_타격_0920_SSG제공",
-   "name": "최지훈",
-   "team": "SSG",
-   "sub": "B등급 · 중견수",
-   "viz": [
-    {
-     "type": "stamp",
-     "t": "이번 시장 중견수 최대어",
      "at": -1,
      "c": "gold",
      "size": 56
@@ -1382,7 +1322,7 @@
    "sil": "실루엣/최지훈_타격_0920_SSG제공_실루엣",
    "img2": "실루엣/최지훈_타격_0920_SSG제공_실루엣",
    "revealAt": 0,
-   "startLine": 17,
+   "startLine": 16,
    "tc": "#CE0E2D",
    "tc2": "#B5821E"
   },
@@ -1415,7 +1355,7 @@
    },
    "chain": "x_cjh",
    "cont": true,
-   "startLine": 18,
+   "startLine": 17,
    "tc": "#CE0E2D",
    "tc2": "#B5821E"
   },
@@ -1455,7 +1395,7 @@
    },
    "chain": "x_cjh",
    "cont": true,
-   "startLine": 19,
+   "startLine": 18,
    "tc": "#CE0E2D",
    "tc2": "#B5821E"
   },
@@ -1480,7 +1420,7 @@
    "chain": "rmSSG",
    "tag": "래리 버드 룰 반영 · 옵션 뺀 추정",
    "tagAt": 50,
-   "startLine": 20,
+   "startLine": 19,
    "tc": "#CE0E2D",
    "tc2": "#B5821E"
   },
@@ -1563,7 +1503,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#410B16 100%),repeating-linear-gradient(115deg,rgba(206,14,45,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "x3fl",
-   "startLine": 21,
+   "startLine": 20,
    "tc": "#CE0E2D",
    "tc2": "#B5821E",
    "_pics": [
@@ -1598,8 +1538,8 @@
    },
    "chain": "rmSSG",
    "tag": "래리 버드 룰 반영 · 옵션 뺀 추정",
-   "tagAt": 3,
-   "startLine": 22,
+   "tagAt": 2.1,
+   "startLine": 21,
    "tc": "#CE0E2D",
    "tc2": "#B5821E"
   },
@@ -1632,7 +1572,7 @@
     {
      "a": "ssg",
      "b": "kjw",
-     "lab": "면밀하게 살핀다는 말",
+     "lab": "",
      "at": 2.1,
      "c": "gold"
     }
@@ -1645,7 +1585,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#410B16 100%),repeating-linear-gradient(115deg,rgba(206,14,45,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "xfl",
-   "startLine": 23,
+   "startLine": 22,
    "tc": "#CE0E2D",
    "tc2": "#B5821E",
    "_pics": [
@@ -1675,7 +1615,7 @@
    "chain": "rmSSG2",
    "tag": "첫날 계약은 작아도 지갑은 두둑",
    "tagAt": 1.2,
-   "startLine": 24,
+   "startLine": 23,
    "tc": "#CE0E2D",
    "tc2": "#B5821E"
   },
@@ -1690,7 +1630,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 25
+   "startLine": 24
   },
   {
    "type": "tline",
@@ -1720,7 +1660,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 26
+   "startLine": 25
   },
   {
    "type": "tline",
@@ -1752,7 +1692,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "cont": true,
-   "startLine": 27
+   "startLine": 26
   },
   {
    "type": "question",
@@ -1767,7 +1707,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 28,
+   "startLine": 27,
    "tc": "#C8232C",
    "tc2": "#3B3F68"
   },
@@ -1838,7 +1778,7 @@
    "cont": true,
    "tag": "FA 신청 6명 · 10개 구단 최다",
    "tagAt": 3.1,
-   "startLine": 29,
+   "startLine": 28,
    "tc": "#C8232C",
    "tc2": "#3B3F68",
    "_pics": [
@@ -1934,7 +1874,7 @@
    "noCenter": true,
    "chain": "ktb0",
    "cont": true,
-   "startLine": 30,
+   "startLine": 29,
    "tc": "#C8232C",
    "tc2": "#3B3F68",
    "_pics": [
@@ -2031,7 +1971,7 @@
    "chain": "ktb2",
    "tag": "외부 FA 시장은 철수?",
    "tagAt": 2.1,
-   "startLine": 31,
+   "startLine": 30,
    "tc": "#C8232C",
    "tc2": "#3B3F68",
    "_pics": [
@@ -2077,106 +2017,9 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#490F14 100%),repeating-linear-gradient(115deg,rgba(235,28,36,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "kt2",
-   "startLine": 32,
+   "startLine": 31,
    "tc": "#C8232C",
    "tc2": "#3B3F68"
-  },
-  {
-   "type": "fa_board",
-   "team": "KT",
-   "title": "2026 정규 1위 · 준우승 · KT 위즈",
-   "rows": [
-    {
-     "name": "김민혁",
-     "pos": "외야수",
-     "grade": "A",
-     "kind": "신규",
-     "img": "KBO프로필/김민혁_KT_2026프로필",
-     "at": -1
-    },
-    {
-     "name": "배정대",
-     "pos": "외야수",
-     "grade": "A",
-     "kind": "신규",
-     "img": "KBO프로필/배정대_2024KT",
-     "at": -1
-    },
-    {
-     "name": "김민수",
-     "pos": "투수",
-     "grade": "B",
-     "kind": "신규",
-     "img": "KBO프로필/김민수_KT_2026프로필",
-     "at": -1
-    },
-    {
-     "name": "한승혁",
-     "pos": "투수",
-     "grade": "B",
-     "kind": "신규",
-     "img": "KBO프로필/한승혁",
-     "at": -1
-    },
-    {
-     "name": "오윤석",
-     "pos": "내야수",
-     "grade": "B",
-     "kind": "신규",
-     "img": "KBO프로필/오윤석",
-     "at": -1
-    },
-    {
-     "name": "김상수",
-     "pos": "내야수",
-     "grade": "C",
-     "kind": "세 번째 FA",
-     "img": "KBO프로필/김상수",
-     "at": -1
-    }
-   ],
-   "hl": [
-    "김민혁",
-    "배정대",
-    "김민수",
-    "한승혁",
-    "오윤석",
-    "김상수"
-   ],
-   "hlAt": -1,
-   "room": null,
-   "verdict": null,
-   "pred": false,
-   "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#490F14 100%),repeating-linear-gradient(115deg,rgba(235,28,36,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "noCenter": true,
-   "chain": "ktb",
-   "tag": "6명 다 잡는 것도 큰돈",
-   "tagAt": 2.1,
-   "startLine": 33,
-   "tc": "#C8232C",
-   "tc2": "#3B3F68",
-   "_pics": [
-    {
-     "img": "KBO프로필/김민혁_KT_2026프로필"
-    },
-    {
-     "img": "KBO프로필/배정대_2024KT"
-    },
-    {
-     "img": "KBO프로필/김민수_KT_2026프로필"
-    },
-    {
-     "img": "KBO프로필/한승혁"
-    },
-    {
-     "img": "KBO프로필/오윤석"
-    },
-    {
-     "img": "KBO프로필/김상수"
-    }
-   ]
   },
   {
    "type": "tline",
@@ -2189,9 +2032,10 @@
     },
     {
      "d": "2026년 겨울",
-     "t": "사는 쪽 → 지키는 쪽",
+     "t": "내부 단속에\n집중",
      "at": -1,
-     "c": "gold"
+     "c": "gold",
+     "hl": 1
     }
    ],
    "noCenter": true,
@@ -2199,9 +2043,43 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#490F14 100%),repeating-linear-gradient(115deg,rgba(235,28,36,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "chain": "kt3",
+   "chain": "kt2",
    "cont": true,
-   "startLine": 34,
+   "startLine": 32,
+   "tc": "#C8232C",
+   "tc2": "#3B3F68"
+  },
+  {
+   "type": "tline",
+   "title": "",
+   "items": [
+    {
+     "d": "2025년 겨울",
+     "t": "외부 FA\n100억 넘게",
+     "at": -1
+    },
+    {
+     "d": "2026년 겨울",
+     "t": "내부 단속에\n집중",
+     "at": -1,
+     "c": "gold",
+     "hl": 1
+    },
+    {
+     "d": "FA 6명",
+     "t": "다 잡아도\n큰돈",
+     "at": -1,
+     "c": "bad"
+    }
+   ],
+   "noCenter": true,
+   "uni": true,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#490F14 100%),repeating-linear-gradient(115deg,rgba(235,28,36,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "chain": "kt2",
+   "cont": true,
+   "startLine": 33,
    "tc": "#C8232C",
    "tc2": "#3B3F68"
   },
@@ -2226,7 +2104,7 @@
    "chain": "rmK",
    "tag": "래리 버드 룰 반영 · 옵션 뺀 추정",
    "tagAt": 50,
-   "startLine": 35
+   "startLine": 34
   },
   {
    "type": "rf_capbar",
@@ -2250,7 +2128,7 @@
    "tag": "10개 구단 1위",
    "tagAt": 2.1,
    "cont": true,
-   "startLine": 36
+   "startLine": 35
   },
   {
    "type": "rf_capbar",
@@ -2275,7 +2153,7 @@
    "tagAt": 50,
    "cont": true,
    "whoAt": 0.8,
-   "startLine": 37,
+   "startLine": 36,
    "tc": "#A3123A",
    "tc2": "#5A2A9E"
   },
@@ -2301,7 +2179,7 @@
    "tag": "2027년부터 샐러리캡 하한",
    "tagAt": 0.8,
    "cont": true,
-   "startLine": 38,
+   "startLine": 37,
    "tc": "#A3123A",
    "tc2": "#5A2A9E"
   },
@@ -2313,11 +2191,11 @@
    ],
    "logoSize": 170,
    "size": 90,
-   "textAt": 2.2,
+   "textAt": 0.1,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 39,
+   "startLine": 38,
    "tc": "#A3123A",
    "tc2": "#5A2A9E"
   },
@@ -2342,7 +2220,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#2E0D17 100%),repeating-linear-gradient(115deg,rgba(138,21,48,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "w_cjh",
-   "startLine": 40,
+   "startLine": 39,
    "tc": "#A3123A",
    "tc2": "#5A2A9E"
   },
@@ -2374,7 +2252,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "w_kjw",
-   "startLine": 41,
+   "startLine": 40,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -2399,7 +2277,7 @@
    "chain": "rmK2",
    "tag": "시장을 구경만 하는 큰손?",
    "tagAt": 0.4,
-   "startLine": 42,
+   "startLine": 41,
    "tc": "#A3123A",
    "tc2": "#5A2A9E"
   },
@@ -2413,7 +2291,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 43
+   "startLine": 42
   },
   {
    "type": "tline",
@@ -2441,7 +2319,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 44
+   "startLine": 43
   },
   {
    "type": "tline",
@@ -2470,21 +2348,21 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 45
+   "startLine": 44
   },
   {
    "type": "pstat",
    "img": "경기/롯데FA3_입단식_노진혁유강남한현희_롯데제공",
-   "name": "롯데 자이언츠",
+   "name": "롯데",
    "team": "롯데",
-   "sub": "2022년 겨울 · 외부 FA 3명 입단식",
+   "sub": "2022년 겨울 · 외부 FA 3명",
    "viz": [
     {
      "type": "stamp",
      "t": "유강남 · 노진혁 · 한현희",
-     "at": 0.4,
+     "at": 0.5,
      "c": "gold",
-     "size": 56
+     "size": 52
     }
    ],
    "stats": [],
@@ -2492,39 +2370,40 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0D1931 100%),repeating-linear-gradient(115deg,rgba(18,62,140,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "imgAt": 1,
+   "imgAt": 0,
    "chain": "r_lt3",
-   "startLine": 46,
+   "wide": true,
+   "startLine": 45,
    "tc": "#0E46B0",
    "tc2": "#D00F31"
   },
   {
    "type": "pstat",
    "img": "경기/롯데FA3_입단식_노진혁유강남한현희_롯데제공",
-   "name": "롯데 자이언츠",
+   "name": "롯데",
    "team": "롯데",
-   "sub": "2022년 겨울 · 외부 FA 3명 입단식",
+   "sub": "2022년 겨울 · 외부 FA 3명",
    "viz": [
     {
      "type": "stamp",
      "t": "유강남 · 노진혁 · 한현희",
      "at": -1,
      "c": "gold",
-     "size": 56
+     "size": 52
     },
     {
      "type": "stamp",
      "t": "합계 170억",
      "at": 0.2,
      "c": "gold",
-     "size": 64
+     "size": 60
     },
     {
      "type": "stamp",
      "t": "그 뒤 외부 FA 0명",
      "at": 2.2,
      "c": "bad",
-     "size": 60
+     "size": 56
     }
    ],
    "stats": [],
@@ -2534,7 +2413,8 @@
    },
    "chain": "r_lt3",
    "cont": true,
-   "startLine": 47,
+   "wide": true,
+   "startLine": 46,
    "tc": "#0E46B0",
    "tc2": "#D00F31"
   },
@@ -2584,7 +2464,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0D1931 100%),repeating-linear-gradient(115deg,rgba(18,62,140,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 48,
+   "startLine": 47,
    "tc": "#0E46B0",
    "tc2": "#D00F31",
    "_pics": [
@@ -2620,7 +2500,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0D1931 100%),repeating-linear-gradient(115deg,rgba(18,62,140,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "r_psw",
-   "startLine": 49,
+   "startLine": 48,
    "tc": "#0E46B0",
    "tc2": "#D00F31"
   },
@@ -2661,7 +2541,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0D1931 100%),repeating-linear-gradient(115deg,rgba(18,62,140,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 50,
+   "startLine": 49,
    "tc": "#0E46B0",
    "tc2": "#D00F31",
    "_pics": [
@@ -2701,7 +2581,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0D1931 100%),repeating-linear-gradient(115deg,rgba(18,62,140,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "r_ltg",
-   "startLine": 51,
+   "startLine": 50,
    "tc": "#0E46B0",
    "tc2": "#D00F31"
   },
@@ -2717,7 +2597,7 @@
    "leftLab": "쓸 수 있는 돈",
    "leftTxt": "72억 4천만쯤",
    "totalAt": 0,
-   "leftAt": 1.1,
+   "leftAt": 2.1,
    "capAt": 0,
    "noCenter": true,
    "bg": {
@@ -2726,7 +2606,7 @@
    "chain": "rm롯데",
    "tag": "래리 버드 룰 반영 · 옵션 뺀 추정",
    "tagAt": 50,
-   "startLine": 52,
+   "startLine": 51,
    "tc": "#0E46B0",
    "tc2": "#D00F31"
   },
@@ -2752,7 +2632,7 @@
    "tag": "드디어 지갑 연다?",
    "tagAt": 1.2,
    "cont": true,
-   "startLine": 53,
+   "startLine": 52,
    "tc": "#0E46B0",
    "tc2": "#D00F31"
   },
@@ -2817,7 +2697,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0D1931 100%),repeating-linear-gradient(115deg,rgba(18,62,140,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "rfl",
-   "startLine": 54,
+   "startLine": 53,
    "tc": "#0E46B0",
    "tc2": "#D00F31"
   },
@@ -2842,7 +2722,7 @@
    "chain": "rm롯데2",
    "tag": "4년 잠긴 지갑, 이번엔?",
    "tagAt": 0.5,
-   "startLine": 55,
+   "startLine": 54,
    "tc": "#0E46B0",
    "tc2": "#D00F31"
   },
@@ -2856,7 +2736,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 56
+   "startLine": 55
   },
   {
    "type": "question",
@@ -2871,7 +2751,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 57,
+   "startLine": 56,
    "tc": "#F37321",
    "tc2": "#8A2E5E"
   },
@@ -2897,7 +2777,7 @@
    },
    "imgAt": 0.6,
    "chain": "h_ljh",
-   "startLine": 58,
+   "startLine": 57,
    "tc": "#F37321",
    "tc2": "#8A2E5E"
   },
@@ -2930,7 +2810,7 @@
    },
    "chain": "h_ljh",
    "cont": true,
-   "startLine": 59,
+   "startLine": 58,
    "tc": "#F37321",
    "tc2": "#8A2E5E"
   },
@@ -2970,7 +2850,7 @@
    },
    "chain": "h_ljh",
    "cont": true,
-   "startLine": 60,
+   "startLine": 59,
    "tc": "#F37321",
    "tc2": "#8A2E5E"
   },
@@ -3017,7 +2897,7 @@
    },
    "chain": "h_ljh",
    "cont": true,
-   "startLine": 61,
+   "startLine": 60,
    "tc": "#F37321",
    "tc2": "#8A2E5E"
   },
@@ -3042,7 +2922,7 @@
    "chain": "rm한화",
    "tag": "10개 구단 가장 적음",
    "tagAt": 4.1,
-   "startLine": 62,
+   "startLine": 61,
    "tc": "#F37321",
    "tc2": "#8A2E5E"
   },
@@ -3054,12 +2934,12 @@
      "img": "KBO프로필/박상원",
      "name": "박상원",
      "team": "한화",
-     "at": 1.2,
+     "at": 1.0,
      "stats": [
       {
        "k": "A등급 · 투수",
        "v": "79홀드",
-       "at": 2
+       "at": 1.0
       }
      ],
      "focus": "50% 22%",
@@ -3069,12 +2949,12 @@
      "img": "경기/최재훈_세리머니_한화제공",
      "name": "최재훈",
      "team": "한화",
-     "at": 3.2,
+     "at": 3.0,
      "stats": [
       {
        "k": "B등급 · 포수",
        "v": "1,411경기",
-       "at": 4
+       "at": 3.0
       }
      ],
      "focus": "50% 22%",
@@ -3085,7 +2965,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#4F240A 100%),repeating-linear-gradient(115deg,rgba(255,102,0,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 63,
+   "startLine": 62,
    "tc": "#F37321",
    "tc2": "#8A2E5E",
    "_pics": [
@@ -3118,7 +2998,7 @@
    "chain": "rm한화2",
    "tag": "집토끼 둘 + 선물까지?",
    "tagAt": 0.5,
-   "startLine": 64,
+   "startLine": 63,
    "tc": "#F37321",
    "tc2": "#8A2E5E"
   },
@@ -3145,7 +3025,7 @@
    "chain": "a_khr0",
    "sil": "실루엣/김호령_만루포_0821_KIA제공_실루엣",
    "img2": "실루엣/김호령_만루포_0821_KIA제공_실루엣",
-   "startLine": 65,
+   "startLine": 64,
    "tc": "#D81E37",
    "tc2": "#6A2BD8"
   },
@@ -3172,7 +3052,7 @@
    "chain": "a_khr0",
    "sil": "실루엣/김호령_만루포_0821_KIA제공_실루엣",
    "img2": "실루엣/김호령_만루포_0821_KIA제공_실루엣",
-   "startLine": 66,
+   "startLine": 65,
    "tc": "#D81E37",
    "tc2": "#6A2BD8"
   },
@@ -3207,7 +3087,7 @@
    "cont": true,
    "sil": "실루엣/김호령_만루포_0821_KIA제공_실루엣",
    "img2": "실루엣/김호령_만루포_0821_KIA제공_실루엣",
-   "startLine": 67,
+   "startLine": 66,
    "tc": "#D81E37",
    "tc2": "#6A2BD8"
   },
@@ -3243,7 +3123,7 @@
    "sil": "실루엣/김호령_만루포_0821_KIA제공_실루엣",
    "img2": "실루엣/김호령_만루포_0821_KIA제공_실루엣",
    "revealAt": 0,
-   "startLine": 68,
+   "startLine": 67,
    "tc": "#D81E37",
    "tc2": "#6A2BD8"
   },
@@ -3258,25 +3138,25 @@
     {
      "k": "경기 · 타율",
      "v": "141 · 2할 6푼 7리",
-     "at": 1,
+     "at": 2,
      "hi": false
     },
     {
      "k": "홈런",
      "v": "13",
-     "at": 3,
+     "at": 4,
      "hi": false
     },
     {
      "k": "타점",
      "v": "68",
-     "at": 4,
+     "at": 5,
      "hi": false
     },
     {
      "k": "도루",
      "v": "17",
-     "at": 5,
+     "at": 6,
      "hi": true
     }
    ],
@@ -3285,7 +3165,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#490815 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "a_khr2",
-   "startLine": 69,
+   "startLine": 68,
    "tc": "#D81E37",
    "tc2": "#6A2BD8"
   },
@@ -3310,7 +3190,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#490815 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "a_khr3",
-   "startLine": 70,
+   "startLine": 69,
    "tc": "#D81E37",
    "tc2": "#6A2BD8"
   },
@@ -3350,7 +3230,7 @@
    },
    "chain": "a_khr3",
    "cont": true,
-   "startLine": 71,
+   "startLine": 70,
    "tc": "#D81E37",
    "tc2": "#6A2BD8"
   },
@@ -3378,7 +3258,7 @@
     {
      "type": "stamp",
      "t": "3억 7,500만",
-     "at": 3.1,
+     "at": 4.1,
      "c": "gold",
      "size": 64
     }
@@ -3389,7 +3269,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#490815 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "a_khr4",
-   "startLine": 72,
+   "startLine": 71,
    "tc": "#D81E37",
    "tc2": "#6A2BD8"
   },
@@ -3436,7 +3316,7 @@
    },
    "chain": "a_khr4",
    "cont": true,
-   "startLine": 73,
+   "startLine": 72,
    "tc": "#D81E37",
    "tc2": "#6A2BD8"
   },
@@ -3447,7 +3327,7 @@
     {
      "id": "khr",
      "x": 960,
-     "y": 640,
+     "y": 700,
      "ic": "player",
      "lab": "김호령",
      "sub": "C등급 · 중견수",
@@ -3467,7 +3347,7 @@
     {
      "id": "lt",
      "x": 960,
-     "y": 300,
+     "y": 260,
      "ic": "kbo",
      "lab": "롯데",
      "sub": "",
@@ -3492,7 +3372,8 @@
      "lab": "",
      "at": 0.4,
      "c": "gold",
-     "r0": 150
+     "r0": 150,
+     "r1": 150
     },
     {
      "a": "lt",
@@ -3500,7 +3381,8 @@
      "lab": "",
      "at": 0.5,
      "c": "gold",
-     "r0": 150
+     "r0": 150,
+     "r1": 150
     },
     {
      "a": "nc",
@@ -3508,7 +3390,8 @@
      "lab": "",
      "at": 1.4,
      "c": "gold",
-     "r0": 150
+     "r0": 150,
+     "r1": 150
     }
    ],
    "wall": null,
@@ -3519,7 +3402,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#490815 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "afl",
-   "startLine": 74,
+   "startLine": 73,
    "tc": "#D81E37",
    "tc2": "#6A2BD8",
    "_pics": [
@@ -3565,10 +3448,10 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#490815 100%),repeating-linear-gradient(115deg,rgba(234,0,41,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 75,
+   "startLine": 74,
    "tc": "#D81E37",
    "tc2": "#6A2BD8",
-   "chain": "ck76",
+   "chain": "ck75",
    "_pics": [
     {
      "img": "경기/김호령_만루포_0821_KIA제공"
@@ -3616,10 +3499,10 @@
    },
    "noCenter": true,
    "cont": true,
-   "startLine": 76,
+   "startLine": 75,
    "tc": "#D81E37",
    "tc2": "#6A2BD8",
-   "chain": "ck76",
+   "chain": "ck75",
    "_pics": [
     {
      "img": "경기/김호령_만루포_0821_KIA제공"
@@ -3667,10 +3550,10 @@
    },
    "noCenter": true,
    "cont": true,
-   "startLine": 77,
+   "startLine": 76,
    "tc": "#D81E37",
    "tc2": "#6A2BD8",
-   "chain": "ck76",
+   "chain": "ck75",
    "_pics": [
     {
      "img": "경기/김호령_만루포_0821_KIA제공"
@@ -3682,7 +3565,7 @@
   },
   {
    "type": "question",
-   "text": "'반드시'라는 단어가 · 빠진 팀",
+   "text": "잡을지 말지 · 애매한 팀",
    "logos": [],
    "logoSize": 170,
    "size": 90,
@@ -3690,7 +3573,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 78
+   "startLine": 77
   },
   {
    "type": "rf_duo",
@@ -3723,7 +3606,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 79,
+   "startLine": 78,
    "_pics": [
     {
      "img": "경기/홍창기_상체_0921_LG제공"
@@ -3764,7 +3647,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 80,
+   "startLine": 79,
    "_pics": [
     {
      "img": "경기/홍창기_상체_0921_LG제공"
@@ -3806,10 +3689,10 @@
    },
    "noCenter": true,
    "revealAt": 0,
-   "startLine": 81,
+   "startLine": 80,
    "tc": "#C30452",
    "tc2": "#5B2BD8",
-   "chain": "ck82",
+   "chain": "ck81",
    "_pics": [
     {
      "img": "경기/홍창기_상체_0921_LG제공"
@@ -3859,10 +3742,10 @@
    },
    "noCenter": true,
    "cont": true,
-   "startLine": 82,
+   "startLine": 81,
    "tc": "#C30452",
    "tc2": "#5B2BD8",
-   "chain": "ck82",
+   "chain": "ck81",
    "_pics": [
     {
      "img": "경기/홍창기_상체_0921_LG제공"
@@ -3912,10 +3795,10 @@
    },
    "noCenter": true,
    "cont": true,
-   "startLine": 83,
+   "startLine": 82,
    "tc": "#C30452",
    "tc2": "#5B2BD8",
-   "chain": "ck82",
+   "chain": "ck81",
    "_pics": [
     {
      "img": "경기/홍창기_상체_0921_LG제공"
@@ -3946,7 +3829,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3E0920 100%),repeating-linear-gradient(115deg,rgba(195,4,82,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "l_cms",
-   "startLine": 84,
+   "startLine": 83,
    "tc": "#C30452",
    "tc2": "#5B2BD8"
   },
@@ -3979,7 +3862,7 @@
    },
    "chain": "l_cms",
    "cont": true,
-   "startLine": 85,
+   "startLine": 84,
    "tc": "#C30452",
    "tc2": "#5B2BD8"
   },
@@ -4019,7 +3902,7 @@
    },
    "chain": "l_cms",
    "cont": true,
-   "startLine": 86,
+   "startLine": 85,
    "tc": "#C30452",
    "tc2": "#5B2BD8"
   },
@@ -4035,7 +3918,7 @@
    "leftLab": "쓸 수 있는 돈",
    "leftTxt": "50억 7천만쯤",
    "totalAt": 0,
-   "leftAt": 1.1,
+   "leftAt": 2.1,
    "capAt": 0,
    "noCenter": true,
    "bg": {
@@ -4043,8 +3926,8 @@
    },
    "chain": "rmLG",
    "tag": "10개 구단 두 번째로 적음",
-   "tagAt": 3.1,
-   "startLine": 87,
+   "tagAt": 4.1,
+   "startLine": 86,
    "tc": "#C30452",
    "tc2": "#5B2BD8"
   },
@@ -4087,7 +3970,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#3E0920 100%),repeating-linear-gradient(115deg,rgba(195,4,82,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 88,
+   "startLine": 87,
    "tc": "#C30452",
    "tc2": "#5B2BD8",
    "_pics": [
@@ -4122,7 +4005,7 @@
    "chain": "d_yej0",
    "sil": "실루엣/양의지_타격_1014_뉴스1_실루엣",
    "img2": "실루엣/양의지_타격_1014_뉴스1_실루엣",
-   "startLine": 89
+   "startLine": 88
   },
   {
    "type": "pstat",
@@ -4155,7 +4038,7 @@
    "cont": true,
    "sil": "실루엣/양의지_타격_1014_뉴스1_실루엣",
    "img2": "실루엣/양의지_타격_1014_뉴스1_실루엣",
-   "startLine": 90
+   "startLine": 89
   },
   {
    "type": "pstat",
@@ -4189,7 +4072,7 @@
    "sil": "실루엣/양의지_타격_1014_뉴스1_실루엣",
    "img2": "실루엣/양의지_타격_1014_뉴스1_실루엣",
    "revealAt": 0,
-   "startLine": 91,
+   "startLine": 90,
    "tc": "#2A3AA8",
    "tc2": "#B0183C"
   },
@@ -4219,7 +4102,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#181835 100%),repeating-linear-gradient(115deg,rgba(59,58,154,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "d_yej2",
-   "startLine": 92,
+   "startLine": 91,
    "tc": "#2A3AA8",
    "tc2": "#B0183C"
   },
@@ -4228,7 +4111,7 @@
    "img": "경기/양의지_타격_1014_뉴스1",
    "name": "양의지",
    "team": "두산",
-   "sub": "세 번째 FA · C등급",
+   "sub": "포수 · 세 번째 FA",
    "viz": [
     {
      "type": "stamp",
@@ -4244,7 +4127,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#181835 100%),repeating-linear-gradient(115deg,rgba(59,58,154,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "d_yej3",
-   "startLine": 93,
+   "startLine": 92,
    "tc": "#2A3AA8",
    "tc2": "#B0183C"
   },
@@ -4277,7 +4160,7 @@
    },
    "chain": "d_yej3",
    "cont": true,
-   "startLine": 94,
+   "startLine": 93,
    "tc": "#2A3AA8",
    "tc2": "#B0183C"
   },
@@ -4317,7 +4200,7 @@
    },
    "chain": "d_yej3",
    "cont": true,
-   "startLine": 95,
+   "startLine": 94,
    "tc": "#2A3AA8",
    "tc2": "#B0183C"
   },
@@ -4349,7 +4232,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#181835 100%),repeating-linear-gradient(115deg,rgba(59,58,154,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "d_yejc",
-   "startLine": 96,
+   "startLine": 95,
    "tc": "#2A3AA8",
    "tc2": "#B0183C"
   },
@@ -4385,7 +4268,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#181835 100%),repeating-linear-gradient(115deg,rgba(59,58,154,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "d_yejc2",
-   "startLine": 97,
+   "startLine": 96,
    "tc": "#2A3AA8",
    "tc2": "#B0183C"
   },
@@ -4417,7 +4300,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#181835 100%),repeating-linear-gradient(115deg,rgba(59,58,154,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "d_kwh",
-   "startLine": 98,
+   "startLine": 97,
    "tc": "#2A3AA8",
    "tc2": "#B0183C"
   },
@@ -4459,7 +4342,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#181835 100%),repeating-linear-gradient(115deg,rgba(59,58,154,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 99,
+   "startLine": 98,
    "tc": "#2A3AA8",
    "tc2": "#B0183C",
    "_pics": [
@@ -4506,7 +4389,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#181835 100%),repeating-linear-gradient(115deg,rgba(59,58,154,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "d_kwh2",
-   "startLine": 100,
+   "startLine": 99,
    "tc": "#2A3AA8",
    "tc2": "#B0183C"
   },
@@ -4516,8 +4399,8 @@
    "nodes": [
     {
      "id": "kjw",
-     "x": 960,
-     "y": 640,
+     "x": 1300,
+     "y": 470,
      "ic": "player",
      "lab": "구자욱",
      "sub": "삼성 · A등급",
@@ -4526,8 +4409,8 @@
     },
     {
      "id": "ds",
-     "x": 960,
-     "y": 300,
+     "x": 620,
+     "y": 470,
      "ic": "kbo",
      "lab": "두산",
      "sub": "",
@@ -4542,12 +4425,13 @@
      "lab": "",
      "at": 1.2,
      "c": "gold",
-     "r0": 150
+     "r0": 170,
+     "r1": 150
     }
    ],
    "wall": null,
    "boxes": [],
-   "cap": "구자욱 영입전 후보",
+   "cap": "두산 · 구자욱 영입전 후보로 거론",
    "noCenter": true,
    "capAt": 1.4,
    "capY": 820,
@@ -4555,7 +4439,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#181835 100%),repeating-linear-gradient(115deg,rgba(59,58,154,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "dfl",
-   "startLine": 101,
+   "startLine": 100,
    "tc": "#2A3AA8",
    "tc2": "#B0183C",
    "_pics": [
@@ -4585,13 +4469,13 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#181835 100%),repeating-linear-gradient(115deg,rgba(59,58,154,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "d_yejc3",
-   "startLine": 102,
+   "startLine": 101,
    "tc": "#2A3AA8",
    "tc2": "#B0183C"
   },
   {
    "type": "question",
-   "text": "남은 선수들 · 짧게 모아 봤습니다",
+   "text": "남은 선수들 · 짧게 모아 봤어요",
    "logos": [],
    "logoSize": 170,
    "size": 90,
@@ -4599,7 +4483,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 103,
+   "startLine": 102,
    "tc": "#1D5FB8",
    "tc2": "#B58A3C"
   },
@@ -4625,7 +4509,7 @@
    },
    "chain": "n_khd",
    "focus": "62% 8%",
-   "startLine": 104,
+   "startLine": 103,
    "tc": "#1D5FB8",
    "tc2": "#B58A3C"
   },
@@ -4641,7 +4525,7 @@
    "leftLab": "쓸 수 있는 돈",
    "leftTxt": "78억 4천만쯤",
    "totalAt": 0,
-   "leftAt": 1.1,
+   "leftAt": 2.1,
    "capAt": 0,
    "noCenter": true,
    "bg": {
@@ -4649,8 +4533,8 @@
    },
    "chain": "rmNC",
    "tag": "키움 다음으로 많음",
-   "tagAt": 2.1,
-   "startLine": 105,
+   "tagAt": 3.1,
+   "startLine": 104,
    "tc": "#1D5FB8",
    "tc2": "#B58A3C"
   },
@@ -4676,7 +4560,7 @@
    "tag": "외부 FA엔 소극적이던 팀",
    "tagAt": 0.5,
    "cont": true,
-   "startLine": 106,
+   "startLine": 105,
    "tc": "#1D5FB8",
    "tc2": "#B58A3C"
   },
@@ -4717,10 +4601,10 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 107,
+   "startLine": 106,
    "tc": "#1D5FB8",
    "tc2": "#B58A3C",
-   "chain": "ck108",
+   "chain": "ck107",
    "_pics": [
     {
      "img": "KBO프로필/문승원_2026프로필"
@@ -4768,10 +4652,10 @@
    },
    "noCenter": true,
    "cont": true,
-   "startLine": 108,
+   "startLine": 107,
    "tc": "#1D5FB8",
    "tc2": "#B58A3C",
-   "chain": "ck108",
+   "chain": "ck107",
    "_pics": [
     {
      "img": "KBO프로필/문승원_2026프로필"
@@ -4783,7 +4667,7 @@
   },
   {
    "type": "question",
-   "text": "자, · 마지막 팀입니다",
+   "text": "자, · 마지막 팀이에요",
    "logos": [],
    "logoSize": 170,
    "size": 90,
@@ -4791,7 +4675,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 109
+   "startLine": 108
   },
   {
    "type": "pstat",
@@ -4816,7 +4700,7 @@
    "chain": "s_kjw0",
    "sil": "실루엣/구자욱_KSMVP_1108_실루엣",
    "img2": "실루엣/구자욱_KSMVP_1108_실루엣",
-   "startLine": 110
+   "startLine": 109
   },
   {
    "type": "pstat",
@@ -4836,6 +4720,46 @@
      "type": "stamp",
      "t": "타율 3할 7푼 1리",
      "at": 0,
+     "c": "gold",
+     "size": 56
+    }
+   ],
+   "stats": [],
+   "noCenter": true,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "chain": "s_kjw0",
+   "cont": true,
+   "sil": "실루엣/구자욱_KSMVP_1108_실루엣",
+   "img2": "실루엣/구자욱_KSMVP_1108_실루엣",
+   "startLine": 110
+  },
+  {
+   "type": "pstat",
+   "img": "경기/구자욱_KSMVP_1108",
+   "name": "구자욱",
+   "team": "삼성",
+   "sub": "A등급 · 외야수",
+   "viz": [
+    {
+     "type": "stamp",
+     "t": "생애 첫 타격왕",
+     "at": -1,
+     "c": "gold",
+     "size": 56
+    },
+    {
+     "type": "stamp",
+     "t": "타율 3할 7푼 1리",
+     "at": -1,
+     "c": "gold",
+     "size": 56
+    },
+    {
+     "type": "stamp",
+     "t": "12년 만 우승 · 한국시리즈 MVP",
+     "at": 1.2,
      "c": "gold",
      "size": 56
     }
@@ -4875,6 +4799,13 @@
     {
      "type": "stamp",
      "t": "12년 만 우승 · 한국시리즈 MVP",
+     "at": -1,
+     "c": "gold",
+     "size": 56
+    },
+    {
+     "type": "stamp",
+     "t": "이번 FA 시장에",
      "at": 0.6,
      "c": "gold",
      "size": 56
@@ -4922,53 +4853,6 @@
     {
      "type": "stamp",
      "t": "이번 FA 시장에",
-     "at": 0.6,
-     "c": "gold",
-     "size": 56
-    }
-   ],
-   "stats": [],
-   "noCenter": true,
-   "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "chain": "s_kjw0",
-   "cont": true,
-   "sil": "실루엣/구자욱_KSMVP_1108_실루엣",
-   "img2": "실루엣/구자욱_KSMVP_1108_실루엣",
-   "startLine": 113
-  },
-  {
-   "type": "pstat",
-   "img": "경기/구자욱_KSMVP_1108",
-   "name": "구자욱",
-   "team": "삼성",
-   "sub": "A등급 · 외야수",
-   "viz": [
-    {
-     "type": "stamp",
-     "t": "생애 첫 타격왕",
-     "at": -1,
-     "c": "gold",
-     "size": 56
-    },
-    {
-     "type": "stamp",
-     "t": "타율 3할 7푼 1리",
-     "at": -1,
-     "c": "gold",
-     "size": 56
-    },
-    {
-     "type": "stamp",
-     "t": "12년 만 우승 · 한국시리즈 MVP",
-     "at": -1,
-     "c": "gold",
-     "size": 56
-    },
-    {
-     "type": "stamp",
-     "t": "이번 FA 시장에",
      "at": -1,
      "c": "gold",
      "size": 56
@@ -4984,6 +4868,22 @@
    "sil": "실루엣/구자욱_KSMVP_1108_실루엣",
    "img2": "실루엣/구자욱_KSMVP_1108_실루엣",
    "revealAt": 0,
+   "startLine": 113,
+   "tc": "#1E5BE0",
+   "tc2": "#7B3BFF"
+  },
+  {
+   "type": "question",
+   "text": "구자욱을 두고 · 치열한 영입전 예상",
+   "logos": [
+    "삼성"
+   ],
+   "logoSize": 170,
+   "size": 90,
+   "textAt": 0.2,
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
    "startLine": 114,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
@@ -5009,7 +4909,7 @@
      "ic": "kbo",
      "lab": "두산",
      "sub": "",
-     "at": 50,
+     "at": 0.5,
      "logo": "두산"
     },
     {
@@ -5019,62 +4919,7 @@
      "ic": "kbo",
      "lab": "SSG",
      "sub": "",
-     "at": 50,
-     "logo": "SSG"
-    }
-   ],
-   "edges": [],
-   "wall": null,
-   "boxes": [],
-   "cap": "치열한 영입전?",
-   "noCenter": true,
-   "capAt": 0.6,
-   "capY": 300,
-   "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "chain": "sfl",
-   "startLine": 115,
-   "tc": "#1E5BE0",
-   "tc2": "#7B3BFF",
-   "_pics": [
-    {
-     "img": "KBO프로필/구자욱"
-    }
-   ]
-  },
-  {
-   "type": "lo_flow",
-   "title": "",
-   "nodes": [
-    {
-     "id": "kjw",
-     "x": 960,
-     "y": 640,
-     "ic": "player",
-     "lab": "구자욱",
-     "sub": "A등급 · 외야수",
-     "at": -1,
-     "img": "KBO프로필/구자욱"
-    },
-    {
-     "id": "ds",
-     "x": 640,
-     "y": 300,
-     "ic": "kbo",
-     "lab": "두산",
-     "sub": "",
-     "at": -1,
-     "logo": "두산"
-    },
-    {
-     "id": "sg",
-     "x": 1280,
-     "y": 300,
-     "ic": "kbo",
-     "lab": "SSG",
-     "sub": "",
-     "at": -1,
+     "at": 1.2,
      "logo": "SSG"
     }
    ],
@@ -5083,7 +4928,7 @@
      "a": "ds",
      "b": "kjw",
      "lab": "",
-     "at": -1,
+     "at": 0.7,
      "c": "gold",
      "r0": 150
     },
@@ -5091,7 +4936,7 @@
      "a": "sg",
      "b": "kjw",
      "lab": "",
-     "at": -1,
+     "at": 1.4,
      "c": "gold",
      "r0": 150
     }
@@ -5104,8 +4949,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "sfl",
-   "cont": true,
-   "startLine": 116,
+   "startLine": 115,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF",
    "_pics": [
@@ -5135,7 +4979,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "s_kjw2",
-   "startLine": 117,
+   "startLine": 116,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5168,7 +5012,7 @@
    },
    "chain": "s_kjw2",
    "cont": true,
-   "startLine": 118,
+   "startLine": 117,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5195,10 +5039,10 @@
     },
     {
      "type": "stamp",
-     "t": "진짜 놀라운 숫자가 하나",
+     "t": "진짜 놀라운 점",
      "at": 1.1,
      "c": "gold",
-     "size": 56
+     "size": 60
     }
    ],
    "stats": [],
@@ -5208,7 +5052,7 @@
    },
    "chain": "s_kjw2",
    "cont": true,
-   "startLine": 119,
+   "startLine": 118,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5233,7 +5077,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "s_kjw3",
-   "startLine": 120,
+   "startLine": 119,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5273,7 +5117,7 @@
    },
    "chain": "s_kjw3",
    "cont": true,
-   "startLine": 121,
+   "startLine": 120,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5320,7 +5164,7 @@
    },
    "chain": "s_kjw3",
    "cont": true,
-   "startLine": 122,
+   "startLine": 121,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5363,7 +5207,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 123,
+   "startLine": 122,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF",
    "_pics": [
@@ -5388,7 +5232,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 124,
+   "startLine": 123,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5414,7 +5258,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "chain": "sdef",
-   "startLine": 125,
+   "startLine": 124,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5442,7 +5286,7 @@
    },
    "chain": "sdef",
    "cont": true,
-   "startLine": 126,
+   "startLine": 125,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5458,7 +5302,7 @@
    "leftLab": "쓸 수 있는 돈",
    "leftTxt": "59억 9천만쯤",
    "totalAt": 0,
-   "leftAt": 3.1,
+   "leftAt": 2.1,
    "capAt": 0,
    "noCenter": true,
    "bg": {
@@ -5466,8 +5310,8 @@
    },
    "chain": "rm삼성",
    "tag": "넉넉하지 않다",
-   "tagAt": 4.1,
-   "startLine": 127,
+   "tagAt": 3.1,
+   "startLine": 126,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5483,7 +5327,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 128,
+   "startLine": 127,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5501,7 +5345,7 @@
    },
    "imgAt": 0,
    "chain": "s_wti",
-   "startLine": 129,
+   "startLine": 128,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5527,7 +5371,7 @@
    },
    "chain": "s_wti",
    "cont": true,
-   "startLine": 130,
+   "startLine": 129,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5567,7 +5411,7 @@
    },
    "chain": "s_wti",
    "cont": true,
-   "startLine": 131,
+   "startLine": 130,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5609,7 +5453,7 @@
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 45%,#0A2144 100%),repeating-linear-gradient(115deg,rgba(10,91,209,.09) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "noCenter": true,
-   "startLine": 132,
+   "startLine": 131,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF",
    "_pics": [
@@ -5629,11 +5473,11 @@
    ],
    "logoSize": 170,
    "size": 90,
-   "textAt": 1.2,
+   "textAt": 0.2,
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 133,
+   "startLine": 132,
    "tc": "#1E5BE0",
    "tc2": "#7B3BFF"
   },
@@ -5659,7 +5503,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 134
+   "startLine": 133
   },
   {
    "type": "question",
@@ -5669,6 +5513,25 @@
    ],
    "logoSize": 170,
    "size": 90,
+   "textAt": 0.2,
+   "logoAt": 0.6,
+   "chain": "e1",
+   "bg": {
+    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
+   },
+   "startLine": 134
+  },
+  {
+   "type": "question",
+   "text": "구자욱 · 두산? SSG?",
+   "logos": [
+    "삼성",
+    "두산",
+    "SSG"
+   ],
+   "logoSize": 170,
+   "size": 90,
+   "cont": true,
    "textAt": 0.2,
    "logoAt": 0.6,
    "chain": "e1",
@@ -5687,32 +5550,14 @@
    ],
    "logoSize": 170,
    "size": 90,
-   "textAt": 0.2,
-   "logoAt": 0.6,
-   "chain": "e2",
+   "cont": true,
+   "textAt": -1,
+   "logoAt": -1,
+   "chain": "e1",
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
    "startLine": 136
-  },
-  {
-   "type": "question",
-   "text": "구자욱 · 두산? SSG?",
-   "logos": [
-    "삼성",
-    "두산",
-    "SSG"
-   ],
-   "logoSize": 170,
-   "size": 90,
-   "cont": true,
-   "textAt": -1,
-   "logoAt": -1,
-   "chain": "e2",
-   "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   },
-   "startLine": 137
   },
   {
    "type": "tline",
@@ -5741,11 +5586,11 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 138
+   "startLine": 137
   },
   {
    "type": "question",
-   "text": "FA 소식은 · 야구자판기에서",
+   "text": "채널 구독하고 · FA 소식 받아보세요",
    "logos": [
     "SSG",
     "KT",
@@ -5766,31 +5611,7 @@
    "bg": {
     "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
    },
-   "startLine": 139
-  },
-  {
-   "type": "question",
-   "text": "야구자판기 · 매일 야구 이슈",
-   "logos": [
-    "SSG",
-    "KT",
-    "키움",
-    "롯데",
-    "한화",
-    "KIA",
-    "LG",
-    "두산",
-    "NC",
-    "삼성"
-   ],
-   "logoSize": 150,
-   "size": 72,
-   "noQ": true,
-   "logoAt": -1,
-   "startLine": 140,
-   "bg": {
-    "css": "linear-gradient(115deg,#0E1016 0%,#1A1C24 50%,#1C2433 100%),repeating-linear-gradient(115deg,rgba(255,255,255,.035) 0 30px,rgba(0,0,0,0) 30px 90px)"
-   }
+   "startLine": 138
   }
  ],
  "thumb": {},
@@ -5798,7 +5619,7 @@
  "source": "대사 fa17/script_v2.txt · 근거 = 주제전달-1117 · 쓸 수 있는 돈 = fa13 ROOM(래리 버드 룰)",
  "youtube": {
   "title": "FA 첫날 양의지 55억·오태곤 11억 잔류 | 구자욱 200억 영입전, 두산·SSG 참전?",
-  "description": "2026년 11월 17일 FA 협상 첫날, 두산 양의지(2년 총액 55억)와 SSG 오태곤(3년 총액 11억)이 원소속팀에 남았어요.\n10개 구단 가운데 이번 겨울 지갑을 열 팀은 어디일까요? 구자욱(삼성 라이온즈)은 어디로 갈까요?\n양의지는 계약금 40억, 연봉 총액 10억, 인센티브 5억. 오태곤은 계약금 2억, 연봉 총액 7억 4천만, 인센티브 1억 6천만이에요. SSG·KT·키움·롯데·한화·KIA·LG·두산·NC·삼성 10개 구단의 지갑 사정을 한 팀씩 정리했어요. '쓸 수 있는 돈'은 2027 샐러리캡 상한 약 151억 1,700만 원에서 2027년에 이미 정해진 연봉을 뺀 추정이에요(래리 버드 룰: 팀마다 7시즌 이상 뛴 선수 가운데 연봉이 가장 큰 1명의 절반만 반영, 옵션·연봉 인상은 뺌). 행선지·영입전 이야기는 11월 17일까지 나온 보도를 정리한 것이고 확정이 아니에요.",
+  "description": "2026년 11월 17일 FA 협상 첫날, 두산 양의지(2년 총액 55억)와 SSG 오태곤(3년 총액 11억)이 원소속팀에 남았어요.\n10개 구단 가운데 이번 겨울 지갑을 열 팀은 어디일까요? 구자욱(삼성 라이온즈)은 어디로 갈까요?\n양의지는 계약금 40억, 연봉 총액 10억, 인센티브 5억. 오태곤은 계약금 2억, 연봉 총액 7억 4천만, 인센티브 1억 6천만이에요. SSG·KT·키움·롯데·한화·기아·LG·두산·NC·삼성 10개 구단의 지갑 사정을 한 팀씩 정리했어요. '쓸 수 있는 돈'은 2027 샐러리캡 상한 약 151억 1,700만 원에서 2027년에 이미 정해진 연봉을 뺀 추정이에요(래리 버드 룰: 팀마다 7시즌 이상 뛴 선수 가운데 연봉이 가장 큰 1명의 절반만 반영, 옵션·연봉 인상은 뺌). 행선지·영입전 이야기는 11월 17일까지 나온 보도를 정리한 것이고 확정이 아니에요.",
   "cta": "구자욱은 삼성에 남을까요? 아니면 두산이나 SSG 유니폼을 입을까요? 여러분은 어떻게 보세요?",
   "prev": "2027 FA 공시 총정리",
   "tags": [
