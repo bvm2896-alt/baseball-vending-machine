@@ -475,23 +475,57 @@ def insert_breaths(path, bounds):
         new.append(round(b + n_ins * BREATH, 3))
     return new
 
+def ts_line_bounds(out, segs):
+    """11/18: 한 줄 음성의 글자 시각(out.ts.json) → seg_bounds 와 같은 꼴 [(시작초, 쉼구간 또는 None)].
+    자막 구간(' / ' · '/+')마다 첫 글자가 시작하는 시각. 앞 글자 끝과 0.04초 넘게 떨어져 있으면 그 사이가 실제 쉼."""
+    js = json.load(io.open(out + '.ts.json', encoding='utf-8'))
+    keep = lambda t: re.sub(r'[^가-힣A-Za-z0-9]', '', str(t))
+    ch = [c for c in (js.get('characters') or []) if keep(c.get('text', ''))]
+    need = [len(keep(x.lstrip('+'))) for x in segs]
+    if not ch or sum(need) == 0: raise RuntimeError('글자 시각 없음')
+    if abs(len(ch) - sum(need)) > max(2, sum(need) * 0.03): raise RuntimeError(f'글자 수 다름 {len(ch)} vs {sum(need)}')
+    d_api = float(js.get('duration') or ch[-1]['end']); d_real = probe_silences(out, thr='-36dB', mind=0.04)[0]
+    k_ = d_real / d_api if d_api > 0 and abs(d_real / d_api - 1) > 0.03 else 1.0   # 배속이 글자 시각에 안 들어갔으면 비율로 맞춤
+    sc = len(ch) / sum(need); res = [(0.0, None)]; acc = 0; last = 0.0
+    for k in range(1, len(segs)):
+        acc += need[k - 1]; j = min(len(ch) - 1, max(1, round(acc * sc)))
+        e0, s1 = float(ch[j - 1]['end']) * k_, float(ch[j]['start']) * k_
+        iv = (round(e0, 3), round(s1, 3)) if s1 - e0 >= 0.04 else None
+        pos = max(s1, last + 0.15); last = pos
+        res.append((round(pos, 3), iv))
+    print(f'  자막 경계: 글자 시각 {len(segs) - 1}곳')
+    return res
+
 def synth_line(line, prev, nxt, out, pause=None, tempo=None):
     """한 줄 합성. ' / ' 로 나뉜 호흡 구간을 따로 만들지 않고 한 문장으로 합성한다(억양이 끊기지 않게).
     그 다음 실제 쉼이 감지된 호흡 자리에만 짧은 쉼(TTS_BREATH)을 끼워 넣고, 경계를 NN.segs.json 에 기록 → build.py 가 자막을 구간별로 바꾼다"""
     segs = [x.strip() for x in line.split('/') if x.strip()]
     text = tts_text(segs) if segs else line
     p_ = [x.strip() for x in prev.split('/') if x.strip()]; n_ = [x.strip() for x in nxt.split('/') if x.strip()]
-    ok = synth(text, tts_text(p_) if p_ else '', tts_text(n_) if n_ else '', out, tempo=tempo)
+    # 11/18 00:26 사용자 "자막이 싱크가 안 맞는 부분이 많은데" — 쉬지 않고 이어 읽는 자리(/+)는 무음이 없어 글자 수로 짐작했다
+    #   → 타입캐스트 글자 시각(with-timestamps)을 같이 받아 자막 경계를 글자 단위로 정확히 잡는다(안 되면 예전 방식)
+    use_ts = len(segs) > 1 and CFG.get('TTS_LINE_TS', '1') != '0'
+    ok = synth(text, tts_text(p_) if p_ else '', tts_text(n_) if n_ else '', out, tempo=tempo, ts=use_ts) if use_ts else False
+    if not ok:
+        use_ts = False
+        try: os.remove(out + '.ts.json')
+        except Exception: pass
+        ok = synth(text, tts_text(p_) if p_ else '', tts_text(n_) if n_ else '', out, tempo=tempo)
     sj = out.replace('.mp3', '.segs.json')
     if not ok: return False
-    try: trim_long_pauses(out)   # 10/4: 줄 안의 1초 가까운 멈춤을 0.5초로
-    except Exception as e: print('  긴 쉼 줄이기 실패:', e)
+    tsb = None
+    if use_ts:
+        try: tsb = ts_line_bounds(out, segs)
+        except Exception as e: print('  글자 시각으로 자막 경계 못 잡음(예전 방식):', e); tsb = None
+    if tsb is None:
+        try: trim_long_pauses(out)   # 10/4: 줄 안의 1초 가까운 멈춤을 0.5초로
+        except Exception as e: print('  긴 쉼 줄이기 실패:', e)
     if len(segs) <= 1:
         try: os.remove(sj)
         except Exception: pass
         return True
     try:
-        bounds = seg_bounds(out, segs)
+        bounds = tsb or seg_bounds(out, segs)
         b = insert_breaths(out, bounds) if pause is None else [x for x, _ in bounds]   # pause=0 이면(후킹 대사) 쉼을 안 넣는다
         durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
         json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'breaths': sum(1 for _, iv in bounds[1:] if iv and iv[1] - iv[0] >= BREATH_MIN)}, open(sj, 'w'))
