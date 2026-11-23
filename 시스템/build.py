@@ -706,7 +706,7 @@ def stretch_pauses(path, targets, pmin, thr_db=-38.0, win=0.30):
         t, pm_ = t
         c = t * 100; best = None
         for a, b in runs:
-            if (a, b) in used or b - a < 4: continue
+            if (a, b) in used or b - a < 10: continue   # 11/23 사용자 "업..계에서는 — 말하다가 중간에 아주 잠깐 멈춘다": 0.1초보다 짧은 조용한 자리는 낱말 안의 받침·막힘 소리(업|계)라서 쉼을 끼우지 않는다
             d = 0 if a <= c <= b else min(abs(a - c), abs(b - c))
             if d <= win * 100 and (best is None or d < best[0]): best = (d, a, b)
         if not best: continue
@@ -924,7 +924,8 @@ def render(ep, ep_path):
     fps = int(cfg_get('VIDEO_FPS', '60')); scale = cfg_get('VIDEO_SCALE', '1.3333')
     DRAFT = bool(os.environ.get('KBO_DRAFT'))   # 10/1: 검수용 빠른 버전(롱폼검수.cmd) — 1080p·30fps, 파일 이름 끝 _검수
     if DRAFT: fps, scale = 30, '1.0'; print('검수용 빠른 버전: 30fps x1.0')
-    if _insT: _insT = round(_insT * fps) / fps; _INS_T[0] = _insT   # 프레임 눈금에 맞춤(그 자리에 키프레임을 넣어 다시 인코딩 없이 자른다)
+    if _insT:
+        _insT = round(_insT * fps) / fps; _INS_T[:] = [_insT] + ([] if _ic.get('outFade') else [_insT + round(float(_ic.get('settle', 0.4)) * fps) / fps])   # 프레임 눈금에 맞춤(자르는 자리 T 와 띠 전환 뒤 이어 붙는 자리 T2 에 키프레임을 넣어 다시 인코딩 없이 자른다)
     shutil.rmtree(W('frames'), ignore_errors=True)
     print(f'프레임 렌더 {fps}fps x{scale} ({round(total)}초) …')
     cw, ch = canvas_of(ep)
@@ -1223,7 +1224,7 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
           f"[tr][bar]overlay=x='-w+W*min(1,t/{total:.3f})':y=0:eval=frame:shortest=1[trf];[a][trf]overlay={X0}:{Y0}:shortest=1[v]")
     print('화면 그리기 100% — 진행 막대 입히는 중(2~3분)', flush=True)
     run(['ffmpeg', '-y', '-v', 'error', '-i', raw, '-filter_complex', fc, '-map', '[v]', '-c:v', 'libx264', '-preset', cfg_get('CHUNK_PRESET', 'veryfast'),
-         '-crf', '16', '-tune', 'animation', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-r', str(fps)] + (['-force_key_frames', f'{_INS_T[0]:.4f}'] if _INS_T[0] else []) + ['-movflags', '+faststart', W('silent.mp4')], check=True)
+         '-crf', '16', '-tune', 'animation', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-r', str(fps)] + (['-force_key_frames', ','.join(f'{x_:.4f}' for x_ in _INS_T if x_)] if _INS_T[0] else []) + ['-movflags', '+faststart', W('silent.mp4')], check=True)
     # 이번에 안 쓴 옛 조각은 지운다(용량) — 목록도 이번 것만 남긴다
     idx = {k_: [e for e in v if e['file'] in used] for k_, v in idx.items()}
     idx = {k_: v for k_, v in idx.items() if v}
@@ -1240,6 +1241,10 @@ def _find_insert(name):
         f = os.path.join(d, name) if d else name
         if name and os.path.exists(f): return os.path.abspath(f)
     return None
+
+def _nframes(f):
+    try: return int(subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-count_packets', '-show_entries', 'stream=nb_read_packets', '-of', 'csv=p=0', f], capture_output=True, text=True).stdout.strip().strip(','))
+    except Exception: return 0
 
 def _insert_clip(out, T, ic):
     """11/23 사용자 "오프닝을 하고 다음 섹션으로 넘어가기 전에 구독 유도 영상을 넣자": 본편(out)을 T초에서 나누고 그 사이에 영상을 끼운다.
@@ -1264,40 +1269,166 @@ def _insert_clip(out, T, ic):
     # 끼울 영상(소리가 있으면 살리고 없으면 무음)
     has_a = 'audio' in subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'a', '-show_entries', 'stream=codec_type', '-of', 'csv=p=0', src], capture_output=True, text=True).stdout
     cd = dur_of(src); vol = float(ic.get('vol', 0.9))
-    vf = f'scale={w_}:{h_}:force_original_aspect_ratio=decrease,pad={w_}:{h_}:(ow-iw)/2:(oh-ih)/2:black,fps={fps},format={pix}'   # 앞뒤는 그냥 컷(검은 프레임 ✗)
-    if has_a and not ic.get('mute'):
-        cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-i', src, '-vf', vf, '-af', f'volume={vol},afade=t=in:d=0.15,afade=t=out:st={max(0, cd - 0.3):.2f}:d=0.3'] + enc + ['-preset', 'medium', '-crf', '17'] + aenc + ['-shortest', C]
+    # 11/23 21:58 사용자 "오프닝에서 구독유도영상, 구독유도영상에서 본영상 넘어갈 때 자연스럽고 부드럽게":
+    #   끼울 영상의 처음 X초는 본편의 직전 프레임 위에서 서서히 나타나고, 마지막 X초는 본편의 다음 프레임으로 서서히 사라진다(겹쳐 넘어감).
+    #   본편 조각은 손대지 않는다 — 앞 조각은 그 프레임에서 끝나고, 뒤 조각은 그 프레임에서 시작하므로 이음매가 안 보인다.
+    X = max(0.0, min(float(ic.get('fade', 0.6)), cd / 4)); fA, fB = W('ins_fa.png'), W('ins_fb.png')
+    # 11/23 22:42 사용자 "구독 유도 영상에서 본 영상으로 넘어갈 때는 페이드 말고 다른 걸로 — 구독이 보이고 나서 너무 바로 넘어가니까 빠르게 전환되는 느낌":
+    #   끼울 영상은 끝까지 그대로 보여 주고 → 마지막 화면을 outHold 초 더 잡은 뒤(아주 천천히 다가감) → 사선 띠가 outWipe 초 동안 지나가며 본편 화면이 나온다.
+    #   콘티 insertClip 에 outFade:true 를 주면 옛 방식(겹쳐 사라짐).
+    HOLD, WIPE = max(0.0, float(ic.get('outHold', 0.7))), max(0.0, float(ic.get('outWipe', 0.5)))
+    band = X > 0 and WIPE > 0 and not ic.get('outFade')
+    if band:
+        try: import numpy as _np; from PIL import Image as _Img
+        except Exception as _e: print('사선 띠 전환을 못 씀(겹쳐 사라짐으로):', _e); band = False
+    TR = W('ins_tr.mp4'); TR0 = W('ins_tr0.mp4')
+    for f in (TR, TR0):
+        try: os.remove(f)
+        except Exception: pass
+    # 11/24 02:17 사용자 "첫 인트로에서 유도영상으로 넘어갈 때 화면 전환 효과도 들어가게": 들어갈 때도 사선 띠(inWipe 초, 0 이면 옛 겹쳐 나타남)
+    IW = max(0.0, float(ic.get('inWipe', 0.5))) if band else 0.0; IH = max(0.0, float(ic.get('inHold', 0.15)))
+    # 사선 띠가 드러내는 화면 = 다음 장면이 자리 잡은 뒤(T2)의 화면. 본편은 T부터 소리가 이어지고, 화면만 T~T2 동안 그 화면에 멈춰 있다가 T2부터 그대로 흐른다
+    #   (T의 화면은 아직 앞 장면이라, 띠가 지나간 뒤 앞 장면이 다시 보였다가 바뀌는 것을 막는다)
+    T2 = T + (round(float(ic.get('settle', 0.4)) * float(fps)) / float(fps) if band else 0.0)
+    for f in (fA, fB):
+        try: os.remove(f)
+        except Exception: pass
+    if X > 0:
+        R(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{max(0, T - 1.5 / float(fps)):.4f}', '-i', out, '-frames:v', '1', fA])
+        R(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{T2:.4f}', '-i', out, '-frames:v', '1', fB])
+    dz = X > 0 and os.path.exists(fA) and os.path.exists(fB)
+    sc = f'scale={w_}:{h_}:force_original_aspect_ratio=decrease,pad={w_}:{h_}:(ow-iw)/2:(oh-ih)/2:black,fps={fps}'
+    if dz and IW > 0: fc = f'[0:v]{sc},format={pix}[v]'; vin = ['-i', src]; ai = 1   # 들어갈 때·나올 때 모두 사선 띠 → 끼울 영상은 그대로
+    elif dz:
+        fc = (f'[0:v]{sc},format=yuva420p,fade=t=in:st=0:d={X:.2f}:alpha=1' + ('' if band else f',fade=t=out:st={cd - X:.2f}:d={X:.2f}:alpha=1') + '[cv];'
+              f'[1:v]scale={w_}:{h_},fps={fps},format=yuv420p[a];[2:v]scale={w_}:{h_},fps={fps},format=yuv420p[b];'
+              f"[a][b]overlay=enable='gte(t,{cd / 2:.2f})'[bg];[bg][cv]overlay=shortest=1,format={pix}[v]")
+        vin = ['-i', src, '-loop', '1', '-t', f'{cd + 0.5:.2f}', '-i', fA, '-loop', '1', '-t', f'{cd + 0.5:.2f}', '-i', fB]; ai = 3
     else:
-        cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-i', src, '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-map', '0:v', '-map', '1:a', '-vf', vf] + enc + ['-preset', 'medium', '-crf', '17'] + aenc + ['-t', f'{cd:.3f}', C]
-    print('구독 영상 끼우는 중 …', os.path.basename(src), flush=True)
+        fc = f'[0:v]{sc},format={pix}[v]'; vin = ['-i', src]; ai = 1
+    afx = f'volume={vol},afade=t=in:d={max(0.15, X):.2f},afade=t=out:st={max(0, cd - max(0.3, X)):.2f}:d={max(0.3, X):.2f}'
+    if has_a and not ic.get('mute'):
+        cmd = ['ffmpeg', '-y', '-loglevel', 'error'] + vin + ['-filter_complex', fc + f';[0:a]{afx}[au]', '-map', '[v]', '-map', '[au]'] + enc + ['-preset', 'medium', '-crf', '17'] + aenc + ['-t', f'{cd:.3f}', C]
+    else:
+        cmd = ['ffmpeg', '-y', '-loglevel', 'error'] + vin + ['-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-filter_complex', fc, '-map', '[v]', '-map', f'{ai}:a'] + enc + ['-preset', 'medium', '-crf', '17'] + aenc + ['-t', f'{cd:.3f}', C]
+    print('구독 영상 끼우는 중 …', os.path.basename(src), '(겹쳐 넘어감 %.1f초)' % X if dz else '', flush=True)
     r = R(cmd)
     if r.returncode != 0 or not os.path.exists(C): print('끼울 영상 인코딩 실패:', (r.stderr or '')[-300:]); return 0.0
-    # T에 키프레임이 있나(조각 렌더는 그 자리에 키프레임을 넣어 둔다) — 있으면 앞뒤 조각을 다시 인코딩 없이 자른다
-    kf = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v', '-skip_frame', 'nokey', '-show_entries', 'frame=pts_time', '-of', 'csv=p=0', '-read_intervals', f'{max(0, T - 0.3):.3f}%{T + 0.3:.3f}', out], capture_output=True, text=True).stdout
+    if band and dz:
+        try:
+            if not _insert_wipe(C, fB, TR, HOLD, WIPE, ic, int(w_), int(h_), int(fps), enc, aenc, pix): TR = None
+        except Exception as _e: print('사선 띠 전환 실패(바로 넘어감):', str(_e)[-300:]); TR = None
+    else: TR = None
+    if TR and not os.path.exists(TR): TR = None
+    if band and dz and IW > 0:
+        f0 = W('ins_f0.png')
+        try: os.remove(f0)
+        except Exception: pass
+        R(['ffmpeg', '-y', '-loglevel', 'error', '-i', C, '-frames:v', '1', '-update', '1', f0])
+        try:
+            if not (os.path.exists(f0) and _insert_wipe(C, f0, TR0, IH, IW, ic, int(w_), int(h_), int(fps), enc, aenc, pix, fFrom=fA, zoom=False, msg=f'구독 영상 시작: 사선 띠 {IW:.1f}초로 들어감')): TR0 = None
+        except Exception as _e: print('들어가는 사선 띠 실패(바로 넘어감):', str(_e)[-300:]); TR0 = None
+    else: TR0 = None
+    if TR0 and not os.path.exists(TR0): TR0 = None
+    # T2(띠를 안 쓰면 T)에 키프레임이 있나(조각 렌더는 그 자리에 키프레임을 넣어 둔다) — 있으면 앞뒤 조각의 화면을 다시 인코딩 없이 자른다
+    kf = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v', '-skip_frame', 'nokey', '-show_entries', 'frame=pts_time', '-of', 'csv=p=0', '-read_intervals', f'{max(0, T2 - 0.3):.3f}%{T2 + 0.3:.3f}', out], capture_output=True, text=True).stdout
     def _f(x):
         try: return float(x.strip().strip(','))
         except Exception: return -9.0
-    has_k = any(abs(_f(x) - T) < 0.6 / float(fps) for x in kf.split())
-    nA = int(round(T * float(fps))); ok = False
+    has_k = any(abs(_f(x) - T2) < 0.6 / float(fps) for x in kf.split())
+    nA = int(round(T * float(fps))); ok = False; D2 = T2 - T
     renc = enc + ['-preset', cfg_get('CHUNK_PRESET', 'veryfast'), '-crf', '16', '-tune', 'animation']
     fo, fi = f'afade=t=out:st={max(0, T - 0.12):.3f}:d=0.12', 'afade=t=in:d=0.12'
+    V1, V2, VB = W('ins_b1.mp4'), W('ins_b2.mp4'), W('ins_bv.mp4')
+    for f in (V1, V2, VB):
+        try: os.remove(f)
+        except Exception: pass
+    q = lambda f: "file '" + os.path.abspath(f).replace("'", "'\\''") + "'\n"
+    r1 = R(['ffmpeg', '-y', '-loglevel', 'error', '-i', out, '-t', f'{T:.4f}', '-frames:v', str(nA), '-c:v', 'copy', '-af', fo] + aenc + [A])   # 앞 조각: 화면은 그대로 복사(끝을 자르는 데는 키프레임이 필요 없다)
+    if r1.returncode != 0 or not os.path.exists(A) or abs(dur_of(A) - T) > 0.06:
+        r1 = R(['ffmpeg', '-y', '-loglevel', 'error', '-i', out, '-t', f'{T:.4f}', '-af', fo] + renc + aenc + [A])
+        if r1.returncode != 0 or not os.path.exists(A): print('앞 조각 나누기 실패:', (r1.stderr or '')[-300:]); return 0.0
     if has_k:
-        r1 = R(['ffmpeg', '-y', '-loglevel', 'error', '-i', out, '-t', f'{T:.4f}', '-frames:v', str(nA), '-c:v', 'copy', '-af', fo] + aenc + [A])
-        r2 = R(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{T:.4f}', '-i', out, '-c:v', 'copy', '-af', fi] + aenc + ['-avoid_negative_ts', 'make_zero', B])
-        ok = r1.returncode == 0 and r2.returncode == 0 and os.path.exists(A) and os.path.exists(B) and abs(dur_of(A) - T) < 0.06 and abs(dur_of(B) - (d0 - T)) < 0.25
+        if D2 > 0:   # 화면: 멈춘 화면 D2초 + T2부터 복사 → 이어 붙임 / 소리: T부터 끊김 없이 한 번에
+            ra = R(['ffmpeg', '-y', '-loglevel', 'error', '-loop', '1', '-t', f'{D2:.4f}', '-i', fB, '-vf', f'scale={w_}:{h_},fps={fps},format={pix}', '-an'] + enc + ['-preset', 'medium', '-crf', '16', '-t', f'{D2:.4f}', V1])
+            rb = R(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{T2 + 0.5 / float(fps):.4f}', '-i', out, '-an', '-c:v', 'copy', '-avoid_negative_ts', 'make_zero', V2])   # 11/24: T2 를 딱 주면 소수 오차로 앞 키프레임(T)부터 복사돼 화면이 0.4초 늦어졌다 → 반 프레임 뒤를 가리킨다
+            l2 = W('ins_blist.txt'); io.open(l2, 'w', encoding='utf-8').write(q(V1) + q(V2))
+            rc = R(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', l2, '-c', 'copy', VB])
+            r2 = R(['ffmpeg', '-y', '-loglevel', 'error', '-i', VB, '-ss', f'{T:.4f}', '-i', out, '-map', '0:v', '-map', '1:a', '-c:v', 'copy', '-af', fi] + aenc + [B])
+            ok = all(x.returncode == 0 for x in (ra, rb, rc, r2)) and os.path.exists(B) and abs(dur_of(B) - (d0 - T)) < 0.25
+            # 11/24 화면이 밀리지 않았는지 프레임 수로 확인(뒤 조각 화면 = 본편에서 T2 뒤에 남은 프레임 수와 같아야 한다). 다르면 다시 인코딩하는 길로
+            if ok:
+                n_out, n_v2 = _nframes(out), _nframes(V2); want = n_out - int(round(T2 * float(fps)))
+                if n_out and n_v2 and abs(n_v2 - want) > 1: print(f'뒤 조각 화면이 {n_v2 - want}프레임 어긋남 → 다시 인코딩'); ok = False
+        else:
+            r2 = R(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{T:.4f}', '-i', out, '-c:v', 'copy', '-af', fi] + aenc + ['-avoid_negative_ts', 'make_zero', B])
+            ok = r2.returncode == 0 and os.path.exists(B) and abs(dur_of(B) - (d0 - T)) < 0.25
     if not ok:
         has_k = False
-        print('앞뒤 조각을 다시 인코딩합니다(그 자리에 키프레임 없음) — 몇 분 걸려요', flush=True)
-        r1 = R(['ffmpeg', '-y', '-loglevel', 'error', '-i', out, '-t', f'{T:.4f}', '-af', fo] + renc + aenc + [A])
-        r2 = R(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{T:.4f}', '-i', out, '-af', fi] + renc + aenc + [B])
-        if r1.returncode != 0 or r2.returncode != 0 or not os.path.exists(A) or not os.path.exists(B): print('조각 나누기 실패:', ((r1.stderr or '') + (r2.stderr or ''))[-300:]); return 0.0
+        print('뒤 조각을 다시 인코딩합니다(그 자리에 키프레임 없음) — 몇 분 걸려요', flush=True)
+        if D2 > 0:
+            r2 = R(['ffmpeg', '-y', '-loglevel', 'error', '-loop', '1', '-t', f'{D2:.4f}', '-i', fB, '-ss', f'{T2:.4f}', '-i', out, '-ss', f'{T:.4f}', '-i', out,
+                    '-filter_complex', f'[0:v]scale={w_}:{h_},fps={fps},format={pix},setsar=1[f];[1:v]fps={fps},format={pix},setsar=1[m];[f][m]concat=n=2:v=1:a=0[v];[2:a]{fi}[au]', '-map', '[v]', '-map', '[au]'] + renc + aenc + [B])
+        else:
+            r2 = R(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{T:.4f}', '-i', out, '-af', fi] + renc + aenc + [B])
+        if r2.returncode != 0 or not os.path.exists(B): print('뒤 조각 나누기 실패:', (r2.stderr or '')[-300:]); return 0.0
     q = lambda f: "file '" + os.path.abspath(f).replace("'", "'\\''") + "'\n"
-    lst = W('ins_list.txt'); io.open(lst, 'w', encoding='utf-8').write(q(A) + q(C) + q(B))
+    lst = W('ins_list.txt'); io.open(lst, 'w', encoding='utf-8').write(q(A) + (q(TR0) if TR0 else '') + q(C) + (q(TR) if TR else '') + q(B))
     r = R(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-c', 'copy', '-movflags', '+faststart', J])
     dj = dur_of(J) if os.path.exists(J) else 0.0
-    if r.returncode != 0 or abs(dj - (d0 + dur_of(C))) > 0.5: print('끼워 붙이기 실패:', (r.stderr or '')[-300:], f'{dj:.2f}'); return 0.0
+    if r.returncode != 0 or abs(dj - (d0 + dur_of(C) + (dur_of(TR) if TR else 0.0) + (dur_of(TR0) if TR0 else 0.0))) > 0.5: print('끼워 붙이기 실패:', (r.stderr or '')[-300:], f'{dj:.2f}'); return 0.0
     shutil.move(J, out); print(f'구독 영상 {dj - d0:.1f}초를 {T:.2f}초 자리에 끼움' + ('(뒤 조각 복사)' if has_k else '(뒤 조각 다시 인코딩)'))
     return dj - d0
+
+def _insert_wipe(C, fB, TR, hold, wipe, ic, w, h, fps, enc, aenc, pix, fFrom=None, zoom=True, msg=None):
+    """끼운 영상(C)의 마지막 화면을 hold 초 잡고(1.00→1.03배로 천천히 다가감), 사선 띠가 wipe 초 동안 왼쪽에서 오른쪽으로 지나가며 본편 화면(fB)을 드러내는 조각(TR)을 만든다.
+       띠 = 팀 색 넓은 띠 + 어두운 띠 + 노란 가는 줄(스포츠 중계 템플릿의 사선 띠와 같은 색). 색은 콘티 insertClip.wipeColors [넓은 띠, 어두운 띠, 가는 줄]."""
+    import numpy as np
+    from PIL import Image
+    fL = fFrom or W('ins_fl.png')   # fFrom = 띠가 덮기 전 화면(없으면 끼운 영상의 마지막 화면)
+    if not fFrom:
+        try: os.remove(fL)
+        except Exception: pass
+        subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-sseof', '-0.4', '-i', C, '-update', '1', fL], capture_output=True)
+    if not os.path.exists(fL) or not os.path.exists(fB): return False
+    last = Image.open(fL).convert('RGB').resize((w, h), Image.LANCZOS); nxt = np.asarray(Image.open(fB).convert('RGB').resize((w, h), Image.LANCZOS), dtype=np.float32)
+    cols = ic.get('wipeColors') or ['#7C2230', '#16171C', '#E9C46A']
+    rgb = lambda c: np.array([int(c.lstrip('#')[i:i + 2], 16) for i in (0, 2, 4)], dtype=np.float32)
+    c1, c2, c3 = rgb(cols[0]), rgb(cols[1]), rgb(cols[2])
+    nH, nW = int(round(hold * fps)), max(2, int(round(wipe * fps))); n = nH + nW
+    k = 0.26; bw, dw, yw = 0.20 * w, 0.055 * w, 0.010 * w; m = k * h / 2
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32); u = xx + k * (h / 2 - yy)   # 위쪽이 앞서 가는 사선
+    ease = lambda t: 4 * t * t * t if t < 0.5 else 1 - pow(-2 * t + 2, 3) / 2
+    edge = lambda a: np.clip(a + 0.5, 0, 1)[..., None]   # 1px 부드러운 경계
+    # 색 표시(행렬·범위)는 끼운 영상 조각과 같게
+    pr = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v', '-show_entries', 'stream=color_space,color_transfer,color_primaries,color_range', '-of', 'default=nw=1', C], capture_output=True, text=True).stdout
+    kv = dict(l.split('=', 1) for l in pr.strip().splitlines() if '=' in l); tags = []
+    for key, opt in (('color_space', '-colorspace'), ('color_transfer', '-color_trc'), ('color_primaries', '-color_primaries'), ('color_range', '-color_range')):
+        if kv.get(key) and kv[key] not in ('unknown', 'N/A'): tags += [opt, kv[key]]
+    p = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{w}x{h}', '-r', str(fps), '-i', '-', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono',
+                          '-vf', f'format={pix}', '-map', '0:v', '-map', '1:a'] + enc + tags + ['-preset', 'medium', '-crf', '17'] + aenc + ['-t', f'{n / fps:.4f}', TR], stdin=subprocess.PIPE, stderr=subprocess.PIPE)
+    try:
+        for i in range(n):
+            z = 1.0 + (0.03 * (i + 1) / n if zoom else 0.0)
+            if z > 1.0005:
+                zw, zh = int(round(w * z)), int(round(h * z)); im = last.resize((zw, zh), Image.BICUBIC).crop(((zw - w) // 2, (zh - h) // 2, (zw - w) // 2 + w, (zh - h) // 2 + h))
+            else: im = last
+            if i < nH: fr = np.asarray(im, dtype=np.uint8)
+            else:
+                t = ease((i - nH + 1) / nW); L = -m + t * (w + bw + dw + yw + 2 * m)   # 띠 앞머리 위치
+                f = np.asarray(im, dtype=np.float32)
+                a1 = edge(L - u); a2 = edge(L - bw - u); a3 = edge(L - bw - dw - u); a4 = edge(L - bw - dw - yw - u)
+                f = f * (1 - a1) + c1 * a1; f = f * (1 - a2) + c2 * a2; f = f * (1 - a3) + c3 * a3; f = f * (1 - a4) + nxt * a4
+                fr = np.clip(f + 0.5, 0, 255).astype(np.uint8)
+            p.stdin.write(fr.tobytes())
+        p.stdin.close(); err = p.stderr.read().decode('utf-8', 'replace'); p.wait()
+    except Exception as e:
+        try: p.kill()
+        except Exception: pass
+        print('사선 띠 프레임 만들기 실패:', str(e)[-200:]); return False
+    if p.returncode != 0 or not os.path.exists(TR): print('사선 띠 인코딩 실패:', err[-300:]); return False
+    print(msg or f'구독 영상 끝: 마지막 화면 {hold:.1f}초 잡고 사선 띠 {wipe:.1f}초로 넘어감')
+    return True
 
 def _append_endcard_anim(EP, out, sec, intro, loop):
     """11/23 사용자 "엔딩 너무 우려먹었는데 — 멋지게 모션그래픽 넣어서 구독해 달라는 내용으로": 움직이는 엔딩.
@@ -1315,9 +1446,14 @@ def _append_endcard_anim(EP, out, sec, intro, loop):
     q = lambda f: "file '" + os.path.abspath(f).replace("'", "'\\''") + "'\n"
     lst = W('endanim_list.txt'); io.open(lst, 'w', encoding='utf-8').write(q(intro) + q(loop) * n)
     tail = W('endcard.mp4')
-    r = subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{sec:.2f}',
-                        '-vf', f'scale={w_}:{h_},fade=t=in:st=0:d=0.4,format={pix}', '-c:v', 'libx264', '-profile:v', prof, '-level', lvl, '-pix_fmt', pix, '-r', fps, '-g', str(int(fps) * 2),
-                        '-preset', 'medium', '-crf', '18', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-ac', '1', '-shortest', tail], capture_output=True, text=True, encoding='utf-8', errors='replace')
+    # 11/23 23:04 사용자 "엔딩 장면 너가 간단한 효과음 같은 것만 넣어줘": 두 파일에 효과음(소리 줄)이 들어 있으면 그 소리를 쓰고(끝 1초는 줄어듦), 없으면 무음
+    _ha = lambda f: 'audio' in subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'a', '-show_entries', 'stream=codec_type', '-of', 'csv=p=0', f], capture_output=True, text=True).stdout
+    sfx = _ha(intro) and _ha(loop)
+    ain = [] if sfx else ['-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono']
+    amap = ['-map', '0:v', '-map', '0:a', '-af', f'afade=t=out:st={max(0, sec - 1.0):.2f}:d=1.0'] if sfx else ['-map', '0:v', '-map', '1:a']
+    r = subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst] + ain + ['-t', f'{sec:.2f}'] + amap +
+                       ['-vf', f'scale={w_}:{h_},format={pix}', '-c:v', 'libx264', '-profile:v', prof, '-level', lvl, '-pix_fmt', pix, '-r', fps, '-g', str(int(fps) * 2),
+                        '-preset', 'medium', '-crf', '18', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-ac', '1'] + ([] if sfx else ['-shortest']) + [tail], capture_output=True, text=True, encoding='utf-8', errors='replace')
     if r.returncode != 0 or not os.path.exists(tail): print('움직이는 엔딩 인코딩 실패:', (r.stderr or '')[-200:]); return None
     lst2 = W('endcard_list.txt'); joined = W('with_endcard.mp4')
     io.open(lst2, 'w', encoding='utf-8').write(q(out) + q(tail))

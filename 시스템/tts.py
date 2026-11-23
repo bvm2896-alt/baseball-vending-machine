@@ -446,32 +446,55 @@ def trim_long_pauses(path, maxp=None, keep=None):
     return len(inner)
 
 BREATH_MIN = float(CFG.get('TTS_BREATH_MIN', '0.15'))   # 10/7 밤 사용자("음성 중간중간 끊김"): 원래 쉼이 이보다 짧은 자리(말 중간 받침소리)엔 쉼을 안 넣는다
-def insert_breaths(path, bounds):
+def insert_breaths(path, bounds, segs=None):
     """실제 쉼(BREATH_MIN 초 이상)이 감지된 호흡 자리마다 BREATH 초를 늘려 '와다다다' 읽는 느낌을 없앤다. 새 경계 목록을 돌려준다.
-    10/7 밤: 완전 무음(anullsrc)을 끼우면 숨소리·잔향까지 뚝 끊겨 '끊김'으로 들림 → 쉼 자리의 원래 소리(방 소리)를 이어 붙여 늘린다."""
+    10/7 밤: 완전 무음(anullsrc)을 끼우면 숨소리·잔향까지 뚝 끊겨 '끊김'으로 들림 → 쉼 자리의 원래 소리(방 소리)를 이어 붙여 늘린다.
+    11/23 사용자("끝말이 이상하게 들리는 게 너무 많다 — 기계음이 들어가고 막 울려서 들린다", 첫 줄 '시작되고'가 '고고고고'):
+      글자 시각(ts)이 '쉼'이라고 한 자리가 실제로는 말소리(모음 끝)일 때가 있는데, 그 가운데 0.1초를 한 번 더 붙여서 끝말이 겹쳐 울렸다(79줄 중 33줄·38곳).
+      → 실제 소리를 재서 조용한 자리(-45dB 아래 120ms 이상 — 그보다 짧으면 낱말 안의 받침·막힘 소리일 수 있다)가 그 근처(±0.2초)에 있을 때만, 그 조용한 소리로만 늘린다. 없으면 안 끼운다. 이어 읽는 자리('/+')에도 안 끼운다."""
     import numpy as np
     ok = lambda iv: bool(iv) and (iv[1] - iv[0]) >= BREATH_MIN
-    cuts = [iv for _, iv in bounds[1:] if ok(iv)]
-    if not cuts or BREATH <= 0: return [b for b, _ in bounds]
+    idx = [k for k in range(1, len(bounds)) if ok(bounds[k][1]) and not (segs and k < len(segs) and str(segs[k]).startswith('+'))]
+    if not idx or BREATH <= 0: return [b for b, _ in bounds]
     sr_ = 44100
     raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', path, '-f', 'f32le', '-ac', '1', '-ar', str(sr_), '-'], capture_output=True).stdout
     x = np.frombuffer(raw, dtype=np.float32).copy()
     if not len(x): return [b for b, _ in bounds]
-    h = int(BREATH * sr_); out, prev = [], 0
-    for a, b in cuts:
-        m = int((a + b) / 2 * sr_)
-        if m - h // 2 < 0 or m + h > len(x): continue
-        out.append(x[prev:m]); out.append(np.concatenate([x[m - h // 2:m], x[m:m + h - h // 2]]))   # 쉼 가운데의 원래 소리를 한 번 더
-        prev = m
+    h = int(BREATH * sr_); hop = int(sr_ * 0.01); fr = len(x) // hop
+    if fr < 10: return [b for b, _ in bounds]
+    quiet = 20 * np.log10(np.sqrt(np.mean(x[:fr * hop].reshape(fr, hop) ** 2, axis=1) + 1e-12)) < -45.0
+    spots = []   # (경계 번호, 끼울 자리 샘플, 조용한 조각)
+    for k in idx:
+        a, b = bounds[k][1]
+        lo, hi = max(1, int((a - 0.2) * 100)), min(fr - 1, int((b + 0.2) * 100)); best, j = None, lo
+        while j < hi:
+            if quiet[j]:
+                e = j
+                while e < hi and quiet[e]: e += 1
+                c = (j + e) / 200.0; d = 0.0 if a <= c <= b else min(abs(c - a), abs(c - b))
+                if e - j >= 12 and (best is None or (d, j - e) < (best[0], best[1] - best[2])): best = (d, j, e)
+                j = e
+            else: j += 1
+        if not best: continue
+        _, j, e = best
+        m = (j + e) // 2 * hop; half = min(h // 2, (e - j) * hop // 2 - hop)
+        if half < hop or (spots and m <= spots[-1][1]): continue
+        spots.append((k, m, x[m - half:m + half].copy()))
+    if not spots: return [b for b, _ in bounds]
+    out, prev = [], 0
+    for _, m, piece in spots:
+        out.append(x[prev:m]); out.append(np.resize(piece, h)); prev = m   # 조용한 자리의 원래 소리(방 소리)만 이어 붙인다
     out.append(x[prev:])
     y = np.concatenate(out); tmp = path + '.br.mp3'
     r = subprocess.run(['ffmpeg', '-y', '-v', 'error', '-f', 'f32le', '-ar', str(sr_), '-ac', '1', '-i', '-', '-b:a', '192k', tmp], input=y.tobytes(), capture_output=True)
     if r.returncode != 0 or not os.path.exists(tmp): return [b for b, _ in bounds]
     os.replace(tmp, path)
+    done = set(k for k, _, _ in spots)
+    if len(done) < len(idx): print(f'  쉼 늘리기: {len(done)}곳(글자 시각의 쉼 {len(idx) - len(done)}곳은 실제로 조용하지 않아 건너뜀)')
     # 경계 보정: 각 경계 앞에 늘린 쉼만큼 뒤로 밀린다
     new, n_ins = [], 0
-    for b, iv in bounds:
-        if ok(iv): n_ins += 1
+    for k, (b, iv) in enumerate(bounds):
+        if k in done: n_ins += 1
         new.append(round(b + n_ins * BREATH, 3))
     return new
 
@@ -526,7 +549,7 @@ def synth_line(line, prev, nxt, out, pause=None, tempo=None):
         return True
     try:
         bounds = tsb or seg_bounds(out, segs)
-        b = insert_breaths(out, bounds) if pause is None else [x for x, _ in bounds]   # pause=0 이면(후킹 대사) 쉼을 안 넣는다
+        b = insert_breaths(out, bounds, segs if tsb else None) if pause is None else [x for x, _ in bounds]   # pause=0 이면(후킹 대사) 쉼을 안 넣는다
         durs = [b[k + 1] - b[k] for k in range(len(b) - 1)] + [0.0]
         json.dump({'durs': durs, 'pause': 0.0, 'bounds': b, 'breaths': sum(1 for _, iv in bounds[1:] if iv and iv[1] - iv[0] >= BREATH_MIN)}, open(sj, 'w'))
     except Exception as e:
