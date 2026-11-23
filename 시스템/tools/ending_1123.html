@@ -1,0 +1,151 @@
+<!doctype html><html><head><meta charset="utf-8">
+<!-- 야구자판기 엔딩 모션 시안(11/23): window.render(t) 가 t초의 화면을 그린다. ?theme=A|B|C · 설계 좌표 1920x1080(#stage 를 화면 폭에 맞춰 배율).
+     규칙: 평면(흐림·번짐 ✗), KBO 다이아고딕, 가운데 오른쪽은 유튜브 최종 화면(다음 영상·구독 버튼) 자리로 비움. -->
+<style>
+@font-face{font-family:K;font-weight:900;src:url('__FONT_DIR__/KBO Dia Gothic_bold.ttf')}@font-face{font-family:K;font-weight:500;src:url('__FONT_DIR__/KBO Dia Gothic_medium.ttf')}
+html,body{margin:0;background:#000;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;font-family:K,'Pretendard','Noto Sans KR',sans-serif;font-weight:900;overflow:hidden}
+.ab{position:absolute;white-space:nowrap;line-height:1}
+</style></head><body><div id="stage"></div>
+<script>
+const Q=new URLSearchParams(location.search),THEME=Q.get('theme')||'A',GUIDE=Q.get('guide')==='1';
+const S=document.getElementById('stage');function fit(){S.style.transform='scale('+(innerWidth/1920)+')'}fit();addEventListener('resize',fit);
+const c01=x=>x<0?0:x>1?1:x,sg=(t,a,b)=>c01((t-a)/(b-a)),e4=x=>1-Math.pow(1-c01(x),4),e3=x=>1-Math.pow(1-c01(x),3),eIO=x=>{x=c01(x);return x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2},
+ back=x=>{x=c01(x);const c=1.70158;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)},lerp=(a,b,q)=>a+(b-a)*q;
+const CR='#ECE5D8',YE='#E9C46A',BK='#16171C',RED='#C9655E';
+const TEAMS=[['KIA','#B8303F'],['삼성','#2E6BB8'],['LG','#B02A5E'],['두산','#3A3F7A'],['KT','#4A4E58'],['SSG','#B8362F'],['롯데','#2E4A78'],['한화','#D2702A'],['NC','#3F6BA5'],['키움','#8A2F47']];
+const clipR=q=>q>=1?'':`clip-path:inset(0 ${((1-e4(q))*100).toFixed(2)}% 0 0);`;
+const mask=(tx,x,y,fz,col,q,ls=-2,ex='')=>q<=0?'':`<div class="ab" style="left:${x}px;top:${y}px;height:${Math.round(fz*1.12)}px;overflow:hidden;${ex}"><div style="font-size:${fz}px;color:${col};letter-spacing:${ls}px;line-height:${Math.round(fz*1.12)}px;transform:translateY(${((1-e4(q))*105).toFixed(2)}%)">${tx}</div></div>`;
+/* 유튜브 최종 화면 자리(시안에서만 점선으로 보여 줌) */
+const guide=()=>!GUIDE?'':`<div class="ab" style="left:1010px;top:372px;width:780px;height:439px;border:4px dashed rgba(255,255,255,.28);border-radius:18px;box-sizing:border-box"></div><div class="ab" style="left:1010px;top:572px;width:780px;text-align:center;font-size:30px;font-weight:500;color:rgba(255,255,255,.4)">다음 영상 자리 (유튜브가 얹음)</div>
+<div class="ab" style="left:800px;top:500px;width:180px;height:180px;border:4px dashed rgba(255,255,255,.28);border-radius:50%;box-sizing:border-box"></div><div class="ab" style="left:800px;top:578px;width:180px;text-align:center;font-size:24px;font-weight:500;color:rgba(255,255,255,.4)">구독 버튼</div>`;
+/* 아래 띠: 구독 · 좋아요 · 알림 설정 이 계속 흐름 */
+const ticker=(t,y,bg,fg,q)=>{if(q<=0)return'';const W=560,off=(t*70)%W;let h=`<div class="ab" style="left:0;top:${y}px;width:1920px;height:74px;background:${bg};${clipR(q)};overflow:hidden">`;
+ for(let i=-1;i<5;i++)h+=`<div class="ab" style="left:${i*W-off+40}px;top:17px;font-size:40px;color:${fg};letter-spacing:-1px">구독 <span style="opacity:.45">●</span> 좋아요 <span style="opacity:.45">●</span> 알림 설정 <span style="opacity:.45">●</span></div>`;return h+'</div>'};
+/* 캔 하나(자판기 안·떨어지는 캔 공용) */
+const can=(x,y,w,h,col,lab,o={})=>{const r=Math.round(w*.18);return `<div class="ab" style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${w}px;height:${h}px;transform:rotate(${(o.rot||0).toFixed(2)}deg) scale(${(o.sx==null?1:o.sx).toFixed(3)},${(o.sy==null?1:o.sy).toFixed(3)});transform-origin:50% 100%;opacity:${o.op==null?1:o.op}">
+ <div class="ab" style="left:0;top:0;width:${w}px;height:${h}px;background:${col};border-radius:${r}px"></div><div class="ab" style="left:0;top:${Math.round(h*.08)}px;width:${w}px;height:${Math.max(3,Math.round(h*.06))}px;background:rgba(255,255,255,.35)"></div>
+ <div class="ab" style="left:0;top:${Math.round(h*.3)}px;width:${w}px;height:${Math.round(h*.42)}px;background:${CR}"></div><div class="ab" style="left:0;top:${Math.round(h*.3)}px;width:${w}px;height:${Math.round(h*.42)}px;line-height:${Math.round(h*.42)}px;text-align:center;font-size:${Math.round(Math.min(w*.42,h*.3))}px;color:${BK};letter-spacing:-1px">${lab||''}</div></div>`};
+/* ── A. 자판기 ── */
+function A(t){const BG='#173029',BG2='#1E3B36';let h=`<div class="ab" style="left:0;top:0;width:1920px;height:1080px;background:${BG}"></div><div class="ab" style="left:-200px;top:0;width:1100px;height:1080px;background:${BG2};transform:skewX(-12deg);transform-origin:0 100%;${clipR(sg(t,0,.6))}"></div>`;
+ const up=e4(sg(t,.1,.8)),my=130+(1-up)*1000,MX=170,MW=520,MH=820; const loop=t>8?(t-8)%4:-1,cyc=t>8?Math.floor((t-8)/4):-1;
+ /* 몸통 */
+ h+=`<div class="ab" style="left:${MX+16}px;top:${my+16}px;width:${MW}px;height:${MH}px;background:rgba(0,0,0,.35);border-radius:22px"></div><div class="ab" style="left:${MX}px;top:${my}px;width:${MW}px;height:${MH}px;background:${CR};border-radius:22px"></div>`;
+ /* 간판 */
+ h+=`<div class="ab" style="left:${MX+26}px;top:${my+24}px;width:${MW-52}px;height:84px;background:${BK};border-radius:10px"></div>`+mask('야구자판기',MX+26+Math.round((MW-52-5*58)/2),my+34,62,YE,sg(t,1.3,1.9),-3);
+ /* 창 + 선반 */
+ const WX=MX+30,WY=my+130,WW=340,WH=470; h+=`<div class="ab" style="left:${WX}px;top:${WY}px;width:${WW}px;height:${WH}px;background:${BK};border-radius:10px"></div>`;
+ const drop=sg(t,4.0,5.0), dropC=1; /* 첫 캔: 2번째 선반 2번째 칸 */
+ for(let r=0;r<4;r++){const sy=WY+22+r*112; h+=`<div class="ab" style="left:${WX+10}px;top:${sy+92}px;width:${WW-20}px;height:8px;background:#3A3D46"></div>`;
+  for(let c=0;c<4;c++){const k=r*4+c,q=back(sg(t,.75+k*.06,1.05+k*.06)); if(q<=0)continue; const tm=TEAMS[(k*3+1)%10]; const isHero=(r===1&&c===1); let op=1,dx=0,dy=0,rot=0;
+   if(isHero){ if(t>=3.9&&t<8){continue;} }
+   const lp=(loop>=0&&k===(cyc*5+2)%16&&!(r===1&&c===1)); if(lp){ if(loop>.6&&loop<3.4)continue; }
+   let sc=q; if(lp&&loop>=3.4)sc=back(sg(loop,3.4,3.8)); if(isHero&&t>=8)sc=back(sg(t,8,8.4));
+   h+=can(WX+26+c*76,sy+2,58,90,isHero?YE:tm[1],isHero?'구독':tm[0],{sx:sc,sy:sc}); }}
+ /* 오른쪽 조작판 */
+ const PX=MX+392,PY=my+130; h+=`<div class="ab" style="left:${PX}px;top:${PY}px;width:104px;height:470px;background:#D8D0C0;border-radius:10px"></div><div class="ab" style="left:${PX+26}px;top:${PY+30}px;width:52px;height:12px;background:${BK};border-radius:6px"></div><div class="ab" style="left:${PX}px;top:${PY+52}px;width:104px;text-align:center;font-size:20px;font-weight:500;color:#6B6558">동전</div>`;
+ const press=t>=3.3&&t<3.6?1-Math.abs((t-3.45)/.15):0, lit=t>=3.4, blink=lit?(t<8?1:(Math.sin(t*3.2)>-.2?1:.55)):0;
+ h+=`<div class="ab" style="left:${PX+12}px;top:${PY+110}px;width:80px;height:80px;border-radius:50%;background:${lit?YE:'#B9B1A0'};opacity:${lit?blink:1};transform:scale(${(1-.1*press).toFixed(3)});box-shadow:0 ${Math.round(6*(1-press))}px 0 ${lit?'#B8943F':'#8F8878'}"></div><div class="ab" style="left:${PX+12}px;top:${PY+136}px;width:80px;text-align:center;font-size:28px;color:${BK};letter-spacing:-1px;transform:translateY(${Math.round(4*press)}px)">구독</div>`;
+ for(let i=0;i<6;i++)h+=`<div class="ab" style="left:${PX+18+(i%2)*40}px;top:${PY+240+Math.floor(i/2)*44}px;width:28px;height:28px;border-radius:6px;background:#B9B1A0"></div>`;
+ h+=`<div class="ab" style="left:${PX+12}px;top:${PY+400}px;width:80px;height:44px;background:${BK};border-radius:6px"></div><div class="ab" style="left:${PX+12}px;top:${PY+410}px;width:80px;text-align:center;font-size:24px;color:${lit?YE:'#4A4E58'}">${lit?'OK':'---'}</div>`;
+ /* 꺼내는 곳 */
+ const TX=MX+60,TY=my+650; h+=`<div class="ab" style="left:${TX}px;top:${TY}px;width:${MW-120}px;height:130px;background:${BK};border-radius:12px"></div><div class="ab" style="left:${TX}px;top:${TY}px;width:${MW-120}px;height:26px;background:#3A3D46;border-radius:12px 12px 0 0"></div>`;
+ /* 동전 */
+ if(t>=2.3&&t<3.3){const q=sg(t,2.3,3.2),x=lerp(980,PX+52,e3(q)),y=lerp(520,PY+36,q)-Math.sin(q*Math.PI)*190; h+=`<div class="ab" style="left:${(x-24).toFixed(1)}px;top:${(y-24).toFixed(1)}px;width:48px;height:48px;border-radius:50%;background:${YE};transform:scaleX(${Math.abs(Math.cos(q*9)).toFixed(3)});opacity:${c01((1-q)*8)}"></div>`}
+ /* 첫 캔: 흔들 → 떨어짐 → 튀어나와 커짐 */
+ if(t>=3.9){const hx=WX+26+76,hy=WY+22+112+2; let x=hx,y=hy,w=58,hh=90,rot=0,sx=1,syy=1;
+  if(t<4.3){rot=Math.sin((t-3.9)*40)*5*(1-(t-3.9)/.4)}
+  else if(t<5.0){const q=(t-4.3)/.7; y=lerp(hy,TY+34,q*q); x=lerp(hx,TX+150,e3(q)); rot=q*90}
+  else if(t<5.35){const q=(t-5.0)/.35; x=TX+150;y=TY+34; rot=90; syy=1; sx=1-Math.sin(q*Math.PI)*.12}
+  else{const q=e4(sg(t,5.35,6.3)); x=lerp(TX+150,792,q); y=lerp(TY+34,236,q)-Math.sin(c01((t-5.35)/.95)*Math.PI)*120; rot=lerp(90,-8,q); sx=syy=lerp(1,2.5,q)}
+  h+=can(x,y,w,hh,YE,'구독',{rot,sx,sy:syy}); }
+ /* 되풀이: 캔이 하나씩 떨어져 꺼내는 곳에 */
+ if(loop>=.6&&loop<3.2){const k=(cyc*5+2)%16,r=Math.floor(k/4),c=k%4; if(!(r===1&&c===1)){const tm=TEAMS[(k*3+1)%10],hx=WX+26+c*76,hy=WY+22+r*112+2,q=sg(loop,.6,1.3); let x=lerp(hx,TX+150,e3(q)),y=lerp(hy,TY+34,q*q),rot=q*90,op=1-sg(loop,2.6,3.2); h+=can(x,y,58,90,tm[1],tm[0],{rot,op}); }}
+ /* 오른쪽 글 */
+ h+=mask('구독 한 번이면',950,150,84,CR,sg(t,5.9,6.5))+mask('매일 <span style="color:'+YE+'">야구 소식</span>이 나와요',950,250,84,CR,sg(t,6.15,6.75));
+ return h+guide();}
+/* ── B. 전광판 ── */
+const FL='가나다라마바사아자차카타파하구독야기판자좋아요알림설정부탁해요';
+function flap(x,y,w,hh,ch,q,hot){ /* q<1 이면 넘어가는 중 */ const done=q>=1,show=done?ch:FL[Math.floor((q*23+x*.13+y*.07))%FL.length],ph=done?1:(q*9)%1,bg=hot&&done?YE:'#23262D',fg=hot&&done?BK:CR;
+ return `<div class="ab" style="left:${x}px;top:${y}px;width:${w}px;height:${hh}px;background:${bg};border-radius:10px;overflow:hidden"><div class="ab" style="left:0;top:0;width:${w}px;height:${hh}px;line-height:${hh}px;text-align:center;font-size:${Math.round(hh*.7)}px;color:${fg};transform:scaleY(${(done?1:.35+.65*Math.abs(Math.cos(ph*Math.PI))).toFixed(3)})">${show}</div><div class="ab" style="left:0;top:${hh/2-2}px;width:${w}px;height:4px;background:#101216"></div></div>`}
+function B(t){const BG='#1C1F40',BG2='#262A52';let h=`<div class="ab" style="left:0;top:0;width:1920px;height:1080px;background:${BG}"></div><div class="ab" style="left:0;top:${(1080-560*e4(sg(t,0,.7))).toFixed(1)}px;width:1920px;height:560px;background:${BG2}"></div>`;
+ const q0=e4(sg(t,.1,.8)),BX=110,BY=140+(1-q0)*-700,BW=680,BH=730;
+ h+=`<div class="ab" style="left:${BX+14}px;top:${BY+14}px;width:${BW}px;height:${BH}px;background:rgba(0,0,0,.35);border-radius:20px"></div><div class="ab" style="left:${BX}px;top:${BY}px;width:${BW}px;height:${BH}px;background:${BK};border-radius:20px"></div><div class="ab" style="left:${BX}px;top:${BY}px;width:${BW}px;height:16px;background:${YE};border-radius:20px 20px 0 0"></div>`;
+ h+=`<div class="ab" style="left:${BX+40}px;top:${BY+44}px;font-size:30px;font-weight:500;color:#8A8F9C;letter-spacing:4px">SCOREBOARD</div>`;
+ const row1='야구자판기',cyc=t>8?Math.floor((t-8)/3.2):0,lt=t>8?(t-8)%3.2:9,R2=['구독부탁해요','좋아요도요!','알림설정까지'],row2=R2[cyc%3],prev=R2[(cyc+2)%3];
+ for(let i=0;i<5;i++)h+=flap(BX+75+i*108,BY+104,96,128,row1[i],sg(t,.9+i*.12,1.9+i*.12),false);
+ for(let i=0;i<6;i++){let q=sg(t,2.2+i*.14,3.5+i*.14); if(t>8)q=sg(lt,.2+i*.08,1.0+i*.08); h+=flap(BX+60+i*95,BY+264,84,128,row2[i],q,(row2==='구독부탁해요'&&i<2)||(row2==='좋아요도요!'&&i<3)||(row2==='알림설정까지'&&i<4));}
+ /* B S O 불 */
+ const lamps=[['B',3,'#5FAE6E'],['S',2,YE],['O',2,RED]]; lamps.forEach((L,r)=>{const y=BY+440+r*84; h+=`<div class="ab" style="left:${BX+60}px;top:${y+8}px;font-size:54px;color:${CR}">${L[0]}</div>`; for(let i=0;i<L[1];i++){const on=sg(t,4.0+r*.5+i*.22,4.15+r*.5+i*.22); h+=`<div class="ab" style="left:${BX+150+i*84}px;top:${y}px;width:64px;height:64px;border-radius:50%;background:${on>0?L[2]:'#2A2D35'};transform:scale(${(on>0&&on<1?1+.25*Math.sin(on*Math.PI):1).toFixed(3)})"></div>`}});
+ h+=mask('9회말 2아웃 풀카운트',BX+420,BY+452,25,'#8A8F9C',sg(t,5.4,5.9),-1)+mask('끝내기는',BX+420,BY+500,56,CR,sg(t,5.6,6.1))+mask('구독 버튼',BX+420,BY+572,56,YE,sg(t,5.8,6.3));
+ h+=mask('오늘 경기는 여기까지',950,150,84,CR,sg(t,6.3,6.9))+mask('<span style="color:'+YE+'">구독</span>하면 내일도 만나요',950,250,84,CR,sg(t,6.55,7.15));
+ h+=ticker(t,930,CR,BK,sg(t,6.9,7.5));
+ return h+guide();}
+/* ── C. 중계 타이포 ── */
+function ball(x,y,r,rot){return `<div class="ab" style="left:${(x-r).toFixed(1)}px;top:${(y-r).toFixed(1)}px;width:${2*r}px;height:${2*r}px;transform:rotate(${rot.toFixed(1)}deg)"><svg width="${2*r}" height="${2*r}" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="${CR}"/><path d="M22 12 Q44 50 22 88" fill="none" stroke="${RED}" stroke-width="5"/><path d="M78 12 Q56 50 78 88" fill="none" stroke="${RED}" stroke-width="5"/></svg></div>`}
+function C(t){const BG='#16171C';let h=`<div class="ab" style="left:0;top:0;width:1920px;height:1080px;background:${BG}"></div>`;
+ /* 10개 팀 색 사선 띠가 쓸고 지나가 왼쪽 기둥으로 모임 */
+ TEAMS.forEach((tm,i)=>{const q=e4(sg(t,.05+i*.05,.75+i*.05)),col=sg(t,1.3,2.0),x0=-300+i*230,x1=60+i*22,x=lerp(lerp(-600,x0,q),x1,eIO(col)),w=lerp(170,16,eIO(col)); h+=`<div class="ab" style="left:${x.toFixed(1)}px;top:-80px;width:${w.toFixed(1)}px;height:1240px;background:${tm[1]};transform:skewX(-14deg)"></div>`});
+ /* 큰 글 '구독' 탁탁 */
+ ['구','독'].forEach((ch,i)=>{const q=sg(t,2.0+i*.22,2.32+i*.22); if(q<=0)return; const s=lerp(1.5,1,e4(q)); h+=`<div class="ab" style="left:${300+i*290}px;top:140px;font-size:340px;color:${CR};letter-spacing:-10px;transform:scale(${s.toFixed(3)});transform-origin:50% 60%;opacity:${c01(q*4).toFixed(3)}">${ch}</div>`});
+ /* 노란 띠 */
+ const yb=sg(t,2.7,3.2); if(yb>0)h+=`<div class="ab" style="left:300px;top:716px;width:640px;height:96px;background:${YE};${clipR(yb)}"><div class="ab" style="left:28px;top:18px;font-size:60px;color:${BK};letter-spacing:-2px">야구자판기</div><div class="ab" style="right:28px;top:30px;font-size:34px;font-weight:500;color:${BK}">매일 KBO 이야기</div></div>`;
+ /* 공이 굴러와 버튼을 침 → +1 */
+ const LY=912; h+=`<div class="ab" style="left:300px;top:${LY}px;width:${(1570*e4(sg(t,3.1,3.8))).toFixed(1)}px;height:6px;background:${CR}"></div>`;
+ const per=4.2,bt=t>=3.6?(t-3.6)%per:-1,n=t>=3.6?Math.floor((t-3.6)/per):0; const hitT=1.5,BXb=1640;
+ const pr=bt>=hitT&&bt<hitT+.28?Math.sin((bt-hitT)/.28*Math.PI):0, bq=e4(sg(t,3.3,3.9));
+ if(bq>0)h+=`<div class="ab" style="left:${BXb}px;top:${LY-96+pr*10}px;width:230px;height:${86-pr*10}px;background:${RED};border-radius:14px;opacity:${bq};box-shadow:0 ${Math.round(10*(1-pr))}px 0 #8E3F3A"></div><div class="ab" style="left:${BXb}px;top:${LY-76+pr*10}px;width:230px;text-align:center;font-size:48px;color:#fff;letter-spacing:-1px;opacity:${bq}">구독</div>`;
+ if(bt>=0&&bt<hitT){const q=bt/hitT,x=lerp(260,BXb-44,q); h+=ball(x,LY-44,44,q*900)} else if(bt>=hitT&&bt<hitT+1.1){const q=(bt-hitT)/1.1,x=lerp(BXb-44,BXb-260,e3(q)),y=LY-44-Math.sin(q*Math.PI)*210; h+=ball(x,y,44,900-q*400).replace('opacity:1','')}
+ if(bt>=hitT&&bt<hitT+1.6){const q=(bt-hitT)/1.6; h+=`<div class="ab" style="left:${BXb+60}px;top:${(LY-190-e4(q)*90).toFixed(1)}px;font-size:84px;color:${YE};opacity:${c01((1-q)*2.2).toFixed(3)};transform:scale(${back(c01(q*3)).toFixed(3)})">+1</div>`}
+ h+=mask('오늘 영상이 좋았다면',1010,150,72,CR,sg(t,3.3,3.9))+mask('<span style="color:'+YE+'">구독</span>으로 응원해 주세요',1010,238,72,CR,sg(t,3.55,4.15));
+ h+=ticker(t,966,CR,BK,sg(t,4.0,4.6));
+ return h+guide();}
+
+/* ── P. 프로필 자판기(사용자 11/23 15:28 "야구공으로 하자" — 채널 프로필 그림과 같은 자판기에서 '구독' 야구공이 나온다) ──
+   프로필 아이콘(800x800) 좌표를 1.27배로 옮김: X = 430 + (x-400)*1.27, Y = 540 + (y-400)*1.27 */
+const PF={bg:'#111720',ring:'#19212B',body:'#111722',in:'#0B0E14',wh:'#FFFFFF',ball:'#ECECEC',seam:'#D9463B',ye:'#FFC043',gr:'#555A66',bar:'#4A4F5A',tx:'#F4F1EA'};
+const PX=x=>430+(x-400)*1.27,PY=y=>540+(y-400)*1.27,PS=v=>v*1.27;
+function pball(cx,cy,r,o={}){const rot=o.rot||0,sc=o.sc==null?1:o.sc,op=o.op==null?1:o.op,st=o.stitch,lab=o.lab; if(sc<=0||op<=0)return'';
+ let g=`<circle cx="50" cy="50" r="49" fill="${PF.ball}"/><path d="M27 10 Q46 50 27 90" fill="none" stroke="${PF.seam}" stroke-width="${st?4.5:5.5}" stroke-linecap="round"/><path d="M73 10 Q54 50 73 90" fill="none" stroke="${PF.seam}" stroke-width="${st?4.5:5.5}" stroke-linecap="round"/>`;
+ if(st)for(let i=0;i<6;i++){const y=22+i*11.2,dx=Math.sin((y-10)/80*Math.PI)*9.5; g+=`<line x1="${(27+dx-5).toFixed(1)}" y1="${y}" x2="${(27+dx+5).toFixed(1)}" y2="${y+1.5}" stroke="${PF.seam}" stroke-width="3" stroke-linecap="round"/><line x1="${(73-dx-5).toFixed(1)}" y1="${y+1.5}" x2="${(73-dx+5).toFixed(1)}" y2="${y}" stroke="${PF.seam}" stroke-width="3" stroke-linecap="round"/>`}
+ return `<div class="ab" style="left:${(cx-r).toFixed(1)}px;top:${(cy-r).toFixed(1)}px;width:${(2*r).toFixed(1)}px;height:${(2*r).toFixed(1)}px;opacity:${op.toFixed(3)};transform:rotate(${rot.toFixed(1)}deg) scale(${sc.toFixed(3)})"><svg width="100%" height="100%" viewBox="0 0 100 100">${g}</svg>${lab?`<div class="ab" style="left:0;top:0;width:100%;height:100%;line-height:${(2*r).toFixed(1)}px;text-align:center;font-size:${(r*.5).toFixed(1)}px;color:#16171C;letter-spacing:-1px">${lab}</div>`:''}</div>`}
+const rr=(x0,y0,x1,y1,rad,fill,ex='')=>`<div class="ab" style="left:${PX(x0).toFixed(1)}px;top:${PY(y0).toFixed(1)}px;width:${PS(x1-x0).toFixed(1)}px;height:${PS(y1-y0).toFixed(1)}px;border-radius:${PS(rad).toFixed(1)}px;background:${fill};${ex}"></div>`;
+function P(t){let h=`<div class="ab" style="left:0;top:0;width:1920px;height:1080px;background:${PF.bg}"></div>`;
+ const rq=e4(sg(t,0,.7)),R0=PS(330)*rq; h+=`<div class="ab" style="left:${(430-R0).toFixed(1)}px;top:${(540-R0).toFixed(1)}px;width:${(2*R0).toFixed(1)}px;height:${(2*R0).toFixed(1)}px;border-radius:50%;background:${PF.ring}"></div>`;
+ const up=e4(sg(t,.15,.85)),dy=(1-up)*1100, loop=t>8?(t-8)%4:-1,cyc=t>8?Math.floor((t-8)/4):-1, BALLS=[[305,236],[395,236],[305,316],[395,316]], HERO=3;
+ h+=`<div class="ab" style="left:0;top:${dy.toFixed(1)}px;width:1920px;height:1080px">`;
+ h+=rr(202,106,598,694,58,PF.wh)+rr(230,134,570,666,32,PF.body);
+ /* 창 */
+ const fq=sg(t,.7,1.2); h+=rr(253,167,447,397,30,PF.wh,clipR(fq))+rr(271,185,429,379,14,PF.in,clipR(fq));
+ /* 창 안 공(창 안쪽으로 잘림) */
+ h+=`<div class="ab" style="left:${PX(271).toFixed(1)}px;top:${PY(185).toFixed(1)}px;width:${PS(158).toFixed(1)}px;height:${PS(194).toFixed(1)}px;overflow:hidden;border-radius:${PS(14).toFixed(1)}px">`;
+ BALLS.forEach((b,k)=>{let q=back(sg(t,1.2+k*.1,1.6+k*.1)),x=PX(b[0])-PX(271),y=PY(b[1])-PY(185),rot=0;
+  if(k===HERO){ if(t>=3.9&&t<4.35)rot=Math.sin((t-3.9)*42)*9*(1-(t-3.9)/.45); else if(t>=4.35&&t<4.75){const f=(t-4.35)/.4; y+=f*f*PS(170)} else if(t>=4.75&&t<8)return; else if(t>=8)q=back(sg(t,8,8.4)); }
+  const lk=cyc>=0?cyc%4:-1; if(k===lk&&loop>=0){ if(loop>=.6&&loop<.9)rot=Math.sin((loop-.6)*42)*9*(1-(loop-.6)/.3); else if(loop>=.9&&loop<1.25){const f=(loop-.9)/.35; y+=f*f*PS(170+(k<2?80:0))} else if(loop>=1.25&&loop<3.3)return; else if(loop>=3.3)q=back(sg(loop,3.3,3.7)); }
+  h+=pball(x,y,PS(30),{sc:q,rot}); });
+ h+='</div>';
+ /* 버튼 */
+ const press=t>=3.3&&t<3.6?1-Math.abs((t-3.45)/.15):0,lit=t>=3.4, lp=loop>=.3&&loop<.6?1-Math.abs((loop-.45)/.15):0;
+ [[212,1],[278,0],[344,0]].forEach((b,i)=>{const q=back(sg(t,.9+i*.1,1.25+i*.1)); if(q<=0)return; const on=b[1]&&lit,pr=b[1]?Math.max(press,lp):0,r=PS(22);
+  h+=`<div class="ab" style="left:${(PX(512)-r).toFixed(1)}px;top:${(PY(b[0])-r).toFixed(1)}px;width:${(2*r).toFixed(1)}px;height:${(2*r).toFixed(1)}px;border-radius:50%;background:${on?PF.ye:PF.gr};transform:scale(${(q*(1-.14*pr)).toFixed(3)})"></div>`});
+ /* 동전 구멍 */
+ h+=rr(490,392,534,402,5,PF.gr,clipR(sg(t,1.2,1.5)));
+ /* 꺼내는 곳 */
+ const tq=sg(t,.85,1.35); h+=rr(253,441,547,579,30,PF.wh,clipR(tq))+rr(271,459,529,561,14,PF.in,clipR(tq));
+ h+=`<div class="ab" style="left:${PX(271).toFixed(1)}px;top:${PY(459).toFixed(1)}px;width:${PS(258).toFixed(1)}px;height:${PS(102).toFixed(1)}px;overflow:hidden;border-radius:${PS(14).toFixed(1)}px">`;
+ const tcx=PX(400)-PX(271),tcy=PY(512)-PY(459),bounce=f=>{f=c01(f);return f<.55?(f/.55)*(f/.55):1-Math.sin((f-.55)/.45*Math.PI)*.16};
+ if(t>=4.75&&t<5.7){const f=bounce((t-4.75)/.6); h+=pball(tcx,lerp(-PS(60),tcy,f),PS(44),{stitch:1,lab:'구독',rot:(1-c01((t-4.75)/.6))*-200})}
+ if(loop>=1.25&&loop<3.3){const f=bounce((loop-1.25)/.6),o=1-sg(loop,2.8,3.2); h+=pball(tcx,lerp(-PS(60),tcy,f),PS(44),{stitch:1,rot:(1-c01((loop-1.25)/.6))*-200,sc:lerp(1,.6,sg(loop,2.8,3.2)),op:o})}
+ h+='</div>';
+ h+=rr(284,620,516,650,10,PF.bar,clipR(sg(t,1.0,1.5)));
+ h+='</div>';
+ /* 동전 */
+ if(t>=2.3&&t<3.3){const q=sg(t,2.3,3.2),x=lerp(1000,PX(512),e3(q)),y=lerp(560,PY(397),q)-Math.sin(q*Math.PI)*210; h+=`<div class="ab" style="left:${(x-24).toFixed(1)}px;top:${(y-24).toFixed(1)}px;width:48px;height:48px;border-radius:50%;background:${PF.ye};transform:scaleX(${Math.abs(Math.cos(q*9)).toFixed(3)});opacity:${c01((1-q)*8)}"></div>`}
+ /* '구독' 공이 튀어나와 커짐 → 그 자리에 계속 */
+ if(t>=5.7){const q=e4(sg(t,5.7,6.6)),x=lerp(PX(400),820,q),y=lerp(PY(512),250,q)-Math.sin(c01((t-5.7)/.9)*Math.PI)*150,r=lerp(PS(44),120,q); h+=pball(x,y,r,{stitch:1,lab:'구독',rot:(1-q)*-360}) }
+ h+=mask('구독 한 번이면',980,160,84,PF.tx,sg(t,6.2,6.8))+mask('매일 <span style="color:'+PF.ye+'">야구 소식</span>이 나와요',980,260,84,PF.tx,sg(t,6.45,7.05));
+ return h+guide();}
+window.render=t=>{S.innerHTML=({A,B,C,P})[THEME](Math.max(0,t))};
+document.fonts.ready.then(()=>{window.render(0);window.__ready=true});
+if(Q.get('play')==='1'){const t0=performance.now();(function f(){window.render((performance.now()-t0)/1000);requestAnimationFrame(f)})()}
+</script></body></html>

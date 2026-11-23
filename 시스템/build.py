@@ -906,6 +906,10 @@ def render(ep, ep_path):
                 silence(VW(f'g{i:02d}.wav'), gaps[i]); f.write(f"file 'g{i:02d}.wav'\n")
         f.write("file 'tail.wav'\n")
     run(['ffmpeg', '-y', '-f', 'concat', '-safe', '0', '-i', VW('list.txt'), W('narration.wav')], check=True)
+    # 11/23 구독 영상 끼우기: 콘티 insertClip {file, afterLine(이 줄 뒤에), vol} — 자리는 다음 줄의 장면 전환 시각
+    _ic = ep.get('insertClip') or {}; _insK = int(_ic.get('afterLine') or 0); _insT = 0.0
+    if _ic.get('file') and is_long(ep) and 0 < _insK < N and _find_insert(_ic.get('file')): _insT = max(0.0, st[_insK] - 0.10)
+    elif _ic.get('file'): print('끼울 영상 없음(또는 자리 틀림) — 끼우지 않고 진행:', _ic.get('file'))
     # 4) 템플릿에 데이터 주입
     EP = dict(ep); EP['subs'] = subs; EP['segT'] = segT; EP['bounds'] = bounds; EP['logos'] = logos_data_uri(); EP['total'] = round(total, 2); EP['_path'] = ep_path
     EP['photos'] = photos_data_uri(ep, ep_path)  # 야구이슈 편 사진(없으면 빈 dict)
@@ -920,6 +924,7 @@ def render(ep, ep_path):
     fps = int(cfg_get('VIDEO_FPS', '60')); scale = cfg_get('VIDEO_SCALE', '1.3333')
     DRAFT = bool(os.environ.get('KBO_DRAFT'))   # 10/1: 검수용 빠른 버전(롱폼검수.cmd) — 1080p·30fps, 파일 이름 끝 _검수
     if DRAFT: fps, scale = 30, '1.0'; print('검수용 빠른 버전: 30fps x1.0')
+    if _insT: _insT = round(_insT * fps) / fps; _INS_T[0] = _insT   # 프레임 눈금에 맞춤(그 자리에 키프레임을 넣어 다시 인코딩 없이 자른다)
     shutil.rmtree(W('frames'), ignore_errors=True)
     print(f'프레임 렌더 {fps}fps x{scale} ({round(total)}초) …')
     cw, ch = canvas_of(ep)
@@ -1016,6 +1021,13 @@ def render(ep, ep_path):
         print('배경음악:', os.path.basename(bgm))
     else:
         run(['ffmpeg', '-y', '-i', W('silent.mp4'), '-i', W('narration.wav'), '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], check=True)
+    if _insT:
+        _insD = 0.0
+        try: _insD = _insert_clip(out, _insT, _ic)
+        except Exception as _e: print('구독 영상 끼우기 실패(끼우지 않고 진행):', str(_e)[-300:])
+        if _insD > 0:   # 뒤쪽 자막·챕터 시각을 끼운 길이만큼 민다
+            subs = [[round(a_ + _insD, 2), round(b_ + _insD, 2), t_] if a_ >= _insT - 0.02 else [a_, b_, t_] for a_, b_, t_ in subs]
+            st = [x_ + _insD if j_ >= _insK else x_ for j_, x_ in enumerate(st)]
     if is_long(ep) and not ep.get('vertical'): append_endcard(EP, out)   # 9/20: 롱폼은 끝에 어두운 엔딩 카드(유튜브 최종 화면 자리)
     d = dur_of(out)
     tmp_copy = final_out + '.part'
@@ -1211,7 +1223,7 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
           f"[tr][bar]overlay=x='-w+W*min(1,t/{total:.3f})':y=0:eval=frame:shortest=1[trf];[a][trf]overlay={X0}:{Y0}:shortest=1[v]")
     print('화면 그리기 100% — 진행 막대 입히는 중(2~3분)', flush=True)
     run(['ffmpeg', '-y', '-v', 'error', '-i', raw, '-filter_complex', fc, '-map', '[v]', '-c:v', 'libx264', '-preset', cfg_get('CHUNK_PRESET', 'veryfast'),
-         '-crf', '16', '-tune', 'animation', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-r', str(fps), '-movflags', '+faststart', W('silent.mp4')], check=True)
+         '-crf', '16', '-tune', 'animation', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-r', str(fps)] + (['-force_key_frames', f'{_INS_T[0]:.4f}'] if _INS_T[0] else []) + ['-movflags', '+faststart', W('silent.mp4')], check=True)
     # 이번에 안 쓴 옛 조각은 지운다(용량) — 목록도 이번 것만 남긴다
     idx = {k_: [e for e in v if e['file'] in used] for k_, v in idx.items()}
     idx = {k_: v for k_, v in idx.items() if v}
@@ -1222,6 +1234,99 @@ def render_chunked(EP, ep_path, total, fps, scale, cw, ch, tpl, fenv):
             except Exception: pass
     return types.SimpleNamespace(returncode=0, stdout=f'조각 {len(jobs)}/{len(plan)} 새로 그림', stderr='')
 
+_INS_T = [0.0]
+def _find_insert(name):
+    for d in ('', HERE, os.path.join(HERE, 'clips'), os.path.join(PLAYER_IMG_DIR, '영상')):
+        f = os.path.join(d, name) if d else name
+        if name and os.path.exists(f): return os.path.abspath(f)
+    return None
+
+def _insert_clip(out, T, ic):
+    """11/23 사용자 "오프닝을 하고 다음 섹션으로 넘어가기 전에 구독 유도 영상을 넣자": 본편(out)을 T초에서 나누고 그 사이에 영상을 끼운다.
+       앞 조각은 그대로 복사, 끼울 영상은 본편과 같은 코덱·크기·fps 로 인코딩, 뒤 조각은 T에 키프레임이 있으면 복사(없으면 그 조각만 다시 인코딩).
+       돌려주는 값 = 늘어난 길이(초). 실패하면 0 이고 본편은 그대로."""
+    src = _find_insert(ic.get('file'))
+    if not src: return 0.0
+    pr = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v', '-show_entries', 'stream=width,height,profile,level,pix_fmt,r_frame_rate', '-of', 'default=nw=1', out], capture_output=True, text=True).stdout
+    kv = dict(l.split('=', 1) for l in pr.strip().splitlines() if '=' in l)
+    w_, h_ = kv.get('width', '2560'), kv.get('height', '1440'); pix = kv.get('pix_fmt', 'yuv420p'); lvl = kv.get('level', '51'); prof = (kv.get('profile') or 'High').lower()
+    fps = kv.get('r_frame_rate', '60/1').split('/'); fps = str(int(round(float(fps[0]) / float(fps[1] or 1))))
+    lvl = f'{int(lvl) // 10}.{int(lvl) % 10}' if lvl.isdigit() else lvl
+    d0 = dur_of(out)
+    if not (0.5 < T < d0 - 0.5): return 0.0
+    enc = ['-c:v', 'libx264', '-profile:v', prof, '-level', lvl, '-pix_fmt', pix, '-r', fps, '-g', str(int(fps) * 2)]
+    aenc = ['-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-ac', '1']
+    R = lambda cmd: subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='replace')
+    A, C, B, J = W('ins_a.mp4'), W('ins_clip.mp4'), W('ins_b.mp4'), W('ins_joined.mp4')
+    for f in (A, C, B, J):
+        try: os.remove(f)
+        except Exception: pass
+    # 끼울 영상(소리가 있으면 살리고 없으면 무음)
+    has_a = 'audio' in subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'a', '-show_entries', 'stream=codec_type', '-of', 'csv=p=0', src], capture_output=True, text=True).stdout
+    cd = dur_of(src); vol = float(ic.get('vol', 0.9))
+    vf = f'scale={w_}:{h_}:force_original_aspect_ratio=decrease,pad={w_}:{h_}:(ow-iw)/2:(oh-ih)/2:black,fps={fps},format={pix}'   # 앞뒤는 그냥 컷(검은 프레임 ✗)
+    if has_a and not ic.get('mute'):
+        cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-i', src, '-vf', vf, '-af', f'volume={vol},afade=t=in:d=0.15,afade=t=out:st={max(0, cd - 0.3):.2f}:d=0.3'] + enc + ['-preset', 'medium', '-crf', '17'] + aenc + ['-shortest', C]
+    else:
+        cmd = ['ffmpeg', '-y', '-loglevel', 'error', '-i', src, '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-map', '0:v', '-map', '1:a', '-vf', vf] + enc + ['-preset', 'medium', '-crf', '17'] + aenc + ['-t', f'{cd:.3f}', C]
+    print('구독 영상 끼우는 중 …', os.path.basename(src), flush=True)
+    r = R(cmd)
+    if r.returncode != 0 or not os.path.exists(C): print('끼울 영상 인코딩 실패:', (r.stderr or '')[-300:]); return 0.0
+    # T에 키프레임이 있나(조각 렌더는 그 자리에 키프레임을 넣어 둔다) — 있으면 앞뒤 조각을 다시 인코딩 없이 자른다
+    kf = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v', '-skip_frame', 'nokey', '-show_entries', 'frame=pts_time', '-of', 'csv=p=0', '-read_intervals', f'{max(0, T - 0.3):.3f}%{T + 0.3:.3f}', out], capture_output=True, text=True).stdout
+    def _f(x):
+        try: return float(x.strip().strip(','))
+        except Exception: return -9.0
+    has_k = any(abs(_f(x) - T) < 0.6 / float(fps) for x in kf.split())
+    nA = int(round(T * float(fps))); ok = False
+    renc = enc + ['-preset', cfg_get('CHUNK_PRESET', 'veryfast'), '-crf', '16', '-tune', 'animation']
+    fo, fi = f'afade=t=out:st={max(0, T - 0.12):.3f}:d=0.12', 'afade=t=in:d=0.12'
+    if has_k:
+        r1 = R(['ffmpeg', '-y', '-loglevel', 'error', '-i', out, '-t', f'{T:.4f}', '-frames:v', str(nA), '-c:v', 'copy', '-af', fo] + aenc + [A])
+        r2 = R(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{T:.4f}', '-i', out, '-c:v', 'copy', '-af', fi] + aenc + ['-avoid_negative_ts', 'make_zero', B])
+        ok = r1.returncode == 0 and r2.returncode == 0 and os.path.exists(A) and os.path.exists(B) and abs(dur_of(A) - T) < 0.06 and abs(dur_of(B) - (d0 - T)) < 0.25
+    if not ok:
+        has_k = False
+        print('앞뒤 조각을 다시 인코딩합니다(그 자리에 키프레임 없음) — 몇 분 걸려요', flush=True)
+        r1 = R(['ffmpeg', '-y', '-loglevel', 'error', '-i', out, '-t', f'{T:.4f}', '-af', fo] + renc + aenc + [A])
+        r2 = R(['ffmpeg', '-y', '-loglevel', 'error', '-ss', f'{T:.4f}', '-i', out, '-af', fi] + renc + aenc + [B])
+        if r1.returncode != 0 or r2.returncode != 0 or not os.path.exists(A) or not os.path.exists(B): print('조각 나누기 실패:', ((r1.stderr or '') + (r2.stderr or ''))[-300:]); return 0.0
+    q = lambda f: "file '" + os.path.abspath(f).replace("'", "'\\''") + "'\n"
+    lst = W('ins_list.txt'); io.open(lst, 'w', encoding='utf-8').write(q(A) + q(C) + q(B))
+    r = R(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-c', 'copy', '-movflags', '+faststart', J])
+    dj = dur_of(J) if os.path.exists(J) else 0.0
+    if r.returncode != 0 or abs(dj - (d0 + dur_of(C))) > 0.5: print('끼워 붙이기 실패:', (r.stderr or '')[-300:], f'{dj:.2f}'); return 0.0
+    shutil.move(J, out); print(f'구독 영상 {dj - d0:.1f}초를 {T:.2f}초 자리에 끼움' + ('(뒤 조각 복사)' if has_k else '(뒤 조각 다시 인코딩)'))
+    return dj - d0
+
+def _append_endcard_anim(EP, out, sec, intro, loop):
+    """11/23 사용자 "엔딩 너무 우려먹었는데 — 멋지게 모션그래픽 넣어서 구독해 달라는 내용으로": 움직이는 엔딩.
+       endcard_intro.mp4(도입 한 번) + endcard_loop.mp4(되풀이)를 필요한 길이(sec)만큼 이어서 본편과 같은 코덱으로 만들고, 재인코딩 없이 본편 뒤에 붙인다.
+       두 파일은 kia23/ending/ending.html(?theme=A) 을 2560x1440 60fps 로 그린 것. 콘티에 endStatic:true 를 주면 옛 멈춘 그림 엔딩을 쓴다."""
+    import math
+    pr = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v', '-show_entries', 'stream=width,height,profile,level,pix_fmt,r_frame_rate', '-of', 'default=nw=1', out], capture_output=True, text=True).stdout
+    kv = dict(l.split('=', 1) for l in pr.strip().splitlines() if '=' in l)
+    w_, h_ = kv.get('width', '2560'), kv.get('height', '1440'); pix = kv.get('pix_fmt', 'yuvj420p'); lvl = kv.get('level', '51'); prof = (kv.get('profile') or 'High').lower()
+    fps = kv.get('r_frame_rate', '60/1').split('/'); fps = str(int(round(float(fps[0]) / float(fps[1] or 1))))
+    lvl = f'{int(lvl) // 10}.{int(lvl) % 10}' if lvl.isdigit() else lvl
+    di, dl = dur_of(intro), dur_of(loop)
+    if di <= 0 or dl <= 0: return None
+    n = int(math.ceil(max(0.0, sec - di) / dl)) + 1
+    q = lambda f: "file '" + os.path.abspath(f).replace("'", "'\\''") + "'\n"
+    lst = W('endanim_list.txt'); io.open(lst, 'w', encoding='utf-8').write(q(intro) + q(loop) * n)
+    tail = W('endcard.mp4')
+    r = subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst, '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=mono', '-t', f'{sec:.2f}',
+                        '-vf', f'scale={w_}:{h_},fade=t=in:st=0:d=0.4,format={pix}', '-c:v', 'libx264', '-profile:v', prof, '-level', lvl, '-pix_fmt', pix, '-r', fps, '-g', str(int(fps) * 2),
+                        '-preset', 'medium', '-crf', '18', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-ac', '1', '-shortest', tail], capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode != 0 or not os.path.exists(tail): print('움직이는 엔딩 인코딩 실패:', (r.stderr or '')[-200:]); return None
+    lst2 = W('endcard_list.txt'); joined = W('with_endcard.mp4')
+    io.open(lst2, 'w', encoding='utf-8').write(q(out) + q(tail))
+    r = subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', lst2, '-c', 'copy', '-movflags', '+faststart', joined], capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode != 0 or not os.path.exists(joined) or dur_of(joined) < dur_of(out) + sec * 0.9:
+        print('움직이는 엔딩 붙이기 실패:', (r.stderr or '')[-200:]); return None
+    shutil.move(joined, out); print(f'움직이는 엔딩 {sec:.0f}초 붙임(도입 {di:.0f}초 + 되풀이)')
+    return out
+
 def append_endcard(EP, out):
     """롱폼 mp4 끝에 어두운 엔딩 카드(설정 ENDCARD_SEC, 기본 12초)를 붙인다(9/20 사용자 지시).
        유튜브 '최종 화면'(구독·다음 영상)은 마지막 5~20초에 얹히는데, 본편 위에 얹히면 화면을 가린다 → 본편 뒤에 빈 화면을 둔다.
@@ -1231,6 +1336,11 @@ def append_endcard(EP, out):
     if EP.get('totalSec'):   # 10/15 사용자 "마지막 화면을 늘려서 8분 1초로 — 중간광고": 콘티 totalSec 이 있으면 전체 길이가 그 값이 되도록 엔딩 카드를 늘린다(줄이진 않음)
         want = float(EP['totalSec']) - dur_of(out)
         if want > sec: print(f'엔딩 카드 {sec:.0f}초 → {want:.1f}초(전체 {float(EP["totalSec"]):.1f}초에 맞춤)'); sec = want
+    if os.path.exists('endcard_intro.mp4') and os.path.exists('endcard_loop.mp4') and not EP.get('endStatic'):   # 11/23 움직이는 엔딩(안 되면 아래 멈춘 그림으로)
+        try:
+            _o = _append_endcard_anim(EP, out, sec, 'endcard_intro.mp4', 'endcard_loop.mp4')
+            if _o: return _o
+        except Exception as _e: print('움직이는 엔딩 실패(멈춘 그림으로 진행):', str(_e)[-200:])
     html = io.open('endcard.html', encoding='utf-8').read().replace('__FONT_DIR__', font_dir_url())
     html = html.replace('<script>', '<script>window.EP=' + json.dumps({'lines': EP.get('lines', []), 'endTop': EP.get('endTop')}, ensure_ascii=False) + ';</script><script>', 1)
     io.open(W('render_endcard.html'), 'w', encoding='utf-8').write(html)
