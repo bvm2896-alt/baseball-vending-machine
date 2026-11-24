@@ -127,7 +127,7 @@ html.vert #vtitle{display:block}
 #vtitle .l.a{color:var(--acc)}
 #vtitle .bs{margin-top:16px;font-size:32px;font-weight:700;color:#6A7382;letter-spacing:-.5px}
 /* 10/8 사용자: 관련 영상 유도 줄엔 쇼츠 화면 아래 '관련 영상' 칸(▶ 막대, 영상 좌표 y≈1830·x 45~905)을 가리키는 화살표 — 자막(가운데)·유튜브 채널/제목 줄(y 1580~)을 피해 왼쪽 여백에 */
-#relArrow{position:absolute;left:0;right:0;top:1505px;display:none;flex-direction:column;align-items:center;gap:0;z-index:50}
+#relArrow{position:absolute;left:0;right:0;top:1582px;display:none;flex-direction:column;align-items:center;gap:0;z-index:50}
 #relArrow .lb{background:var(--acc);color:#fff;font-size:42px;font-weight:900;line-height:1;letter-spacing:-1px;text-align:center;padding:14px 30px;border-radius:40px;box-shadow:0 8px 20px rgba(18,22,31,.2);margin-bottom:4px}
 #relArrow svg{display:block}
 </style></head><body>
@@ -5003,9 +5003,9 @@ const MG = (() => {
       h += PILLS(s, P, same, s.wide ? ty + 170 : VY1 + hh + 24, VW0);
       return h; };
     R.v_duo = (lt, s) => { s._lt = lt;
-      const cs = s.cards || [], P = s._prev && s._prev.type === 'v_duo' ? s._prev : null, CW = 430, G = 40; let h = '', bot = 0;
-      cs.slice(0, 2).forEach((c, i) => { const pc = P && P.cards[i], keep = !!(pc && pc.img === c.img), q = keep ? 1 : AT(s, c.at, .7, sg(lt, i * .1, .7)), w = CW, hh = EP.vF ? 660 : 400, x = VX0 + i * (CW + G);   /* 두 사람은 같은 크기 액자(이름 줄 맞춤) — 키 쪽은 다 보이게 */
-        h += FRAME(c.img, x, VY1, w, hh, q) + `<div class="ab" style="left:${VX0 + i * (CW + G)}px;top:${VY1 + hh + 14}px;width:${CW}px;text-align:center;font-size:${FIT(c.name, 74, CW)}px;font-weight:900;letter-spacing:-.03em;color:${TX};white-space:nowrap;${keep ? '' : up(q, 14)}">${KIN(c.name, keep || q >= 1 ? 1 : c01(q * 1.3 - .3))}</div>`; bot = Math.max(bot, VY1 + hh + 14 + 92); });
+      const cs = s.cards || [], P = s._prev && s._prev.type === 'v_duo' ? s._prev : null, N3 = cs.length >= 3, CW = N3 ? 284 : 430, G = N3 ? 24 : 40; let h = '', bot = 0;   /* 11/24: 세 사람이면 세 장 나란히(네일·올러·카스트로) */
+      cs.slice(0, N3 ? 3 : 2).forEach((c, i) => { const pc = P && P.cards[i], keep = !!(pc && pc.img === c.img), q = keep ? 1 : AT(s, c.at, .7, sg(lt, i * .1, .7)), w = CW, hh = EP.vF ? (N3 ? 500 : 660) : 400, x = VX0 + i * (CW + G);   /* 두 사람은 같은 크기 액자(이름 줄 맞춤) — 키 쪽은 다 보이게 */
+        h += (c.dim ? '<div style="opacity:.3">' : '') + FRAME(c.img, x, VY1, w, hh, q) + `<div class="ab" style="left:${VX0 + i * (CW + G)}px;top:${VY1 + hh + 14}px;width:${CW}px;text-align:center;font-size:${FIT(c.name, 74, CW)}px;font-weight:900;letter-spacing:-.03em;color:${TX};white-space:nowrap;${keep ? '' : up(q, 14)}">${KIN(c.name, keep || q >= 1 ? 1 : c01(q * 1.3 - .3))}</div>` + (c.dim ? '</div>' : ''); bot = Math.max(bot, VY1 + hh + 14 + 92); });   /* 11/24: dim = 지금 말하지 않는 사람은 흐리게(세 명은 화면에 그대로) */
       const TY = bot + 24;
       if (s.tag) { const same = P && P.tag === s.tag, tq = same ? 1 : AT(s, s.tagAt, .5, sg(lt, .2, .5));
         if (P && P.tag && !same) { const oq = c01(lt / .25); if (oq < 1) h += `<div class="ab" style="left:${VX0}px;width:${VW0}px;top:${TY}px;text-align:center;opacity:${(1 - ss(oq)).toFixed(3)}"><span style="font-size:${FIT(P.tag, 50, VW0)}px;font-weight:900;color:${GOLD};white-space:nowrap">${esc(P.tag)}</span></div>`; }
@@ -5097,7 +5097,7 @@ const MG = (() => {
       let h = `<div class="ab" style="left:${X0}px;top:${(VY1 + RY + (1 - e4(q)) * 24).toFixed(1)}px;width:${W}px;height:${H}px;border-radius:30px;overflow:hidden;opacity:${c01(q * 2).toFixed(3)};box-shadow:0 26px 60px rgba(0,0,0,.5),inset 0 0 0 1.5px rgba(255,255,255,.16)">${PIC(s.img, W, H, .5, '', '50% 50%')}</div>`;
       h += `<div class="ab" style="left:180px;width:720px;top:${VY1 + RY - 10 + H + 36}px;text-align:center;font-size:${FIT(s.text || '', 52, 720)}px;font-weight:900;color:${TX};white-space:nowrap;${up(q, 16)}">${esc(s.text || '전체 이야기는 관련 영상에서')}</div>`;
       const aq = P || s.startLine === 0 ? 1 : sg(lt, .3, .6), bob = 10 * Math.sin(Math.max(0, lt - .9) * 4) * c01(lt - .9);
-      h += `<svg class="ab" style="left:${540 - 45}px;top:${(VY1 + RY - 10 + H + 120 + bob).toFixed(1)}px;opacity:${ss(aq).toFixed(3)}" width="90" height="110" viewBox="0 0 100 120"><path d="M50 6 V96 M18 66 L50 100 L82 66" fill="none" stroke="url(#gA2)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="gA2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7EF0FF"/><stop offset="1" stop-color="#A78BFF"/></linearGradient></defs></svg>`;
+      if (!s.relArrow) h += `<svg class="ab" style="left:${540 - 45}px;top:${(VY1 + RY - 10 + H + 120 + bob).toFixed(1)}px;opacity:${ss(aq).toFixed(3)}" width="90" height="110" viewBox="0 0 100 120"><path d="M50 6 V96 M18 66 L50 100 L82 66" fill="none" stroke="url(#gA2)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="gA2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7EF0FF"/><stop offset="1" stop-color="#A78BFF"/></linearGradient></defs></svg>`;
       return h; };
   }
 
