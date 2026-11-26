@@ -41,3 +41,5 @@ busy.txt
 sheet*.png
 # 10/16: local backup made when the other PC cleaned git history
 _깃정리_백업/
+
+**/archive*.zip
