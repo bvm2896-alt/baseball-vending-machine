@@ -1,0 +1,56 @@
+{
+ "theme": "doc",
+ "date": "2026-11-27",
+ "gameDate": "2026-11-27",
+ "series": "야구롱폼",
+ "focusTeam": "KBO",
+ "speed": 1.0,
+ "ttsApi": true,
+ "ttsVoice": "A",
+ "ttsWhole": false,
+ "ttsTempo": 1.2,
+ "ttsTempoSlow": 1.15,
+ "rev": "tone-A",
+ "topic": "톤시험A",
+ "gapScale": 0.5,
+ "pauseMax": 0.45,
+ "sentPauseMin": 0.4,
+ "clausePauseMin": 0.3,
+ "ttsCharsOk": 7000,
+ "voiceOnly": true,
+ "chapters": [
+  {
+   "key": "톤",
+   "title": "톤 시험",
+   "from": 0,
+   "to": 3
+  }
+ ],
+ "lines": [
+  {
+   "narr": "각 구단마다 베스트 먹튀를 한명씩 뽑아서 / 일승, 혹은 홈런 하나에 얼마였는지 / +순위를 매겨 봤어요",
+   "gapAfter": 0.24
+  },
+  {
+   "narr": "여러분이 응원하는 팀은 / +몇위일까요?",
+   "gapAfter": 0.4,
+   "subscribeAfter": true
+  },
+  {
+   "narr": "로니의 기록은 / 열 경기 / +삼승 삼패, / 평균자책점 / +오점대였어요",
+   "gapAfter": 0.24
+  },
+  {
+   "narr": "다음은 구위예요",
+   "gapAfter": 0.4
+  }
+ ],
+ "scenes": [],
+ "thumb": {},
+ "mascot": false,
+ "source": "대사 = claude/외국인먹튀-대본확정-1126.md · 화면은 클라우드 다큐 톤 렌더(음성만 PC)",
+ "youtube": {
+  "title": "10개 구단 역대 최악의 외국인 | 1승에 얼마였나, 190만 달러 받고 0승까지"
+ },
+ "ttsEmotion": "tonedown"
+}
